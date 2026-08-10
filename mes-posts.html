@@ -210,7 +210,7 @@
       border: 1px solid #a5d6a7;
     }
 
-    .carte-post .statut .badge.en-cours {
+    .carte-post .statut .badge.a-faire {
       background: #fef3c7;
       color: #b8860b;
       border: 1px solid #fcd34d;
@@ -367,8 +367,8 @@
         <span>validées</span>
       </div>
       <div class="stat-item">
-        <span class="nombre" id="enCoursPosts">0</span>
-        <span>en cours</span>
+        <span class="nombre" id="aFairePosts">0</span>
+        <span>à faire</span>
       </div>
     </div>
 
@@ -454,47 +454,29 @@
       var html = '<div class="grille">';
       var total = 0;
       var valides = 0;
-      var enCours = 0;
+      var aFaire = 0;
 
       posts.forEach(function(post) {
         total++;
         var reponse = toutesLesReponses[post.id];
         var estValide = false;
-        var noteQcm = '';
         var dateValidation = '';
         var retenir = '';
 
         if (reponse) {
-          noteQcm = reponse.noteQcm || '';
+          var bonnes = reponse.bonnes || 0;
+          var totalQ = reponse.total || 0;
           dateValidation = reponse.date || '';
           retenir = reponse.retenir || '';
 
-          // ============================================================
-          // ANALYSE DE LA NOTE AVEC "X sur Y"
-          // ============================================================
-          if (noteQcm) {
-            var parts = noteQcm.trim().split(/\s*sur\s*/);
-            if (parts.length === 2) {
-              var score = parseInt(parts[0]);
-              var totalQ = parseInt(parts[1]);
-              if (!isNaN(score) && !isNaN(totalQ) && totalQ > 0) {
-                if (score >= Math.ceil(totalQ / 2)) {
-                  estValide = true;
-                  valides++;
-                } else {
-                  enCours++;
-                }
-              } else {
-                enCours++;
-              }
-            } else {
-              enCours++;
-            }
+          if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+            estValide = true;
+            valides++;
           } else {
-            enCours++;
+            aFaire++;
           }
         } else {
-          enCours++;
+          aFaire++;
         }
 
         // Badge de statut
@@ -508,18 +490,16 @@
               dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
                 day: '2-digit', month: 'long', year: 'numeric'
               }) + '</span>';
-            } else {
-              dateHtml = '<span class="date-validation visible">📅 ' + dateValidation + '</span>';
             }
           }
         } else if (reponse) {
-          badgeHtml = '<span class="badge en-cours">📖 En cours</span>';
+          badgeHtml = '<span class="badge a-faire">📖 À faire</span>';
         } else {
-          badgeHtml = '<span class="badge non-vu">📭 À lire</span>';
+          badgeHtml = '<span class="badge non-vu">📭 À faire</span>';
         }
 
         var btnClass = 'btn-lire';
-        var btnText = 'Lire →';
+        var btnText = 'Ouvrir →';
         if (estValide) {
           btnClass += ' reviser';
           btnText = '🔄 Réviser';
@@ -561,7 +541,7 @@
 
       document.getElementById('totalPosts').textContent = total;
       document.getElementById('validesPosts').textContent = valides;
-      document.getElementById('enCoursPosts').textContent = total - valides;
+      document.getElementById('aFairePosts').textContent = aFaire;
     }
 
     // ============================================================
