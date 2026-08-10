@@ -974,7 +974,7 @@
         radios.forEach(function(r) { r.disabled = true; });
       });
 
-      // Sauvegarder les choix QCM avec "X sur Y"
+      // Sauvegarder les choix QCM
       sauvegarderReponses(choixQcm, correct, total);
 
       if (correct === total) {
@@ -985,7 +985,7 @@
         setTimeout(function() {
           if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
         }, 1200);
-      } else if (correct >= total / 2) {
+      } else if (correct >= Math.ceil(total / 2)) {
         msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
         msg.style.color = '#b8956a';
       } else {
@@ -995,7 +995,7 @@
     }
 
     // ============================================================
-    // SAUVEGARDE DES RÉPONSES (avec "X sur Y")
+    // SAUVEGARDE DES RÉPONSES (avec bonnes et total séparés)
     // ============================================================
     function sauvegarderReponses(choixQcm, note, total) {
       var nom = localStorage.getItem('etudiant_id');
@@ -1016,7 +1016,8 @@
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
         '&choixQcm=' + encodeURIComponent(choixQcm.join('|')) +
-        '&noteQcm=' + encodeURIComponent(note + ' sur ' + total) + // ← "2 sur 2"
+        '&bonnes=' + encodeURIComponent(note) +
+        '&total=' + encodeURIComponent(total) +
         '&reponseOuverte=' + encodeURIComponent('') +
         '&tempsPasse=' + encodeURIComponent(tempsPasse) +
         '&retenir=' + encodeURIComponent(retenir);
@@ -1055,7 +1056,8 @@
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
         '&choixQcm=' + encodeURIComponent('') +
-        '&noteQcm=' + encodeURIComponent('') +
+        '&bonnes=' + encodeURIComponent('') +
+        '&total=' + encodeURIComponent('') +
         '&reponseOuverte=' + encodeURIComponent(reponse) +
         '&tempsPasse=' + encodeURIComponent(tempsPasse) +
         '&retenir=' + encodeURIComponent(retenir);
