@@ -6,7 +6,6 @@
   <title>Méditation islamique</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
-    /* ========== RESET ========== */
     * {
       margin: 0;
       padding: 0;
@@ -29,7 +28,6 @@
       color: inherit;
     }
 
-    /* ========== PAGE ========== */
     .page-article {
       max-width: 950px;
       width: 100%;
@@ -59,7 +57,6 @@
       transform: translateX(-4px);
     }
 
-    /* ========== CARTE ========== */
     .blog-article {
       width: 100%;
       background: #ffffff;
@@ -99,7 +96,6 @@
       text-align: center;
     }
 
-    /* ========== DOTS ========== */
     .dots-container {
       display: flex;
       justify-content: center;
@@ -152,7 +148,6 @@
       cursor: not-allowed;
     }
 
-    /* ========== SLIDES ========== */
     .paragraphe-container {
       width: 100%;
       position: relative;
@@ -175,7 +170,6 @@
       align-items: center;
     }
 
-    /* ========== TEXTE ========== */
     .contenu-slide {
       width: 100%;
       font-size: 20px;
@@ -209,7 +203,6 @@
       font-style: normal;
     }
 
-    /* ========== COMPTEUR ========== */
     .compteur {
       width: 100%;
       text-align: center;
@@ -223,7 +216,6 @@
       letter-spacing: 0.3px;
     }
 
-    /* ========== QUIZ ========== */
     .quiz-container {
       width: 100%;
       padding: 4px 0;
@@ -332,7 +324,6 @@
       color: #2d6a4f;
     }
 
-    /* ========== QUESTION OUVERTE ========== */
     #openQuestion {
       width: 100%;
       border-top: 1px solid #eef2f6;
@@ -380,7 +371,6 @@
       box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.08);
     }
 
-    /* ========== MÉMO ========== */
     .slide-memo {
       width: 100%;
       text-align: center;
@@ -424,7 +414,6 @@
       margin-top: 12px;
     }
 
-    /* ========== DATE ========== */
     .post-date {
       width: 100%;
       text-align: right;
@@ -437,7 +426,6 @@
       letter-spacing: 0.3px;
     }
 
-    /* ========== LOCK MESSAGE ========== */
     .lock-message {
       width: 100%;
       text-align: center;
@@ -448,7 +436,6 @@
       letter-spacing: 0.3px;
     }
 
-    /* ========== LOADER ========== */
     .loader {
       text-align: center;
       padding: 40px 20px;
@@ -492,6 +479,22 @@
       border-top: 1px solid #eef2f6;
       margin-top: 12px;
       letter-spacing: 0.3px;
+    }
+
+    .btn-nav {
+      padding: 10px 28px;
+      background: #b8956a;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+    .btn-nav:hover {
+      background: #a07d55;
+      transform: translateY(-2px);
     }
 
     @media (max-width: 768px) {
@@ -567,7 +570,7 @@
       <div class="erreur-article" id="erreur" style="display:none;">
         <h2>Méditation introuvable</h2>
         <p>Cette méditation n'existe pas ou a été déplacée.</p>
-        <a href="/medit/mes-posts.html" class="btn-top" style="margin-top:12px;display:inline-block;padding:10px 24px;background:#2d6a4f;color:#fff;border-radius:30px;font-weight:600;">Voir toutes les méditations</a>
+        <a href="/medit/mes-posts.html" style="margin-top:12px;display:inline-block;padding:10px 24px;background:#2d6a4f;color:#fff;border-radius:30px;font-weight:600;">Voir toutes les méditations</a>
       </div>
 
       <div id="article-charge" style="display:none; width:100%;">
@@ -602,7 +605,7 @@
               </label>
             </p>
             <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
-              <button class="btn-nav btn-envoyer" onclick="validerReponse()" style="padding:10px 28px;background:#b8956a;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s ease;">Enregistrer</button>
+              <button class="btn-nav" onclick="validerReponse()">Enregistrer</button>
             </div>
             <div id="form-message-mailto" style="margin-top:6px;"></div>
           </div>
@@ -678,14 +681,12 @@
     function afficherArticle(post) {
       postTitre = post.titre || 'Sans titre';
 
-      // Label (catégorie)
       if (post.categorie) {
         document.getElementById('postLabel').textContent = post.categorie;
       }
 
       document.getElementById('article-titre').textContent = postTitre;
 
-      // Date
       if (post.date) {
         var d = new Date(post.date);
         document.getElementById('postDate').textContent = d.toLocaleDateString('fr-FR', {
@@ -696,7 +697,6 @@
       var slides = [];
       var questionsQuiz = [];
 
-      // 1. Contenu (texte)
       if (post.contenu) {
         var blocs = post.contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
         blocs.forEach(function(bloc) {
@@ -704,7 +704,6 @@
         });
       }
 
-      // 2. Quiz (colonne G) - format: "Question? RV. Bonne réponse. RF. Mauvaise réponse."
       if (post.quiz) {
         var quizBlocs = post.quiz.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
         quizBlocs.forEach(function(bloc) {
@@ -730,12 +729,10 @@
         }
       }
 
-      // 3. Question ouverte (colonne H)
       if (post.question_ouverte && post.question_ouverte.trim()) {
         slides.push({ type: 'question-ouverte', data: { question: post.question_ouverte } });
       }
 
-      // 4. À retenir (colonne I)
       if (post.retenir && post.retenir.trim()) {
         slides.push({ type: 'memo', data: { texte: post.retenir } });
       }
@@ -804,7 +801,7 @@
     }
 
     function genererSlideQuestionOuverte(data) {
-      return '<div id="openQuestion" style="display:block;"><h3>Question ouverte</h3><h4 style="border-left:4px solid #b8956a;color:#1a3a4a;font-size:18px;font-weight:600;line-height:1.6;margin:0 0 10px 0;padding-left:16px;font-family:Georgia,serif;">' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:16px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#ffffff;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav btn-envoyer" onclick="validerReponse()" style="padding:10px 28px;background:#b8956a;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:all 0.3s ease;">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
+      return '<div id="openQuestion" style="display:block;"><h3>Question ouverte</h3><h4 style="border-left:4px solid #b8956a;color:#1a3a4a;font-size:18px;font-weight:600;line-height:1.6;margin:0 0 10px 0;padding-left:16px;font-family:Georgia,serif;">' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:2px solid #e2e8f0;border-radius:8px;font-size:16px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#ffffff;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
     }
 
     function genererSlideMemo(data) {
@@ -970,7 +967,6 @@
         return;
       }
 
-      // Verrouiller
       quizVerrouille = true;
       questions.forEach(function(q) {
         q.classList.add('verrouille');
@@ -978,7 +974,7 @@
         radios.forEach(function(r) { r.disabled = true; });
       });
 
-      // Sauvegarder les choix QCM
+      // Sauvegarder les choix QCM avec "X sur Y"
       sauvegarderReponses(choixQcm, correct, total);
 
       if (correct === total) {
@@ -999,7 +995,7 @@
     }
 
     // ============================================================
-    // SAUVEGARDE DES RÉPONSES
+    // SAUVEGARDE DES RÉPONSES (avec "X sur Y")
     // ============================================================
     function sauvegarderReponses(choixQcm, note, total) {
       var nom = localStorage.getItem('etudiant_id');
@@ -1007,12 +1003,23 @@
 
       var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
 
+      // Récupérer le "À retenir"
+      var retenir = '';
+      for (var i = 0; i < slidesData.length; i++) {
+        if (slidesData[i].type === 'memo') {
+          retenir = slidesData[i].data.texte || '';
+          break;
+        }
+      }
+
       var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
         '&choixQcm=' + encodeURIComponent(choixQcm.join('|')) +
-        '&noteQcm=' + encodeURIComponent(note + '/' + total) +
-        '&tempsPasse=' + encodeURIComponent(tempsPasse);
+        '&noteQcm=' + encodeURIComponent(note + ' sur ' + total) + // ← "2 sur 2"
+        '&reponseOuverte=' + encodeURIComponent('') +
+        '&tempsPasse=' + encodeURIComponent(tempsPasse) +
+        '&retenir=' + encodeURIComponent(retenir);
 
       fetch(url).catch(function() {});
     }
@@ -1035,11 +1042,23 @@
 
       var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
 
+      // Récupérer le "À retenir"
+      var retenir = '';
+      for (var i = 0; i < slidesData.length; i++) {
+        if (slidesData[i].type === 'memo') {
+          retenir = slidesData[i].data.texte || '';
+          break;
+        }
+      }
+
       var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
+        '&choixQcm=' + encodeURIComponent('') +
+        '&noteQcm=' + encodeURIComponent('') +
         '&reponseOuverte=' + encodeURIComponent(reponse) +
-        '&tempsPasse=' + encodeURIComponent(tempsPasse);
+        '&tempsPasse=' + encodeURIComponent(tempsPasse) +
+        '&retenir=' + encodeURIComponent(retenir);
 
       fetch(url)
         .then(function(r) { return r.json(); })
@@ -1092,7 +1111,6 @@
     // INIT
     // ============================================================
     function demarrer() {
-      // Vérifier si l'utilisateur est connecté
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
         window.location.href = '/medit/index.html';
