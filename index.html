@@ -1,27 +1,11 @@
-<!-- ============================================================
-     PAGE D'ACCUEIL - MÉDITATIONS ISLAMIQUES
-     Version autonome pour GitHub Pages
-     ============================================================ -->
-
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Méditations islamiques</title>
-
-  <!-- ============================================================
-       GOOGLE FONTS
-       ============================================================ -->
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
-
-  <!-- ============================================================
-       CSS
-       ============================================================ -->
   <style>
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
     * {
       margin: 0;
       padding: 0;
@@ -30,739 +14,458 @@
 
     body {
       font-family: 'Segoe UI', Roboto, sans-serif;
-      background-color: #f0f0f0;
-      color: #1a1a2e;
+      background-color: #f5f5f0;
+      color: #1a2a2e;
       min-height: 100vh;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* ============================================================
-       BARRE SUPÉRIEURE
-       ============================================================ */
-    #topBarEtudiant {
-      background: #0f1a1e;
-      color: #ffffff;
-      padding: 8px 30px;
       display: flex;
-      justify-content: space-between;
+      flex-direction: column;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 10px;
-      border-bottom: 2px solid #2d6a4f;
-      font-family: "Segoe UI", Roboto, sans-serif;
-      font-size: 14px;
-      position: relative;
-      z-index: 999;
-    }
-
-    #topBarEtudiant .left {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    #topBarEtudiant .left .icon {
-      font-weight: 300;
-      opacity: 0.7;
-      font-size: 13px;
-    }
-
-    #topBarEtudiant .left .prenom {
-      color: #8ab3c9;
-      font-weight: 600;
-    }
-
-    #topBarEtudiant .right {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-    }
-
-    .btn-top {
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 6px 20px;
-      background: linear-gradient(135deg, #2d6a4f, #1a4a3a);
-      color: #ffffff;
-      border: none;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 600;
-      text-decoration: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      box-shadow: 0 2px 10px rgba(45, 106, 79, 0.3);
+      justify-content: center;
       letter-spacing: 0.3px;
     }
 
-    .btn-top:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(45, 106, 79, 0.5);
-    }
-
-    .btn-top.secondary {
-      background: rgba(255, 255, 255, 0.15);
-      box-shadow: none;
-      border: 1px solid rgba(255, 255, 255, 0.2);
-    }
-
-    .btn-top.secondary:hover {
-      background: rgba(255, 255, 255, 0.25);
-    }
-
-    .btn-top.hidden {
-      display: none !important;
-    }
-
-    /* ============================================================
-       OVERLAY DE CONNEXION
-       ============================================================ */
-    #connexion-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
+    .container {
+      max-width: 700px;
       width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.6);
-      backdrop-filter: blur(8px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      padding: 20px;
+      padding: 40px 24px;
+      text-align: center;
     }
 
-    #connexion-overlay.visible {
-      display: flex !important;
+    /* ========== LOGO / TITRE ========== */
+    .logo {
+      font-size: 48px;
+      font-weight: 300;
+      color: #1a3a4a;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+      font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    #connexion-box {
+    .logo strong {
+      font-weight: 700;
+      color: #2d6a4f;
+    }
+
+    .sous-titre {
+      font-size: 18px;
+      color: #7a8a8e;
+      font-style: italic;
+      margin-bottom: 40px;
+      letter-spacing: 0.5px;
+    }
+
+    /* ========== CARTE ========== */
+    .carte {
       background: #ffffff;
       border-radius: 16px;
-      padding: 28px 24px;
-      max-width: 360px;
-      width: 100%;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.4);
-      position: relative;
+      padding: 40px 36px;
+      border: 1px solid #eef2f6;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
     }
 
-    #connexion-box .close-btn {
-      position: absolute;
-      top: 10px;
-      right: 14px;
-      background: none;
-      border: none;
+    .carte h2 {
       font-size: 22px;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      padding: 4px 8px;
-      line-height: 1;
-    }
-
-    #connexion-box .close-btn:hover {
-      color: #1a1a2e;
-    }
-
-    #connexion-box .icon-top {
-      text-align: center;
-      font-size: 40px;
-      margin-bottom: 4px;
-    }
-
-    #connexion-box h2 {
-      text-align: center;
-      font-size: 22px;
-      font-weight: 700;
-      color: #1e293b;
-      margin: 0 0 4px 0;
-    }
-
-    #connexion-box .subtitle {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 13px;
-      margin-bottom: 20px;
-    }
-
-    #connexion-box .champ {
-      margin-bottom: 16px;
-    }
-
-    #connexion-box .champ label {
-      display: block;
-      font-size: 13px;
       font-weight: 600;
-      color: #475569;
-      margin-bottom: 4px;
+      color: #1a3a4a;
+      margin-bottom: 8px;
     }
 
-    #connexion-box .champ input {
-      width: 100%;
-      padding: 10px 14px;
-      border: 2px solid #e2e8f0;
-      border-radius: 10px;
-      font-size: 14px;
-      box-sizing: border-box;
-      background: #f8fafc;
+    .carte p {
+      font-size: 15px;
+      color: #7a8a8e;
+      margin-bottom: 24px;
+      line-height: 1.6;
     }
 
-    #connexion-box .champ input:focus {
-      border-color: #2d6a4f;
-      outline: none;
-      box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.1);
-    }
-
-    #connexion-box .btn-conn {
-      width: 100%;
-      padding: 12px;
-      background: linear-gradient(135deg, #2d6a4f, #1a4a3a);
-      color: #ffffff;
+    /* ========== BOUTONS ========== */
+    .btn {
+      display: inline-block;
+      padding: 14px 40px;
       border: none;
       border-radius: 30px;
-      font-size: 15px;
-      font-weight: 700;
+      font-size: 16px;
+      font-weight: 600;
       cursor: pointer;
       transition: all 0.3s ease;
+      letter-spacing: 0.3px;
+      text-decoration: none;
     }
 
-    #connexion-box .btn-conn:hover {
+    .btn-primary {
+      background: linear-gradient(135deg, #2d6a4f, #1a4a3a);
+      color: #ffffff;
+      box-shadow: 0 4px 15px rgba(45, 106, 79, 0.25);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(45, 106, 79, 0.35);
+    }
+
+    .btn-secondary {
+      background: transparent;
+      color: #2d6a4f;
+      border: 2px solid #2d6a4f;
+    }
+
+    .btn-secondary:hover {
+      background: #e8f5e9;
       transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(45, 106, 79, 0.35);
     }
 
-    #connexion-box .btn-conn.secondary {
-      background: #e2e8f0;
-      color: #475569;
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
       margin-top: 8px;
     }
 
-    #connexion-box .btn-conn.secondary:hover {
-      background: #cbd5e1;
-      box-shadow: none;
-      transform: none;
+    /* ========== FORMULAIRE ========== */
+    .form-inscription {
+      display: none;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid #eef2f6;
+      text-align: left;
     }
 
-    #connexion-box .separateur {
-      text-align: center;
-      color: #94a3b8;
-      font-size: 12px;
-      margin: 12px 0;
+    .form-inscription.visible {
+      display: block;
     }
 
-    #connexion-box .message-erreur {
-      color: #b33;
+    .form-inscription .champ {
+      margin-bottom: 16px;
+    }
+
+    .form-inscription label {
+      display: block;
+      font-size: 13px;
+      font-weight: 600;
+      color: #475569;
+      margin-bottom: 4px;
+    }
+
+    .form-inscription input,
+    .form-inscription textarea {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid #e2e8f0;
+      border-radius: 10px;
       font-size: 14px;
-      text-align: center;
-      margin: 12px 0 0 0;
-      min-height: 22px;
+      background: #f8fafc;
+      transition: border-color 0.3s;
+      font-family: inherit;
     }
 
-    #connexion-box .message-succes {
-      color: #2d6a4f;
-      font-size: 14px;
-      text-align: center;
-      margin: 12px 0 0 0;
-      min-height: 22px;
+    .form-inscription input:focus,
+    .form-inscription textarea:focus {
+      border-color: #2d6a4f;
+      outline: none;
+      box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.08);
     }
 
-    /* ============================================================
-       PAGE D'ACCUEIL
-       ============================================================ */
-    .page-accueil {
-      max-width: 950px;
-      margin: 0 auto;
-      padding: 20px 16px;
-      font-family: 'Segoe UI', Roboto, sans-serif;
-      color: #1a1a2e;
+    .form-inscription textarea {
+      resize: vertical;
+      min-height: 80px;
     }
 
-    .hero {
-      background: linear-gradient(135deg, #1a3a4a, #2d6a4f);
-      color: #fff;
-      border-radius: 16px;
-      padding: 40px 35px;
-      text-align: center;
-      margin-bottom: 30px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .hero::before {
-      content: "☪";
-      position: absolute;
-      font-size: 200px;
-      opacity: 0.05;
-      right: -30px;
-      bottom: -60px;
-    }
-
-    .hero h1 {
-      font-size: 36px;
-      font-weight: 300;
-      margin: 0 0 8px;
-      letter-spacing: 1px;
-    }
-
-    .hero h1 strong {
-      font-weight: 700;
-    }
-
-    .hero .sous-titre {
-      font-size: 18px;
-      opacity: 0.9;
-      font-style: italic;
-      margin-bottom: 6px;
-    }
-
-    .hero p {
-      font-size: 17px;
-      opacity: 0.85;
-      margin: 0 0 24px;
-      line-height: 1.8;
-      max-width: 700px;
-      margin-left: auto;
-      margin-right: auto;
-    }
-
-    .hero .btn-commencer {
-      display: inline-block;
-      padding: 14px 40px;
-      background: #fff;
-      color: #1a3a4a;
+    .form-inscription .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: linear-gradient(135deg, #2d6a4f, #1a4a3a);
+      color: #ffffff;
       border: none;
       border-radius: 30px;
       font-size: 16px;
-      font-weight: 700;
-      text-decoration: none;
-      transition: all 0.3s;
-      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
     }
 
-    .hero .btn-commencer:hover {
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.2);
-    }
-
-    .section {
-      background: #fff;
-      border-radius: 12px;
-      padding: 28px 32px;
-      margin-bottom: 20px;
-      border: 1px solid #eef2f6;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-    }
-
-    .section h2 {
-      font-size: 22px;
-      font-weight: 700;
-      color: #1a3a4a;
-      margin: 0 0 16px;
-      border-bottom: 3px solid #2d6a4f;
-      padding-bottom: 10px;
-      letter-spacing: 0.3px;
-    }
-
-    .section p {
-      font-size: 16px;
-      color: #475569;
-      line-height: 1.9;
-      margin: 0 0 12px;
-    }
-
-    .section .citation {
-      font-style: italic;
-      font-size: 17px;
-      color: #2d6a4f;
-      padding: 16px 24px;
-      background: #f8fafc;
-      border-radius: 10px;
-      border-left: 4px solid #2d6a4f;
-      margin: 16px 0;
-    }
-
-    .section .citation .source {
-      font-size: 14px;
-      color: #94a3b8;
-    }
-
-    .section ul {
-      padding-left: 20px;
-      margin: 8px 0 0;
-    }
-
-    .section ul li {
-      font-size: 15px;
-      color: #475569;
-      line-height: 1.8;
-      margin-bottom: 6px;
-    }
-
-    .section ul li strong {
-      color: #1a3a4a;
-    }
-
-    .badge-accueil {
-      display: inline-block;
-      padding: 4px 16px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 700;
-      background: #e8f5e9;
-      color: #2d6a4f;
-      margin-right: 6px;
-    }
-
-    .grille-avantages {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-top: 12px;
-    }
-
-    .grille-avantages .avantage {
-      background: #f8fafc;
-      border-radius: 10px;
-      padding: 16px 18px;
-      text-align: center;
-      border: 1px solid #eef2f6;
-      transition: all 0.2s;
-    }
-
-    .grille-avantages .avantage:hover {
+    .form-inscription .btn-submit:hover {
       transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+      box-shadow: 0 8px 25px rgba(45, 106, 79, 0.3);
     }
 
-    .grille-avantages .avantage .icone {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 6px;
-    }
-
-    .grille-avantages .avantage h4 {
-      font-size: 15px;
-      font-weight: 700;
-      color: #1a3a4a;
-      margin: 0 0 4px;
-    }
-
-    .grille-avantages .avantage p {
-      font-size: 13px;
-      color: #94a3b8;
-      margin: 0;
-      line-height: 1.5;
-    }
-
-    .parcours {
-      background: #f8fafc;
-      border-radius: 10px;
-      padding: 16px 20px;
-      margin: 10px 0;
-    }
-
-    .parcours .etape {
-      display: flex;
-      align-items: flex-start;
-      gap: 14px;
-      margin-bottom: 14px;
-    }
-
-    .parcours .etape:last-child {
-      margin-bottom: 0;
-    }
-
-    .parcours .etape .num {
-      background: #2d6a4f;
-      color: #fff;
-      border-radius: 50%;
-      width: 30px;
-      height: 30px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 13px;
-      font-weight: 700;
-      flex-shrink: 0;
-      margin-top: 2px;
-    }
-
-    .parcours .etape .contenu {
-      font-size: 15px;
-      color: #475569;
-      line-height: 1.7;
-    }
-
-    .parcours .etape .contenu strong {
-      color: #1a3a4a;
-    }
-
-    .devise {
+    .form-inscription .message {
+      margin-top: 12px;
+      font-size: 14px;
       text-align: center;
-      padding: 20px 0 10px;
-      font-size: 16px;
-      color: #94a3b8;
-      font-style: italic;
-      border-top: 1px solid #eef2f6;
-      margin-top: 10px;
     }
 
-    .lien-vert {
+    .form-inscription .message.success {
       color: #2d6a4f;
-      font-weight: 700;
-      text-decoration: none;
     }
 
-    .lien-vert:hover {
-      text-decoration: underline;
+    .form-inscription .message.error {
+      color: #c62828;
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
-    @media (max-width: 768px) {
-      #topBarEtudiant {
-        padding: 6px 15px;
-        font-size: 12px;
-      }
-      .btn-top {
-        font-size: 12px;
-        padding: 5px 14px;
-      }
-      .hero {
-        padding: 28px 20px;
-      }
-      .hero h1 {
-        font-size: 26px;
-      }
-      .hero p {
-        font-size: 15px;
-      }
-      .section {
-        padding: 18px;
-      }
-      .grille-avantages {
-        grid-template-columns: 1fr;
-      }
-      .parcours .etape {
-        gap: 10px;
-      }
+    /* ========== BANNIÈRE CONNECTÉ ========== */
+    .banniere-connecte {
+      display: none;
+      background: #e8f5e9;
+      border-radius: 12px;
+      padding: 20px 24px;
+      margin-bottom: 20px;
     }
 
-    @media (max-width: 480px) {
-      #topBarEtudiant {
+    .banniere-connecte.visible {
+      display: block;
+    }
+
+    .banniere-connecte p {
+      font-size: 16px;
+      color: #1a3a4a;
+      margin-bottom: 12px;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 640px) {
+      .container {
+        padding: 20px 16px;
+      }
+      .carte {
+        padding: 24px 18px;
+      }
+      .logo {
+        font-size: 32px;
+      }
+      .btn {
+        padding: 12px 28px;
+        font-size: 14px;
+        width: 100%;
+      }
+      .btn-group {
         flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-      }
-      #topBarEtudiant .right {
-        justify-content: center;
-        flex-wrap: wrap;
       }
     }
   </style>
 </head>
-
 <body>
 
-  <!-- ============================================================
-       BARRE SUPÉRIEURE
-       ============================================================ -->
-  <div id="topBarEtudiant">
-    <div class="left">
-      <span class="icon">📖</span>
-      <span class="prenom" id="topBarPrenom">Simple lecteur - Vous n'êtes connecté à aucun compte étudiant.</span>
-    </div>
-    <div class="right">
-      <a href="/medit/mon-espace.html" id="btnMonEspace" class="btn-top hidden">👤 Mon espace</a>
-      <a href="/medit/mes-lectures.html" id="btnTableauBord" class="btn-top hidden">📖 Mes lectures</a>
-      <span id="btnDeconnexion" class="btn-top secondary" onclick="ouvrirConnexion()">👤 E-learning</span>
-    </div>
-  </div>
+  <div class="container">
 
-  <!-- ============================================================
-       OVERLAY DE CONNEXION
-       ============================================================ -->
-  <div id="connexion-overlay">
-    <div id="connexion-box">
-      <button class="close-btn" onclick="fermerConnexion()">✕</button>
-      <div class="icon-top">📖</div>
-      <h2>Espace étudiant</h2>
-      <p class="subtitle">Connectez-vous pour accéder à votre espace</p>
+    <!-- ========== LOGO ========== -->
+    <div class="logo">📖 <strong>Méditations</strong> islamiques</div>
+    <div class="sous-titre">— Un cheminement vers la lumière —</div>
 
-      <div class="champ">
-        <label>Nom d'utilisateur</label>
-        <input type="text" id="inputNom" placeholder="Entrez votre nom" />
-      </div>
-      <div class="champ">
-        <label>Mot de passe</label>
-        <input type="password" id="inputMdp" placeholder="Entrez votre mot de passe" />
+    <!-- ========== CARTE PRINCIPALE ========== -->
+    <div class="carte" id="cartePrincipale">
+
+      <!-- BANNIÈRE CONNECTÉ -->
+      <div class="banniere-connecte" id="banniereConnecte">
+        <p>👋 Bienvenue, <strong id="nomConnecte">Étudiant</strong></p>
+        <a href="/medit/mes-posts.html" class="btn btn-primary" style="display:inline-block;padding:10px 30px;font-size:14px;">📖 Mes méditations</a>
+        <button class="btn btn-secondary" onclick="deconnecter()" style="padding:10px 30px;font-size:14px;margin-left:8px;">Se déconnecter</button>
       </div>
 
-      <button class="btn-conn" onclick="seConnecter()">Se connecter</button>
-      <div class="separateur">ou</div>
-      <button class="btn-conn secondary" onclick="creerCompte()">Créer un compte</button>
+      <!-- ÉTAT : NON CONNECTÉ -->
+      <div id="etatNonConnecte">
+        <h2>Espace de méditation</h2>
+        <p>Connectez-vous ou créez un compte pour accéder à vos méditations.</p>
 
-      <div id="messageConnexion" class="message-erreur"></div>
-    </div>
-  </div>
-
-  <!-- ============================================================
-       PAGE D'ACCUEIL
-       ============================================================ -->
-  <div class="page-accueil">
-
-    <!-- HERO -->
-    <div class="hero">
-      <h1>📖 <strong>Méditations islamiques</strong></h1>
-      <p class="sous-titre">— Un cheminement vers la lumière —</p>
-      <p>
-        Un espace de méditation et d'élévation spirituelle, où chaque réflexion
-        vous rapproche de la connaissance de Dieu, de vous-même et des réalités de la foi.
-      </p>
-      <a class="btn-commencer" href="/medit/mes-lectures.html">Entrer en méditation →</a>
-    </div>
-
-    <!-- PHILOSOPHIE -->
-    <div class="section">
-      <h2>🌿 L'esprit de ce lieu</h2>
-      <p>
-        Ici, on n'enseigne pas des leçons. On <strong>propose des méditations</strong>.
-        Chaque texte, chaque verset, chaque parole est une porte ouverte sur un
-        horizon plus vaste.
-      </p>
-      <p>
-        Méditer, c'est <strong>laisser le sens pénétrer le cœur</strong>.
-        C'est prendre le temps de s'arrêter, de respirer, de laisser la parole divine
-        résonner en soi. Ce n'est pas une accumulation de savoir, mais une
-        <strong>transformation intérieure</strong>.
-      </p>
-      <div class="citation">
-        “Ne méditent-ils pas sur le Coran ? Ou y a-t-il des cadenas sur leurs cœurs ?”<br>
-        <span class="source">— Coran 47:24</span>
-      </div>
-      <p>
-        C'est dans cet esprit que chaque méditation est conçue : pour
-        <strong>nourrir l'intelligence du cœur</strong>, éveiller la conscience et
-        faire grandir une foi sincère, profonde et lumineuse.
-      </p>
-    </div>
-
-    <!-- COMMENT ÇA MARCHE -->
-    <div class="section">
-      <h2>🎯 Comment méditer ici ?</h2>
-
-      <div class="parcours">
-        <div class="etape">
-          <div class="num">1</div>
-          <div class="contenu">
-            <strong>📖 Lire en présence</strong><br>
-            Chaque méditation se déroule en slides. Vous lisez, vous vous arrêtez,
-            vous laissez le texte vous habiter.
-          </div>
-        </div>
-        <div class="etape">
-          <div class="num">2</div>
-          <div class="contenu">
-            <strong>🧠 Vérifier la résonance</strong><br>
-            Un quiz vous aide à percevoir ce qui a retenu votre attention.
-            Ce n'est pas un examen, c'est un miroir.
-          </div>
-        </div>
-        <div class="etape">
-          <div class="num">3</div>
-          <div class="contenu">
-            <strong>✍️ Écrire sa méditation</strong><br>
-            Une question ouverte vous invite à formuler ce qui s'est éveillé en vous.
-            C'est votre parole intérieure qui s'exprime.
-          </div>
-        </div>
-        <div class="etape">
-          <div class="num">4</div>
-          <div class="contenu">
-            <strong>📊 Suivre son cheminement</strong><br>
-            Votre espace personnel garde trace de vos méditations. Vous voyez
-            votre progression, sans pression, avec douceur.
-          </div>
-        </div>
-        <div class="etape">
-          <div class="num">5</div>
-          <div class="contenu">
-            <strong>📚 Retenir l'essentiel</strong><br>
-            Chaque méditation est accompagnée de <strong>mots-clés</strong>,
-            d'un <strong>récapitulatif</strong> et de <strong>points à emporter</strong>
-            pour que la lumière reste avec vous.
-          </div>
+        <div class="btn-group">
+          <button class="btn btn-primary" onclick="ouvrirConnexion()">Se connecter</button>
+          <button class="btn btn-secondary" onclick="ouvrirInscription()">Créer un compte</button>
         </div>
       </div>
 
-      <p style="margin-top:16px;font-style:italic;color:#64748b;text-align:center;">
-        Chacun avance à son rythme, selon ce que son cœur est prêt à recevoir.
-      </p>
+      <!-- ========== FORMULAIRE DE CONNEXION ========== -->
+      <div class="form-inscription" id="formConnexion">
+        <h3 style="font-size:18px;margin-bottom:16px;text-align:center;">🔐 Se connecter</h3>
+        <div class="champ">
+          <label>Identifiant</label>
+          <input type="text" id="loginId" placeholder="Votre identifiant" />
+        </div>
+        <div class="champ">
+          <label>Mot de passe</label>
+          <input type="password" id="loginMdp" placeholder="Votre mot de passe" />
+        </div>
+        <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
+        <div class="message" id="loginMessage"></div>
+        <p style="margin-top:12px;font-size:13px;color:#94a3b8;text-align:center;">
+          Pas encore de compte ? <a href="#" onclick="ouvrirInscription();return false;" style="color:#2d6a4f;font-weight:600;">Créer un compte</a>
+        </p>
+      </div>
+
+      <!-- ========== FORMULAIRE D'INSCRIPTION ========== -->
+      <div class="form-inscription" id="formInscription">
+        <h3 style="font-size:18px;margin-bottom:16px;text-align:center;">📝 Créer un compte</h3>
+        <div class="champ">
+          <label>Identifiant</label>
+          <input type="text" id="registerId" placeholder="Choisissez un identifiant" />
+        </div>
+        <div class="champ">
+          <label>Mot de passe</label>
+          <input type="password" id="registerMdp" placeholder="Choisissez un mot de passe" />
+        </div>
+        <div class="champ">
+          <label>Pourquoi souhaitez-vous rejoindre cet espace ?</label>
+          <textarea id="registerDemande" placeholder="Partagez votre motivation..." rows="3"></textarea>
+        </div>
+        <button class="btn-submit" onclick="sInscrire()">Créer mon compte</button>
+        <div class="message" id="registerMessage"></div>
+        <p style="margin-top:12px;font-size:13px;color:#94a3b8;text-align:center;">
+          Déjà un compte ? <a href="#" onclick="ouvrirConnexion();return false;" style="color:#2d6a4f;font-weight:600;">Se connecter</a>
+        </p>
+      </div>
+
     </div>
 
-    <!-- CE QUE CONTIENT UNE MÉDITATION -->
-    <div class="section">
-      <h2>📦 Le trésor de chaque méditation</h2>
-      <ul>
-        <li><strong>📖 Un texte à méditer</strong> — extrait du Coran, des hadiths ou de la tradition spirituelle</li>
-        <li><strong>🧠 Un quiz de résonance</strong> — pour éveiller la conscience</li>
-        <li><strong>✍️ Une question ouverte</strong> — pour écrire sa propre méditation</li>
-        <li><strong>📝 Des mots-clés</strong> — pour approfondir le vocabulaire spirituel</li>
-        <li><strong>📌 Un récapitulatif</strong> — pour garder l'essentiel</li>
-        <li><strong>💡 Des points à emporter</strong> — pour que la méditation continue</li>
-      </ul>
-      <p style="margin-top:14px;">
-        Chaque méditation est une <strong>étape vers une foi plus éveillée</strong>,
-        une intelligence plus fine, un cœur plus présent.
-      </p>
-    </div>
-
-    <!-- ACCÈS -->
-    <div class="section">
-      <h2>🔐 Accéder à votre espace de méditation</h2>
-      <p>
-        Pour méditer et enregistrer vos réflexions, vous devez
-        <strong>créer un compte</strong> ou vous <strong>connecter</strong>.
-      </p>
-      <p>
-        Une fois connecté, vous aurez accès à :<br />
-        <span class="badge-accueil">📚 Mon espace</span>
-        <span class="badge-accueil">📊 Tableau de bord</span>
-        <span class="badge-accueil">📖 Mes méditations</span>
-      </p>
-      <p style="margin-top:12px;">
-        <a href="#" onclick="ouvrirConnexion(); return false;" class="lien-vert">→ Se connecter</a>
-        &nbsp; ou &nbsp;
-        <a href="#" onclick="ouvrirConnexion(); return false;" class="lien-vert">→ Créer un compte</a>
-      </p>
-    </div>
-
-    <!-- DEVISE -->
-    <div class="devise">
+    <!-- ========== DEVISE ========== -->
+    <div style="margin-top:30px;font-size:15px;color:#94a3b8;font-style:italic;letter-spacing:0.3px;">
       “La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”
     </div>
 
   </div>
 
-  <!-- ============================================================
-       SCRIPTS
-       ============================================================ -->
+  <!-- ========== SCRIPTS ========== -->
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
 
   <script>
     // ============================================================
+    // GESTION DE L'INTERFACE
+    // ============================================================
+
+    function ouvrirConnexion() {
+      document.getElementById('formInscription').classList.remove('visible');
+      document.getElementById('formConnexion').classList.toggle('visible');
+      document.getElementById('loginMessage').textContent = '';
+    }
+
+    function ouvrirInscription() {
+      document.getElementById('formConnexion').classList.remove('visible');
+      document.getElementById('formInscription').classList.toggle('visible');
+      document.getElementById('registerMessage').textContent = '';
+    }
+
+    // ============================================================
+    // CONNEXION
+    // ============================================================
+
+    function seConnecter() {
+      var id = document.getElementById('loginId').value.trim();
+      var mdp = document.getElementById('loginMdp').value.trim();
+      var msg = document.getElementById('loginMessage');
+
+      if (!id || !mdp) {
+        msg.textContent = '⚠️ Remplissez tous les champs.';
+        msg.className = 'message error';
+        return;
+      }
+
+      msg.textContent = 'Connexion en cours...';
+      msg.className = 'message';
+
+      var url = CONFIG.SCRIPT_URL + '?action=login&id=' + encodeURIComponent(id) + '&mdp=' + encodeURIComponent(mdp);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            localStorage.setItem('etudiant_id', id);
+            localStorage.setItem('etudiant_niveau', data.niveau || 0);
+            msg.textContent = '✅ Connecté !';
+            msg.className = 'message success';
+            setTimeout(function() { location.reload(); }, 600);
+          } else {
+            msg.textContent = '❌ ' + (data.message || 'Erreur de connexion');
+            msg.className = 'message error';
+          }
+        })
+        .catch(function() {
+          msg.textContent = '❌ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // INSCRIPTION
+    // ============================================================
+
+    function sInscrire() {
+      var id = document.getElementById('registerId').value.trim();
+      var mdp = document.getElementById('registerMdp').value.trim();
+      var demande = document.getElementById('registerDemande').value.trim();
+      var msg = document.getElementById('registerMessage');
+
+      if (!id || !mdp) {
+        msg.textContent = '⚠️ Remplissez l\'identifiant et le mot de passe.';
+        msg.className = 'message error';
+        return;
+      }
+
+      if (id.length < 2) {
+        msg.textContent = '⚠️ Identifiant trop court (minimum 2 caractères).';
+        msg.className = 'message error';
+        return;
+      }
+
+      if (mdp.length < 3) {
+        msg.textContent = '⚠️ Mot de passe trop court (minimum 3 caractères).';
+        msg.className = 'message error';
+        return;
+      }
+
+      msg.textContent = 'Création du compte...';
+      msg.className = 'message';
+
+      var url = CONFIG.SCRIPT_URL + '?action=register&id=' + encodeURIComponent(id) +
+        '&mdp=' + encodeURIComponent(mdp) +
+        '&demande=' + encodeURIComponent(demande);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            localStorage.setItem('etudiant_id', id);
+            localStorage.setItem('etudiant_niveau', 0);
+            msg.textContent = '✅ Compte créé avec succès !';
+            msg.className = 'message success';
+            setTimeout(function() { location.reload(); }, 600);
+          } else {
+            msg.textContent = '❌ ' + (data.message || 'Erreur de création');
+            msg.className = 'message error';
+          }
+        })
+        .catch(function() {
+          msg.textContent = '❌ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // DÉCONNEXION
+    // ============================================================
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        location.reload();
+      }
+    }
+
+    // ============================================================
     // INITIALISATION
     // ============================================================
 
     function demarrer() {
-      mettreAJourBarre();
+      var id = localStorage.getItem('etudiant_id');
+      var nonConnecte = document.getElementById('etatNonConnecte');
+      var banniere = document.getElementById('banniereConnecte');
+
+      if (id) {
+        nonConnecte.style.display = 'none';
+        banniere.classList.add('visible');
+        document.getElementById('nomConnecte').textContent = id;
+      } else {
+        nonConnecte.style.display = 'block';
+        banniere.classList.remove('visible');
+      }
     }
 
     if (document.readyState === 'loading') {
