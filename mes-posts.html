@@ -99,7 +99,7 @@
       color: #1a3a4a;
     }
 
-    .stats .stat-item .nombre.validé {
+    .stats .stat-item .nombre.valide {
       color: #2d6a4f;
     }
 
@@ -374,7 +374,7 @@
         <span>méditations disponibles</span>
       </div>
       <div class="stat-item">
-        <span class="nombre validé" id="validésPosts">0</span>
+        <span class="nombre valide" id="validesPosts">0</span>
         <span>validées</span>
       </div>
       <div class="stat-item">
@@ -438,7 +438,6 @@
           return fetch(urlReponses)
             .then(function(r) { return r.json(); })
             .then(function(dataReponses) {
-              // Construire un objet avec les réponses par article
               if (dataReponses.success && dataReponses.reponses) {
                 dataReponses.reponses.forEach(function(r) {
                   toutesLesReponses[r.articleId] = r;
@@ -480,20 +479,30 @@
         var dateValidation = '';
         var retenir = '';
 
-        // Vérifier si l'étudiant a validé ce post (note >= 50%)
         if (reponse) {
           noteQcm = reponse.noteQcm || '';
           dateValidation = reponse.date || '';
           retenir = reponse.retenir || '';
 
-          // Extraire le score (ex: "3/4")
-          var match = noteQcm.match(/(\d+)\/(\d+)/);
-          if (match) {
-            var score = parseInt(match[1]);
-            var totalQ = parseInt(match[2]);
-            if (totalQ > 0 && score >= Math.ceil(totalQ / 2)) {
-              estValide = true;
-              valides++;
+          // ============================================================
+          // NOUVEAU : Analyse de la note avec "2/2"
+          // ============================================================
+          if (noteQcm) {
+            var notePropre = noteQcm.trim().replace(/\s*sur\s*/g, '/');
+            var parts = notePropre.split('/');
+            if (parts.length === 2) {
+              var score = parseInt(parts[0]);
+              var totalQ = parseInt(parts[1]);
+              if (!isNaN(score) && !isNaN(totalQ) && totalQ > 0) {
+                if (score >= Math.ceil(totalQ / 2)) {
+                  estValide = true;
+                  valides++;
+                } else {
+                  enCours++;
+                }
+              } else {
+                enCours++;
+              }
             } else {
               enCours++;
             }
@@ -567,7 +576,7 @@
 
       // Mettre à jour les stats
       document.getElementById('totalPosts').textContent = total;
-      document.getElementById('validésPosts').textContent = valides;
+      document.getElementById('validesPosts').textContent = valides;
       document.getElementById('enCoursPosts').textContent = total - valides;
     }
 
