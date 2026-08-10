@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mes lectures</title>
+  <title>Mes méditations</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     * {
@@ -21,7 +21,7 @@
     }
 
     .page {
-      max-width: 900px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px 16px;
     }
@@ -73,39 +73,71 @@
       transform: translateX(-4px);
     }
 
+    /* ========== STATISTIQUES ========== */
+    .stats {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+      padding: 16px 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #eef2f6;
+    }
+
+    .stats .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 14px;
+      color: #7a8a8e;
+    }
+
+    .stats .stat-item .nombre {
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a3a4a;
+    }
+
+    .stats .stat-item .nombre.validé {
+      color: #2d6a4f;
+    }
+
     /* ========== GRILLE ========== */
     .grille {
-      display: grid;
-      gap: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
     }
 
     .carte-post {
       background: #ffffff;
       border-radius: 12px;
-      padding: 20px 24px;
+      padding: 16px 20px;
       border: 1px solid #eef2f6;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
       transition: all 0.3s ease;
-      cursor: pointer;
-      display: flex;
-      justify-content: space-between;
+      display: grid;
+      grid-template-columns: 1fr auto auto;
       align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
+      gap: 16px;
     }
 
     .carte-post:hover {
-      transform: translateY(-3px);
+      transform: translateY(-2px);
       box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
-      border-color: #2d6a4f;
+      border-color: #dce2ea;
     }
 
+    /* ========== COLONNE GAUCHE (infos) ========== */
     .carte-post .infos {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
     .carte-post .titre {
-      font-size: 18px;
+      font-size: 17px;
       font-weight: 600;
       color: #1a3a4a;
       font-family: 'Georgia', 'Times New Roman', serif;
@@ -124,7 +156,6 @@
     .carte-post .meta {
       font-size: 13px;
       color: #94a3b8;
-      margin-top: 4px;
     }
 
     .carte-post .meta .categorie {
@@ -138,16 +169,76 @@
       margin-right: 8px;
     }
 
-    .carte-post .meta .niveau {
-      background: #eef2f6;
-      color: #7a8a8e;
-      padding: 2px 12px;
-      border-radius: 30px;
-      font-size: 11px;
-      font-weight: 500;
-      display: inline-block;
+    /* ========== CADRE "À RETENIR" ========== */
+    .carte-post .retenir-cadre {
+      background: #f8fafc;
+      border-left: 3px solid #b8956a;
+      padding: 10px 16px;
+      border-radius: 6px;
+      margin-top: 6px;
+      font-size: 14px;
+      color: #2d3748;
+      font-style: italic;
+      line-height: 1.5;
+      display: none;
     }
 
+    .carte-post .retenir-cadre.visible {
+      display: block;
+    }
+
+    .carte-post .retenir-cadre strong {
+      font-style: normal;
+      color: #1a3a4a;
+      font-weight: 600;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    /* ========== BADGE STATUT ========== */
+    .carte-post .statut {
+      text-align: center;
+      min-width: 80px;
+    }
+
+    .carte-post .statut .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+    }
+
+    .carte-post .statut .badge.valide {
+      background: #e8f5e9;
+      color: #2d6a4f;
+      border: 1px solid #a5d6a7;
+    }
+
+    .carte-post .statut .badge.en-cours {
+      background: #fef3c7;
+      color: #b8860b;
+      border: 1px solid #fcd34d;
+    }
+
+    .carte-post .statut .badge.non-vu {
+      background: #eef2f6;
+      color: #94a3b8;
+    }
+
+    .carte-post .statut .date-validation {
+      font-size: 11px;
+      color: #94a3b8;
+      margin-top: 4px;
+      display: none;
+    }
+
+    .carte-post .statut .date-validation.visible {
+      display: block;
+    }
+
+    /* ========== BOUTON LIRE ========== */
     .carte-post .btn-lire {
       padding: 8px 20px;
       background: #2d6a4f;
@@ -159,11 +250,20 @@
       cursor: pointer;
       transition: all 0.3s ease;
       text-decoration: none;
+      white-space: nowrap;
     }
 
     .carte-post .btn-lire:hover {
       background: #1a4a3a;
       transform: translateY(-2px);
+    }
+
+    .carte-post .btn-lire.reviser {
+      background: #b8956a;
+    }
+
+    .carte-post .btn-lire.reviser:hover {
+      background: #a07d55;
     }
 
     /* ========== LOADER ========== */
@@ -215,19 +315,41 @@
     }
 
     /* ========== RESPONSIVE ========== */
-    @media (max-width: 640px) {
+    @media (max-width: 768px) {
       .header {
         flex-direction: column;
         align-items: stretch;
         text-align: center;
       }
       .carte-post {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
+        grid-template-columns: 1fr;
+        gap: 8px;
+        padding: 14px 16px;
+      }
+      .carte-post .statut {
+        display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 8px;
+        justify-content: flex-start;
       }
       .carte-post .btn-lire {
         text-align: center;
+        width: 100%;
+      }
+      .stats {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .carte-post .statut {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 4px;
+      }
+      .carte-post .statut .date-validation {
+        text-align: left;
       }
     }
   </style>
@@ -239,10 +361,26 @@
     <!-- ========== EN-TÊTE ========== -->
     <div class="header">
       <div>
-        <h1>📖 Mes lectures</h1>
+        <h1>📖 Mon tableau de bord</h1>
         <span class="info" id="infoConnecte">Connecté en tant que <strong id="nomConnecte">—</strong></span>
       </div>
       <a href="/medit/index.html" class="btn-retour">← Accueil</a>
+    </div>
+
+    <!-- ========== STATS ========== -->
+    <div class="stats" id="statsContainer">
+      <div class="stat-item">
+        <span class="nombre" id="totalPosts">0</span>
+        <span>méditations disponibles</span>
+      </div>
+      <div class="stat-item">
+        <span class="nombre validé" id="validésPosts">0</span>
+        <span>validées</span>
+      </div>
+      <div class="stat-item">
+        <span class="nombre" id="enCoursPosts">0</span>
+        <span>en cours</span>
+      </div>
     </div>
 
     <!-- ========== CONTENU ========== -->
@@ -261,10 +399,16 @@
 
   <script>
     // ============================================================
-    // CHARGEMENT DES POSTS
+    // VARIABLES
+    // ============================================================
+    var toutesLesReponses = {};
+    var postsData = [];
+
+    // ============================================================
+    // CHARGEMENT DES POSTS + RÉPONSES
     // ============================================================
 
-    function chargerPosts() {
+    function chargerTableauDeBord() {
       var id = localStorage.getItem('etudiant_id');
       var niveau = parseInt(localStorage.getItem('etudiant_niveau')) || 0;
 
@@ -275,48 +419,33 @@
 
       document.getElementById('nomConnecte').textContent = id;
 
-      var url = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
+      // 1. Récupérer les posts
+      var urlPosts = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
 
-      fetch(url)
+      fetch(urlPosts)
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var contenu = document.getElementById('contenu');
-          document.getElementById('loader').style.display = 'none';
-
-          if (!data.success || !data.posts || data.posts.length === 0) {
-            contenu.innerHTML = `
-              <div class="vide">
-                <span class="icone">📭</span>
-                <h2>Aucune méditation disponible</h2>
-                <p>De nouvelles méditations seront ajoutées prochainement.</p>
-                <p style="font-size:13px;color:#94a3b8;margin-top:4px;">Votre niveau actuel : ${niveau}</p>
-              </div>
-            `;
+        .then(function(dataPosts) {
+          if (!dataPosts.success || !dataPosts.posts || dataPosts.posts.length === 0) {
+            afficherVide();
             return;
           }
 
-          var html = '<div class="grille">';
-          data.posts.forEach(function(post) {
-            var dateFormatee = post.date ? new Date(post.date).toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            }) : 'Date inconnue';
+          postsData = dataPosts.posts;
 
-            html += `
-              <div class="carte-post">
-                <div class="infos">
-                  <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
-                  <div class="meta">
-                    ${post.categorie ? '<span class="categorie">' + post.categorie + '</span>' : ''}
-                    <span class="niveau">Niveau ${post.niveau}</span>
-                    <span>📅 ${dateFormatee}</span>
-                  </div>
-                </div>
-                <a href="/medit/article.html?id=${post.id}" class="btn-lire">Lire →</a>
-              </div>
-            `;
-          });
-          html += '</div>';
-          contenu.innerHTML = html;
+          // 2. Récupérer les réponses de l'étudiant
+          var urlReponses = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
+
+          return fetch(urlReponses)
+            .then(function(r) { return r.json(); })
+            .then(function(dataReponses) {
+              // Construire un objet avec les réponses par article
+              if (dataReponses.success && dataReponses.reponses) {
+                dataReponses.reponses.forEach(function(r) {
+                  toutesLesReponses[r.articleId] = r;
+                });
+              }
+              afficherPosts(postsData);
+            });
         })
         .catch(function() {
           document.getElementById('loader').style.display = 'none';
@@ -331,11 +460,139 @@
     }
 
     // ============================================================
+    // AFFICHAGE DES POSTS
+    // ============================================================
+
+    function afficherPosts(posts) {
+      var contenu = document.getElementById('contenu');
+      document.getElementById('loader').style.display = 'none';
+
+      var html = '<div class="grille">';
+      var total = 0;
+      var valides = 0;
+      var enCours = 0;
+
+      posts.forEach(function(post) {
+        total++;
+        var reponse = toutesLesReponses[post.id];
+        var estValide = false;
+        var noteQcm = '';
+        var dateValidation = '';
+        var retenir = '';
+
+        // Vérifier si l'étudiant a validé ce post (note >= 50%)
+        if (reponse) {
+          noteQcm = reponse.noteQcm || '';
+          dateValidation = reponse.date || '';
+          retenir = reponse.retenir || '';
+
+          // Extraire le score (ex: "3/4")
+          var match = noteQcm.match(/(\d+)\/(\d+)/);
+          if (match) {
+            var score = parseInt(match[1]);
+            var totalQ = parseInt(match[2]);
+            if (totalQ > 0 && score >= Math.ceil(totalQ / 2)) {
+              estValide = true;
+              valides++;
+            } else {
+              enCours++;
+            }
+          } else {
+            enCours++;
+          }
+        } else {
+          enCours++;
+        }
+
+        // Badge de statut
+        var badgeHtml = '';
+        var dateHtml = '';
+        if (estValide) {
+          badgeHtml = '<span class="badge valide">✅ Validé</span>';
+          if (dateValidation) {
+            var d = new Date(dateValidation);
+            dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            }) + '</span>';
+          }
+        } else if (reponse) {
+          badgeHtml = '<span class="badge en-cours">📖 En cours</span>';
+        } else {
+          badgeHtml = '<span class="badge non-vu">📭 À lire</span>';
+        }
+
+        // Bouton "Réviser" si validé
+        var btnClass = 'btn-lire';
+        var btnText = 'Lire →';
+        if (estValide) {
+          btnClass += ' reviser';
+          btnText = '🔄 Réviser';
+        }
+
+        // Catégorie
+        var categorieHtml = post.categorie ? '<span class="categorie">' + post.categorie + '</span>' : '';
+
+        // Cadre "À retenir" (si validé)
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre visible">
+              <strong>📌 À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        html += `
+          <div class="carte-post">
+            <div class="infos">
+              <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
+              <div class="meta">
+                ${categorieHtml}
+                <span>Niveau ${post.niveau}</span>
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${badgeHtml}
+              ${dateHtml}
+            </div>
+            <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      contenu.innerHTML = html;
+
+      // Mettre à jour les stats
+      document.getElementById('totalPosts').textContent = total;
+      document.getElementById('validésPosts').textContent = valides;
+      document.getElementById('enCoursPosts').textContent = total - valides;
+    }
+
+    // ============================================================
+    // AFFICHAGE VIDE
+    // ============================================================
+
+    function afficherVide() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('contenu').innerHTML = `
+        <div class="vide">
+          <span class="icone">📭</span>
+          <h2>Aucune méditation disponible</h2>
+          <p>De nouvelles méditations seront ajoutées prochainement.</p>
+          <p style="font-size:13px;color:#94a3b8;margin-top:4px;">Votre niveau actuel : ${localStorage.getItem('etudiant_niveau') || 0}</p>
+        </div>
+      `;
+    }
+
+    // ============================================================
     // INIT
     // ============================================================
 
     function demarrer() {
-      chargerPosts();
+      chargerTableauDeBord();
     }
 
     if (document.readyState === 'loading') {
