@@ -639,6 +639,13 @@
     var postId = '';
     var postTitre = '';
 
+    // Stocker les données du quiz pour la sauvegarde finale
+    var quizData = {
+      choixQcm: [],
+      bonnes: 0,
+      total: 0
+    };
+
     // ============================================================
     // CHARGEMENT
     // ============================================================
@@ -747,6 +754,7 @@
       quizValide = false;
       reponseValidee = false;
       quizVerrouille = false;
+      quizData = { choixQcm: [], bonnes: 0, total: 0 };
 
       var wrapper = document.getElementById('slideWrapper');
       wrapper.innerHTML = '';
@@ -899,7 +907,7 @@
     }
 
     // ============================================================
-    // QUIZ
+    // QUIZ - Stocke les données sans sauvegarder
     // ============================================================
     function verifierQuizAuto() {
       if (quizVerrouille) return;
@@ -974,59 +982,37 @@
         radios.forEach(function(r) { r.disabled = true; });
       });
 
-      // Sauvegarder les choix QCM
-      sauvegarderReponses(choixQcm, correct, total);
+      // STOCKER les données du quiz pour la sauvegarde finale
+      quizData.choixQcm = choixQcm;
+      quizData.bonnes = correct;
+      quizData.total = total;
 
       if (correct === total) {
         msg.textContent = 'Parfait ! Vous avez bien compris la méditation.';
         msg.style.color = '#2d6a4f';
         quizValide = true;
         updateSlides();
+        // Ne pas sauvegarder immédiatement, on attend la réponse ouverte
         setTimeout(function() {
           if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
         }, 1200);
       } else if (correct >= Math.ceil(total / 2)) {
         msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
         msg.style.color = '#b8956a';
+        quizValide = true; // On valide quand même pour continuer
+        updateSlides();
+        setTimeout(function() {
+          if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+        }, 1200);
       } else {
         msg.textContent = 'Prenez le temps de relire la méditation attentivement.';
         msg.style.color = '#c62828';
+        // On ne valide pas, l'étudiant doit relire
       }
     }
 
     // ============================================================
-    // SAUVEGARDE DES RÉPONSES (avec bonnes et total séparés)
-    // ============================================================
-    function sauvegarderReponses(choixQcm, note, total) {
-      var nom = localStorage.getItem('etudiant_id');
-      if (!nom) return;
-
-      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
-      // Récupérer le "À retenir"
-      var retenir = '';
-      for (var i = 0; i < slidesData.length; i++) {
-        if (slidesData[i].type === 'memo') {
-          retenir = slidesData[i].data.texte || '';
-          break;
-        }
-      }
-
-      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(postId) +
-        '&titre=' + encodeURIComponent(postTitre) +
-        '&choixQcm=' + encodeURIComponent(choixQcm.join('|')) +
-        '&bonnes=' + encodeURIComponent(note) +
-        '&total=' + encodeURIComponent(total) +
-        '&reponseOuverte=' + encodeURIComponent('') +
-        '&tempsPasse=' + encodeURIComponent(tempsPasse) +
-        '&retenir=' + encodeURIComponent(retenir);
-
-      fetch(url).catch(function() {});
-    }
-
-    // ============================================================
-    // RÉPONSE OUVERTE
+    // SAUVEGARDE FINALE : quiz + réponse ouverte en une seule ligne
     // ============================================================
     function validerReponse() {
       var nom = localStorage.getItem('etudiant_id');
@@ -1041,8 +1027,6 @@
         return;
       }
 
-      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
       // Récupérer le "À retenir"
       var retenir = '';
       for (var i = 0; i < slidesData.length; i++) {
@@ -1052,12 +1036,15 @@
         }
       }
 
+      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
+
+      // TOUT envoyer en une seule ligne
       var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
-        '&choixQcm=' + encodeURIComponent('') +
-        '&bonnes=' + encodeURIComponent('') +
-        '&total=' + encodeURIComponent('') +
+        '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
+        '&bonnes=' + encodeURIComponent(quizData.bonnes) +
+        '&total=' + encodeURIComponent(quizData.total) +
         '&reponseOuverte=' + encodeURIComponent(reponse) +
         '&tempsPasse=' + encodeURIComponent(tempsPasse) +
         '&retenir=' + encodeURIComponent(retenir);
@@ -1069,6 +1056,8 @@
             document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Méditation sauvegardée.</span>';
             reponseValidee = true;
             document.getElementById('reponse-mailto').disabled = true;
+            // Désactiver le bouton
+            document.querySelector('#openQuestion .btn-nav').disabled = true;
             updateSlides();
             setTimeout(function() {
               if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
