@@ -3,10 +3,9 @@
 // ============================================================
 
 var CONFIG = {
-  // L'URL de ton script Google Apps
-  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzl6Xu_fDaPnlPyapvNA2zGzTfegJy_3rw7GkyMcOtplKhTBGdkwxBBBeLF6D4_JHJi/exec',
+  // L'URL de ton script Google Apps (À METTRE À JOUR APRÈS DÉPLOIEMENT)
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbztpTHCR2r7XiN6GT7I-rRR59k-SMyMQN0RvzyOj5Zger1cyFTOPlZ1-r__A-4xuyGL/exec',
   
-  // Autres paramètres éventuels
   SITE_NAME: 'Méditations islamiques',
   SITE_URL: 'https://webmasterdemedit.github.io/medit/'
 };
