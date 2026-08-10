@@ -855,4 +855,258 @@
       dots.forEach(function(dot, idx) {
         dot.classList.remove('active', 'done', 'locked');
         if (idx === slideIndex) dot.classList.add('active');
-        else if (idx
+        else if (idx < slideIndex) dot.classList.add('done');
+        if (!isSlideAccessible(idx) && idx > slideIndex) dot.classList.add('locked');
+      });
+
+      var msg = document.getElementById('lockMessage');
+      var current = slidesData[slideIndex];
+      if (current && current.type === 'quiz') {
+        if (quizValide) msg.textContent = 'Quiz validé.';
+        else msg.textContent = 'Répondez au quiz pour continuer.';
+      } else if (current && current.type === 'question-ouverte') {
+        if (reponseValidee) msg.textContent = 'Réponse enregistrée.';
+        else msg.textContent = 'Écrivez votre réponse pour continuer.';
+      } else if (current && current.type === 'memo') {
+        msg.textContent = 'Méditation terminée.';
+      } else {
+        msg.textContent = '';
+      }
+    }
+
+    function slideSuivant() {
+      if (slideIndex < slidesData.length - 1 && isSlideAccessible(slideIndex + 1)) {
+        slideIndex++;
+        updateSlides();
+      } else {
+        var current = slidesData[slideIndex];
+        if (current && current.type === 'quiz' && !quizValide) {
+          document.getElementById('lockMessage').textContent = 'Répondez au quiz pour continuer.';
+        } else if (current && current.type === 'question-ouverte' && !reponseValidee) {
+          document.getElementById('lockMessage').textContent = 'Écrivez votre réponse pour continuer.';
+        } else {
+          document.getElementById('lockMessage').textContent = 'Complétez d\'abord cette étape.';
+        }
+      }
+    }
+
+    function slidePrecedent() {
+      if (slideIndex > 0) { slideIndex--; updateSlides(); }
+    }
+
+    function allerSlide(index) {
+      if (isSlideAccessible(index)) { slideIndex = index; updateSlides(); }
+      else {
+        document.getElementById('lockMessage').textContent = 'Cette section est verrouillée.';
+      }
+    }
+
+    // ============================================================
+    // QUIZ
+    // ============================================================
+    function verifierQuizAuto() {
+      if (quizVerrouille) return;
+
+      var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+      var total = questions.length;
+      var correct = 0;
+      var toutesRepondues = true;
+      var choixQcm = [];
+
+      questions.forEach(function(q) {
+        var qId = q.getAttribute('data-question');
+        var radios = q.querySelectorAll('input[type="radio"]');
+        var feedback = document.getElementById('feedback_' + qId);
+        var labels = q.querySelectorAll('label');
+        var selected = null;
+        var reponseChoisie = '';
+
+        labels.forEach(function(l) { l.classList.remove('correct', 'incorrect'); });
+
+        radios.forEach(function(r) {
+          if (r.checked) {
+            selected = r;
+            reponseChoisie = r.value;
+          }
+        });
+
+        choixQcm.push(reponseChoisie);
+
+        if (selected) {
+          var isCorrect = selected.getAttribute('data-correct') === 'true';
+          if (isCorrect) {
+            correct++;
+            feedback.className = 'quiz-feedback correct';
+            feedback.textContent = '✓ Bonne réponse.';
+            labels.forEach(function(l) {
+              var r = l.querySelector('input[type="radio"]');
+              if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
+            });
+          } else {
+            feedback.className = 'quiz-feedback incorrect';
+            feedback.textContent = '✗ Réessayez, relisez le texte.';
+            selected.closest('label').classList.add('incorrect');
+            labels.forEach(function(l) {
+              var r = l.querySelector('input[type="radio"]');
+              if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
+            });
+          }
+        } else {
+          toutesRepondues = false;
+          feedback.className = 'quiz-feedback incorrect';
+          feedback.textContent = 'Sélectionnez une réponse.';
+        }
+      });
+
+      var resultDiv = document.getElementById('quiz-result');
+      resultDiv.style.display = 'block';
+      document.getElementById('quiz-score').textContent = correct;
+      document.getElementById('quiz-total').textContent = total;
+
+      var msg = document.getElementById('quiz-message');
+      if (!toutesRepondues) {
+        msg.textContent = 'Répondez à toutes les questions pour valider le quiz.';
+        msg.style.color = '#b8956a';
+        return;
+      }
+
+      // Verrouiller
+      quizVerrouille = true;
+      questions.forEach(function(q) {
+        q.classList.add('verrouille');
+        var radios = q.querySelectorAll('input[type="radio"]');
+        radios.forEach(function(r) { r.disabled = true; });
+      });
+
+      // Sauvegarder les choix QCM
+      sauvegarderReponses(choixQcm, correct, total);
+
+      if (correct === total) {
+        msg.textContent = 'Parfait ! Vous avez bien compris la méditation.';
+        msg.style.color = '#2d6a4f';
+        quizValide = true;
+        updateSlides();
+        setTimeout(function() {
+          if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+        }, 1200);
+      } else if (correct >= total / 2) {
+        msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
+        msg.style.color = '#b8956a';
+      } else {
+        msg.textContent = 'Prenez le temps de relire la méditation attentivement.';
+        msg.style.color = '#c62828';
+      }
+    }
+
+    // ============================================================
+    // SAUVEGARDE DES RÉPONSES
+    // ============================================================
+    function sauvegarderReponses(choixQcm, note, total) {
+      var nom = localStorage.getItem('etudiant_id');
+      if (!nom) return;
+
+      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
+
+      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(postId) +
+        '&titre=' + encodeURIComponent(postTitre) +
+        '&choixQcm=' + encodeURIComponent(choixQcm.join('|')) +
+        '&noteQcm=' + encodeURIComponent(note + '/' + total) +
+        '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+      fetch(url).catch(function() {});
+    }
+
+    // ============================================================
+    // RÉPONSE OUVERTE
+    // ============================================================
+    function validerReponse() {
+      var nom = localStorage.getItem('etudiant_id');
+      if (!nom) {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
+        return;
+      }
+
+      var reponse = document.getElementById('reponse-mailto').value.trim();
+      if (!reponse) {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose avant de sauvegarder.</span>';
+        return;
+      }
+
+      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
+
+      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(postId) +
+        '&titre=' + encodeURIComponent(postTitre) +
+        '&reponseOuverte=' + encodeURIComponent(reponse) +
+        '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Méditation sauvegardée.</span>';
+            reponseValidee = true;
+            document.getElementById('reponse-mailto').disabled = true;
+            updateSlides();
+            setTimeout(function() {
+              if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+            }, 1000);
+          } else {
+            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
+          }
+        })
+        .catch(function() {
+          document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
+        });
+    }
+
+    // ============================================================
+    // ÉCOUTE DES RADIOS
+    // ============================================================
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
+        var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+        var toutesRepondues = true;
+        questions.forEach(function(q) {
+          var radios = q.querySelectorAll('input[type="radio"]');
+          var repondu = false;
+          radios.forEach(function(r) { if (r.checked) repondu = true; });
+          if (!repondu) toutesRepondues = false;
+        });
+        if (toutesRepondues && questions.length > 0) {
+          setTimeout(verifierQuizAuto, 400);
+        }
+      }
+    });
+
+    // ============================================================
+    // CLAVIER
+    // ============================================================
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
+      else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slidePrecedent(); }
+    });
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      // Vérifier si l'utilisateur est connecté
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+      chargerArticle();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
