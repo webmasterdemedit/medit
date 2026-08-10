@@ -11,7 +11,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
 
   <!-- ============================================================
-       CSS (copié depuis ton index.html)
+       CSS
        ============================================================ -->
   <style>
     /* ============================================================
@@ -115,7 +115,7 @@
     }
 
     /* ============================================================
-       OVERLAY DE CONNEXION (copié)
+       OVERLAY DE CONNEXION
        ============================================================ */
     #connexion-overlay {
       position: fixed;
@@ -267,7 +267,7 @@
     }
 
     /* ============================================================
-       PAGE ARTICLE
+       PAGE ARTICLE - SLIDES
        ============================================================ */
     .page-article {
       max-width: 950px;
@@ -277,7 +277,6 @@
       color: #1a1a2e;
     }
 
-    /* BOUTON RETOUR */
     .btn-retour {
       display: inline-flex;
       align-items: center;
@@ -300,13 +299,14 @@
       transform: translateX(-4px);
     }
 
-    /* SECTION ARTICLE */
     .article-section {
       background: #fff;
       border-radius: 12px;
       padding: 32px 36px;
       border: 1px solid #eef2f6;
       box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      position: relative;
+      min-height: 400px;
     }
 
     .article-section .meta {
@@ -328,42 +328,147 @@
     }
 
     .article-section h1 {
-      font-size: 32px;
+      font-size: 28px;
       font-weight: 700;
       color: #1a3a4a;
       margin: 0 0 20px 0;
       line-height: 1.3;
     }
 
-    .article-section .contenu {
-      font-size: 17px;
+    /* ============================================================
+       SLIDES
+       ============================================================ */
+    .slide-container {
+      position: relative;
+      overflow: hidden;
+      min-height: 300px;
+    }
+
+    .slide-wrapper {
+      display: flex;
+      transition: transform 0.5s ease-in-out;
+    }
+
+    .slide {
+      min-width: 100%;
+      padding: 10px 0;
+      box-sizing: border-box;
+    }
+
+    .slide .contenu-slide {
+      font-size: 18px;
       color: #1e293b;
       line-height: 2;
+      white-space: pre-wrap;
+      word-wrap: break-word;
     }
 
-    .article-section .contenu p {
-      margin-bottom: 18px;
+    .slide .contenu-slide p {
+      margin-bottom: 16px;
     }
 
-    .article-section .contenu .citation {
+    .slide .contenu-slide .citation {
       font-style: italic;
-      font-size: 18px;
+      font-size: 19px;
       color: #2d6a4f;
       padding: 20px 28px;
       background: #f8fafc;
       border-radius: 10px;
       border-left: 4px solid #2d6a4f;
-      margin: 24px 0;
+      margin: 16px 0;
     }
 
-    .article-section .contenu .citation .source {
+    .slide .contenu-slide .citation .source {
       font-size: 14px;
       color: #94a3b8;
       display: block;
       margin-top: 6px;
     }
 
-    /* QUIZ */
+    .slide .numero-slide {
+      font-size: 14px;
+      color: #94a3b8;
+      margin-top: 16px;
+      text-align: center;
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       NAVIGATION SLIDES
+       ============================================================ */
+    .nav-slides {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #eef2f6;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+
+    .nav-slides .btn-nav {
+      padding: 10px 28px;
+      background: #eef2f6;
+      color: #1a3a4a;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-slides .btn-nav:hover:not(:disabled) {
+      background: #2d6a4f;
+      color: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(45, 106, 79, 0.3);
+    }
+
+    .nav-slides .btn-nav:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .nav-slides .btn-nav.primary {
+      background: #2d6a4f;
+      color: #fff;
+    }
+
+    .nav-slides .btn-nav.primary:hover:not(:disabled) {
+      background: #1a4a3a;
+    }
+
+    .nav-slides .indicateur {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 500;
+    }
+
+    .nav-slides .progression-barre {
+      flex: 1;
+      min-width: 100px;
+      height: 6px;
+      background: #eef2f6;
+      border-radius: 3px;
+      overflow: hidden;
+    }
+
+    .nav-slides .progression-barre .remplissage {
+      height: 100%;
+      background: linear-gradient(90deg, #2d6a4f, #4c9f70);
+      border-radius: 3px;
+      transition: width 0.5s ease;
+      width: 0%;
+    }
+
+    /* ============================================================
+       QUIZ & AUTRES (inchangés)
+       ============================================================ */
     .quiz-box {
       background: #f8fafc;
       border-radius: 10px;
@@ -454,7 +559,6 @@
       border: 1px solid #ef9a9a;
     }
 
-    /* QUESTION OUVERTE */
     .question-ouverte {
       margin: 24px 0;
     }
@@ -509,7 +613,6 @@
       transform: translateY(-2px);
     }
 
-    /* MOTS-CLÉS */
     .mots-cles {
       display: flex;
       flex-wrap: wrap;
@@ -526,7 +629,6 @@
       font-weight: 500;
     }
 
-    /* RÉCAPITULATIF */
     .recap-box {
       background: #f8fafc;
       border-radius: 10px;
@@ -549,7 +651,6 @@
       margin: 0;
     }
 
-    /* POINTS À EMPORTER */
     .points-box {
       background: #1a3a4a;
       color: #fff;
@@ -577,7 +678,16 @@
       color: #e2e8f0;
     }
 
-    /* LOADER */
+    .devise {
+      text-align: center;
+      padding: 20px 0 10px;
+      font-size: 16px;
+      color: #94a3b8;
+      font-style: italic;
+      border-top: 1px solid #eef2f6;
+      margin-top: 20px;
+    }
+
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -638,14 +748,22 @@
         padding: 18px 16px;
       }
       .article-section h1 {
-        font-size: 24px;
+        font-size: 22px;
       }
-      .article-section .contenu {
-        font-size: 15px;
-      }
-      .article-section .contenu .citation {
+      .slide .contenu-slide {
         font-size: 16px;
-        padding: 14px 18px;
+      }
+      .nav-slides {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+      }
+      .nav-slides .btn-nav {
+        justify-content: center;
+        padding: 12px 20px;
+      }
+      .nav-slides .indicateur {
+        text-align: center;
       }
     }
 
@@ -662,6 +780,13 @@
       .quiz-box .options label {
         font-size: 13px;
       }
+      .slide .contenu-slide {
+        font-size: 15px;
+      }
+      .slide .contenu-slide .citation {
+        font-size: 16px;
+        padding: 14px 18px;
+      }
     }
   </style>
 </head>
@@ -669,7 +794,7 @@
 <body>
 
   <!-- ============================================================
-       BARRE SUPÉRIEURE (identique à ton index)
+       BARRE SUPÉRIEURE
        ============================================================ -->
   <div id="topBarEtudiant">
     <div class="left">
@@ -684,7 +809,7 @@
   </div>
 
   <!-- ============================================================
-       OVERLAY DE CONNEXION (identique)
+       OVERLAY DE CONNEXION
        ============================================================ -->
   <div id="connexion-overlay">
     <div id="connexion-box">
@@ -748,9 +873,23 @@
         <!-- TITRE -->
         <h1 id="article-titre">Titre de la méditation</h1>
 
-        <!-- CONTENU PRINCIPAL -->
-        <div class="contenu" id="article-contenu">
-          <!-- Rempli par JavaScript -->
+        <!-- SLIDES -->
+        <div class="slide-container">
+          <div class="slide-wrapper" id="slideWrapper">
+            <!-- Les slides seront générées par JavaScript -->
+          </div>
+        </div>
+
+        <!-- NAVIGATION -->
+        <div class="nav-slides" id="navSlides">
+          <button class="btn-nav" id="btnPrev" onclick="slidePrecedent()">◀ Précédent</button>
+          <div style="display:flex;align-items:center;gap:16px;flex:1;flex-wrap:wrap;">
+            <span class="indicateur" id="indicateurSlide">1 / 1</span>
+            <div class="progression-barre">
+              <div class="remplissage" id="progressionSlide" style="width:100%;"></div>
+            </div>
+          </div>
+          <button class="btn-nav primary" id="btnNext" onclick="slideSuivant()">Suivant ▶</button>
         </div>
 
         <!-- MOTS-CLÉS -->
@@ -789,7 +928,7 @@
     </div>
 
     <!-- DEVISE -->
-    <div class="devise" style="text-align:center;padding:20px 0 10px;font-size:16px;color:#94a3b8;font-style:italic;border-top:1px solid #eef2f6;margin-top:20px;">
+    <div class="devise">
       “La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”
     </div>
 
@@ -803,11 +942,17 @@
 
   <script>
     // ============================================================
+    // VARIABLES GLOBALES POUR LES SLIDES
+    // ============================================================
+    var slidesData = [];
+    var slideIndex = 0;
+    var totalSlides = 0;
+
+    // ============================================================
     // CHARGEMENT DE L'ARTICLE
     // ============================================================
 
     function chargerArticle() {
-      // Récupérer l'ID depuis l'URL
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
 
@@ -815,7 +960,6 @@
       var erreur = document.getElementById('erreur');
       var articleCharge = document.getElementById('article-charge');
 
-      // Si pas d'ID => erreur
       if (!id) {
         loader.style.display = 'none';
         erreur.style.display = 'block';
@@ -823,7 +967,6 @@
         return;
       }
 
-      // Appeler le script Google Apps
       var url = CONFIG.SCRIPT_URL + '?action=getArticle&id=' + encodeURIComponent(id);
 
       fetch(url)
@@ -848,7 +991,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE DE L'ARTICLE
+    // AFFICHAGE DE L'ARTICLE AVEC SLIDES
     // ============================================================
 
     function afficherArticle(article) {
@@ -865,20 +1008,63 @@
         document.getElementById('article-categorie').textContent = '🌿 ' + article.categorie;
       }
 
-      // Durée (si présente)
+      // Durée
       if (article.duree) {
         document.getElementById('article-duree').textContent = '⏱️ ' + article.duree;
       }
 
-      // Contenu principal (HTML)
-      var contenuDiv = document.getElementById('article-contenu');
-      if (article.contenu) {
-        contenuDiv.innerHTML = article.contenu;
-      } else {
-        contenuDiv.innerHTML = '<p>Contenu non disponible.</p>';
+      // ============================================================
+      // DÉCOUPAGE DU CONTENU EN SLIDES
+      // ============================================================
+      var contenuBrut = article.contenu || 'Contenu non disponible.';
+
+      // Nettoyer le contenu : remplacer les retours à la ligne simples par des espaces
+      // mais garder les doubles retours à la ligne comme séparateurs de slides
+      var slides = contenuBrut.split(/\n\s*\n/).filter(function(s) {
+        return s.trim().length > 0;
+      });
+
+      // Si pas de slides, on crée une slide avec tout le contenu
+      if (slides.length === 0) {
+        slides = [contenuBrut];
       }
 
-      // Mots-clés
+      slidesData = slides;
+      totalSlides = slides.length;
+      slideIndex = 0;
+
+      // Générer les slides
+      var wrapper = document.getElementById('slideWrapper');
+      wrapper.innerHTML = '';
+
+      slides.forEach(function(slideContent, index) {
+        var slideDiv = document.createElement('div');
+        slideDiv.className = 'slide';
+
+        // Détection des citations (lignes commençant par " ou contenant des guillemets)
+        var contenuHtml = slideContent;
+        // Convertir les retours à la ligne en <br> pour l'affichage
+        contenuHtml = contenuHtml.replace(/\n/g, '<br>');
+
+        // Détection simple de citation : si la ligne contient "—" ou "«" ou "»"
+        if (slideContent.indexOf('—') !== -1 || slideContent.indexOf('«') !== -1 || slideContent.indexOf('"') !== -1) {
+          // On ne fait pas de traitement automatique, on laisse le contenu tel quel
+          // L'utilisateur peut mettre des balises <div class="citation"> dans son contenu
+        }
+
+        slideDiv.innerHTML = `
+          <div class="contenu-slide">${contenuHtml}</div>
+          <div class="numero-slide">${index + 1} / ${slides.length}</div>
+        `;
+        wrapper.appendChild(slideDiv);
+      });
+
+      // Initialiser l'affichage
+      updateSlides();
+
+      // ============================================================
+      // MOTS-CLÉS
+      // ============================================================
       var motsContainer = document.getElementById('mots-cles-container');
       if (article.mots_cles && Array.isArray(article.mots_cles) && article.mots_cles.length > 0) {
         motsContainer.innerHTML = '';
@@ -893,7 +1079,9 @@
         document.getElementById('article-mots-cles').style.display = 'none';
       }
 
-      // Quiz
+      // ============================================================
+      // QUIZ
+      // ============================================================
       var quizContainer = document.getElementById('quiz-container');
       var quizBox = document.getElementById('article-quiz');
       if (article.quiz && article.quiz.questions && article.quiz.questions.length > 0) {
@@ -903,7 +1091,9 @@
         quizBox.style.display = 'none';
       }
 
-      // Question ouverte
+      // ============================================================
+      // QUESTION OUVERTE
+      // ============================================================
       var questionOuverteDiv = document.getElementById('article-question-ouverte');
       if (article.question_ouverte) {
         questionOuverteDiv.style.display = 'block';
@@ -913,7 +1103,9 @@
         questionOuverteDiv.style.display = 'none';
       }
 
-      // Récapitulatif
+      // ============================================================
+      // RÉCAPITULATIF
+      // ============================================================
       var recapDiv = document.getElementById('article-recap');
       if (article.recapitulatif) {
         recapDiv.style.display = 'block';
@@ -922,7 +1114,9 @@
         recapDiv.style.display = 'none';
       }
 
-      // Points à emporter
+      // ============================================================
+      // POINTS À EMPORTER
+      // ============================================================
       var pointsDiv = document.getElementById('article-points');
       if (article.points && Array.isArray(article.points) && article.points.length > 0) {
         pointsDiv.style.display = 'block';
@@ -935,6 +1129,46 @@
         });
       } else {
         pointsDiv.style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    // FONCTIONS DE NAVIGATION DES SLIDES
+    // ============================================================
+
+    function updateSlides() {
+      var wrapper = document.getElementById('slideWrapper');
+      var total = slidesData.length;
+
+      if (total === 0) return;
+
+      // Déplacer le wrapper
+      var translateX = -slideIndex * 100;
+      wrapper.style.transform = 'translateX(' + translateX + '%)';
+
+      // Mettre à jour l'indicateur
+      document.getElementById('indicateurSlide').textContent = (slideIndex + 1) + ' / ' + total;
+
+      // Mettre à jour la barre de progression
+      var progression = ((slideIndex + 1) / total) * 100;
+      document.getElementById('progressionSlide').style.width = progression + '%';
+
+      // Gérer les boutons
+      document.getElementById('btnPrev').disabled = (slideIndex === 0);
+      document.getElementById('btnNext').disabled = (slideIndex === total - 1);
+    }
+
+    function slideSuivant() {
+      if (slideIndex < slidesData.length - 1) {
+        slideIndex++;
+        updateSlides();
+      }
+    }
+
+    function slidePrecedent() {
+      if (slideIndex > 0) {
+        slideIndex--;
+        updateSlides();
       }
     }
 
@@ -961,7 +1195,6 @@
       html += '<button class="btn-valider" onclick="verifierQuiz()">✅ Vérifier mes réponses</button>';
       html += '<div id="quiz-resultat" style="margin-top:12px;font-weight:600;"></div>';
 
-      // Stocker les bonnes réponses pour validation
       var bonnesReponses = quizData.questions.map(function(q) { return q.bonne_reponse; });
       window._bonnesReponses = bonnesReponses;
 
@@ -1028,7 +1261,6 @@
         return;
       }
 
-      // Récupérer l'ID de l'article
       var params = new URLSearchParams(window.location.search);
       var articleId = params.get('id');
 
@@ -1050,6 +1282,20 @@
           console.error('Erreur:', error);
         });
     };
+
+    // ============================================================
+    // GESTION DU CLAVIER (flèches gauche/droite)
+    // ============================================================
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+        e.preventDefault();
+        slideSuivant();
+      } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+        e.preventDefault();
+        slidePrecedent();
+      }
+    });
 
     // ============================================================
     // INITIALISATION
