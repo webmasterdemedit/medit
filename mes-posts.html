@@ -26,7 +26,6 @@
       padding: 20px 16px;
     }
 
-    /* ========== EN-TÊTE ========== */
     .header {
       display: flex;
       justify-content: space-between;
@@ -73,7 +72,6 @@
       transform: translateX(-4px);
     }
 
-    /* ========== STATISTIQUES ========== */
     .stats {
       display: flex;
       gap: 24px;
@@ -103,7 +101,6 @@
       color: #2d6a4f;
     }
 
-    /* ========== GRILLE ========== */
     .grille {
       display: flex;
       flex-direction: column;
@@ -129,7 +126,6 @@
       border-color: #dce2ea;
     }
 
-    /* ========== COLONNE GAUCHE (infos) ========== */
     .carte-post .infos {
       display: flex;
       flex-direction: column;
@@ -169,7 +165,6 @@
       margin-right: 8px;
     }
 
-    /* ========== CADRE "À RETENIR" ========== */
     .carte-post .retenir-cadre {
       background: #f8fafc;
       border-left: 3px solid #b8956a;
@@ -195,7 +190,6 @@
       margin-bottom: 2px;
     }
 
-    /* ========== BADGE STATUT ========== */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
@@ -238,7 +232,6 @@
       display: block;
     }
 
-    /* ========== BOUTON LIRE ========== */
     .carte-post .btn-lire {
       padding: 8px 20px;
       background: #2d6a4f;
@@ -266,7 +259,6 @@
       background: #a07d55;
     }
 
-    /* ========== LOADER ========== */
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -314,7 +306,6 @@
       font-size: 16px;
     }
 
-    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -358,7 +349,6 @@
 
   <div class="page">
 
-    <!-- ========== EN-TÊTE ========== -->
     <div class="header">
       <div>
         <h1>📖 Mon tableau de bord</h1>
@@ -367,7 +357,6 @@
       <a href="/medit/index.html" class="btn-retour">← Accueil</a>
     </div>
 
-    <!-- ========== STATS ========== -->
     <div class="stats" id="statsContainer">
       <div class="stat-item">
         <span class="nombre" id="totalPosts">0</span>
@@ -383,7 +372,6 @@
       </div>
     </div>
 
-    <!-- ========== CONTENU ========== -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -393,7 +381,6 @@
 
   </div>
 
-  <!-- ========== SCRIPTS ========== -->
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
 
@@ -419,7 +406,6 @@
 
       document.getElementById('nomConnecte').textContent = id;
 
-      // 1. Récupérer les posts
       var urlPosts = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
 
       fetch(urlPosts)
@@ -432,7 +418,6 @@
 
           postsData = dataPosts.posts;
 
-          // 2. Récupérer les réponses de l'étudiant
           var urlReponses = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
 
           return fetch(urlReponses)
@@ -485,11 +470,10 @@
           retenir = reponse.retenir || '';
 
           // ============================================================
-          // NOUVEAU : Analyse de la note avec "2/2"
+          // ANALYSE DE LA NOTE AVEC "X sur Y"
           // ============================================================
           if (noteQcm) {
-            var notePropre = noteQcm.trim().replace(/\s*sur\s*/g, '/');
-            var parts = notePropre.split('/');
+            var parts = noteQcm.trim().split(/\s*sur\s*/);
             if (parts.length === 2) {
               var score = parseInt(parts[0]);
               var totalQ = parseInt(parts[1]);
@@ -520,9 +504,13 @@
           badgeHtml = '<span class="badge valide">✅ Validé</span>';
           if (dateValidation) {
             var d = new Date(dateValidation);
-            dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            }) + '</span>';
+            if (!isNaN(d.getTime())) {
+              dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
+                day: '2-digit', month: 'long', year: 'numeric'
+              }) + '</span>';
+            } else {
+              dateHtml = '<span class="date-validation visible">📅 ' + dateValidation + '</span>';
+            }
           }
         } else if (reponse) {
           badgeHtml = '<span class="badge en-cours">📖 En cours</span>';
@@ -530,7 +518,6 @@
           badgeHtml = '<span class="badge non-vu">📭 À lire</span>';
         }
 
-        // Bouton "Réviser" si validé
         var btnClass = 'btn-lire';
         var btnText = 'Lire →';
         if (estValide) {
@@ -538,10 +525,8 @@
           btnText = '🔄 Réviser';
         }
 
-        // Catégorie
         var categorieHtml = post.categorie ? '<span class="categorie">' + post.categorie + '</span>' : '';
 
-        // Cadre "À retenir" (si validé)
         var retenirHtml = '';
         if (estValide && retenir) {
           retenirHtml = `
@@ -574,7 +559,6 @@
       html += '</div>';
       contenu.innerHTML = html;
 
-      // Mettre à jour les stats
       document.getElementById('totalPosts').textContent = total;
       document.getElementById('validesPosts').textContent = valides;
       document.getElementById('enCoursPosts').textContent = total - valides;
