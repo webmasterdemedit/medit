@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mes méditations</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Roboto, sans-serif;
+      background-color: #f5f5f0;
+      color: #1a2a2e;
+      min-height: 100vh;
+      letter-spacing: 0.3px;
+    }
+
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 20px 16px;
+    }
+
+    /* ========== EN-TÊTE ========== */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 24px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #eef2f6;
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      color: #1a3a4a;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .header .info {
+      font-size: 14px;
+      color: #7a8a8e;
+    }
+
+    .header .info strong {
+      color: #1a3a4a;
+    }
+
+    .btn-retour {
+      padding: 8px 20px;
+      background: #eef2f6;
+      color: #1a3a4a;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .btn-retour:hover {
+      background: #dce2ea;
+      transform: translateX(-4px);
+    }
+
+    /* ========== GRILLE ========== */
+    .grille {
+      display: grid;
+      gap: 16px;
+    }
+
+    .carte-post {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 20px 24px;
+      border: 1px solid #eef2f6;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      transition: all 0.3s ease;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .carte-post:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.06);
+      border-color: #2d6a4f;
+    }
+
+    .carte-post .infos {
+      flex: 1;
+    }
+
+    .carte-post .titre {
+      font-size: 18px;
+      font-weight: 600;
+      color: #1a3a4a;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 0.3px;
+    }
+
+    .carte-post .titre a {
+      color: #1a3a4a;
+      text-decoration: none;
+    }
+
+    .carte-post .titre a:hover {
+      color: #2d6a4f;
+    }
+
+    .carte-post .meta {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-top: 4px;
+    }
+
+    .carte-post .meta .categorie {
+      background: #e8f5e9;
+      color: #2d6a4f;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-weight: 600;
+      font-size: 11px;
+      display: inline-block;
+      margin-right: 8px;
+    }
+
+    .carte-post .meta .niveau {
+      background: #eef2f6;
+      color: #7a8a8e;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-block;
+    }
+
+    .carte-post .btn-lire {
+      padding: 8px 20px;
+      background: #2d6a4f;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+    }
+
+    .carte-post .btn-lire:hover {
+      background: #1a4a3a;
+      transform: translateY(-2px);
+    }
+
+    /* ========== LOADER ========== */
+    .loader {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 18px;
+      color: #94a3b8;
+    }
+
+    .loader .spinner {
+      display: inline-block;
+      width: 36px;
+      height: 36px;
+      border: 4px solid #eef2f6;
+      border-top-color: #2d6a4f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide {
+      text-align: center;
+      padding: 60px 20px;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid #eef2f6;
+    }
+
+    .vide .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+
+    .vide h2 {
+      font-size: 22px;
+      color: #1a3a4a;
+      margin-bottom: 4px;
+    }
+
+    .vide p {
+      color: #94a3b8;
+      font-size: 16px;
+    }
+
+    /* ========== RESPONSIVE ========== */
+    @media (max-width: 640px) {
+      .header {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .carte-post {
+        flex-direction: column;
+        align-items: stretch;
+        text-align: center;
+      }
+      .carte-post .btn-lire {
+        text-align: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page">
+
+    <!-- ========== EN-TÊTE ========== -->
+    <div class="header">
+      <div>
+        <h1>📖 Mes méditations</h1>
+        <span class="info" id="infoConnecte">Connecté en tant que <strong id="nomConnecte">—</strong></span>
+      </div>
+      <a href="/medit/index.html" class="btn-retour">← Accueil</a>
+    </div>
+
+    <!-- ========== CONTENU ========== -->
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des méditations...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== SCRIPTS ========== -->
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+
+  <script>
+    // ============================================================
+    // CHARGEMENT DES POSTS
+    // ============================================================
+
+    function chargerPosts() {
+      var id = localStorage.getItem('etudiant_id');
+      var niveau = parseInt(localStorage.getItem('etudiant_niveau')) || 0;
+
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      document.getElementById('nomConnecte').textContent = id;
+
+      var url = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var contenu = document.getElementById('contenu');
+          document.getElementById('loader').style.display = 'none';
+
+          if (!data.success || !data.posts || data.posts.length === 0) {
+            contenu.innerHTML = `
+              <div class="vide">
+                <span class="icone">📭</span>
+                <h2>Aucune méditation disponible</h2>
+                <p>De nouvelles méditations seront ajoutées prochainement.</p>
+                <p style="font-size:13px;color:#94a3b8;margin-top:4px;">Votre niveau actuel : ${niveau}</p>
+              </div>
+            `;
+            return;
+          }
+
+          var html = '<div class="grille">';
+          data.posts.forEach(function(post) {
+            var dateFormatee = post.date ? new Date(post.date).toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            }) : 'Date inconnue';
+
+            html += `
+              <div class="carte-post">
+                <div class="infos">
+                  <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
+                  <div class="meta">
+                    ${post.categorie ? '<span class="categorie">' + post.categorie + '</span>' : ''}
+                    <span class="niveau">Niveau ${post.niveau}</span>
+                    <span>📅 ${dateFormatee}</span>
+                  </div>
+                </div>
+                <a href="/medit/article.html?id=${post.id}" class="btn-lire">Lire →</a>
+              </div>
+            `;
+          });
+          html += '</div>';
+          contenu.innerHTML = html;
+        })
+        .catch(function() {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide">
+              <span class="icone">⚠️</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion et réessayez.</p>
+            </div>
+          `;
+        });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+
+    function demarrer() {
+      chargerPosts();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
