@@ -5,9 +5,6 @@
 // Vérifier que config.js est chargé
 if (typeof CONFIG === 'undefined') {
   console.error('❌ config.js n\'est pas chargé !');
-  var CONFIG = {
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbzSpGKSvmEMhcYByzGAHta-9ZQvE3GkJlExfmR295PG6LLlF3u339moDFEP2Y26kJs7/exec'
-  };
 }
 
 var SCRIPT_URL = CONFIG.SCRIPT_URL;
