@@ -72,6 +72,7 @@
       transform: translateX(-4px);
     }
 
+    /* ========== STATS ========== */
     .stats {
       display: flex;
       gap: 24px;
@@ -101,6 +102,67 @@
       color: #2d6a4f;
     }
 
+    /* ========== ONGLETS ========== */
+    .tabs-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 20px;
+      padding: 4px 0;
+      border-bottom: 2px solid #eef2f6;
+    }
+
+    .tab-btn {
+      padding: 10px 24px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 600;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.3px;
+      font-family: 'Segoe UI', Roboto, sans-serif;
+    }
+
+    .tab-btn:hover {
+      color: #1a3a4a;
+      background: #f8fafc;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-btn.active {
+      color: #2d6a4f;
+      border-bottom-color: #2d6a4f;
+    }
+
+    .tab-btn .compteur-tab {
+      display: inline-block;
+      background: #eef2f6;
+      color: #7a8a8e;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 0 8px;
+      border-radius: 30px;
+      margin-left: 6px;
+    }
+
+    .tab-btn.active .compteur-tab {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    /* ========== CONTENU DES ONGLETS ========== */
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* ========== GRILLE ========== */
     .grille {
       display: flex;
       flex-direction: column;
@@ -259,6 +321,19 @@
       background: #a07d55;
     }
 
+    .vide-tab {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .vide-tab .icone {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    /* ========== LOADER ========== */
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -306,6 +381,7 @@
       font-size: 16px;
     }
 
+    /* ========== RESPONSIVE ========== */
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -331,6 +407,13 @@
       .stats {
         justify-content: center;
       }
+      .tabs-container {
+        justify-content: center;
+      }
+      .tab-btn {
+        font-size: 14px;
+        padding: 8px 16px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -341,6 +424,10 @@
       }
       .carte-post .statut .date-validation {
         text-align: left;
+      }
+      .tab-btn {
+        font-size: 13px;
+        padding: 6px 12px;
       }
     }
   </style>
@@ -357,6 +444,7 @@
       <a href="/medit/index.html" class="btn-retour">← Accueil</a>
     </div>
 
+    <!-- ========== STATS ========== -->
     <div class="stats" id="statsContainer">
       <div class="stat-item">
         <span class="nombre" id="totalPosts">0</span>
@@ -372,6 +460,10 @@
       </div>
     </div>
 
+    <!-- ========== ONGLETS ========== -->
+    <div class="tabs-container" id="tabsContainer"></div>
+
+    <!-- ========== CONTENU ========== -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -390,6 +482,7 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
+    var categories = [];
 
     // ============================================================
     // CHARGEMENT DES POSTS + RÉPONSES
@@ -428,7 +521,7 @@
                   toutesLesReponses[r.articleId] = r;
                 });
               }
-              afficherPosts(postsData);
+              afficherAvecOnglets(postsData);
             });
         })
         .catch(function() {
@@ -444,14 +537,14 @@
     }
 
     // ============================================================
-    // AFFICHAGE DES POSTS
+    // AFFICHAGE AVEC ONGLETS
     // ============================================================
 
-    function afficherPosts(posts) {
+    function afficherAvecOnglets(posts) {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
 
-      var html = '<div class="grille">';
+      // 1. Calculer les stats globales
       var total = 0;
       var valides = 0;
       var aFaire = 0;
@@ -459,18 +552,10 @@
       posts.forEach(function(post) {
         total++;
         var reponse = toutesLesReponses[post.id];
-        var estValide = false;
-        var dateValidation = '';
-        var retenir = '';
-
         if (reponse) {
           var bonnes = reponse.bonnes || 0;
           var totalQ = reponse.total || 0;
-          dateValidation = reponse.date || '';
-          retenir = reponse.retenir || '';
-
           if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
-            estValide = true;
             valides++;
           } else {
             aFaire++;
@@ -478,70 +563,151 @@
         } else {
           aFaire++;
         }
-
-        // Badge de statut
-        var badgeHtml = '';
-        var dateHtml = '';
-        if (estValide) {
-          badgeHtml = '<span class="badge valide">✅ Validé</span>';
-          if (dateValidation) {
-            var d = new Date(dateValidation);
-            if (!isNaN(d.getTime())) {
-              dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
-                day: '2-digit', month: 'long', year: 'numeric'
-              }) + '</span>';
-            }
-          }
-        } else if (reponse) {
-          badgeHtml = '<span class="badge a-faire">📖 À faire</span>';
-        } else {
-          badgeHtml = '<span class="badge non-vu">📭 À faire</span>';
-        }
-
-        var btnClass = 'btn-lire';
-        var btnText = 'Ouvrir →';
-        if (estValide) {
-          btnClass += ' reviser';
-          btnText = '🔄 Réviser';
-        }
-
-        var categorieHtml = post.categorie ? '<span class="categorie">' + post.categorie + '</span>' : '';
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre visible">
-              <strong>📌 À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
-        html += `
-          <div class="carte-post">
-            <div class="infos">
-              <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
-              <div class="meta">
-                ${categorieHtml}
-                <span>Niveau ${post.niveau}</span>
-                ${retenirHtml}
-              </div>
-            </div>
-            <div class="statut">
-              ${badgeHtml}
-              ${dateHtml}
-            </div>
-            <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
-          </div>
-        `;
       });
-
-      html += '</div>';
-      contenu.innerHTML = html;
 
       document.getElementById('totalPosts').textContent = total;
       document.getElementById('validesPosts').textContent = valides;
       document.getElementById('aFairePosts').textContent = aFaire;
+
+      // 2. Extraire les catégories uniques
+      var cats = {};
+      posts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!cats[cat]) cats[cat] = [];
+        cats[cat].push(post);
+      });
+
+      // Trier les catégories par ordre alphabétique
+      var categoriesTriees = Object.keys(cats).sort();
+
+      // 3. Générer les onglets
+      var tabsHtml = '';
+      categoriesTriees.forEach(function(cat, index) {
+        var count = cats[cat].length;
+        var activeClass = index === 0 ? 'active' : '';
+        tabsHtml += `
+          <button class="tab-btn ${activeClass}" data-tab="tab-${index}" onclick="switchTab('tab-${index}')">
+            ${cat}
+            <span class="compteur-tab">${count}</span>
+          </button>
+        `;
+      });
+      document.getElementById('tabsContainer').innerHTML = tabsHtml;
+
+      // 4. Générer le contenu des onglets
+      var contenuHtml = '';
+      categoriesTriees.forEach(function(cat, index) {
+        var activeClass = index === 0 ? 'active' : '';
+        var postsDeCat = cats[cat];
+
+        contenuHtml += `<div class="tab-content ${activeClass}" id="tab-${index}">`;
+
+        // Afficher les posts de cette catégorie
+        var grilleHtml = '<div class="grille">';
+        var postsParCat = postsDeCat;
+
+        postsParCat.forEach(function(post) {
+          var reponse = toutesLesReponses[post.id];
+          var estValide = false;
+          var dateValidation = '';
+          var retenir = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var totalQ = reponse.total || 0;
+            dateValidation = reponse.date || '';
+            retenir = reponse.retenir || '';
+
+            if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+              estValide = true;
+            }
+          }
+
+          // Badge de statut
+          var badgeHtml = '';
+          var dateHtml = '';
+          if (estValide) {
+            badgeHtml = '<span class="badge valide">✅ Validé</span>';
+            if (dateValidation) {
+              var d = new Date(dateValidation);
+              if (!isNaN(d.getTime())) {
+                dateHtml = '<span class="date-validation visible">📅 ' + d.toLocaleDateString('fr-FR', {
+                  day: '2-digit', month: 'long', year: 'numeric'
+                }) + '</span>';
+              }
+            }
+          } else if (reponse) {
+            badgeHtml = '<span class="badge a-faire">📖 À faire</span>';
+          } else {
+            badgeHtml = '<span class="badge non-vu">📭 À faire</span>';
+          }
+
+          var btnClass = 'btn-lire';
+          var btnText = 'Ouvrir →';
+          if (estValide) {
+            btnClass += ' reviser';
+            btnText = '🔄 Réviser';
+          }
+
+          var retenirHtml = '';
+          if (estValide && retenir) {
+            retenirHtml = `
+              <div class="retenir-cadre visible">
+                <strong>📌 À retenir</strong>
+                ${retenir}
+              </div>
+            `;
+          }
+
+          grilleHtml += `
+            <div class="carte-post">
+              <div class="infos">
+                <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
+                <div class="meta">
+                  <span>Niveau ${post.niveau}</span>
+                  ${retenirHtml}
+                </div>
+              </div>
+              <div class="statut">
+                ${badgeHtml}
+                ${dateHtml}
+              </div>
+              <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
+            </div>
+          `;
+        });
+
+        grilleHtml += '</div>';
+        contenuHtml += grilleHtml;
+        contenuHtml += `</div>`;
+      });
+
+      contenu.innerHTML = contenuHtml;
+    }
+
+    // ============================================================
+    // CHANGER D'ONGLET
+    // ============================================================
+
+    function switchTab(tabId) {
+      // Cacher tous les contenus
+      document.querySelectorAll('.tab-content').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      // Désactiver tous les boutons
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+      });
+
+      // Afficher le contenu choisi
+      document.getElementById(tabId).classList.add('active');
+
+      // Activer le bouton correspondant
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        if (el.dataset.tab === tabId) {
+          el.classList.add('active');
+        }
+      });
     }
 
     // ============================================================
@@ -558,6 +724,7 @@
           <p style="font-size:13px;color:#94a3b8;margin-top:4px;">Votre niveau actuel : ${localStorage.getItem('etudiant_niveau') || 0}</p>
         </div>
       `;
+      document.getElementById('tabsContainer').innerHTML = '';
     }
 
     // ============================================================
