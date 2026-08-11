@@ -151,6 +151,51 @@
 </head>
 <body>
 
+  <!-- ========== HEADER (chargé depuis header.html) ========== -->
+<div id="header-container"></div>
+
+<!-- ========== SCRIPTS DE CHARGEMENT ========== -->
+<script>
+  // Charger le header depuis un fichier externe
+  fetch('/medit/header.html')
+    .then(function(response) { return response.text(); })
+    .then(function(data) {
+      document.getElementById('header-container').innerHTML = data;
+      mettreAJourHeader();
+    })
+    .catch(function(error) {
+      console.error('Erreur chargement header:', error);
+      document.getElementById('header-container').innerHTML = `
+        <header class="site-header">
+          <div class="header-inner">
+            <div class="header-logo">
+              <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
+            </div>
+            <nav class="header-nav">
+              <a href="/medit/index.html" class="header-link">Accueil</a>
+              <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            </nav>
+          </div>
+        </header>
+      `;
+      mettreAJourHeader();
+    });
+
+  function mettreAJourHeader() {
+    var id = localStorage.getItem('etudiant_id');
+    var userSpan = document.getElementById('headerUser');
+    var deconnexionBtn = document.getElementById('headerDeconnexion');
+
+    if (id) {
+      if (userSpan) userSpan.textContent = '👤 ' + id;
+      if (deconnexionBtn) deconnexionBtn.style.display = 'inline-block';
+    } else {
+      if (userSpan) userSpan.textContent = '';
+      if (deconnexionBtn) deconnexionBtn.style.display = 'none';
+    }
+  }
+</script>
+
   <div class="container">
 
     <!-- ========== LOGO ========== -->
