@@ -823,29 +823,41 @@
     }
 
     function chargerHistorique() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) return;
+  var id = localStorage.getItem('etudiant_id');
+  if (!id) return;
 
-      var url = CONFIG.SCRIPT_URL + '?action=getHistorique&nom=' + encodeURIComponent(id);
+  var url = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
 
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.historique) {
-            afficherHistorique(data.historique);
-          } else {
-            document.getElementById('modalCorps').innerHTML = `
-              <p style="text-align:center;color:#94a3b8;padding:20px;">Aucune tentative enregistrée pour le moment.</p>
-            `;
-            document.getElementById('modalSousTitre').textContent = 'Aucune donnée disponible.';
-          }
-        })
-        .catch(function() {
-          document.getElementById('modalCorps').innerHTML = `
-            <p style="text-align:center;color:#c62828;padding:20px;">❌ Erreur de chargement.</p>
-          `;
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success && data.reponses && data.reponses.length > 0) {
+        var historique = data.reponses.map(function(r) {
+          var bonnes = parseInt(r.bonnes) || 0;
+          var total = parseInt(r.total) || 0;
+          var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+          var enCours = false; // getReponses ne renvoie pas reponseOuverte
+          return {
+            date: r.date || '',
+            temps: '', // getReponses ne renvoie pas temps
+            valide: valide,
+            enCours: enCours
+          };
         });
-    }
+        afficherHistorique(historique);
+      } else {
+        document.getElementById('modalCorps').innerHTML = `
+          <p style="text-align:center;color:#94a3b8;padding:20px;">Aucune tentative enregistrée pour le moment.</p>
+        `;
+        document.getElementById('modalSousTitre').textContent = 'Aucune donnée disponible.';
+      }
+    })
+    .catch(function() {
+      document.getElementById('modalCorps').innerHTML = `
+        <p style="text-align:center;color:#c62828;padding:20px;">❌ Erreur de chargement.</p>
+      `;
+    });
+}
 
     function afficherHistorique(historique) {
       var totalTemps = 0;
