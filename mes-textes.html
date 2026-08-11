@@ -629,20 +629,33 @@
 
   </div>
 
-  <!-- ========== FOOTER ========== -->
-  <footer class="site-footer">
-    <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
-    <div class="footer-copy">© <span id="anneeFooter"></span> MéditIslam</div>
-  </footer>
+  <!-- ========== FOOTER (chargé depuis footer.html) ========== -->
+  <div id="footer-container"></div>
 
   <!-- ========== SCRIPTS ========== -->
+  <script>
+    // Charger le footer depuis un fichier externe
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        // Fallback au cas où le fichier n'existe pas
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
+          </footer>
+        `;
+      });
+  </script>
+
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
 
   <script>
-    // Année automatique dans le footer
-    document.getElementById('anneeFooter').textContent = new Date().getFullYear();
-
     // ============================================================
     // VARIABLES
     // ============================================================
