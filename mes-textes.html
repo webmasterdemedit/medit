@@ -637,31 +637,28 @@
     }
 
     function chargerNiveauEtDescription() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
+  var id = localStorage.getItem('etudiant_id');
+  if (!id) {
+    window.location.href = '/medit/index.html';
+    return;
+  }
+
+  var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        niveauEtudiant = data.niveau || 0;
+        document.getElementById('niveauValeur').textContent = niveauEtudiant;
+      } else {
+        document.getElementById('niveauValeur').textContent = '?';
       }
-
-      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            niveauEtudiant = data.niveau || 0;
-            document.getElementById('niveauValeur').textContent = niveauEtudiant;
-            document.getElementById('niveauDescription').textContent = data.description || 'Aucune description disponible pour ce niveau.';
-          } else {
-            document.getElementById('niveauValeur').textContent = '?';
-            document.getElementById('niveauDescription').textContent = 'Impossible de charger les informations.';
-          }
-        })
-        .catch(function() {
-          document.getElementById('niveauValeur').textContent = '?';
-          document.getElementById('niveauDescription').textContent = 'Erreur de chargement.';
-        });
-    }
+    })
+    .catch(function() {
+      document.getElementById('niveauValeur').textContent = '?';
+    });
+}
 
     function chargerTableauDeBord() {
       var id = localStorage.getItem('etudiant_id');
