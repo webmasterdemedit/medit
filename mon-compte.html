@@ -760,65 +760,59 @@
         });
     }
 
-    function afficherCompte(data) {
-      var html = '';
+    function afficherHistorique(historique) {
+  var html = '';
 
-      // === DATE D'INSCRIPTION ===
-      var dateInscription = data.dateInscription ? new Date(data.dateInscription).toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-      }) : 'Non renseignée';
+  // === GRAPHIQUE ===
+  html += `<div class="graphique-container"><div class="graphique-ligne">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
 
-      html += `
-        <div class="champ-compte">
-          <span class="label">📅 Date d'inscription</span>
-          <span class="valeur">${dateInscription}</span>
-        </div>
-      `;
+    html += `
+      <div class="graphique-point">
+        <div class="cercle ${statutClass}"></div>
+        <span class="date-point">${dateFormatee}</span>
+      </div>
+    `;
+  });
+  html += `</div></div>`;
 
-      // === MOT DE PASSE ===
-      mdpCache = data.mdp || '';
-      var mdpAffiche = mdpVisible ? mdpCache : '••••••••';
-      html += `
-        <div class="champ-compte">
-          <span class="label">🔒 Mot de passe</span>
-          <span class="valeur mdp" onclick="basculerMdp()" title="Cliquer pour afficher/masquer">
-            ${mdpAffiche}
-            <span class="voir-mdp">${mdpVisible ? 'masquer' : 'voir'}</span>
-          </span>
-        </div>
-      `;
+  // === LÉGENDE ===
+  html += `
+    <div class="legende">
+      <span class="item"><span class="cercle-legende valide"></span> ✅ Validé</span>
+      <span class="item"><span class="cercle-legende echec"></span> ⬜ Non validé</span>
+    </div>
+  `;
 
-      // === NIVEAU ===
-      var niveau = data.niveau || 0;
-      var description = data.description || 'Aucune description disponible pour ce niveau.';
-
-      html += `
-        <div class="niveau-section">
-          <div class="niveau-titre">Votre niveau actuel</div>
-          <div class="niveau-valeur">
-            ${niveau}
-            <small>sur 5</small>
-          </div>
-          <div class="description-niveau">${description}</div>
-        </div>
-      `;
-
-      // === MESSAGE PERSONNALISÉ ===
-      var messagePerso = data.messagePerso || '';
-      html += `
-        <div class="message-section">
-          <span class="message-label">✉️ Message personnel de l'enseignant</span>
-          <div class="message-cadre">
-            <div class="contenu ${!messagePerso ? 'vide' : ''}">
-              ${messagePerso || 'Aucun message pour le moment.'}
-            </div>
-          </div>
-        </div>
-      `;
-
-      document.getElementById('contenu-compte').innerHTML = html;
+  // === LISTE DES TENTATIVES (SANS LE TEMPS) ===
+  html += `<div class="liste-tentatives">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
+    
+    var dateFormatee = 'Date inconnue';
+    if (item.date) {
+      var d = new Date(item.date);
+      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+        dateFormatee = d.toLocaleDateString('fr-FR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        });
+      }
     }
 
+    html += `
+      <div class="tentative-item">
+        <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
+        <span class="statut ${statutClass}">${statutTexte}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  document.getElementById('contenu-historique').innerHTML = html;
+}
     function basculerMdp() {
       mdpVisible = !mdpVisible;
       chargerCompte();
