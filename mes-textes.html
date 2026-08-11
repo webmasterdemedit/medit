@@ -517,24 +517,35 @@
       });
 
     function mettreAJourHeader() {
-      var id = localStorage.getItem('etudiant_id');
-      var nav = document.getElementById('headerNav');
+  var id = localStorage.getItem('etudiant_id');
+  var nav = document.getElementById('headerNav');
+  var userNameSpan = document.getElementById('headerUserName');
 
-      if (nav) {
-        if (id) {
-          nav.innerHTML = `
-            <a href="/medit/mes-textes.html" class="header-link">Mes lectures</a>
-            <span class="header-user">👤 ${id}</span>
-            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-          `;
-        } else {
-          nav.innerHTML = `
-            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
-          `;
-        }
-      }
+  // Afficher le nom de l'étudiant à côté du logo
+  if (userNameSpan) {
+    if (id) {
+      userNameSpan.textContent = '👤 ' + id;
+    } else {
+      userNameSpan.textContent = '';
     }
+  }
+
+  // Gérer les liens de navigation
+  if (nav) {
+    if (id) {
+      nav.innerHTML = `
+        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+      `;
+    }
+  }
+}
   </script>
 
   <div class="page">
