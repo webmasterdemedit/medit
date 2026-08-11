@@ -33,9 +33,6 @@
       color: inherit;
     }
 
-    /* ============================================================
-       PAGE
-       ============================================================ */
     .page-compte {
       max-width: 800px;
       margin: 0 auto;
@@ -50,7 +47,7 @@
       color: #1a2a2e;
       font-family: 'Georgia', 'Times New Roman', serif;
       letter-spacing: 0.8px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
 
     .page-compte h1 strong {
@@ -61,8 +58,58 @@
     .page-compte .sous-titre-page {
       font-size: 15px;
       color: #94a3b8;
-      margin-bottom: 28px;
+      margin-bottom: 24px;
       font-style: italic;
+    }
+
+    /* ============================================================
+       ONGLETS INTERNES
+       ============================================================ */
+    .tabs-compte {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #edeae5;
+    }
+
+    .tab-compte {
+      padding: 12px 28px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-compte:hover {
+      color: #1a2a2e;
+      background: #f8f6f2;
+    }
+
+    .tab-compte.active {
+      color: #2d6a4f;
+      border-bottom-color: #2d6a4f;
+      font-weight: 600;
+    }
+
+    .tab-content-compte {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content-compte.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     /* ============================================================
@@ -78,7 +125,7 @@
     }
 
     /* ============================================================
-       CHAMPS CLASSIQUES
+       CHAMPS CLASSIQUES (Profil)
        ============================================================ */
     .champ-compte {
       display: flex;
@@ -231,105 +278,7 @@
     }
 
     /* ============================================================
-       LIEN VERS HISTORIQUE
-       ============================================================ */
-    .lien-historique {
-      display: inline-block;
-      margin-top: 24px;
-      padding: 10px 20px;
-      color: #2d6a4f;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border-radius: 30px;
-      background: #f0f5f2;
-      border: 1px solid #d4e0d8;
-      letter-spacing: 0.3px;
-    }
-
-    .lien-historique:hover {
-      background: #2d6a4f;
-      color: #fff;
-      border-color: #2d6a4f;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(45, 106, 79, 0.15);
-    }
-
-    /* ============================================================
-       MODALE HISTORIQUE
-       ============================================================ */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      backdrop-filter: blur(6px);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 99999;
-      padding: 20px;
-    }
-
-    .modal-overlay.visible {
-      display: flex;
-    }
-
-    .modal-content {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 32px 36px;
-      max-width: 700px;
-      width: 100%;
-      max-height: 80vh;
-      overflow-y: auto;
-      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
-      position: relative;
-      animation: modalFadeIn 0.3s ease;
-    }
-
-    @keyframes modalFadeIn {
-      from { opacity: 0; transform: scale(0.95) translateY(10px); }
-      to { opacity: 1; transform: scale(1) translateY(0); }
-    }
-
-    .modal-content .modal-close {
-      position: absolute;
-      top: 16px;
-      right: 20px;
-      background: none;
-      border: none;
-      font-size: 28px;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: color 0.2s;
-      line-height: 1;
-    }
-
-    .modal-content .modal-close:hover {
-      color: #1a2a2e;
-    }
-
-    .modal-content h2 {
-      font-size: 24px;
-      font-weight: 400;
-      color: #1a2a2e;
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-
-    .modal-content .modal-sous-titre {
-      font-size: 14px;
-      color: #94a3b8;
-      margin-bottom: 20px;
-    }
-
-    /* ============================================================
-       GRAPHIQUE
+       HISTORIQUE
        ============================================================ */
     .graphique-container {
       margin: 16px 0 20px;
@@ -391,9 +340,6 @@
       white-space: nowrap;
     }
 
-    /* ============================================================
-       LÉGENDE
-       ============================================================ */
     .legende {
       display: flex;
       gap: 16px;
@@ -433,9 +379,6 @@
       border-color: #b8956a;
     }
 
-    /* ============================================================
-       LISTE DES TENTATIVES
-       ============================================================ */
     .liste-tentatives {
       margin-top: 12px;
       border-top: 1px solid #f0ede8;
@@ -495,6 +438,54 @@
       font-weight: 700;
     }
 
+    .loader-histo {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .loader-histo .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid #edeae5;
+      border-top-color: #2d6a4f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide-histo {
+      text-align: center;
+      padding: 40px 20px;
+      color: #b8b0a8;
+    }
+
+    .vide-histo .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .vide-histo h2 {
+      font-size: 20px;
+      font-weight: 400;
+      color: #1a2a2e;
+      margin-bottom: 4px;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .vide-histo p {
+      color: #b8b0a8;
+      font-size: 15px;
+    }
+
     /* ============================================================
        BOUTON RETOUR
        ============================================================ */
@@ -534,6 +525,13 @@
       .carte-compte {
         padding: 20px 18px;
       }
+      .tabs-compte {
+        justify-content: center;
+      }
+      .tab-compte {
+        font-size: 13px;
+        padding: 10px 16px;
+      }
       .champ-compte {
         flex-direction: column;
         align-items: flex-start;
@@ -550,13 +548,6 @@
       }
       .message-section .message-cadre {
         padding: 16px 18px;
-      }
-      .modal-content {
-        padding: 24px 18px;
-        max-height: 90vh;
-      }
-      .modal-content h2 {
-        font-size: 20px;
       }
       .graphique-ligne {
         gap: 8px;
@@ -646,16 +637,35 @@
 
   <div class="page-compte">
 
-    <!-- ========== TITRE ========== -->
     <h1>👤 <strong>Mon</strong> compte</h1>
     <p class="sous-titre-page">Vos informations personnelles et votre progression.</p>
 
-    <!-- ========== CARTE PRINCIPALE ========== -->
-    <div class="carte-compte" id="carteCompte">
-      <div id="contenu-compte">
-        <div style="text-align:center;padding:30px 0;color:#94a3b8;">
-          <div style="display:inline-block;width:32px;height:32px;border:3px solid #edeae5;border-top-color:#2d6a4f;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
-          <p>Chargement de vos informations...</p>
+    <!-- ========== ONGLETS ========== -->
+    <div class="tabs-compte" id="tabsContainer">
+      <button class="tab-compte active" data-tab="profil" onclick="switchTab('profil')">👤 Profil</button>
+      <button class="tab-compte" data-tab="historique" onclick="switchTab('historique')">📊 Historique</button>
+    </div>
+
+    <!-- ========== CONTENU PROFIL ========== -->
+    <div id="tab-profil" class="tab-content-compte active">
+      <div class="carte-compte" id="carteCompte">
+        <div id="contenu-compte">
+          <div style="text-align:center;padding:30px 0;color:#94a3b8;">
+            <div style="display:inline-block;width:32px;height:32px;border:3px solid #edeae5;border-top-color:#2d6a4f;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
+            <p>Chargement de vos informations...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CONTENU HISTORIQUE ========== -->
+    <div id="tab-historique" class="tab-content-compte">
+      <div class="carte-compte" id="carteHistorique">
+        <div id="contenu-historique">
+          <div class="loader-histo">
+            <div class="spinner"></div>
+            <p>Chargement de votre historique...</p>
+          </div>
         </div>
       </div>
     </div>
@@ -663,21 +673,6 @@
     <!-- ========== BOUTON RETOUR ========== -->
     <a href="/medit/mes-textes.html" class="btn-retour-compte">← Retour à mes textes</a>
 
-  </div>
-
-  <!-- ========== MODALE HISTORIQUE ========== -->
-  <div class="modal-overlay" id="modalHistorique">
-    <div class="modal-content">
-      <button class="modal-close" onclick="fermerModalHistorique()">✕</button>
-      <h2>📊 Historique des méditations</h2>
-      <p class="modal-sous-titre" id="modalSousTitre">Chargement de vos données...</p>
-      <div id="modalCorps">
-        <div style="text-align:center;padding:20px;color:#94a3b8;">
-          <div style="display:inline-block;width:28px;height:28px;border:3px solid #edeae5;border-top-color:#2d6a4f;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:10px;"></div>
-          <p>Chargement...</p>
-        </div>
-      </div>
-    </div>
   </div>
 
   <!-- ========== FOOTER ========== -->
@@ -705,7 +700,35 @@
 
   <script>
     // ============================================================
-    // CHARGEMENT DES DONNÉES DU COMPTE
+    // SWITCH D'ONGLET
+    // ============================================================
+    function switchTab(tabId) {
+      // Cacher tous les contenus
+      document.querySelectorAll('.tab-content-compte').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      // Désactiver tous les boutons
+      document.querySelectorAll('.tab-compte').forEach(function(el) {
+        el.classList.remove('active');
+      });
+
+      // Afficher le contenu choisi
+      document.getElementById('tab-' + tabId).classList.add('active');
+      // Activer le bouton correspondant
+      document.querySelectorAll('.tab-compte').forEach(function(el) {
+        if (el.dataset.tab === tabId) {
+          el.classList.add('active');
+        }
+      });
+
+      // Si on clique sur "Historique", charger les données
+      if (tabId === 'historique') {
+        chargerHistorique();
+      }
+    }
+
+    // ============================================================
+    // CHARGEMENT DU PROFIL
     // ============================================================
     var mdpVisible = false;
     var mdpCache = '';
@@ -793,15 +816,6 @@
         </div>
       `;
 
-      // === LIEN VERS HISTORIQUE ===
-      html += `
-        <div style="text-align:center;margin-top:20px;">
-          <span class="lien-historique" onclick="ouvrirModalHistorique()">
-            📊 Voir mon historique de lectures
-          </span>
-        </div>
-      `;
-
       document.getElementById('contenu-compte').innerHTML = html;
     }
 
@@ -811,17 +825,8 @@
     }
 
     // ============================================================
-    // MODALE HISTORIQUE
+    // CHARGEMENT DE L'HISTORIQUE
     // ============================================================
-    function ouvrirModalHistorique() {
-      document.getElementById('modalHistorique').classList.add('visible');
-      chargerHistorique();
-    }
-
-    function fermerModalHistorique() {
-      document.getElementById('modalHistorique').classList.remove('visible');
-    }
-
     function chargerHistorique() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) return;
@@ -847,112 +852,119 @@
             });
             afficherHistorique(historique);
           } else {
-            document.getElementById('modalCorps').innerHTML = `
-              <p style="text-align:center;color:#94a3b8;padding:20px;">Aucune tentative enregistrée pour le moment.</p>
+            document.getElementById('contenu-historique').innerHTML = `
+              <div class="vide-histo">
+                <span class="icone">📭</span>
+                <h2>Aucune tentative enregistrée</h2>
+                <p>Commencez une méditation pour voir vos progrès apparaître ici.</p>
+              </div>
             `;
-            document.getElementById('modalSousTitre').textContent = 'Aucune donnée disponible.';
           }
         })
         .catch(function() {
-          document.getElementById('modalCorps').innerHTML = `
-            <p style="text-align:center;color:#c62828;padding:20px;">❌ Erreur de chargement.</p>
+          document.getElementById('contenu-historique').innerHTML = `
+            <div class="vide-histo">
+              <span class="icone">⚠️</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion et réessayez.</p>
+            </div>
           `;
         });
     }
 
     function afficherHistorique(historique) {
-  var totalTemps = 0;
-  var html = '';
+      var totalTemps = 0;
+      var html = '';
 
-  // === GRAPHIQUE ===
-  html += `<div class="graphique-container"><div class="graphique-ligne">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
-    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
-    var tempsAffiche = item.temps || '';
+      // === GRAPHIQUE ===
+      html += `<div class="graphique-container"><div class="graphique-ligne">`;
+      historique.forEach(function(item) {
+        var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
+        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+        var tempsAffiche = item.temps || '';
 
-    html += `
-      <div class="graphique-point">
-        <div class="cercle ${statutClass}"></div>
-        <span class="date-point">${dateFormatee}</span>
-        ${tempsAffiche ? `<span class="temps-point">${tempsAffiche}</span>` : ''}
-      </div>
-    `;
-  });
-  html += `</div></div>`;
+        html += `
+          <div class="graphique-point">
+            <div class="cercle ${statutClass}"></div>
+            <span class="date-point">${dateFormatee}</span>
+            ${tempsAffiche ? `<span class="temps-point">${tempsAffiche}</span>` : ''}
+          </div>
+        `;
+      });
+      html += `</div></div>`;
 
-  // === LÉGENDE ===
-  html += `
-    <div class="legende">
-      <span class="item"><span class="cercle-legende valide"></span> Validé</span>
-      <span class="item"><span class="cercle-legende echec"></span> À refaire</span>
-      <span class="item"><span class="cercle-legende en-cours"></span> En cours</span>
-    </div>
-  `;
+      // === LÉGENDE ===
+      html += `
+        <div class="legende">
+          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+          <span class="item"><span class="cercle-legende echec"></span> À refaire</span>
+          <span class="item"><span class="cercle-legende en-cours"></span> En cours</span>
+        </div>
+      `;
 
-  // === LISTE DES TENTATIVES ===
-  html += `<div class="liste-tentatives">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
-    var statutTexte = item.valide ? '✅ Validé' : (item.enCours ? '⏳ En cours' : '○ À refaire');
-    
-    // === DATE : on prend la colonne A (date) et on la formate ===
-    var dateFormatee = 'Date inconnue';
-    if (item.date) {
-      var d = new Date(item.date);
-      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-        dateFormatee = d.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: 'long', year: 'numeric'
-        });
-      }
+      // === LISTE DES TENTATIVES ===
+      html += `<div class="liste-tentatives">`;
+      historique.forEach(function(item) {
+        var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
+        var statutTexte = item.valide ? '✅ Validé' : (item.enCours ? '⏳ En cours' : '○ À refaire');
+        
+        // === DATE ===
+        var dateFormatee = 'Date inconnue';
+        if (item.date) {
+          var d = new Date(item.date);
+          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+            dateFormatee = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+          }
+        }
+        
+        // === TEMPS ===
+        var tempsAffiche = item.temps || '—';
+
+        // === CALCUL DU TEMPS TOTAL ===
+        if (item.temps && item.temps !== '—') {
+          var totalSeconds = 0;
+          var parts = item.temps.split(':');
+          if (parts.length === 3) {
+            var h = parseInt(parts[0]) || 0;
+            var m = parseInt(parts[1]) || 0;
+            var s = parseInt(parts[2]) || 0;
+            totalSeconds = h * 3600 + m * 60 + s;
+          }
+          if (totalSeconds > 0) totalTemps += totalSeconds;
+        }
+
+        html += `
+          <div class="tentative-item">
+            <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
+            <span class="statut ${statutClass}">${statutTexte}</span>
+            <span class="temps">${tempsAffiche}</span>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      // === TEMPS TOTAL ===
+      var totalMinutes = Math.floor(totalTemps / 60);
+      var totalSecondes = totalTemps % 60;
+      var tempsTotalStr = totalMinutes > 0 ? totalMinutes + 'min ' + totalSecondes + 's' : totalSecondes + 's';
+
+      html += `
+        <div class="temps-total">
+          ⏱️ Temps total passé : <span>${tempsTotalStr}</span>
+        </div>
+      `;
+
+      document.getElementById('contenu-historique').innerHTML = html;
     }
-    
-    // === TEMPS : on prend la colonne I (temps) telle quelle ===
-    var tempsAffiche = item.temps || '—';
-
-    // === CALCUL DU TEMPS TOTAL ===
-    if (item.temps && item.temps !== '—') {
-      var totalSeconds = 0;
-      var parts = item.temps.split(':');
-      if (parts.length === 3) {
-        var h = parseInt(parts[0]) || 0;
-        var m = parseInt(parts[1]) || 0;
-        var s = parseInt(parts[2]) || 0;
-        totalSeconds = h * 3600 + m * 60 + s;
-      }
-      if (totalSeconds > 0) totalTemps += totalSeconds;
-    }
-
-    html += `
-      <div class="tentative-item">
-        <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
-        <span class="statut ${statutClass}">${statutTexte}</span>
-        <span class="temps">${tempsAffiche}</span>
-      </div>
-    `;
-  });
-  html += `</div>`;
-
-  // === TEMPS TOTAL ===
-  var totalMinutes = Math.floor(totalTemps / 60);
-  var totalSecondes = totalTemps % 60;
-  var tempsTotalStr = totalMinutes > 0 ? totalMinutes + 'min ' + totalSecondes + 's' : totalSecondes + 's';
-
-  html += `
-    <div class="temps-total">
-      ⏱️ Temps total passé : <span>${tempsTotalStr}</span>
-    </div>
-  `;
-
-  document.getElementById('modalCorps').innerHTML = html;
-  document.getElementById('modalSousTitre').textContent = historique.length + ' tentative' + (historique.length > 1 ? 's' : '');
-}
 
     // ============================================================
     // INIT
     // ============================================================
     function demarrer() {
       chargerCompte();
+      // Historique chargé uniquement quand on clique sur l'onglet
     }
 
     if (document.readyState === 'loading') {
