@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
   <title>Méditation islamique</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <style>
@@ -588,6 +588,30 @@
       box-shadow: none;
     }
 
+    /* Bouton "J'ai appris" */
+    .btn-appris {
+      display: inline-block;
+      margin-top: 20px;
+      padding: 14px 36px;
+      background: #2d6a4f;
+      color: #fff;
+      border: none;
+      border-radius: 30px;
+      font-size: 16px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2);
+    }
+
+    .btn-appris:hover {
+      background: #1a4a3a;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(45, 106, 79, 0.3);
+    }
+
     @media (max-width: 768px) {
       .blog-article {
         padding: 20px 16px 16px;
@@ -647,54 +671,65 @@
         font-size: 13px;
         width: 100%;
       }
+      .btn-appris {
+        padding: 12px 24px;
+        font-size: 14px;
+        width: 100%;
+      }
     }
   </style>
 </head>
-  <!-- ========== HEADER (chargé depuis header.html) ========== -->
-<div id="header-container"></div>
 
-<!-- ========== SCRIPTS DE CHARGEMENT ========== -->
-<script>
-  // Charger le header depuis un fichier externe
-  fetch('/medit/header.html')
-    .then(function(response) { return response.text(); })
-    .then(function(data) {
-      document.getElementById('header-container').innerHTML = data;
-      mettreAJourHeader();
-    })
-    .catch(function(error) {
-      console.error('Erreur chargement header:', error);
-      document.getElementById('header-container').innerHTML = `
-        <header class="site-header">
-          <div class="header-inner">
-            <div class="header-logo">
-              <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
-            </div>
-            <nav class="header-nav">
-              <a href="/medit/index.html" class="header-link">Accueil</a>
-              <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            </nav>
-          </div>
-        </header>
-      `;
-      mettreAJourHeader();
-    });
-
-  function mettreAJourHeader() {
-    var id = localStorage.getItem('etudiant_id');
-    var userSpan = document.getElementById('headerUser');
-    var deconnexionBtn = document.getElementById('headerDeconnexion');
-
-    if (id) {
-      if (userSpan) userSpan.textContent = '👤 ' + id;
-      if (deconnexionBtn) deconnexionBtn.style.display = 'inline-block';
-    } else {
-      if (userSpan) userSpan.textContent = '';
-      if (deconnexionBtn) deconnexionBtn.style.display = 'none';
-    }
-  }
-</script>
 <body>
+
+  <!-- ========== HEADER ========== -->
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html">۞ <strong>Médit</strong>Islam</a>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+                <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+              </nav>
+            </div>
+          </header>
+        `;
+        mettreAJourHeader();
+      });
+
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <span class="header-user">👤 ${id}</span>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
+    }
+  </script>
 
   <div class="page-article">
 
@@ -758,12 +793,10 @@
 
   </div>
 
-  <!-- ========== FOOTER (chargé depuis footer.html) ========== -->
+  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
-  <!-- ========== SCRIPTS ========== -->
   <script>
-    // Charger le footer depuis un fichier externe
     fetch('/medit/footer.html')
       .then(function(response) { return response.text(); })
       .then(function(data) {
@@ -771,7 +804,6 @@
       })
       .catch(function(error) {
         console.error('Erreur chargement footer:', error);
-        // Fallback au cas où le fichier n'existe pas
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
             <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
@@ -972,29 +1004,13 @@
     }
 
     function genererSlideMemo(data) {
-  var html = '<div class="slide-memo">';
-  html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
-  html += '<span class="memo-label">À retenir</span>';
-  html += '<div class="contenu-memo">' + data.texte + '</div>';
-  html += '</div>';
-
-  // Ajout du message et de la redirection après 1.5 secondes
-  setTimeout(function() {
-    // Afficher un message "Vous avez fini !" en bas de l'écran
-    var finMsg = document.createElement('div');
-    finMsg.innerHTML = '✔ Vous avez fini !';
-    finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
-    document.body.appendChild(finMsg);
-    setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
-    
-    // Rediriger après 2 secondes
-    setTimeout(function() {
-      window.location.href = '/medit/mes-textes.html';
-    }, 2000);
-  }, 300);
-
-  return html;
-}
+      var html = '<div class="slide-memo">';
+      html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
+      html += '<span class="memo-label">À retenir</span>';
+      html += '<div class="contenu-memo">' + data.texte + '</div>';
+      html += '</div>';
+      return html;
+    }
 
     // ============================================================
     // DOTS & NAVIGATION
@@ -1052,6 +1068,48 @@
       } else {
         msg.textContent = '';
       }
+
+      // Gestion du bouton "J'ai appris" + message de fin
+      var oldBtn = document.getElementById('btnAppris');
+      if (oldBtn) oldBtn.remove();
+      var oldMsg = document.getElementById('finMessage');
+      if (oldMsg) oldMsg.remove();
+
+      if (current && current.type === 'memo') {
+        ajouterBoutonAppris();
+      } else if (slideIndex === slidesData.length - 1 && current && current.type !== 'memo' && reponseValidee) {
+        afficherMessageFin();
+      }
+    }
+
+    function ajouterBoutonAppris() {
+      var btn = document.createElement('button');
+      btn.id = 'btnAppris';
+      btn.textContent = '📖 J\'ai appris, revenir aux textes';
+      btn.className = 'btn-appris';
+      btn.onclick = function() {
+        window.location.href = '/medit/mes-textes.html';
+      };
+
+      var container = document.querySelector('.slide-memo');
+      if (container) {
+        container.appendChild(btn);
+      }
+    }
+
+    function afficherMessageFin() {
+      if (document.getElementById('finMessage')) return;
+
+      var finMsg = document.createElement('div');
+      finMsg.id = 'finMessage';
+      finMsg.innerHTML = '✔ Vous avez fini !';
+      finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+      document.body.appendChild(finMsg);
+      setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
+
+      setTimeout(function() {
+        window.location.href = '/medit/mes-textes.html';
+      }, 2500);
     }
 
     function slideSuivant() {
@@ -1226,11 +1284,19 @@
             document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Sauvegardé.</span>';
             reponseValidee = true;
             document.getElementById('reponse-mailto').disabled = true;
-            document.querySelector('#openQuestion .btn-nav').disabled = true;
+            var btn = document.querySelector('#openQuestion .btn-nav');
+            if (btn) btn.disabled = true;
             updateSlides();
-            setTimeout(function() {
-              if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
-            }, 1000);
+            // Si c'était le dernier slide, on déclenche le message de fin
+            if (slideIndex === slidesData.length - 1) {
+              setTimeout(function() {
+                afficherMessageFin();
+              }, 800);
+            } else {
+              setTimeout(function() {
+                if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+              }, 1000);
+            }
           } else {
             document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
           }
@@ -1260,7 +1326,7 @@
     });
 
     // ============================================================
-    // SWIPE TACTILE (pour téléphone/tablette)
+    // SWIPE TACTILE
     // ============================================================
     var touchStartX = 0;
     var touchEndX = 0;
@@ -1272,12 +1338,11 @@
     document.addEventListener('touchend', function(e) {
       touchEndX = e.changedTouches[0].screenX;
       var diff = touchStartX - touchEndX;
-      // Seuil de 50px pour éviter les faux swipes
       if (Math.abs(diff) > 50) {
         if (diff > 0) {
-          slideSuivant(); // swipe gauche → suivant
+          slideSuivant();
         } else {
-          slidePrecedent(); // swipe droite → précédent
+          slidePrecedent();
         }
       }
     }, { passive: true });
