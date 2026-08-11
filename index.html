@@ -103,34 +103,94 @@
     }
 
     /* ============================================================
-       BANNIÈRE CONNECTÉ
+       FORMULAIRES SIMPLIFIÉS
        ============================================================ */
-    .banniere-connecte {
-      display: none;
-      background: #f4f2ed;
-      border-radius: 12px;
-      padding: 20px 24px;
-      margin-bottom: 20px;
+    .form-inscription {
+      text-align: left;
     }
 
-    .banniere-connecte.visible {
+    .form-inscription .champ {
+      margin-bottom: 16px;
+    }
+
+    .form-inscription label {
       display: block;
-    }
-
-    .banniere-connecte p {
-      font-size: 16px;
-      color: #1a2a2e;
-      margin-bottom: 12px;
-      font-family: 'Georgia', serif;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 4px;
       letter-spacing: 0.3px;
     }
 
-    .banniere-connecte p strong {
+    .form-inscription input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e2e0db;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #faf9f7;
+      transition: border-color 0.3s;
+      font-family: inherit;
+      color: #1a2a2e;
+    }
+
+    .form-inscription input:focus {
+      border-color: #2d6a4f;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
+    }
+
+    .form-inscription .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      margin-top: 8px;
+    }
+
+    .form-inscription .btn-submit:hover {
+      background: #1a4a3a;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
+    }
+
+    .form-inscription .message {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .form-inscription .message.success {
       color: #2d6a4f;
     }
 
-    .banniere-connecte .btn-group {
-      justify-content: center;
+    .form-inscription .message.error {
+      color: #b33;
+    }
+
+    .form-inscription .lien-form {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .form-inscription .lien-form a {
+      color: #2d6a4f;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .form-inscription .lien-form a:hover {
+      text-decoration: underline;
     }
 
     /* ============================================================
@@ -152,49 +212,54 @@
 <body>
 
   <!-- ========== HEADER (chargé depuis header.html) ========== -->
-<div id="header-container"></div>
+  <div id="header-container"></div>
 
-<!-- ========== SCRIPTS DE CHARGEMENT ========== -->
-<script>
-  // Charger le header depuis un fichier externe
-  fetch('/medit/header.html')
-    .then(function(response) { return response.text(); })
-    .then(function(data) {
-      document.getElementById('header-container').innerHTML = data;
-      mettreAJourHeader();
-    })
-    .catch(function(error) {
-      console.error('Erreur chargement header:', error);
-      document.getElementById('header-container').innerHTML = `
-        <header class="site-header">
-          <div class="header-inner">
-            <div class="header-logo">
-              <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
+  <script>
+    // Charger le header depuis un fichier externe
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
+              </div>
+              <nav class="header-nav">
+                <a href="/medit/index.html" class="header-link">Accueil</a>
+                <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+              </nav>
             </div>
-            <nav class="header-nav">
-              <a href="/medit/index.html" class="header-link">Accueil</a>
-              <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            </nav>
-          </div>
-        </header>
-      `;
-      mettreAJourHeader();
-    });
+          </header>
+        `;
+        mettreAJourHeader();
+      });
 
-  function mettreAJourHeader() {
-    var id = localStorage.getItem('etudiant_id');
-    var userSpan = document.getElementById('headerUser');
-    var deconnexionBtn = document.getElementById('headerDeconnexion');
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
 
-    if (id) {
-      if (userSpan) userSpan.textContent = '👤 ' + id;
-      if (deconnexionBtn) deconnexionBtn.style.display = 'inline-block';
-    } else {
-      if (userSpan) userSpan.textContent = '';
-      if (deconnexionBtn) deconnexionBtn.style.display = 'none';
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <span class="header-user">👤 ${id}</span>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
     }
-  }
-</script>
+  </script>
 
   <div class="container">
 
@@ -205,9 +270,8 @@
     <!-- ========== CARTE PRINCIPALE ========== -->
     <div class="carte" id="cartePrincipale">
 
-      
       <!-- ========== FORMULAIRE DE CONNEXION ========== -->
-      <div class="form-inscription" id="formConnexion">
+      <div id="formConnexion" style="display:block;">
         <h3 style="font-size:18px;font-weight:400;margin-bottom:16px;text-align:center;font-family:'Georgia',serif;color:#1a2a2e;">Se connecter</h3>
         <div class="champ">
           <label>Identifiant</label>
@@ -225,7 +289,7 @@
       </div>
 
       <!-- ========== FORMULAIRE D'INSCRIPTION ========== -->
-      <div class="form-inscription" id="formInscription">
+      <div id="formInscription" style="display:none;">
         <h3 style="font-size:18px;font-weight:400;margin-bottom:16px;text-align:center;font-family:'Georgia',serif;color:#1a2a2e;">Créer un compte</h3>
         <div class="champ">
           <label>Identifiant</label>
@@ -253,7 +317,6 @@
   <!-- ========== FOOTER (chargé depuis footer.html) ========== -->
   <div id="footer-container"></div>
 
-  <!-- ========== SCRIPTS ========== -->
   <script>
     // Charger le footer depuis un fichier externe
     fetch('/medit/footer.html')
@@ -263,7 +326,6 @@
       })
       .catch(function(error) {
         console.error('Erreur chargement footer:', error);
-        // Fallback au cas où le fichier n'existe pas
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
             <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
@@ -282,14 +344,14 @@
     // ============================================================
 
     function ouvrirConnexion() {
-      document.getElementById('formInscription').classList.remove('visible');
-      document.getElementById('formConnexion').classList.toggle('visible');
+      document.getElementById('formInscription').style.display = 'none';
+      document.getElementById('formConnexion').style.display = 'block';
       document.getElementById('loginMessage').textContent = '';
     }
 
     function ouvrirInscription() {
-      document.getElementById('formConnexion').classList.remove('visible');
-      document.getElementById('formInscription').classList.toggle('visible');
+      document.getElementById('formConnexion').style.display = 'none';
+      document.getElementById('formInscription').style.display = 'block';
       document.getElementById('registerMessage').textContent = '';
     }
 
@@ -406,16 +468,9 @@
 
     function demarrer() {
       var id = localStorage.getItem('etudiant_id');
-      var nonConnecte = document.getElementById('etatNonConnecte');
-      var banniere = document.getElementById('banniereConnecte');
-
       if (id) {
-        nonConnecte.style.display = 'none';
-        banniere.classList.add('visible');
-        document.getElementById('nomConnecte').textContent = id;
-      } else {
-        nonConnecte.style.display = 'block';
-        banniere.classList.remove('visible');
+        // Si déjà connecté, rediriger vers mes-textes
+        window.location.href = '/medit/mes-textes.html';
       }
     }
 
