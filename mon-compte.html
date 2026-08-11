@@ -322,21 +322,10 @@
       border-color: #b8b0a8;
     }
 
-    .graphique-point .cercle.en-cours {
-      background: #fef3c7;
-      border-color: #b8956a;
-    }
-
     .graphique-point .date-point {
       font-size: 10px;
       color: #b8b0a8;
       letter-spacing: 0.2px;
-      white-space: nowrap;
-    }
-
-    .graphique-point .temps-point {
-      font-size: 9px;
-      color: #d4cec7;
       white-space: nowrap;
     }
 
@@ -374,11 +363,6 @@
       border-color: #b8b0a8;
     }
 
-    .legende .cercle-legende.en-cours {
-      background: #fef3c7;
-      border-color: #b8956a;
-    }
-
     .liste-tentatives {
       margin-top: 12px;
       border-top: 1px solid #f0ede8;
@@ -412,30 +396,6 @@
 
     .tentative-item .statut.echec {
       color: #b8b0a8;
-    }
-
-    .tentative-item .statut.en-cours {
-      color: #b8956a;
-    }
-
-    .tentative-item .temps {
-      font-size: 12px;
-      color: #d4cec7;
-    }
-
-    .temps-total {
-      text-align: right;
-      font-size: 14px;
-      color: #1a2a2e;
-      font-weight: 500;
-      padding-top: 12px;
-      border-top: 2px solid #edeae5;
-      margin-top: 8px;
-    }
-
-    .temps-total span {
-      color: #2d6a4f;
-      font-weight: 700;
     }
 
     .loader-histo {
@@ -664,7 +624,7 @@
         <div id="contenu-historique">
           <div class="loader-histo">
             <div class="spinner"></div>
-            <p>Chargement de vos résultats</p>
+            <p>Chargement de vos résultats...</p>
           </div>
         </div>
       </div>
@@ -703,25 +663,20 @@
     // SWITCH D'ONGLET
     // ============================================================
     function switchTab(tabId) {
-      // Cacher tous les contenus
       document.querySelectorAll('.tab-content-compte').forEach(function(el) {
         el.classList.remove('active');
       });
-      // Désactiver tous les boutons
       document.querySelectorAll('.tab-compte').forEach(function(el) {
         el.classList.remove('active');
       });
 
-      // Afficher le contenu choisi
       document.getElementById('tab-' + tabId).classList.add('active');
-      // Activer le bouton correspondant
       document.querySelectorAll('.tab-compte').forEach(function(el) {
         if (el.dataset.tab === tabId) {
           el.classList.add('active');
         }
       });
 
-      // Si on clique sur "Historique", charger les données
       if (tabId === 'historique') {
         chargerHistorique();
       }
@@ -760,59 +715,61 @@
         });
     }
 
-    function afficherHistorique(historique) {
-  var html = '';
+    function afficherCompte(data) {
+      var html = '';
 
-  // === GRAPHIQUE ===
-  html += `<div class="graphique-container"><div class="graphique-ligne">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+      var dateInscription = data.dateInscription ? new Date(data.dateInscription).toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      }) : 'Non renseignée';
 
-    html += `
-      <div class="graphique-point">
-        <div class="cercle ${statutClass}"></div>
-        <span class="date-point">${dateFormatee}</span>
-      </div>
-    `;
-  });
-  html += `</div></div>`;
+      html += `
+        <div class="champ-compte">
+          <span class="label">📅 Date d'inscription</span>
+          <span class="valeur">${dateInscription}</span>
+        </div>
+      `;
 
-  // === LÉGENDE ===
-  html += `
-    <div class="legende">
-      <span class="item"><span class="cercle-legende valide"></span> ✅ Validé</span>
-      <span class="item"><span class="cercle-legende echec"></span> ⬜ Non validé</span>
-    </div>
-  `;
+      mdpCache = data.mdp || '';
+      var mdpAffiche = mdpVisible ? mdpCache : '••••••••';
+      html += `
+        <div class="champ-compte">
+          <span class="label">🔒 Mot de passe</span>
+          <span class="valeur mdp" onclick="basculerMdp()" title="Cliquer pour afficher/masquer">
+            ${mdpAffiche}
+            <span class="voir-mdp">${mdpVisible ? 'masquer' : 'voir'}</span>
+          </span>
+        </div>
+      `;
 
-  // === LISTE DES TENTATIVES (SANS LE TEMPS) ===
-  html += `<div class="liste-tentatives">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
-    
-    var dateFormatee = 'Date inconnue';
-    if (item.date) {
-      var d = new Date(item.date);
-      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-        dateFormatee = d.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: 'long', year: 'numeric'
-        });
-      }
+      var niveau = data.niveau || 0;
+      var description = data.description || 'Aucune description disponible pour ce niveau.';
+
+      html += `
+        <div class="niveau-section">
+          <div class="niveau-titre">Votre niveau actuel</div>
+          <div class="niveau-valeur">
+            ${niveau}
+            <small>sur 5</small>
+          </div>
+          <div class="description-niveau">${description}</div>
+        </div>
+      `;
+
+      var messagePerso = data.messagePerso || '';
+      html += `
+        <div class="message-section">
+          <span class="message-label">✉️ Message personnel de l'enseignant</span>
+          <div class="message-cadre">
+            <div class="contenu ${!messagePerso ? 'vide' : ''}">
+              ${messagePerso || 'Aucun message pour le moment.'}
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('contenu-compte').innerHTML = html;
     }
 
-    html += `
-      <div class="tentative-item">
-        <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
-        <span class="statut ${statutClass}">${statutTexte}</span>
-      </div>
-    `;
-  });
-  html += `</div>`;
-
-  document.getElementById('contenu-historique').innerHTML = html;
-}
     function basculerMdp() {
       mdpVisible = !mdpVisible;
       chargerCompte();
@@ -835,13 +792,10 @@
               var bonnes = parseInt(r.bonnes) || 0;
               var total = parseInt(r.total) || 0;
               var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
-              var enCours = false;
               return {
                 date: r.date || '',
-                temps: r.temps || '',
                 titre: r.titre || '',
-                valide: valide,
-                enCours: enCours
+                valide: valide
               };
             });
             afficherHistorique(historique);
@@ -866,96 +820,68 @@
         });
     }
 
+    // ============================================================
+    // AFFICHAGE DE L'HISTORIQUE (version épurée, sans temps)
+    // ============================================================
     function afficherHistorique(historique) {
-  var totalTemps = 0;
-  var html = '';
+      var html = '';
 
-  // === GRAPHIQUE ===
-  html += `<div class="graphique-container"><div class="graphique-ligne">`;
-  historique.forEach(function(item) {
-    // Un seul statut : validé (vert) ou non (gris)
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
-    var tempsAffiche = item.temps || '';
+      // === GRAPHIQUE ===
+      html += `<div class="graphique-container"><div class="graphique-ligne">`;
+      historique.forEach(function(item) {
+        var statutClass = item.valide ? 'valide' : 'echec';
+        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
 
-    html += `
-      <div class="graphique-point">
-        <div class="cercle ${statutClass}"></div>
-        <span class="date-point">${dateFormatee}</span>
-        ${tempsAffiche ? `<span class="temps-point">${tempsAffiche}</span>` : ''}
-      </div>
-    `;
-  });
-  html += `</div></div>`;
+        html += `
+          <div class="graphique-point">
+            <div class="cercle ${statutClass}"></div>
+            <span class="date-point">${dateFormatee}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
 
-  // === LÉGENDE simplifiée ===
-  html += `
-    <div class="legende">
-      <span class="item"><span class="cercle-legende valide"></span> ✅ Validé</span>
-      <span class="item"><span class="cercle-legende echec"></span> ⬜ Non validé</span>
-    </div>
-  `;
+      // === LÉGENDE ===
+      html += `
+        <div class="legende">
+          <span class="item"><span class="cercle-legende valide"></span> ✅ Validé</span>
+          <span class="item"><span class="cercle-legende echec"></span> ⬜ Non validé</span>
+        </div>
+      `;
 
-  // === LISTE DES TENTATIVES ===
-  html += `<div class="liste-tentatives">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
-    
-    var dateFormatee = 'Date inconnue';
-    if (item.date) {
-      var d = new Date(item.date);
-      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-        dateFormatee = d.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: 'long', year: 'numeric'
-        });
-      }
+      // === LISTE DES TENTATIVES ===
+      html += `<div class="liste-tentatives">`;
+      historique.forEach(function(item) {
+        var statutClass = item.valide ? 'valide' : 'echec';
+        var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
+        
+        var dateFormatee = 'Date inconnue';
+        if (item.date) {
+          var d = new Date(item.date);
+          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+            dateFormatee = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+          }
+        }
+
+        html += `
+          <div class="tentative-item">
+            <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
+            <span class="statut ${statutClass}">${statutTexte}</span>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      document.getElementById('contenu-historique').innerHTML = html;
     }
-    
-    var tempsAffiche = item.temps || '—';
-
-    if (item.temps && item.temps !== '—') {
-      var totalSeconds = 0;
-      var parts = item.temps.split(':');
-      if (parts.length === 3) {
-        var h = parseInt(parts[0]) || 0;
-        var m = parseInt(parts[1]) || 0;
-        var s = parseInt(parts[2]) || 0;
-        totalSeconds = h * 3600 + m * 60 + s;
-      }
-      if (totalSeconds > 0) totalTemps += totalSeconds;
-    }
-
-    html += `
-      <div class="tentative-item">
-        <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
-        <span class="statut ${statutClass}">${statutTexte}</span>
-        <span class="temps">${tempsAffiche}</span>
-      </div>
-    `;
-  });
-  html += `</div>`;
-
-  // === TEMPS TOTAL ===
-  var totalMinutes = Math.floor(totalTemps / 60);
-  var totalSecondes = totalTemps % 60;
-  var tempsTotalStr = totalMinutes > 0 ? totalMinutes + 'min ' + totalSecondes + 's' : totalSecondes + 's';
-
-  html += `
-    <div class="temps-total">
-      ⏱️ Temps total passé : <span>${tempsTotalStr}</span>
-    </div>
-  `;
-
-  document.getElementById('contenu-historique').innerHTML = html;
-}
 
     // ============================================================
     // INIT
     // ============================================================
     function demarrer() {
       chargerCompte();
-      // Historique chargé uniquement quand on clique sur l'onglet
     }
 
     if (document.readyState === 'loading') {
