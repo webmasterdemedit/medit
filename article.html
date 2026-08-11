@@ -972,13 +972,29 @@
     }
 
     function genererSlideMemo(data) {
-      var html = '<div class="slide-memo">';
-      html += '<div class="confirmation-fin">✧ Vous avez fini. ✧</div>';
-      html += '<span class="memo-label">À retenir</span>';
-      html += '<div class="contenu-memo">' + data.texte + '</div>';
-      html += '</div>';
-      return html;
-    }
+  var html = '<div class="slide-memo">';
+  html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
+  html += '<span class="memo-label">À retenir</span>';
+  html += '<div class="contenu-memo">' + data.texte + '</div>';
+  html += '</div>';
+
+  // Ajout du message et de la redirection après 1.5 secondes
+  setTimeout(function() {
+    // Afficher un message "Vous avez fini !" en bas de l'écran
+    var finMsg = document.createElement('div');
+    finMsg.innerHTML = '✔ Vous avez fini !';
+    finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+    document.body.appendChild(finMsg);
+    setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
+    
+    // Rediriger après 2 secondes
+    setTimeout(function() {
+      window.location.href = '/medit/mes-textes.html';
+    }, 2000);
+  }, 300);
+
+  return html;
+}
 
     // ============================================================
     // DOTS & NAVIGATION
