@@ -4,13 +4,13 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Mes textes</title>
+  <title>Mes lectures</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <style>
     /* ============================================================
-       RESET & BASE - Version PRO
+       RESET & BASE
        ============================================================ */
     * {
       margin: 0;
@@ -24,6 +24,8 @@
       color: #1e293b;
       min-height: 100vh;
       letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
     }
 
     a {
@@ -38,70 +40,8 @@
       max-width: 1000px;
       margin: 0 auto;
       padding: 24px 20px 40px;
-    }
-
-    /* ============================================================
-       HEADER
-       ============================================================ */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid #e8e5e0;
-    }
-
-    .header h1 {
-      font-size: 26px;
-      font-weight: 300;
-      color: #1a2a2e;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      letter-spacing: 1px;
-    }
-
-    .header h1 strong {
-      font-weight: 700;
-      color: #2d6a4f;
-    }
-
-    .header .info {
-      font-size: 13px;
-      color: #94a3b8;
-      letter-spacing: 0.3px;
-    }
-
-    .header .info strong {
-      color: #1a2a2e;
-      font-weight: 600;
-    }
-
-    .header-actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .btn-retour {
-      padding: 6px 16px;
-      background: transparent;
-      color: #94a3b8;
-      border: 1px solid #e8e5e0;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      letter-spacing: 0.3px;
-    }
-
-    .btn-retour:hover {
-      background: #e8e5e0;
-      color: #1a2a2e;
-      transform: translateX(-2px);
+      flex: 1;
+      width: 100%;
     }
 
     /* ============================================================
@@ -267,7 +207,7 @@
     }
 
     /* ============================================================
-       GRILLE
+       GRILLE DES POSTS
        ============================================================ */
     .grille {
       display: flex;
@@ -435,19 +375,9 @@
       box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
     }
 
-    .vide-tab {
-      text-align: center;
-      padding: 40px 20px;
-      color: #b8b0a8;
-    }
-
-    .vide-tab .icone {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 8px;
-      opacity: 0.5;
-    }
-
+    /* ============================================================
+       LOADER / VIDE
+       ============================================================ */
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -499,18 +429,25 @@
       font-size: 15px;
     }
 
+    /* ============================================================
+       DEVISE
+       ============================================================ */
+    .devise {
+      text-align: center;
+      padding: 28px 0 8px;
+      font-size: 14px;
+      color: #b8b0a8;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      border-top: 1px solid #edeae5;
+      margin-top: 32px;
+      font-family: 'Georgia', serif;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
     @media (max-width: 768px) {
-      .header {
-        flex-direction: column;
-        align-items: stretch;
-        text-align: center;
-      }
-      .header-actions {
-        justify-content: center;
-      }
-      .niveau-container {
-        flex-direction: column;
-      }
       .carte-post {
         grid-template-columns: 1fr;
         gap: 8px;
@@ -539,6 +476,9 @@
         font-size: 13px;
         padding: 8px 16px;
       }
+      .niveau-container {
+        flex-direction: column;
+      }
     }
 
     @media (max-width: 480px) {
@@ -554,9 +494,6 @@
         font-size: 12px;
         padding: 6px 12px;
       }
-      .header h1 {
-        font-size: 22px;
-      }
       .stats .stat-item .nombre {
         font-size: 18px;
       }
@@ -569,55 +506,58 @@
     }
   </style>
 </head>
-  <!-- ========== HEADER (chargé depuis header.html) ========== -->
-<div id="header-container"></div>
-
-<!-- ========== SCRIPTS DE CHARGEMENT ========== -->
-<script>
-  // Charger le header depuis un fichier externe
-  fetch('/medit/header.html')
-    .then(function(response) { return response.text(); })
-    .then(function(data) {
-      document.getElementById('header-container').innerHTML = data;
-      mettreAJourHeader();
-    })
-    .catch(function(error) {
-      console.error('Erreur chargement header:', error);
-      document.getElementById('header-container').innerHTML = `
-        <header class="site-header">
-          <div class="header-inner">
-            <div class="header-logo">
-              <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
-            </div>
-            <nav class="header-nav">
-              <a href="/medit/index.html" class="header-link">Accueil</a>
-              <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            </nav>
-          </div>
-        </header>
-      `;
-      mettreAJourHeader();
-    });
-
-  function mettreAJourHeader() {
-    var id = localStorage.getItem('etudiant_id');
-    var userSpan = document.getElementById('headerUser');
-    var deconnexionBtn = document.getElementById('headerDeconnexion');
-
-    if (id) {
-      if (userSpan) userSpan.textContent = '👤 ' + id;
-      if (deconnexionBtn) deconnexionBtn.style.display = 'inline-block';
-    } else {
-      if (userSpan) userSpan.textContent = '';
-      if (deconnexionBtn) deconnexionBtn.style.display = 'none';
-    }
-  }
-</script>
 <body>
 
+  <!-- ========== HEADER ========== -->
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html">📖 <strong>Médit</strong>Islam</a>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+                <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+              </nav>
+            </div>
+          </header>
+        `;
+        mettreAJourHeader();
+      });
+
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes lectures</a>
+            <span class="header-user">👤 ${id}</span>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
+    }
+  </script>
+
   <div class="page">
-
-
 
     <!-- ========== NIVEAU + DESCRIPTION ========== -->
     <div class="niveau-container" id="niveauContainer">
@@ -664,12 +604,10 @@
 
   </div>
 
-  <!-- ========== FOOTER (chargé depuis footer.html) ========== -->
+  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
-  <!-- ========== SCRIPTS ========== -->
   <script>
-    // Charger le footer depuis un fichier externe
     fetch('/medit/footer.html')
       .then(function(response) { return response.text(); })
       .then(function(data) {
@@ -677,7 +615,6 @@
       })
       .catch(function(error) {
         console.error('Erreur chargement footer:', error);
-        // Fallback au cas où le fichier n'existe pas
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
             <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
@@ -691,20 +628,32 @@
   <script src="/medit/auth.js"></script>
 
   <script>
-    // ============================================================
-    // VARIABLES
-    // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
 
-    // ============================================================
-    // CHARGEMENT DU NIVEAU + DESCRIPTION
-    // ============================================================
+    function ouvrirConnexion() {
+      window.location.href = '/medit/index.html';
+    }
+
+    function ouvrirInscription() {
+      window.location.href = '/medit/index.html';
+    }
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    }
 
     function chargerNiveauEtDescription() {
       var id = localStorage.getItem('etudiant_id');
-      if (!id) return;
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
 
       var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
 
@@ -726,10 +675,6 @@
         });
     }
 
-    // ============================================================
-    // CHARGEMENT DES POSTS + RÉPONSES
-    // ============================================================
-
     function chargerTableauDeBord() {
       var id = localStorage.getItem('etudiant_id');
       var niveau = parseInt(localStorage.getItem('etudiant_niveau')) || 0;
@@ -738,8 +683,6 @@
         window.location.href = '/medit/index.html';
         return;
       }
-
-      document.getElementById('nomConnecte').textContent = id;
 
       var urlPosts = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
 
@@ -779,15 +722,10 @@
         });
     }
 
-    // ============================================================
-    // AFFICHAGE AVEC ONGLETS
-    // ============================================================
-
     function afficherAvecOnglets(posts) {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
 
-      // 1. Stats globales
       var total = 0;
       var valides = 0;
       var aFaire = 0;
@@ -812,7 +750,6 @@
       document.getElementById('validesPosts').textContent = valides;
       document.getElementById('aFairePosts').textContent = aFaire;
 
-      // 2. Extraire les catégories
       var cats = {};
       posts.forEach(function(post) {
         var cat = post.categorie || 'Sans catégorie';
@@ -822,7 +759,6 @@
 
       var categoriesTriees = Object.keys(cats).sort();
 
-      // 3. Générer les onglets
       var tabsHtml = '';
       categoriesTriees.forEach(function(cat, index) {
         var count = cats[cat].length;
@@ -836,7 +772,6 @@
       });
       document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
-      // 4. Générer le contenu
       var contenuHtml = '';
       categoriesTriees.forEach(function(cat, index) {
         var activeClass = index === 0 ? 'active' : '';
@@ -923,10 +858,6 @@
       contenu.innerHTML = contenuHtml;
     }
 
-    // ============================================================
-    // CHANGER D'ONGLET
-    // ============================================================
-
     function switchTab(tabId) {
       document.querySelectorAll('.tab-content').forEach(function(el) {
         el.classList.remove('active');
@@ -944,10 +875,6 @@
       });
     }
 
-    // ============================================================
-    // AFFICHAGE VIDE
-    // ============================================================
-
     function afficherVide() {
       document.getElementById('loader').style.display = 'none';
       document.getElementById('contenu').innerHTML = `
@@ -960,10 +887,6 @@
       `;
       document.getElementById('tabsContainer').innerHTML = '';
     }
-
-    // ============================================================
-    // INIT
-    // ============================================================
 
     function demarrer() {
       chargerNiveauEtDescription();
