@@ -521,7 +521,6 @@
   var nav = document.getElementById('headerNav');
   var userNameSpan = document.getElementById('headerUserName');
 
-  // Afficher le nom de l'étudiant à côté du logo
   if (userNameSpan) {
     if (id) {
       userNameSpan.textContent = '👤 ' + id;
@@ -530,7 +529,6 @@
     }
   }
 
-  // Gérer les liens de navigation
   if (nav) {
     if (id) {
       nav.innerHTML = `
@@ -550,7 +548,6 @@
 
   <div class="page">
 
-    <!-- ========== NIVEAU + DESCRIPTION ========== -->
     <div class="niveau-container" id="niveauContainer">
       <div class="niveau-badge">
         <span class="label">Vous êtes inscrit au niveau</span>
@@ -558,7 +555,6 @@
       </div>
     </div>
 
-    <!-- ========== STATS ========== -->
     <div class="stats" id="statsContainer">
       <div class="stat-item">
         <span class="nombre" id="totalPosts">0</span>
@@ -574,10 +570,8 @@
       </div>
     </div>
 
-    <!-- ========== ONGLETS ========== -->
     <div class="tabs-container" id="tabsContainer"></div>
 
-    <!-- ========== CONTENU ========== -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -585,14 +579,12 @@
       </div>
     </div>
 
-    <!-- ========== DEVISE ========== -->
     <div class="devise">
       “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
 
   </div>
 
-  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
   <script>
@@ -637,32 +629,32 @@
     }
 
     function chargerNiveauEtDescription() {
-  var id = localStorage.getItem('etudiant_id');
-  if (!id) {
-    window.location.href = '/medit/index.html';
-    return;
-  }
-
-  var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
-
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) {
-        niveauEtudiant = data.niveau || 0;
-        document.getElementById('niveauValeur').textContent = niveauEtudiant;
-      } else {
-        document.getElementById('niveauValeur').textContent = '?';
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return Promise.reject('Non connecté');
       }
-    })
-    .catch(function() {
-      document.getElementById('niveauValeur').textContent = '?';
-    });
-}
+
+      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
+
+      return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            niveauEtudiant = data.niveau || 0;
+            document.getElementById('niveauValeur').textContent = niveauEtudiant;
+          } else {
+            document.getElementById('niveauValeur').textContent = '?';
+          }
+        })
+        .catch(function() {
+          document.getElementById('niveauValeur').textContent = '?';
+        });
+    }
 
     function chargerTableauDeBord() {
       var id = localStorage.getItem('etudiant_id');
-      var niveau = niveauEtudiant || 0; // ← Utilise la valeur récupérée par chargerNiveauEtDescription()
+      var niveau = niveauEtudiant || 0;
 
       if (!id) {
         window.location.href = '/medit/index.html';
@@ -867,15 +859,20 @@
           <span class="icone">📭</span>
           <h2>Aucune méditation disponible</h2>
           <p>De nouvelles méditations seront ajoutées prochainement.</p>
-          <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${localStorage.getItem('etudiant_niveau') || 0}</p>
+          <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
         </div>
       `;
       document.getElementById('tabsContainer').innerHTML = '';
     }
 
     function demarrer() {
-      chargerNiveauEtDescription();
-      chargerTableauDeBord();
+      chargerNiveauEtDescription()
+        .then(function() {
+          chargerTableauDeBord();
+        })
+        .catch(function() {
+          chargerTableauDeBord();
+        });
     }
 
     if (document.readyState === 'loading') {
