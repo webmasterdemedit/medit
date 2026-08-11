@@ -134,13 +134,6 @@ function creerCompte() {
     });
 }
 
-function deconnecter() {
-  if (confirm('Se déconnecter ?')) {
-    viderToutLeCache();
-    location.reload();
-  }
-}
-
 // ============================================================
 // MODAL DE CONNEXION
 // ============================================================
@@ -202,5 +195,16 @@ function mettreAJourBarre() {
       btn.textContent = '👤 E-learning';
       btn.onclick = ouvrirConnexion;
     }
+  }
+}
+
+// ============================================================
+// DÉCONNEXION (utilisée par le header)
+// ============================================================
+function deconnecter() {
+  if (confirm('Se déconnecter ?')) {
+    localStorage.removeItem('etudiant_id');
+    localStorage.removeItem('etudiant_niveau');
+    location.reload();
   }
 }
