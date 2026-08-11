@@ -861,80 +861,92 @@
     }
 
     function afficherHistorique(historique) {
-      var totalTemps = 0;
-      var html = '';
+  var totalTemps = 0;
+  var html = '';
 
-      // === GRAPHIQUE ===
-      html += `<div class="graphique-container"><div class="graphique-ligne">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
-        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
-        var tempsAffiche = item.temps || '';
+  // === GRAPHIQUE ===
+  html += `<div class="graphique-container"><div class="graphique-ligne">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
+    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+    var tempsAffiche = item.temps || '';
 
-        html += `
-          <div class="graphique-point">
-            <div class="cercle ${statutClass}"></div>
-            <span class="date-point">${dateFormatee}</span>
-            ${tempsAffiche ? `<span class="temps-point">${tempsAffiche}</span>` : ''}
-          </div>
-        `;
-      });
-      html += `</div></div>`;
+    html += `
+      <div class="graphique-point">
+        <div class="cercle ${statutClass}"></div>
+        <span class="date-point">${dateFormatee}</span>
+        ${tempsAffiche ? `<span class="temps-point">${tempsAffiche}</span>` : ''}
+      </div>
+    `;
+  });
+  html += `</div></div>`;
 
-      // === LÉGENDE ===
-      html += `
-        <div class="legende">
-          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
-          <span class="item"><span class="cercle-legende echec"></span> À refaire</span>
-          <span class="item"><span class="cercle-legende en-cours"></span> En cours</span>
-        </div>
-      `;
+  // === LÉGENDE ===
+  html += `
+    <div class="legende">
+      <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+      <span class="item"><span class="cercle-legende echec"></span> À refaire</span>
+      <span class="item"><span class="cercle-legende en-cours"></span> En cours</span>
+    </div>
+  `;
 
-      // === LISTE DES TENTATIVES ===
-      html += `<div class="liste-tentatives">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
-        var statutTexte = item.valide ? '✅ Validé' : (item.enCours ? '⏳ En cours' : '○ À refaire');
-        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', {
+  // === LISTE DES TENTATIVES ===
+  html += `<div class="liste-tentatives">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : (item.enCours ? 'en-cours' : 'echec');
+    var statutTexte = item.valide ? '✅ Validé' : (item.enCours ? '⏳ En cours' : '○ À refaire');
+    
+    // === DATE : on prend la colonne A (date) et on la formate ===
+    var dateFormatee = 'Date inconnue';
+    if (item.date) {
+      var d = new Date(item.date);
+      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+        dateFormatee = d.toLocaleDateString('fr-FR', {
           day: '2-digit', month: 'long', year: 'numeric'
-        }) : 'Date inconnue';
-        var tempsAffiche = item.temps || '—';
-
-        // === CALCUL DU TEMPS TOTAL ===
-        if (item.temps) {
-          var totalSeconds = 0;
-          var parts = item.temps.match(/(\d+)\s*(?:min)?\s*(\d+)?\s*s?/);
-          if (parts) {
-            if (parts[1]) totalSeconds += parseInt(parts[1]) * 60;
-            if (parts[2]) totalSeconds += parseInt(parts[2]);
-          }
-          if (totalSeconds > 0) totalTemps += totalSeconds;
-        }
-
-        html += `
-          <div class="tentative-item">
-            <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
-            <span class="statut ${statutClass}">${statutTexte}</span>
-            <span class="temps">${tempsAffiche}</span>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-      // === TEMPS TOTAL ===
-      var totalMinutes = Math.floor(totalTemps / 60);
-      var totalSecondes = totalTemps % 60;
-      var tempsTotalStr = totalMinutes > 0 ? totalMinutes + 'min ' + totalSecondes + 's' : totalSecondes + 's';
-
-      html += `
-        <div class="temps-total">
-          ⏱️ Temps total passé : <span>${tempsTotalStr}</span>
-        </div>
-      `;
-
-      document.getElementById('modalCorps').innerHTML = html;
-      document.getElementById('modalSousTitre').textContent = historique.length + ' tentative' + (historique.length > 1 ? 's' : '');
+        });
+      }
     }
+    
+    // === TEMPS : on prend la colonne I (temps) telle quelle ===
+    var tempsAffiche = item.temps || '—';
+
+    // === CALCUL DU TEMPS TOTAL ===
+    if (item.temps && item.temps !== '—') {
+      var totalSeconds = 0;
+      var parts = item.temps.split(':');
+      if (parts.length === 3) {
+        var h = parseInt(parts[0]) || 0;
+        var m = parseInt(parts[1]) || 0;
+        var s = parseInt(parts[2]) || 0;
+        totalSeconds = h * 3600 + m * 60 + s;
+      }
+      if (totalSeconds > 0) totalTemps += totalSeconds;
+    }
+
+    html += `
+      <div class="tentative-item">
+        <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
+        <span class="statut ${statutClass}">${statutTexte}</span>
+        <span class="temps">${tempsAffiche}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  // === TEMPS TOTAL ===
+  var totalMinutes = Math.floor(totalTemps / 60);
+  var totalSecondes = totalTemps % 60;
+  var tempsTotalStr = totalMinutes > 0 ? totalMinutes + 'min ' + totalSecondes + 's' : totalSecondes + 's';
+
+  html += `
+    <div class="temps-total">
+      ⏱️ Temps total passé : <span>${tempsTotalStr}</span>
+    </div>
+  `;
+
+  document.getElementById('modalCorps').innerHTML = html;
+  document.getElementById('modalSousTitre').textContent = historique.length + ' tentative' + (historique.length > 1 ? 's' : '');
+}
 
     // ============================================================
     // INIT
