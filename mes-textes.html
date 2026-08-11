@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Mes méditations</title>
+  <title>Mes textes</title>
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <style>
     /* ============================================================
@@ -38,7 +38,7 @@
     }
 
     /* ============================================================
-       HEADER - Épuré
+       HEADER
        ============================================================ */
     .header {
       display: flex;
@@ -46,8 +46,8 @@
       align-items: center;
       flex-wrap: wrap;
       gap: 12px;
-      margin-bottom: 28px;
-      padding-bottom: 20px;
+      margin-bottom: 20px;
+      padding-bottom: 16px;
       border-bottom: 1px solid #e8e5e0;
     }
 
@@ -102,7 +102,62 @@
     }
 
     /* ============================================================
-       STATS - Version PRO
+       NIVEAU + DESCRIPTION
+       ============================================================ */
+    .niveau-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .niveau-badge {
+      background: #ffffff;
+      border-radius: 14px;
+      padding: 14px 24px;
+      border: 1px solid #edeae5;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .niveau-badge .label {
+      font-size: 13px;
+      color: #94a3b8;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+    }
+
+    .niveau-badge .valeur {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2d6a4f;
+      font-family: 'Georgia', serif;
+    }
+
+    .niveau-description {
+      flex: 1;
+      background: #f8f6f2;
+      border-radius: 14px;
+      padding: 14px 24px;
+      border: 1px solid #edeae5;
+      display: flex;
+      align-items: center;
+      min-height: 56px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .niveau-description p {
+      font-size: 14px;
+      color: #475569;
+      line-height: 1.6;
+      font-style: italic;
+      letter-spacing: 0.2px;
+    }
+
+    /* ============================================================
+       STATS
        ============================================================ */
     .stats {
       display: flex;
@@ -137,7 +192,7 @@
     }
 
     /* ============================================================
-       ONGLETS - Version PRO
+       ONGLETS
        ============================================================ */
     .tabs-container {
       display: flex;
@@ -209,7 +264,7 @@
     }
 
     /* ============================================================
-       GRILLE - Version PRO
+       GRILLE
        ============================================================ */
     .grille {
       display: flex;
@@ -276,9 +331,6 @@
       display: inline-block;
     }
 
-    /* ============================================================
-       CADRE "À RETENIR" - Version PRO
-       ============================================================ */
     .carte-post .retenir-cadre {
       background: #f8f6f2;
       border-left: 3px solid #b8956a;
@@ -308,9 +360,6 @@
       color: #94a3b8;
     }
 
-    /* ============================================================
-       STATUT - Version PRO
-       ============================================================ */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
@@ -352,9 +401,6 @@
       display: block;
     }
 
-    /* ============================================================
-       BOUTON - Version PRO
-       ============================================================ */
     .carte-post .btn-lire {
       padding: 8px 20px;
       background: #2d6a4f;
@@ -386,9 +432,6 @@
       box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
     }
 
-    /* ============================================================
-       VIDE
-       ============================================================ */
     .vide-tab {
       text-align: center;
       padding: 40px 20px;
@@ -402,9 +445,6 @@
       opacity: 0.5;
     }
 
-    /* ============================================================
-       LOADER
-       ============================================================ */
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -456,9 +496,6 @@
       font-size: 15px;
     }
 
-    /* ============================================================
-       DEVISE
-       ============================================================ */
     .devise {
       text-align: center;
       padding: 28px 0 8px;
@@ -471,9 +508,6 @@
       font-family: 'Georgia', serif;
     }
 
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
     @media (max-width: 768px) {
       .header {
         flex-direction: column;
@@ -482,6 +516,9 @@
       }
       .header-actions {
         justify-content: center;
+      }
+      .niveau-container {
+        flex-direction: column;
       }
       .carte-post {
         grid-template-columns: 1fr;
@@ -532,6 +569,12 @@
       .stats .stat-item .nombre {
         font-size: 18px;
       }
+      .niveau-badge {
+        padding: 12px 16px;
+      }
+      .niveau-description {
+        padding: 12px 16px;
+      }
     }
   </style>
 </head>
@@ -547,6 +590,17 @@
       <div class="header-actions">
         <span class="info" id="infoConnecte"><strong id="nomConnecte">—</strong></span>
         <a href="/medit/index.html" class="btn-retour">← Accueil</a>
+      </div>
+    </div>
+
+    <!-- ========== NIVEAU + DESCRIPTION ========== -->
+    <div class="niveau-container" id="niveauContainer">
+      <div class="niveau-badge">
+        <span class="label">Niveau</span>
+        <span class="valeur" id="niveauValeur">—</span>
+      </div>
+      <div class="niveau-description">
+        <p id="niveauDescription">Chargement...</p>
       </div>
     </div>
 
@@ -579,7 +633,7 @@
 
     <!-- ========== DEVISE ========== -->
     <div class="devise">
-      “Ne méditent-ils donc pas sur le Coran? Ou bien se trouve t-il des cadenas sur leur coeurs ?” Coran 47:24
+      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
 
   </div>
@@ -593,9 +647,38 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
+    var niveauEtudiant = 0;
 
     // ============================================================
-    // CHARGEMENT
+    // CHARGEMENT DU NIVEAU + DESCRIPTION
+    // ============================================================
+
+    function chargerNiveauEtDescription() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) return;
+
+      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            niveauEtudiant = data.niveau || 0;
+            document.getElementById('niveauValeur').textContent = niveauEtudiant;
+            document.getElementById('niveauDescription').textContent = data.description || 'Aucune description disponible pour ce niveau.';
+          } else {
+            document.getElementById('niveauValeur').textContent = '?';
+            document.getElementById('niveauDescription').textContent = 'Impossible de charger les informations.';
+          }
+        })
+        .catch(function() {
+          document.getElementById('niveauValeur').textContent = '?';
+          document.getElementById('niveauDescription').textContent = 'Erreur de chargement.';
+        });
+    }
+
+    // ============================================================
+    // CHARGEMENT DES POSTS + RÉPONSES
     // ============================================================
 
     function chargerTableauDeBord() {
@@ -834,6 +917,7 @@
     // ============================================================
 
     function demarrer() {
+      chargerNiveauEtDescription();
       chargerTableauDeBord();
     }
 
