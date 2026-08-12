@@ -209,16 +209,14 @@
     }
 
     .contenu-slide {
-      color: #55524f;
-      font-size: 21px;
-      font-weight: 750;
-      letter-spacing: 1.2px;
-      line-height: 2;
-      font-family: 'EB Garamond', 'Georgia', 'Times New Roman', serif;
       width: 100%;
-      text-align: center;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+      font-size: 19px;
+      font-weight: 400;
+      color: #2d3748;
+      line-height: 1.9;
+      letter-spacing: 0.3px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      text-align: left;
     }
 
     .contenu-slide p {
@@ -385,37 +383,6 @@
     #quiz-result #quiz-score {
       font-weight: 600;
       color: #2d6a4f;
-    }
-
-    /* Bouton Valider le quiz */
-    .btn-valider-quiz {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 12px 32px;
-      background: #2d6a4f;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      font-size: 16px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
-      letter-spacing: 0.3px;
-      box-shadow: 0 4px 15px rgba(45, 106, 79, 0.2);
-    }
-
-    .btn-valider-quiz:hover:not(:disabled) {
-      background: #1a4a3a;
-      transform: translateY(-2px);
-      box-shadow: 0 8px 25px rgba(45, 106, 79, 0.3);
-    }
-
-    .btn-valider-quiz:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
     }
 
     /* ============================================================
@@ -653,7 +620,7 @@
         font-size: 26px;
       }
       .contenu-slide {
-        font-size: 27px;
+        font-size: 17px;
       }
       .slide-memo .contenu-memo {
         font-size: 18px;
@@ -678,10 +645,6 @@
       }
       .quiz-question label {
         font-size: 14px;
-      }
-      .btn-valider-quiz {
-        width: 100%;
-        text-align: center;
       }
     }
 
@@ -748,33 +711,35 @@
       });
 
     function mettreAJourHeader() {
-      var id = localStorage.getItem('etudiant_id');
-      var nav = document.getElementById('headerNav');
-      var userNameSpan = document.getElementById('headerUserName');
+  var id = localStorage.getItem('etudiant_id');
+  var nav = document.getElementById('headerNav');
+  var userNameSpan = document.getElementById('headerUserName');
 
-      if (userNameSpan) {
-        if (id) {
-          userNameSpan.textContent = '👤 ' + id;
-        } else {
-          userNameSpan.textContent = '';
-        }
-      }
-
-      if (nav) {
-        if (id) {
-          nav.innerHTML = `
-            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-          `;
-        } else {
-          nav.innerHTML = `
-            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
-          `;
-        }
-      }
+  // Afficher le nom de l'étudiant à côté du logo
+  if (userNameSpan) {
+    if (id) {
+      userNameSpan.textContent = '👤 ' + id;
+    } else {
+      userNameSpan.textContent = '';
     }
+  }
+
+  // Gérer les liens de navigation
+  if (nav) {
+    if (id) {
+      nav.innerHTML = `
+        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+      `;
+    }
+  }
+}
   </script>
 
   <div class="page-article">
@@ -805,6 +770,31 @@
           <div class="paragraphe-wrapper" id="slideWrapper"></div>
           <div class="compteur" id="compteur">1 / 1</div>
           <div class="lock-message" id="lockMessage"></div>
+        </div>
+
+        <div class="paragraphe-item" id="slideQuiz" style="display: none;">
+          <div class="quiz-container" id="quizContent">
+            <h3>Quiz</h3>
+            <div id="quizQuestionsContainer"></div>
+            <div id="quiz-result">
+              <p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">0</span></p>
+              <p id="quiz-message"></p>
+            </div>
+          </div>
+
+          <div id="openQuestion">
+            <h3>Question ouverte</h3>
+            <h4 id="questionOuverteTexte">Qu'est-ce que cette méditation vous a inspiré ?</h4>
+            <p>
+              <label>Votre réponse :<br />
+                <textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3"></textarea>
+              </label>
+            </p>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;">
+              <button class="btn-nav" onclick="validerReponse()">Enregistrer</button>
+            </div>
+            <div id="form-message-mailto" style="margin-top:6px;"></div>
+          </div>
         </div>
 
         <div class="post-date" id="postDate"></div>
@@ -850,7 +840,6 @@
     var tempsDebut = Date.now();
     var postId = '';
     var postTitre = '';
-    var quizSauvegardeEffectuee = false;
 
     // Stocker les données du quiz pour la sauvegarde finale
     var quizData = {
@@ -967,7 +956,6 @@
       quizValide = false;
       reponseValidee = false;
       quizVerrouille = false;
-      quizSauvegardeEffectuee = false;
       quizData = { choixQcm: [], bonnes: 0, total: 0 };
 
       var wrapper = document.getElementById('slideWrapper');
@@ -979,6 +967,8 @@
         div.dataset.index = index;
 
         if (slide.type === 'quiz') {
+          div.id = 'slideQuiz';
+          div.style.display = 'block';
           div.innerHTML = genererSlideQuiz(slide.data);
         } else if (slide.type === 'question-ouverte') {
           div.innerHTML = genererSlideQuestionOuverte(slide.data);
@@ -1015,10 +1005,7 @@
         html += '<div class="quiz-feedback" id="feedback_' + qId + '"></div>';
         html += '</div>';
       });
-      html += '<div style="text-align:center;margin-top:12px;">';
-      html += '<button class="btn-valider-quiz" id="btnValiderQuiz" onclick="validerQuiz()">✅ Valider et continuer</button>';
-      html += '</div>';
-      html += '<div id="quiz-result" style="display:none;margin-top:12px;"><p><strong>Vous avez eu le score de</strong> <span id="quiz-score">0</span> / <span id="quiz-total">' + data.questions.length + '</span></p><p id="quiz-message"></p></div>';
+      html += '<div id="quiz-result"><p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">' + data.questions.length + '</span></p><p id="quiz-message"></p></div>';
       html += '</div>';
       return html;
     }
@@ -1082,13 +1069,13 @@
       var msg = document.getElementById('lockMessage');
       var current = slidesData[slideIndex];
       if (current && current.type === 'quiz') {
-        if (quizValide) msg.textContent = '✅ Quiz validé.';
-        else msg.textContent = '📝 Répondez au quiz et cliquez sur "Valider et continuer".';
+        if (quizValide) msg.textContent = 'Quiz validé.';
+        else msg.textContent = 'Répondez au quiz pour continuer.';
       } else if (current && current.type === 'question-ouverte') {
-        if (reponseValidee) msg.textContent = '✅ Réponse enregistrée.';
-        else msg.textContent = '✏️ Écrivez votre réponse et cliquez sur "Enregistrer".';
+        if (reponseValidee) msg.textContent = 'Réponse enregistrée.';
+        else msg.textContent = 'Écrivez votre réponse.';
       } else if (current && current.type === 'memo') {
-        msg.textContent = '🎉 Méditation terminée !';
+        msg.textContent = 'Méditation terminée.';
       } else {
         msg.textContent = '';
       }
@@ -1109,7 +1096,7 @@
     function ajouterBoutonAppris() {
       var btn = document.createElement('button');
       btn.id = 'btnAppris';
-      btn.textContent = '📚 Revenir aux textes';
+      btn.textContent = 'Revenir aux textes';
       btn.className = 'btn-appris';
       btn.onclick = function() {
         window.location.href = '/medit/mes-textes.html';
@@ -1133,7 +1120,7 @@
 
       setTimeout(function() {
         window.location.href = '/medit/mes-textes.html';
-      }, 5000);
+      }, 2500);
     }
 
     function slideSuivant() {
@@ -1143,9 +1130,9 @@
       } else {
         var current = slidesData[slideIndex];
         if (current && current.type === 'quiz' && !quizValide) {
-          document.getElementById('lockMessage').textContent = '📝 Répondez au quiz et cliquez sur "Valider et continuer".';
+          document.getElementById('lockMessage').textContent = 'Répondez au quiz.';
         } else if (current && current.type === 'question-ouverte' && !reponseValidee) {
-          document.getElementById('lockMessage').textContent = '✏️ Écrivez votre réponse et cliquez sur "Enregistrer".';
+          document.getElementById('lockMessage').textContent = 'Écrivez votre réponse.';
         } else {
           document.getElementById('lockMessage').textContent = 'Complétez d\'abord cette étape.';
         }
@@ -1159,17 +1146,17 @@
     function allerSlide(index) {
       if (isSlideAccessible(index)) { slideIndex = index; updateSlides(); }
       else {
-        document.getElementById('lockMessage').textContent = '🔒 Cette section est verrouillée.';
+        document.getElementById('lockMessage').textContent = 'Cette section est verrouillée.';
       }
     }
 
     // ============================================================
-    // QUIZ - VALIDATION MANUELLE
+    // QUIZ
     // ============================================================
-    function validerQuiz() {
-      if (quizVerrouille || quizSauvegardeEffectuee) return;
+    function verifierQuizAuto() {
+      if (quizVerrouille) return;
 
-      var questions = document.querySelectorAll('.quiz-question');
+      var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
       var total = questions.length;
       var correct = 0;
       var toutesRepondues = true;
@@ -1206,7 +1193,7 @@
             });
           } else {
             feedback.className = 'quiz-feedback incorrect';
-            feedback.textContent = '✗ La bonne réponse est : ' + q.querySelector('input[data-correct="true"]').value;
+            feedback.textContent = '✗ Réessayez, relisez le texte.';
             selected.closest('label').classList.add('incorrect');
             labels.forEach(function(l) {
               var r = l.querySelector('input[type="radio"]');
@@ -1216,7 +1203,7 @@
         } else {
           toutesRepondues = false;
           feedback.className = 'quiz-feedback incorrect';
-          feedback.textContent = '⚠️ Sélectionnez une réponse.';
+          feedback.textContent = 'Sélectionnez une réponse.';
         }
       });
 
@@ -1227,55 +1214,11 @@
 
       var msg = document.getElementById('quiz-message');
       if (!toutesRepondues) {
-        msg.textContent = 'Vous pourez voir la correction.';
-        msg.style.color = '#c62828';
+        msg.textContent = 'Répondez à toutes les questions.';
+        msg.style.color = '#b8956a';
         return;
       }
 
-      // Sauvegarder les données du quiz
-      quizData.choixQcm = choixQcm;
-      quizData.bonnes = correct;
-      quizData.total = total;
-
-      // Calcul du pourcentage
-      var pourcentage = (correct / total) * 100;
-      var message = '';
-      var couleur = '';
-
-      if (pourcentage >= 100) {
-        message = '🏆 Excellent ! Vous n'avez fait aucune faute.';
-        couleur = '#1a7a3a';
-        quizValide = true;
-      } else if (pourcentage >= 80) {
-        message = 'Très bien !';
-        couleur = '#2d6a4f';
-        quizValide = true;
-      } else if (pourcentage >= 65) {
-        message = 'Réussi !';
-        couleur = '#5a8a6a';
-        quizValide = true;
-      } else if (pourcentage >= 51) {
-        message = 'Correct.';
-        couleur = '#5a8a6a';
-        quizValide = true;
-      } else {
-        message = 'Repassez le quiz.';
-        couleur = '#c62828';
-        quizValide = false;
-      }
-
-      // Afficher le message
-      msg.textContent = message + ' (' + correct + '/' + total + ')';
-      msg.style.color = couleur;
-      msg.style.fontSize = '18px';
-      msg.style.fontWeight = 'bold';
-      msg.style.padding = '10px';
-      msg.style.backgroundColor = couleur === '#c62828' ? '#fde8e8' : '#e8f5e9';
-      msg.style.borderRadius = '8px';
-      msg.style.border = '2px solid ' + couleur;
-      msg.style.marginTop = '8px';
-
-      // Verrouiller le quiz
       quizVerrouille = true;
       questions.forEach(function(q) {
         q.classList.add('verrouille');
@@ -1283,109 +1226,45 @@
         radios.forEach(function(r) { r.disabled = true; });
       });
 
-      // Désactiver le bouton
-      var btn = document.getElementById('btnValiderQuiz');
-      if (btn) {
-        btn.disabled = true;
-        btn.textContent = '✅ Quiz validé';
-        btn.style.opacity = '0.6';
-      }
+      quizData.choixQcm = choixQcm;
+      quizData.bonnes = correct;
+      quizData.total = total;
 
-      // Sauvegarder les réponses automatiquement
-      sauvegarderQuiz();
-
-      // Si score < 50%, proposer de recommencer
-      if (pourcentage < 50) {
-        var btnRecommencer = document.createElement('button');
-        btnRecommencer.textContent = '🔄 Veuillez recommencer ce texte';
-        btnRecommencer.className = 'btn-appris';
-        btnRecommencer.style.marginTop = '10px';
-        btnRecommencer.style.backgroundColor = '#b8956a';
-        btnRecommencer.onclick = function() {
-          window.location.reload();
-        };
-        
-        var ancienBtn = document.getElementById('btnRecommencerQuiz');
-        if (ancienBtn) ancienBtn.remove();
-        btnRecommencer.id = 'btnRecommencerQuiz';
-        resultDiv.appendChild(btnRecommencer);
-        quizValide = false;
-      } else {
-        // Si réussi, permettre la navigation
-        var ancienBtn = document.getElementById('btnRecommencerQuiz');
-        if (ancienBtn) ancienBtn.remove();
-        
+      if (correct === total) {
+        msg.textContent = 'Parfait !';
+        msg.style.color = '#2d6a4f';
         quizValide = true;
         updateSlides();
         setTimeout(function() {
-          if (slideIndex < slidesData.length - 1) {
-            slideIndex++;
-            updateSlides();
-          }
-        }, 4000);
+          if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+        }, 1200);
+      } else if (correct >= Math.ceil(total / 2)) {
+        msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
+        msg.style.color = '#b8956a';
+        quizValide = true;
+        updateSlides();
+        setTimeout(function() {
+          if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+        }, 1200);
+      } else {
+        msg.textContent = 'Prenez le temps de relire la méditation.';
+        msg.style.color = '#c62828';
       }
     }
 
     // ============================================================
-    // SAUVEGARDE DU QUIZ
-    // ============================================================
-    function sauvegarderQuiz() {
-      if (quizSauvegardeEffectuee) return;
-
-      var nom = localStorage.getItem('etudiant_id');
-      if (!nom) {
-        console.log('Non connecté');
-        return;
-      }
-
-      var retenir = '';
-      for (var i = 0; i < slidesData.length; i++) {
-        if (slidesData[i].type === 'memo') {
-          retenir = slidesData[i].data.texte || '';
-          break;
-        }
-      }
-
-      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
-      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(postId) +
-        '&titre=' + encodeURIComponent(postTitre) +
-        '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
-        '&bonnes=' + encodeURIComponent(quizData.bonnes) +
-        '&total=' + encodeURIComponent(quizData.total) +
-        '&reponseOuverte=' + encodeURIComponent('') +
-        '&tempsPasse=' + encodeURIComponent(tempsPasse) +
-        '&retenir=' + encodeURIComponent(retenir);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            quizSauvegardeEffectuee = true;
-            console.log('Quiz sauvegardé');
-          } else {
-            console.log('Erreur sauvegarde quiz:', data.message);
-          }
-        })
-        .catch(function() {
-          console.log('Erreur réseau');
-        });
-    }
-
-    // ============================================================
-    // SAUVEGARDE REPONSE OUVERTE
+    // SAUVEGARDE FINALE
     // ============================================================
     function validerReponse() {
       var nom = localStorage.getItem('etudiant_id');
       if (!nom) {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">❌ Veuillez vous reconnecter.</span>';
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
         return;
       }
 
       var reponse = document.getElementById('reponse-mailto').value.trim();
       if (!reponse) {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">✏️ Écrivez quelque chose.</span>';
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose.</span>';
         return;
       }
 
@@ -1413,12 +1292,13 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✅ Sauvegardé.</span>';
+            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Sauvegardé.</span>';
             reponseValidee = true;
             document.getElementById('reponse-mailto').disabled = true;
             var btn = document.querySelector('#openQuestion .btn-nav');
             if (btn) btn.disabled = true;
             updateSlides();
+            // Si c'était le dernier slide, on déclenche le message de fin
             if (slideIndex === slidesData.length - 1) {
               setTimeout(function() {
                 afficherMessageFin();
@@ -1426,16 +1306,35 @@
             } else {
               setTimeout(function() {
                 if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
-              }, 3000);
+              }, 1000);
             }
           } else {
-            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">❌ Erreur : ' + (data.message || '') + '</span>';
+            document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
           }
         })
         .catch(function() {
-          document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">❌ Erreur réseau.</span>';
+          document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
         });
     }
+
+    // ============================================================
+    // ÉCOUTE DES RADIOS
+    // ============================================================
+    document.addEventListener('change', function(e) {
+      if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
+        var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+        var toutesRepondues = true;
+        questions.forEach(function(q) {
+          var radios = q.querySelectorAll('input[type="radio"]');
+          var repondu = false;
+          radios.forEach(function(r) { if (r.checked) repondu = true; });
+          if (!repondu) toutesRepondues = false;
+        });
+        if (toutesRepondues && questions.length > 0) {
+          setTimeout(verifierQuizAuto, 400);
+        }
+      }
+    });
 
     // ============================================================
     // SWIPE TACTILE
