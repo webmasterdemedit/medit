@@ -52,8 +52,8 @@
        ============================================================ */
     .hero {
       text-align: center;
-      padding: 40px 20px;
-      margin-bottom: 40px;
+      padding: 20px 20px 40px;
+      margin-bottom: 20px;
     }
 
     .hero .logo {
@@ -91,29 +91,90 @@
     }
 
     /* ============================================================
-       SECTION CONNEXION
+       BOUTON ENTRER
        ============================================================ */
-    .auth-section {
-      display: flex;
+    .btn-entrer {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 16px 48px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 4px 20px rgba(45, 106, 79, 0.2);
+    }
+
+    .btn-entrer:hover {
+      background: #1a4a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(45, 106, 79, 0.3);
+    }
+
+    /* ============================================================
+       POPUP CONNEXION / INSCRIPTION
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
       justify-content: center;
-      gap: 40px;
-      flex-wrap: wrap;
-      margin-top: 20px;
+      z-index: 99999;
+      padding: 20px;
     }
 
-    .auth-card {
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-content {
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 20px;
       padding: 32px 36px;
-      border: 1px solid #edeae5;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      flex: 1;
-      min-width: 280px;
-      max-width: 420px;
+      max-width: 440px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: modalFadeIn 0.3s ease;
     }
 
-    .auth-card h3 {
-      font-size: 20px;
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-content .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .modal-content .modal-close:hover {
+      color: #1a2a2e;
+    }
+
+    .modal-content h3 {
+      font-size: 22px;
       font-weight: 400;
       font-family: 'Georgia', serif;
       color: #1a2a2e;
@@ -122,11 +183,11 @@
       letter-spacing: 0.5px;
     }
 
-    .auth-card .champ {
+    .modal-content .champ {
       margin-bottom: 16px;
     }
 
-    .auth-card label {
+    .modal-content label {
       display: block;
       font-size: 13px;
       font-weight: 500;
@@ -135,8 +196,8 @@
       letter-spacing: 0.3px;
     }
 
-    .auth-card input,
-    .auth-card textarea {
+    .modal-content input,
+    .modal-content textarea {
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #e2e0db;
@@ -148,19 +209,19 @@
       color: #1a2a2e;
     }
 
-    .auth-card input:focus,
-    .auth-card textarea:focus {
+    .modal-content input:focus,
+    .modal-content textarea:focus {
       border-color: #2d6a4f;
       outline: none;
       box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
     }
 
-    .auth-card textarea {
+    .modal-content textarea {
       resize: vertical;
       min-height: 80px;
     }
 
-    .auth-card .btn-submit {
+    .modal-content .btn-submit {
       width: 100%;
       padding: 14px;
       background: #2d6a4f;
@@ -176,59 +237,41 @@
       margin-top: 4px;
     }
 
-    .auth-card .btn-submit:hover {
+    .modal-content .btn-submit:hover {
       background: #1a4a3a;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
     }
 
-    .auth-card .message {
+    .modal-content .message {
       margin-top: 12px;
       font-size: 14px;
       text-align: center;
     }
 
-    .auth-card .message.success {
+    .modal-content .message.success {
       color: #2d6a4f;
     }
 
-    .auth-card .message.error {
+    .modal-content .message.error {
       color: #b33;
     }
 
-    .auth-card .lien-form {
+    .modal-content .lien-form {
       margin-top: 12px;
       font-size: 14px;
       color: #94a3b8;
       text-align: center;
     }
 
-    .auth-card .lien-form a {
+    .modal-content .lien-form a {
       color: #2d6a4f;
       font-weight: 500;
       cursor: pointer;
     }
 
-    .auth-card .lien-form a:hover {
+    .modal-content .lien-form a:hover {
       text-decoration: underline;
-    }
-
-    /* ============================================================
-       SÉPARATEUR
-       ============================================================ */
-    .separateur {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      color: #d4cec7;
-      font-size: 13px;
-      margin: 8px 0;
-    }
-
-    .separateur .line {
-      flex: 1;
-      height: 1px;
-      background: #edeae5;
     }
 
     /* ============================================================
@@ -256,13 +299,7 @@
       .hero .logo {
         font-size: 38px;
       }
-      .auth-section {
-        flex-direction: column;
-        align-items: center;
-      }
-      .auth-card {
-        max-width: 100%;
-        width: 100%;
+      .modal-content {
         padding: 24px 20px;
       }
     }
@@ -273,6 +310,10 @@
       }
       .hero .description {
         font-size: 14px;
+      }
+      .btn-entrer {
+        padding: 14px 32px;
+        font-size: 16px;
       }
     }
   </style>
@@ -308,35 +349,33 @@
       });
 
     function mettreAJourHeader() {
-  var id = localStorage.getItem('etudiant_id');
-  var nav = document.getElementById('headerNav');
-  var userNameSpan = document.getElementById('headerUserName');
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
 
-  // Afficher le nom de l'étudiant à côté du logo
-  if (userNameSpan) {
-    if (id) {
-      userNameSpan.textContent = '👤 ' + id;
-    } else {
-      userNameSpan.textContent = '';
-    }
-  }
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = '👤 ' + id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
 
-  // Gérer les liens de navigation
-  if (nav) {
-    if (id) {
-      nav.innerHTML = `
-        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-      `;
-    } else {
-      nav.innerHTML = `
-        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
-      `;
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
     }
-  }
-}
   </script>
 
   <div class="page-home">
@@ -351,13 +390,25 @@
         Rappels simples, traductions du Coran et des Hadiths, cours d'arabe,
         le tout dans un espace personnel selon votre niveau d'avancement.
       </p>
+
+      <!-- BOUTON ENTRER -->
+      <button class="btn-entrer" onclick="ouvrirModal()">Entrer</button>
     </div>
 
-    <!-- ========== SECTION CONNEXION / INSCRIPTION ========== -->
-    <div class="auth-section">
+    <!-- ========== DEVISE ========== -->
+    <div class="devise-home">
+      “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+  </div>
+
+  <!-- ========== POPUP CONNEXION / INSCRIPTION ========== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="fermerModal()">✕</button>
 
       <!-- CONNEXION -->
-      <div class="auth-card" id="formConnexion" style="display:block;">
+      <div id="formConnexion" style="display:block;">
         <h3>Se connecter</h3>
         <div class="champ">
           <label>Identifiant</label>
@@ -375,7 +426,7 @@
       </div>
 
       <!-- INSCRIPTION -->
-      <div class="auth-card" id="formInscription" style="display:none;">
+      <div id="formInscription" style="display:none;">
         <h3>Créer un compte</h3>
         <div class="champ">
           <label>Identifiant</label>
@@ -397,12 +448,6 @@
       </div>
 
     </div>
-
-    <!-- ========== DEVISE ========== -->
-    <div class="devise-home">
-      “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
-    </div>
-
   </div>
 
   <!-- ========== FOOTER ========== -->
@@ -429,6 +474,39 @@
   <script src="/medit/auth.js"></script>
 
   <script>
+    // ============================================================
+    // MODAL
+    // ============================================================
+    function ouvrirModal() {
+      document.getElementById('modalOverlay').classList.add('visible');
+      // Réinitialiser l'affichage sur la connexion
+      document.getElementById('formInscription').style.display = 'none';
+      document.getElementById('formConnexion').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+    }
+
+    function fermerModal() {
+      document.getElementById('modalOverlay').classList.remove('visible');
+    }
+
+    // Fermer avec la touche Échap
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        fermerModal();
+      }
+    });
+
+    // Fermer en cliquant à l'extérieur
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        fermerModal();
+      }
+    });
+
+    // ============================================================
+    // ALTERNANCE CONNEXION / INSCRIPTION
+    // ============================================================
     function ouvrirConnexion() {
       document.getElementById('formInscription').style.display = 'none';
       document.getElementById('formConnexion').style.display = 'block';
@@ -441,6 +519,9 @@
       document.getElementById('registerMessage').textContent = '';
     }
 
+    // ============================================================
+    // CONNEXION
+    // ============================================================
     function seConnecter() {
       var id = document.getElementById('loginId').value.trim();
       var mdp = document.getElementById('loginMdp').value.trim();
@@ -477,6 +558,9 @@
         });
     }
 
+    // ============================================================
+    // INSCRIPTION
+    // ============================================================
     function sInscrire() {
       var id = document.getElementById('registerId').value.trim();
       var mdp = document.getElementById('registerMdp').value.trim();
@@ -528,6 +612,9 @@
         });
     }
 
+    // ============================================================
+    // DÉCONNEXION
+    // ============================================================
     function deconnecter() {
       if (confirm('Se déconnecter ?')) {
         localStorage.removeItem('etudiant_id');
@@ -536,6 +623,9 @@
       }
     }
 
+    // ============================================================
+    // INIT
+    // ============================================================
     function demarrer() {
       var id = localStorage.getItem('etudiant_id');
       if (id) {
