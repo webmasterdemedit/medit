@@ -142,7 +142,7 @@
       background: #ffffff;
       border-radius: 20px;
       padding: 32px 36px;
-      max-width: 440px;
+      max-width: 480px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
@@ -197,7 +197,8 @@
     }
 
     .modal-content input,
-    .modal-content textarea {
+    .modal-content textarea,
+    .modal-content select {
       width: 100%;
       padding: 12px 16px;
       border: 1px solid #e2e0db;
@@ -210,7 +211,8 @@
     }
 
     .modal-content input:focus,
-    .modal-content textarea:focus {
+    .modal-content textarea:focus,
+    .modal-content select:focus {
       border-color: #2d6a4f;
       outline: none;
       box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
@@ -219,6 +221,11 @@
     .modal-content textarea {
       resize: vertical;
       min-height: 80px;
+    }
+
+    .modal-content select {
+      appearance: auto;
+      cursor: pointer;
     }
 
     .modal-content .btn-submit {
@@ -241,6 +248,14 @@
       background: #1a4a3a;
       transform: translateY(-2px);
       box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
+    }
+
+    .modal-content .btn-submit.secondary {
+      background: #b8956a;
+    }
+
+    .modal-content .btn-submit.secondary:hover {
+      background: #a07d55;
     }
 
     .modal-content .message {
@@ -272,6 +287,33 @@
 
     .modal-content .lien-form a:hover {
       text-decoration: underline;
+    }
+
+    /* ============================================================
+       CASES À COCHER DISCIPLINES
+       ============================================================ */
+    #registerDisciplines {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      background: #faf9f7;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #e2e0db;
+    }
+
+    #registerDisciplines label {
+      font-size: 14px;
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 400;
+    }
+
+    #registerDisciplines input[type="checkbox"] {
+      accent-color: #2d6a4f;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
     }
 
     /* ============================================================
@@ -349,33 +391,33 @@
       });
 
     function mettreAJourHeader() {
-  var id = localStorage.getItem('etudiant_id');
-  var nav = document.getElementById('headerNav');
-  var userNameSpan = document.getElementById('headerUserName');
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
 
-  if (userNameSpan) {
-    if (id) {
-      userNameSpan.textContent = '👤 ' + id;
-    } else {
-      userNameSpan.textContent = '';
-    }
-  }
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = '👤 ' + id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
 
-  if (nav) {
-    if (id) {
-      nav.innerHTML = `
-        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-      `;
-    } else {
-      nav.innerHTML = `
-        <a href="/medit/index.html" class="header-link">Accueil</a>
-        <a href="#" class="header-link">e-learning</a>
-      `;
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="/medit/index.html" class="header-link">Accueil</a>
+            <a href="#" class="header-link">e-learning</a>
+          `;
+        }
+      }
     }
-  }
-}
   </script>
 
   <div class="page-home">
@@ -421,26 +463,49 @@
         <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
         <div class="message" id="loginMessage"></div>
         <div class="lien-form">
-          Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Créer un compte</a>
+          Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Faire une demande d'inscription</a>
         </div>
       </div>
 
-      <!-- INSCRIPTION -->
+      <!-- INSCRIPTION - DEMANDE D'INSCRIPTION -->
       <div id="formInscription" style="display:none;">
-        <h3>Créer un compte</h3>
+        <h3>Demande d'inscription</h3>
+
+        <!-- Nom/Prénom -->
         <div class="champ">
-          <label>Identifiant</label>
-          <input type="text" id="registerId" placeholder="Choisissez un identifiant" />
+          <label>Nom et prénom</label>
+          <input type="text" id="registerNom" placeholder="Votre nom et prénom" />
         </div>
+
+        <!-- Mot de passe -->
         <div class="champ">
           <label>Mot de passe</label>
-          <input type="password" id="registerMdp" placeholder="Choisissez un mot de passe" />
+          <input type="password" id="registerMdp" placeholder="Votre mot de passe" />
         </div>
+
+        <!-- Discipline souhaitée (cases à cocher) -->
         <div class="champ">
-          <label>Message</label>
-          <textarea id="registerDemande" placeholder="Décrivez votre motivation, votre profil, vos attentes ..." rows="3"></textarea>
+          <label>Discipline souhaitée</label>
+          <div id="registerDisciplines">
+            <!-- Les cases à cocher seront chargées dynamiquement -->
+          </div>
         </div>
-        <button class="btn-submit" onclick="sInscrire()">Créer mon compte</button>
+
+        <!-- Niveau souhaité (basé sur colonne B de Niveaux) -->
+        <div class="champ">
+          <label>Niveau souhaité</label>
+          <select id="registerNiveau">
+            <option value="">— Choisissez un niveau —</option>
+          </select>
+        </div>
+
+        <!-- Message libre -->
+        <div class="champ">
+          <label>Message libre</label>
+          <textarea id="registerMessage" placeholder="Votre motivation, vos attentes, vos questions..." rows="3"></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="sInscrire()">Envoyer ma demande</button>
         <div class="message" id="registerMessage"></div>
         <div class="lien-form">
           Déjà un compte ? <a onclick="ouvrirConnexion();return false;">Se connecter</a>
@@ -479,7 +544,6 @@
     // ============================================================
     function ouvrirModal() {
       document.getElementById('modalOverlay').classList.add('visible');
-      // Réinitialiser l'affichage sur la connexion
       document.getElementById('formInscription').style.display = 'none';
       document.getElementById('formConnexion').style.display = 'block';
       document.getElementById('loginMessage').textContent = '';
@@ -490,14 +554,12 @@
       document.getElementById('modalOverlay').classList.remove('visible');
     }
 
-    // Fermer avec la touche Échap
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') {
         fermerModal();
       }
     });
 
-    // Fermer en cliquant à l'extérieur
     document.getElementById('modalOverlay').addEventListener('click', function(e) {
       if (e.target === this) {
         fermerModal();
@@ -511,12 +573,84 @@
       document.getElementById('formInscription').style.display = 'none';
       document.getElementById('formConnexion').style.display = 'block';
       document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
     }
 
     function ouvrirInscription() {
       document.getElementById('formConnexion').style.display = 'none';
       document.getElementById('formInscription').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
       document.getElementById('registerMessage').textContent = '';
+
+      // Charger les disciplines et niveaux
+      chargerDisciplinesEtNiveaux();
+    }
+
+    // ============================================================
+    // CHARGER LES DISCIPLINES ET NIVEAUX
+    // ============================================================
+    function chargerDisciplinesEtNiveaux() {
+      // Récupérer les disciplines (labels) depuis la feuille "Posts" - colonne C
+      var urlDisciplines = CONFIG.SCRIPT_URL + '?action=getLabels';
+
+      fetch(urlDisciplines)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.labels) {
+            var container = document.getElementById('registerDisciplines');
+            container.innerHTML = '';
+            
+            data.labels.forEach(function(label) {
+              var id = 'disc_' + label.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+              
+              var checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.id = id;
+              checkbox.value = label;
+              checkbox.name = 'disciplines';
+              
+              var labelEl = document.createElement('label');
+              labelEl.htmlFor = id;
+              labelEl.textContent = label;
+              
+              var wrapper = document.createElement('div');
+              wrapper.style.display = 'inline-flex';
+              wrapper.style.alignItems = 'center';
+              wrapper.style.gap = '6px';
+              wrapper.appendChild(checkbox);
+              wrapper.appendChild(labelEl);
+              
+              container.appendChild(wrapper);
+            });
+          }
+        })
+        .catch(function() {
+          console.error('Erreur chargement des disciplines');
+        });
+
+      // Récupérer les niveaux depuis la feuille "Niveaux" - colonne B
+      var urlNiveaux = CONFIG.SCRIPT_URL + '?action=getNiveaux';
+
+      fetch(urlNiveaux)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.niveaux) {
+            var select = document.getElementById('registerNiveau');
+            var firstOption = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+
+            data.niveaux.forEach(function(niveau) {
+              var option = document.createElement('option');
+              option.value = niveau.valeur;
+              option.textContent = niveau.description; // colonne B
+              select.appendChild(option);
+            });
+          }
+        })
+        .catch(function() {
+          console.error('Erreur chargement des niveaux');
+        });
     }
 
     // ============================================================
@@ -542,7 +676,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            localStorage.setItem('etudiant_id', id);
+            localStorage.setItem('etudiant_id', data.id || id);
             localStorage.setItem('etudiant_niveau', data.niveau || 0);
             msg.textContent = '✓ Connecté';
             msg.className = 'message success';
@@ -559,50 +693,77 @@
     }
 
     // ============================================================
-    // INSCRIPTION
+    // INSCRIPTION - DEMANDE D'INSCRIPTION
     // ============================================================
     function sInscrire() {
-      var id = document.getElementById('registerId').value.trim();
+      var nom = document.getElementById('registerNom').value.trim();
       var mdp = document.getElementById('registerMdp').value.trim();
-      var demande = document.getElementById('registerDemande').value.trim();
+      var niveau = document.getElementById('registerNiveau').value;
+      var message = document.getElementById('registerMessage').value.trim();
       var msg = document.getElementById('registerMessage');
+      
+      // Récupérer les disciplines cochées
+      var checkboxes = document.querySelectorAll('input[name="disciplines"]:checked');
+      var disciplines = [];
+      checkboxes.forEach(function(cb) {
+        disciplines.push(cb.value);
+      });
+      var disciplinesStr = disciplines.join(', ');
 
-      if (!id || !mdp) {
-        msg.textContent = '⚠️ Remplissez l\'identifiant et le mot de passe.';
+      if (!nom) {
+        msg.textContent = '⚠️ Veuillez entrer votre nom et prénom.';
         msg.className = 'message error';
         return;
       }
 
-      if (id.length < 2) {
-        msg.textContent = '⚠️ Identifiant trop court.';
+      if (!mdp) {
+        msg.textContent = '⚠️ Veuillez entrer un mot de passe.';
         msg.className = 'message error';
         return;
       }
 
-      if (mdp.length < 3) {
-        msg.textContent = '⚠️ Mot de passe trop court.';
+      if (disciplines.length === 0) {
+        msg.textContent = '⚠️ Veuillez choisir au moins une discipline.';
         msg.className = 'message error';
         return;
       }
 
-      msg.textContent = 'Création...';
+      if (!niveau) {
+        msg.textContent = '⚠️ Veuillez choisir un niveau.';
+        msg.className = 'message error';
+        return;
+      }
+
+      msg.textContent = 'Envoi de la demande...';
       msg.className = 'message';
 
-      var url = CONFIG.SCRIPT_URL + '?action=register&id=' + encodeURIComponent(id) +
+      var url = CONFIG.SCRIPT_URL + '?action=registerDemande' +
+        '&nom=' + encodeURIComponent(nom) +
         '&mdp=' + encodeURIComponent(mdp) +
-        '&demande=' + encodeURIComponent(demande);
+        '&disciplines=' + encodeURIComponent(disciplinesStr) +
+        '&niveau=' + encodeURIComponent(niveau) +
+        '&message=' + encodeURIComponent(message);
 
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            localStorage.setItem('etudiant_id', id);
-            localStorage.setItem('etudiant_niveau', 0);
-            msg.textContent = '✓ Compte créé';
+            msg.textContent = '✓ Demande envoyée ! Vous recevrez vos identifiants par email ou SMS.';
             msg.className = 'message success';
-            setTimeout(function() { location.reload(); }, 600);
+            // Réinitialiser le formulaire
+            document.getElementById('registerNom').value = '';
+            document.getElementById('registerMdp').value = '';
+            document.getElementById('registerNiveau').value = '';
+            document.getElementById('registerMessage').value = '';
+            document.querySelectorAll('input[name="disciplines"]').forEach(function(cb) {
+              cb.checked = false;
+            });
+            // Basculer sur la connexion après 3 secondes
+            setTimeout(function() {
+              ouvrirConnexion();
+            }, 3000);
           } else {
-            msg.textContent = '✗ ' + (data.message || 'Erreur de création');
+            msg.textContent = '✗ ' + (data.message || 'Erreur lors de l\'envoi');
             msg.className = 'message error';
           }
         })
