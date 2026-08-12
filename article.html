@@ -181,7 +181,7 @@
       cursor: not-allowed;
     }
 
-    /* ============================================================
+    /* /* 
        SLIDES
        ============================================================ */
     .paragraphe-container {
@@ -209,16 +209,17 @@
     }
 
     .contenu-slide {
-      color: #55524f;
-      font-size: 21px;
-      font-weight: 750;
-      letter-spacing: 1.2px;
-      line-height: 2;
-      font-family: 'EB Garamond', 'Georgia', 'Times New Roman', serif;
-      width: 100%;
-      text-align: center;
-      white-space: pre-wrap;
-      word-wrap: break-word;
+    color: #55524f;
+  font-size: 21px;
+  font-weight: 750;
+  letter-spacing: 1.2px;
+  line-height: 2;
+  font-family: 'EB Garamond', 'Georgia', 'Times New Roman', serif;
+  width: 100%;
+  text-align: center;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
     }
 
     .contenu-slide p {
@@ -366,86 +367,25 @@
       color: #c62828;
     }
 
-    /* ===== SCORE - CADRE PLUS VISIBLE ===== */
     #quiz-result {
       background: #f8f6f2;
-      border-radius: 12px;
+      border-radius: 8px;
       display: none;
-      margin-top: 16px;
-      padding: 18px 22px;
-      border: 2px solid #edeae5;
-      text-align: center;
+      margin-top: 12px;
+      padding: 12px 16px;
+      border: 1px solid #edeae5;
     }
 
     #quiz-result p {
-      font-size: 18px;
+      font-size: 15px;
       color: #1a2a2e;
-      margin-bottom: 4px;
-      letter-spacing: 0.3px;
-      font-weight: 500;
+      margin-bottom: 2px;
+      letter-spacing: 0.2px;
     }
 
     #quiz-result #quiz-score {
-      font-weight: 700;
-      font-size: 22px;
-      color: #2d6a4f;
-    }
-
-    #quiz-result .appreciation {
-      font-size: 20px;
       font-weight: 600;
-      margin-top: 4px;
-      padding: 8px 16px;
-      border-radius: 8px;
-      display: inline-block;
-    }
-
-    #quiz-result .appreciation.excellent {
-      color: #1a6e3a;
-      background: #e8f5e9;
-    }
-
-    #quiz-result .appreciation.tres-bien {
       color: #2d6a4f;
-      background: #e8f5e9;
-    }
-
-    #quiz-result .appreciation.bien {
-      color: #b8860b;
-      background: #fef3c7;
-    }
-
-    #quiz-result .appreciation.correct {
-      color: #b8860b;
-      background: #fef3c7;
-    }
-
-    #quiz-result .appreciation.insuffisant {
-      color: #c62828;
-      background: #ffebee;
-    }
-
-    /* ===== BOUTON RECOMMENCER ===== */
-    .btn-recommencer {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 12px 32px;
-      background: #b8956a;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
-      letter-spacing: 0.3px;
-    }
-
-    .btn-recommencer:hover {
-      background: #a07d55;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(184, 149, 106, 0.3);
     }
 
     /* ============================================================
@@ -651,6 +591,7 @@
       box-shadow: none;
     }
 
+    /* Bouton "J'ai appris" */
     .btn-appris {
       display: inline-block;
       margin-top: 20px;
@@ -682,7 +623,7 @@
         font-size: 26px;
       }
       .contenu-slide {
-        font-size: 17px;
+        font-size: 27px;
       }
       .slide-memo .contenu-memo {
         font-size: 18px;
@@ -707,15 +648,6 @@
       }
       .quiz-question label {
         font-size: 14px;
-      }
-      #quiz-result p {
-        font-size: 16px;
-      }
-      #quiz-result #quiz-score {
-        font-size: 20px;
-      }
-      #quiz-result .appreciation {
-        font-size: 18px;
       }
     }
 
@@ -744,11 +676,6 @@
       }
       .btn-appris {
         padding: 12px 24px;
-        font-size: 14px;
-        width: 100%;
-      }
-      .btn-recommencer {
-        padding: 10px 24px;
         font-size: 14px;
         width: 100%;
       }
@@ -787,33 +714,35 @@
       });
 
     function mettreAJourHeader() {
-      var id = localStorage.getItem('etudiant_id');
-      var nav = document.getElementById('headerNav');
-      var userNameSpan = document.getElementById('headerUserName');
+  var id = localStorage.getItem('etudiant_id');
+  var nav = document.getElementById('headerNav');
+  var userNameSpan = document.getElementById('headerUserName');
 
-      if (userNameSpan) {
-        if (id) {
-          userNameSpan.textContent = '👤 ' + id;
-        } else {
-          userNameSpan.textContent = '';
-        }
-      }
-
-      if (nav) {
-        if (id) {
-          nav.innerHTML = `
-            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-          `;
-        } else {
-          nav.innerHTML = `
-            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
-          `;
-        }
-      }
+  // Afficher le nom de l'étudiant à côté du logo
+  if (userNameSpan) {
+    if (id) {
+      userNameSpan.textContent = '👤 ' + id;
+    } else {
+      userNameSpan.textContent = '';
     }
+  }
+
+  // Gérer les liens de navigation
+  if (nav) {
+    if (id) {
+      nav.innerHTML = `
+        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+      `;
+    }
+  }
+}
   </script>
 
   <div class="page-article">
@@ -852,8 +781,7 @@
             <div id="quizQuestionsContainer"></div>
             <div id="quiz-result">
               <p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">0</span></p>
-              <div id="appreciation-container"></div>
-              <button class="btn-recommencer" id="btnRecommencer" style="display:none;" onclick="window.location.reload();">🔄 Recommencer ce texte</button>
+              <p id="quiz-message"></p>
             </div>
           </div>
 
@@ -916,6 +844,7 @@
     var postId = '';
     var postTitre = '';
 
+    // Stocker les données du quiz pour la sauvegarde finale
     var quizData = {
       choixQcm: [],
       bonnes: 0,
@@ -1079,6 +1008,7 @@
         html += '<div class="quiz-feedback" id="feedback_' + qId + '"></div>';
         html += '</div>';
       });
+      html += '<div id="quiz-result"><p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">' + data.questions.length + '</span></p><p id="quiz-message"></p></div>';
       html += '</div>';
       return html;
     }
@@ -1153,6 +1083,7 @@
         msg.textContent = '';
       }
 
+      // Gestion du bouton "J'ai appris" + message de fin
       var oldBtn = document.getElementById('btnAppris');
       if (oldBtn) oldBtn.remove();
       var oldMsg = document.getElementById('finMessage');
@@ -1223,7 +1154,7 @@
     }
 
     // ============================================================
-    // QUIZ - Avec nouvelles appréciations
+    // QUIZ
     // ============================================================
     function verifierQuizAuto() {
       if (quizVerrouille) return;
@@ -1285,12 +1216,9 @@
       document.getElementById('quiz-total').textContent = total;
 
       var msg = document.getElementById('quiz-message');
-      var appreciationContainer = document.getElementById('appreciation-container');
-
       if (!toutesRepondues) {
         msg.textContent = 'Répondez à toutes les questions.';
         msg.style.color = '#b8956a';
-        appreciationContainer.innerHTML = '';
         return;
       }
 
@@ -1305,47 +1233,25 @@
       quizData.bonnes = correct;
       quizData.total = total;
 
-      // Calcul du pourcentage
-      var pourcentage = Math.round((correct / total) * 100);
-
-      // Appréciations par tranches
-      var appreciation = '';
-      var classe = '';
-      var couleur = '';
-
-      if (pourcentage >= 95) {
-        appreciation = '🌟 Excellent !';
-        classe = 'excellent';
-      } else if (pourcentage >= 80) {
-        appreciation = '👏 Très bien !';
-        classe = 'tres-bien';
-      } else if (pourcentage >= 65) {
-        appreciation = '✅ Bien !';
-        classe = 'bien';
-      } else if (pourcentage >= 51) {
-        appreciation = '📖 Correct.';
-        classe = 'correct';
-      } else {
-        appreciation = '📚 Relisez attentivement le texte.';
-        classe = 'insuffisant';
-      }
-
-      var appreciationHtml = '<div class="appreciation ' + classe + '">' + appreciation + '</div>';
-      appreciationContainer.innerHTML = appreciationHtml;
-
-      // Si score < 50%, on bloque et on affiche le bouton "Recommencer"
-      if (pourcentage < 50) {
-        document.getElementById('btnRecommencer').style.display = 'inline-block';
-        quizValide = false;
-        // On bloque le défilement
-        updateSlides();
-      } else {
-        document.getElementById('btnRecommencer').style.display = 'none';
+      if (correct === total) {
+        msg.textContent = 'Parfait !';
+        msg.style.color = '#2d6a4f';
         quizValide = true;
         updateSlides();
         setTimeout(function() {
           if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
         }, 1200);
+      } else if (correct >= Math.ceil(total / 2)) {
+        msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
+        msg.style.color = '#b8956a';
+        quizValide = true;
+        updateSlides();
+        setTimeout(function() {
+          if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+        }, 1200);
+      } else {
+        msg.textContent = 'Prenez le temps de relire la méditation.';
+        msg.style.color = '#c62828';
       }
     }
 
@@ -1395,6 +1301,7 @@
             var btn = document.querySelector('#openQuestion .btn-nav');
             if (btn) btn.disabled = true;
             updateSlides();
+            // Si c'était le dernier slide, on déclenche le message de fin
             if (slideIndex === slidesData.length - 1) {
               setTimeout(function() {
                 afficherMessageFin();
