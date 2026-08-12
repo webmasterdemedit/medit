@@ -827,7 +827,7 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
-            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
             <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
           </footer>
         `;
@@ -856,7 +856,8 @@
     var quizData = {
       choixQcm: [],
       bonnes: 0,
-      total: 0
+      total: 0,
+      tempsPasse: ''
     };
 
     // ============================================================
@@ -968,7 +969,7 @@
       reponseValidee = false;
       quizVerrouille = false;
       quizSauvegardeEffectuee = false;
-      quizData = { choixQcm: [], bonnes: 0, total: 0 };
+      quizData = { choixQcm: [], bonnes: 0, total: 0, tempsPasse: '' };
 
       var wrapper = document.getElementById('slideWrapper');
       wrapper.innerHTML = '';
@@ -1227,10 +1228,13 @@
 
       var msg = document.getElementById('quiz-message');
       if (!toutesRepondues) {
-        msg.textContent = 'Vous pourez voir la correction.';
+        msg.textContent = '❌ Répondez à toutes les questions.';
         msg.style.color = '#c62828';
         return;
       }
+
+      // === SAUVEGARDER LE TEMPS DU QUIZ ===
+      quizData.tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
 
       // Sauvegarder les données du quiz
       quizData.choixQcm = choixQcm;
@@ -1242,24 +1246,24 @@
       var message = '';
       var couleur = '';
 
-      if (pourcentage >= 100) {
-        message = '🏆 Excellent ! Vous n'avez fait aucune faute.';
+      if (pourcentage >= 95) {
+        message = '🏆 Excellent !';
         couleur = '#1a7a3a';
         quizValide = true;
       } else if (pourcentage >= 80) {
-        message = 'Très bien !';
+        message = '🌟 Très bien !';
         couleur = '#2d6a4f';
         quizValide = true;
       } else if (pourcentage >= 65) {
-        message = 'Réussi !';
+        message = '✅ Bien !';
         couleur = '#5a8a6a';
         quizValide = true;
       } else if (pourcentage >= 51) {
-        message = 'Correct.';
-        couleur = '#5a8a6a';
+        message = '📖 Correct. Relisez les passages clés.';
+        couleur = '#b8956a';
         quizValide = true;
       } else {
-        message = 'Repassez le quiz.';
+        message = '📚 Relisez attentivement la méditation.';
         couleur = '#c62828';
         quizValide = false;
       }
@@ -1291,13 +1295,13 @@
         btn.style.opacity = '0.6';
       }
 
-      // Sauvegarder les réponses automatiquement
+      // === SAUVEGARDER LE QUIZ IMMÉDIATEMENT ===
       sauvegarderQuiz();
 
       // Si score < 50%, proposer de recommencer
       if (pourcentage < 50) {
         var btnRecommencer = document.createElement('button');
-        btnRecommencer.textContent = '🔄 Veuillez recommencer ce texte';
+        btnRecommencer.textContent = '🔄 Recommencer ce texte';
         btnRecommencer.className = 'btn-appris';
         btnRecommencer.style.marginTop = '10px';
         btnRecommencer.style.backgroundColor = '#b8956a';
@@ -1311,7 +1315,6 @@
         resultDiv.appendChild(btnRecommencer);
         quizValide = false;
       } else {
-        // Si réussi, permettre la navigation
         var ancienBtn = document.getElementById('btnRecommencerQuiz');
         if (ancienBtn) ancienBtn.remove();
         
@@ -1334,42 +1337,33 @@
 
       var nom = localStorage.getItem('etudiant_id');
       if (!nom) {
-        console.log('Non connecté');
+        console.log('❌ Non connecté');
         return;
       }
 
-      var retenir = '';
-      for (var i = 0; i < slidesData.length; i++) {
-        if (slidesData[i].type === 'memo') {
-          retenir = slidesData[i].data.texte || '';
-          break;
-        }
-      }
-
-      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
-      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
+      var url = CONFIG.SCRIPT_URL + '?action=saveReponse' +
+        '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(postId) +
         '&titre=' + encodeURIComponent(postTitre) +
         '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
         '&bonnes=' + encodeURIComponent(quizData.bonnes) +
         '&total=' + encodeURIComponent(quizData.total) +
-        '&reponseOuverte=' + encodeURIComponent('') +
-        '&tempsPasse=' + encodeURIComponent(tempsPasse) +
-        '&retenir=' + encodeURIComponent(retenir);
+        '&tempsPasse=' + encodeURIComponent(quizData.tempsPasse) +
+        '&dateEnvoi=' + encodeURIComponent(new Date().toLocaleString('fr-FR'));
 
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
             quizSauvegardeEffectuee = true;
-            console.log('Quiz sauvegardé');
+            console.log('✅ Quiz sauvegardé - Temps: ' + quizData.tempsPasse);
+            console.log('📅 Date d\'envoi: ' + new Date().toLocaleString('fr-FR'));
           } else {
-            console.log('Erreur sauvegarde quiz:', data.message);
+            console.log('❌ Erreur sauvegarde quiz:', data.message);
           }
         })
         .catch(function() {
-          console.log('Erreur réseau');
+          console.log('❌ Erreur réseau');
         });
     }
 
@@ -1389,25 +1383,14 @@
         return;
       }
 
-      var retenir = '';
-      for (var i = 0; i < slidesData.length; i++) {
-        if (slidesData[i].type === 'memo') {
-          retenir = slidesData[i].data.texte || '';
-          break;
-        }
-      }
+      var tempsPasse = quizData.tempsPasse || Math.round((Date.now() - tempsDebut) / 1000) + 's';
 
-      var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
-      var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
+      var url = CONFIG.SCRIPT_URL + '?action=updateReponseOuverte' +
+        '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(postId) +
-        '&titre=' + encodeURIComponent(postTitre) +
-        '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
-        '&bonnes=' + encodeURIComponent(quizData.bonnes) +
-        '&total=' + encodeURIComponent(quizData.total) +
         '&reponseOuverte=' + encodeURIComponent(reponse) +
         '&tempsPasse=' + encodeURIComponent(tempsPasse) +
-        '&retenir=' + encodeURIComponent(retenir);
+        '&dateEnvoi=' + encodeURIComponent(new Date().toLocaleString('fr-FR'));
 
       fetch(url)
         .then(function(r) { return r.json(); })
@@ -1419,6 +1402,7 @@
             var btn = document.querySelector('#openQuestion .btn-nav');
             if (btn) btn.disabled = true;
             updateSlides();
+            
             if (slideIndex === slidesData.length - 1) {
               setTimeout(function() {
                 afficherMessageFin();
