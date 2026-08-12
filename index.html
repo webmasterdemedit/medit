@@ -1,56 +1,756 @@
-// ============================================================
-// RÉCUPÉRER LES LABELS (DISCIPLINES)
-// ============================================================
-if (action === 'getLabels') {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Posts');
-  if (!sheet) {
-    return reponse(false, 'Feuille "Posts" introuvable');
-  }
-  var data = sheet.getDataRange().getValues();
-  var labels = [];
-  for (var i = 1; i < data.length; i++) {
-    var label = data[i][2]; // Colonne C
-    if (label && labels.indexOf(label) === -1) {
-      labels.push(label);
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>MéditIslam</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
     }
-  }
-  return reponse(true, '', { labels: labels });
-}
 
-// ============================================================
-// RÉCUPÉRER LES NIVEAUX
-// ============================================================
-if (action === 'getNiveaux') {
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Niveaux');
-  if (!sheet) {
-    return reponse(false, 'Feuille "Niveaux" introuvable');
-  }
-  var data = sheet.getDataRange().getValues();
-  var niveaux = [];
-  for (var i = 1; i < data.length; i++) {
-    var niveau = data[i][0]; // Colonne A
-    if (niveau) {
-      niveaux.push(niveau);
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: #f4f2ed;
+      color: #1e293b;
+      min-height: 100vh;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
     }
-  }
-  return reponse(true, '', { niveaux: niveaux });
-}
 
-// ============================================================
-// ENREGISTRER UNE DEMANDE D'INSCRIPTION
-// ============================================================
-if (action === 'registerDemande') {
-  var nom = e.parameter.nom;
-  var contact = e.parameter.contact;
-  var discipline = e.parameter.discipline;
-  var niveau = e.parameter.niveau;
-  var message = e.parameter.message || '';
-  var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Demandes');
-  
-  if (!sheet) {
-    return reponse(false, 'Feuille "Demandes" introuvable');
-  }
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
 
-  sheet.appendRow([nom, contact, discipline, niveau, message, new Date()]);
-  return reponse(true, 'Demande enregistrée');
-}
+    /* ============================================================
+       PAGE D'ACCUEIL
+       ============================================================ */
+    .page-home {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      width: 100%;
+    }
+
+    /* ============================================================
+       HERO - Présentation
+       ============================================================ */
+    .hero {
+      text-align: center;
+      padding: 20px 20px 40px;
+      margin-bottom: 20px;
+    }
+
+    .hero .logo {
+      font-size: 52px;
+      font-weight: 300;
+      color: #1a2a2e;
+      letter-spacing: 2px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .hero .logo strong {
+      font-weight: 700;
+      color: #2d6a4f;
+    }
+
+    .hero .sous-titre {
+      font-size: 18px;
+      color: #94a3b8;
+      font-style: italic;
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+      font-family: 'Georgia', serif;
+    }
+
+    .hero .description {
+      max-width: 600px;
+      margin: 20px auto 0;
+      font-size: 16px;
+      color: #64748b;
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       BOUTON ENTRER
+       ============================================================ */
+    .btn-entrer {
+      display: inline-block;
+      margin-top: 30px;
+      padding: 16px 48px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 4px 20px rgba(45, 106, 79, 0.2);
+    }
+
+    .btn-entrer:hover {
+      background: #1a4a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(45, 106, 79, 0.3);
+    }
+
+    /* ============================================================
+       POPUP CONNEXION / INSCRIPTION
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 36px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-content .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .modal-content .modal-close:hover {
+      color: #1a2a2e;
+    }
+
+    .modal-content h3 {
+      font-size: 22px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      color: #1a2a2e;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-content .champ {
+      margin-bottom: 16px;
+    }
+
+    .modal-content label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .modal-content input,
+    .modal-content textarea,
+    .modal-content select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e2e0db;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #faf9f7;
+      transition: border-color 0.3s;
+      font-family: inherit;
+      color: #1a2a2e;
+    }
+
+    .modal-content input:focus,
+    .modal-content textarea:focus,
+    .modal-content select:focus {
+      border-color: #2d6a4f;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
+    }
+
+    .modal-content textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-content select {
+      appearance: auto;
+      cursor: pointer;
+    }
+
+    .modal-content .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      margin-top: 4px;
+    }
+
+    .modal-content .btn-submit:hover {
+      background: #1a4a3a;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
+    }
+
+    .modal-content .btn-submit.secondary {
+      background: #b8956a;
+    }
+
+    .modal-content .btn-submit.secondary:hover {
+      background: #a07d55;
+    }
+
+    .modal-content .message {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .modal-content .message.success {
+      color: #2d6a4f;
+    }
+
+    .modal-content .message.error {
+      color: #b33;
+    }
+
+    .modal-content .lien-form {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .modal-content .lien-form a {
+      color: #2d6a4f;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .modal-content .lien-form a:hover {
+      text-decoration: underline;
+    }
+
+    /* ============================================================
+       DEVISE
+       ============================================================ */
+    .devise-home {
+      text-align: center;
+      padding: 30px 0 10px;
+      font-size: 16px;
+      color: #b8b0a8;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      font-family: 'Georgia', serif;
+      border-top: 1px solid #edeae5;
+      margin-top: 40px;
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 768px) {
+      .page-home {
+        padding: 24px 16px;
+      }
+      .hero .logo {
+        font-size: 38px;
+      }
+      .modal-content {
+        padding: 24px 20px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .hero .logo {
+        font-size: 30px;
+      }
+      .hero .description {
+        font-size: 14px;
+      }
+      .btn-entrer {
+        padding: 14px 32px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html"> ۞ <strong>Médit</strong>Islam</a>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+                <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+              </nav>
+            </div>
+          </header>
+        `;
+        mettreAJourHeader();
+      });
+
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
+
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = '👤 ' + id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
+
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="/medit/index.html" class="header-link">Accueil</a>
+            <a href="#" class="header-link">e-learning</a>
+          `;
+        }
+      }
+    }
+  </script>
+
+  <div class="page-home">
+
+    <!-- ========== HERO ========== -->
+    <div class="hero">
+      <div class="logo">
+        <strong>Médit</strong> Islam
+      </div>
+      <div class="sous-titre">— Un programme de lectures et méditation pour sa foi —</div>
+      <p class="description">
+        Rappels simples, traductions du Coran et des Hadiths, cours d'arabe,
+        le tout dans un espace personnel selon votre niveau d'avancement.
+      </p>
+
+      <!-- BOUTON ENTRER -->
+      <button class="btn-entrer" onclick="ouvrirModal()">Se connecter</button>
+    </div>
+
+    <!-- ========== DEVISE ========== -->
+    <div class="devise-home">
+      “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+  </div>
+
+  <!-- ========== POPUP CONNEXION / INSCRIPTION ========== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="fermerModal()">✕</button>
+
+      <!-- CONNEXION -->
+      <div id="formConnexion" style="display:block;">
+        <h3>Se connecter</h3>
+        <div class="champ">
+          <label>Identifiant</label>
+          <input type="text" id="loginId" placeholder="Votre identifiant" />
+        </div>
+        <div class="champ">
+          <label>Mot de passe</label>
+          <input type="password" id="loginMdp" placeholder="Votre mot de passe" />
+        </div>
+        <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
+        <div class="message" id="loginMessage"></div>
+        <div class="lien-form">
+          Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Faire une demande d'inscription</a>
+        </div>
+      </div>
+
+      <!-- INSCRIPTION (NOUVEAU FORMULAIRE) -->
+      <div id="formInscription" style="display:none;">
+        <h3>Demande d'inscription</h3>
+
+        <!-- Nom/Prénom -->
+        <div class="champ">
+          <label>Nom et prénom</label>
+          <input type="text" id="registerNom" placeholder="Votre nom et prénom" />
+        </div>
+
+        <!-- Email ou téléphone -->
+        <div class="champ">
+          <label>Email ou numéro de téléphone</label>
+          <input type="text" id="registerContact" placeholder="ex: email@exemple.fr ou 06 12 34 56 78" />
+        </div>
+
+        <!-- Discipline (labels de "Posts") -->
+        <div class="champ">
+          <label>Discipline souhaitée</label>
+          <select id="registerDiscipline">
+            <option value="">— Choisissez une discipline —</option>
+          </select>
+        </div>
+
+        <!-- Niveau (depuis "Niveaux") -->
+        <div class="champ">
+          <label>Niveau souhaité</label>
+          <select id="registerNiveau">
+            <option value="">— Choisissez un niveau —</option>
+          </select>
+        </div>
+
+        <!-- Message libre -->
+        <div class="champ">
+          <label>Message libre</label>
+          <textarea id="registerMessage" placeholder="Votre motivation, vos attentes, vos questions..." rows="3"></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="sInscrire()">Envoyer ma demande</button>
+        <div class="message" id="registerMessage"></div>
+        <div class="lien-form">
+          Déjà un compte ? <a onclick="ouvrirConnexion();return false;">Se connecter</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========== FOOTER ========== -->
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+
+  <script>
+    // ============================================================
+    // MODAL
+    // ============================================================
+    function ouvrirModal() {
+      document.getElementById('modalOverlay').classList.add('visible');
+      document.getElementById('formInscription').style.display = 'none';
+      document.getElementById('formConnexion').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+    }
+
+    function fermerModal() {
+      document.getElementById('modalOverlay').classList.remove('visible');
+    }
+
+    document.addEventListener('keydown', function(e) {
+      if (e.key === 'Escape') {
+        fermerModal();
+      }
+    });
+
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) {
+        fermerModal();
+      }
+    });
+
+    // ============================================================
+    // ALTERNANCE CONNEXION / INSCRIPTION
+    // ============================================================
+    function ouvrirConnexion() {
+      document.getElementById('formInscription').style.display = 'none';
+      document.getElementById('formConnexion').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+    }
+
+    function ouvrirInscription() {
+      document.getElementById('formConnexion').style.display = 'none';
+      document.getElementById('formInscription').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('registerMessage').textContent = '';
+
+      // Charger les disciplines et niveaux
+      chargerDisciplinesEtNiveaux();
+    }
+
+    // ============================================================
+    // CHARGER LES DISCIPLINES ET NIVEAUX
+    // ============================================================
+    function chargerDisciplinesEtNiveaux() {
+      // Récupérer les disciplines (labels) depuis la feuille "Posts"
+      var urlDisciplines = CONFIG.SCRIPT_URL + '?action=getLabels';
+
+      fetch(urlDisciplines)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.labels) {
+            var select = document.getElementById('registerDiscipline');
+            // Garder la première option
+            var firstOption = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+
+            data.labels.forEach(function(label) {
+              var option = document.createElement('option');
+              option.value = label;
+              option.textContent = label;
+              select.appendChild(option);
+            });
+          }
+        })
+        .catch(function() {
+          console.error('Erreur chargement des disciplines');
+        });
+
+      // Récupérer les niveaux depuis la feuille "Niveaux"
+      var urlNiveaux = CONFIG.SCRIPT_URL + '?action=getNiveaux';
+
+      fetch(urlNiveaux)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.niveaux) {
+            var select = document.getElementById('registerNiveau');
+            var firstOption = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+
+            data.niveaux.forEach(function(niveau) {
+              var option = document.createElement('option');
+              option.value = niveau;
+              option.textContent = niveau;
+              select.appendChild(option);
+            });
+          }
+        })
+        .catch(function() {
+          console.error('Erreur chargement des niveaux');
+        });
+    }
+
+    // ============================================================
+    // CONNEXION
+    // ============================================================
+    function seConnecter() {
+      var id = document.getElementById('loginId').value.trim().toLowerCase();
+      var mdp = document.getElementById('loginMdp').value.trim().toLowerCase();
+      var msg = document.getElementById('loginMessage');
+
+      if (!id || !mdp) {
+        msg.textContent = '⚠️ Remplissez tous les champs.';
+        msg.className = 'message error';
+        return;
+      }
+
+      msg.textContent = 'Connexion...';
+      msg.className = 'message';
+
+      var url = CONFIG.SCRIPT_URL + '?action=login&id=' + encodeURIComponent(id) + '&mdp=' + encodeURIComponent(mdp);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            localStorage.setItem('etudiant_id', id);
+            localStorage.setItem('etudiant_niveau', data.niveau || 0);
+            msg.textContent = '✓ Connecté';
+            msg.className = 'message success';
+            setTimeout(function() { location.reload(); }, 600);
+          } else {
+            msg.textContent = '✗ ' + (data.message || 'Erreur de connexion');
+            msg.className = 'message error';
+          }
+        })
+        .catch(function() {
+          msg.textContent = '✗ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // INSCRIPTION (NOUVELLE VERSION)
+    // ============================================================
+    function sInscrire() {
+      var nom = document.getElementById('registerNom').value.trim();
+      var contact = document.getElementById('registerContact').value.trim();
+      var discipline = document.getElementById('registerDiscipline').value;
+      var niveau = document.getElementById('registerNiveau').value;
+      var message = document.getElementById('registerMessage').value.trim();
+      var msg = document.getElementById('registerMessage');
+
+      if (!nom) {
+        msg.textContent = '⚠️ Veuillez entrer votre nom et prénom.';
+        msg.className = 'message error';
+        return;
+      }
+
+      if (!contact) {
+        msg.textContent = '⚠️ Veuillez entrer votre email ou téléphone.';
+        msg.className = 'message error';
+        return;
+      }
+
+      if (!discipline) {
+        msg.textContent = '⚠️ Veuillez choisir une discipline.';
+        msg.className = 'message error';
+        return;
+      }
+
+      if (!niveau) {
+        msg.textContent = '⚠️ Veuillez choisir un niveau.';
+        msg.className = 'message error';
+        return;
+      }
+
+      msg.textContent = 'Envoi de la demande...';
+      msg.className = 'message';
+
+      var url = CONFIG.SCRIPT_URL + '?action=registerDemande' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&contact=' + encodeURIComponent(contact) +
+        '&discipline=' + encodeURIComponent(discipline) +
+        '&niveau=' + encodeURIComponent(niveau) +
+        '&message=' + encodeURIComponent(message);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            msg.textContent = '✓ Demande envoyée ! Vous recevrez vos identifiants par email ou SMS.';
+            msg.className = 'message success';
+            // Réinitialiser le formulaire
+            document.getElementById('registerNom').value = '';
+            document.getElementById('registerContact').value = '';
+            document.getElementById('registerDiscipline').value = '';
+            document.getElementById('registerNiveau').value = '';
+            document.getElementById('registerMessage').value = '';
+            // Basculer sur la connexion après 2 secondes
+            setTimeout(function() {
+              ouvrirConnexion();
+            }, 3000);
+          } else {
+            msg.textContent = '✗ ' + (data.message || 'Erreur lors de l\'envoi');
+            msg.className = 'message error';
+          }
+        })
+        .catch(function() {
+          msg.textContent = '✗ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // DÉCONNEXION
+    // ============================================================
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        location.reload();
+      }
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      var id = localStorage.getItem('etudiant_id');
+      if (id) {
+        window.location.href = '/medit/mes-textes.html';
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
