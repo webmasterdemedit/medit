@@ -1,10 +1,7 @@
 // ============================================================
-// article.js - VERSION OPTIMISÉE AVEC CACHE
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER
 // ============================================================
 
-// ============================================================
-// VARIABLES
-// ============================================================
 var slidesData = [];
 var slideIndex = 0;
 var totalSlides = 0;
@@ -26,223 +23,105 @@ var chargementEnCours = false;
 var reponsesExistantes = null;
 
 // ============================================================
-// CONFIGURATION DU CACHE
-// ============================================================
-var CACHE_CONFIG = {
-    DUREE_ARTICLE: 60,      // 1 heure
-    DUREE_QUIZ: 30,         // 30 minutes
-    DUREE_REPONSES: 5       // 5 minutes
-};
-
-// ============================================================
-// FONCTIONS DE CACHE
-// ============================================================
-function sauvegarderCache(id, type, data) {
-    try {
-        var cache = {
-            data: data,
-            timestamp: Date.now()
-        };
-        localStorage.setItem('article_cache_' + type + '_' + id, JSON.stringify(cache));
-    } catch(e) {}
-}
-
-function chargerCache(id, type, dureeMax) {
-    try {
-        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
-        if (!cache) return null;
-        cache = JSON.parse(cache);
-        
-        var age = (Date.now() - cache.timestamp) / 60000;
-        if (age > dureeMax) return null;
-        
-        return cache.data;
-    } catch(e) {
-        return null;
-    }
-}
-
-function chargerCacheForce(id, type) {
-    try {
-        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
-        if (!cache) return null;
-        cache = JSON.parse(cache);
-        return cache.data;
-    } catch(e) {
-        return null;
-    }
-}
-
-// ============================================================
-// CHARGEMENT PRINCIPAL - UN SEUL APPEL !
+// CHARGEMENT AVEC DATAMANAGER
 // ============================================================
 function chargerArticle() {
-    var params = new URLSearchParams(window.location.search);
-    var id = params.get('id');
-    var loader = document.getElementById('loader');
-    var erreur = document.getElementById('erreur');
-    var articleCharge = document.getElementById('article-charge');
+  var params = new URLSearchParams(window.location.search);
+  var id = params.get('id');
+  var loader = document.getElementById('loader');
+  var erreur = document.getElementById('erreur');
+  var articleCharge = document.getElementById('article-charge');
 
-    if (!id) {
-        loader.style.display = 'none';
-        erreur.style.display = 'block';
-        return;
-    }
+  if (!id) {
+    loader.style.display = 'none';
+    erreur.style.display = 'block';
+    return;
+  }
 
-    postId = id;
+  postId = id;
 
-    // Vérifier si connecté
-    var nom = localStorage.getItem('etudiant_id');
-    if (!nom) {
-        window.location.href = '/medit/index.html';
-        return;
-    }
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    window.location.href = '/medit/index.html';
+    return;
+  }
 
-    // 1. Essayer le cache
-    var articleCache = chargerCache(id, 'article', CACHE_CONFIG.DUREE_ARTICLE);
-    var quizCache = chargerCache(id, 'quiz', CACHE_CONFIG.DUREE_QUIZ);
-    var reponsesCache = chargerCache(id, 'reponses', CACHE_CONFIG.DUREE_REPONSES);
-
-    if (articleCache && quizCache) {
-        console.log('📦 Utilisation du cache pour l\'article', id);
+  // Utiliser DataManager
+  DataManager.charger()
+    .then(function(data) {
+      // Chercher l'article dans le cache
+      var article = null;
+      if (data.articlesComplets && data.articlesComplets[id]) {
+        article = data.articlesComplets[id];
+      }
+      
+      if (article) {
+        // Article trouvé dans le cache !
+        console.log('📦 Article trouvé dans le cache');
         loader.style.display = 'none';
         articleCharge.style.display = 'block';
-        
-        // Construire l'objet post à partir du cache
-        var post = articleCache;
-        if (quizCache) {
-            post.quiz = quizCache.quiz || '';
-        }
-        if (reponsesCache) {
-            reponsesExistantes = reponsesCache;
-        }
-        
-        afficherArticle(post);
-        
-        // Rafraîchir en arrière-plan (silencieux)
-        rafraichirEnArrierePlan(id, nom);
+        afficherArticle(article);
         return;
-    }
-
-    // 2. Charger depuis le serveur
-    chargerDepuisServeur(id, nom, loader, erreur, articleCharge);
-}
-
-// ============================================================
-// CHARGER DEPUIS LE SERVEUR
-// ============================================================
-function chargerDepuisServeur(id, nom, loader, erreur, articleCharge) {
-    if (chargementEnCours) return;
-    chargementEnCours = true;
-
-    // UN SEUL APPEL pour tout récupérer
-    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
-        '&nom=' + encodeURIComponent(nom);
-
-    fetch(url)
+      }
+      
+      // Article pas dans le cache, le charger depuis le serveur
+      console.log('🌐 Chargement de l\'article depuis le serveur');
+      var url = CONFIG.SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id);
+      return fetch(url)
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-            chargementEnCours = false;
-            loader.style.display = 'none';
+        .then(function(dataPost) {
+          loader.style.display = 'none';
+          if (dataPost.success && dataPost.post) {
+            articleCharge.style.display = 'block';
+            afficherArticle(dataPost.post);
             
-            if (data.success && data.article) {
-                // Sauvegarder en cache
-                sauvegarderCache(id, 'article', data.article);
-                
-                if (data.quiz) {
-                    sauvegarderCache(id, 'quiz', data.quiz);
-                }
-                if (data.reponses) {
-                    sauvegarderCache(id, 'reponses', data.reponses);
-                    reponsesExistantes = data.reponses;
-                }
-                
-                articleCharge.style.display = 'block';
-                afficherArticle(data.article);
-            } else {
-                // Essayer le cache même expiré
-                var articleExpire = chargerCacheForce(id, 'article');
-                if (articleExpire) {
-                    articleCharge.style.display = 'block';
-                    afficherArticle(articleExpire);
-                    afficherNotification('⚠️ Version en cache (hors ligne)');
-                } else {
-                    erreur.style.display = 'block';
-                }
-            }
-        })
-        .catch(function() {
-            chargementEnCours = false;
-            loader.style.display = 'none';
-            
-            // Essayer le cache même expiré
-            var articleExpire = chargerCacheForce(id, 'article');
-            if (articleExpire) {
-                articleCharge.style.display = 'block';
-                afficherArticle(articleExpire);
-                afficherNotification('⚠️ Version en cache (hors ligne)');
-            } else {
-                erreur.style.display = 'block';
-            }
+            // Sauvegarder pour la prochaine fois
+            if (!data.articlesComplets) data.articlesComplets = {};
+            data.articlesComplets[id] = dataPost.post;
+            DataManager.setCache(nom, data);
+          } else {
+            erreur.style.display = 'block';
+          }
         });
-}
-
-// ============================================================
-// RAFRAÎCHIR EN ARRIÈRE-PLAN
-// ============================================================
-function rafraichirEnArrierePlan(id, nom) {
-    var dernier = localStorage.getItem('dernier_rafraichissement_' + id);
-    if (dernier && Date.now() - parseInt(dernier) < 60000) {
-        return; // Moins d'1 minute
-    }
-    localStorage.setItem('dernier_rafraichissement_' + id, Date.now());
-
-    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
-        '&nom=' + encodeURIComponent(nom);
-
-    fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-            if (!data.success || !data.article) return;
-            
-            // Vérifier si le contenu a changé (via version)
-            var ancien = chargerCacheForce(id, 'article');
-            if (ancien && data.article && data.article.version !== ancien.version) {
-                // Mise à jour
-                sauvegarderCache(id, 'article', data.article);
-                if (data.quiz) {
-                    sauvegarderCache(id, 'quiz', data.quiz);
-                }
-                if (data.reponses) {
-                    sauvegarderCache(id, 'reponses', data.reponses);
-                    reponsesExistantes = data.reponses;
-                }
-                
-                // Recharger l'affichage
-                afficherArticle(data.article);
-                afficherNotification('📝 Cet article a été mis à jour !');
-            }
-        })
-        .catch(function() {});
+    })
+    .catch(function() {
+      // Erreur : essayer le cache forcé
+      var cache = DataManager.getCacheForce(nom);
+      if (cache && cache.articlesComplets && cache.articlesComplets[id]) {
+        loader.style.display = 'none';
+        articleCharge.style.display = 'block';
+        afficherArticle(cache.articlesComplets[id]);
+        afficherNotification('⚠️ Version en cache (hors ligne)');
+      } else {
+        loader.style.display = 'none';
+        erreur.style.display = 'block';
+      }
+    });
 }
 
 // ============================================================
 // NOTIFICATION
 // ============================================================
 function afficherNotification(message) {
-    var notif = document.createElement('div');
-    notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:10px 24px;border-radius:30px;font-size:14px;font-family:Segoe UI,sans-serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
-    notif.textContent = message;
-    document.body.appendChild(notif);
-    setTimeout(function() { notif.style.opacity = '1'; }, 50);
-    setTimeout(function() {
-        notif.style.opacity = '0';
-        setTimeout(function() { notif.remove(); }, 500);
-    }, 3000);
+  var notif = document.getElementById('notificationArticle');
+  if (notif) {
+    notif.remove();
+  }
+  
+  notif = document.createElement('div');
+  notif.id = 'notificationArticle';
+  notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:10px 24px;border-radius:30px;font-size:14px;font-family:Segoe UI,sans-serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+  notif.textContent = message;
+  document.body.appendChild(notif);
+  setTimeout(function() { notif.style.opacity = '1'; }, 50);
+  setTimeout(function() {
+    notif.style.opacity = '0';
+    setTimeout(function() { notif.remove(); }, 500);
+  }, 3000);
 }
 
 // ============================================================
-// AFFICHAGE (GARDER TON CODE EXISTANT)
+// AFFICHAGE (TON CODE EXISTANT)
 // ============================================================
 function afficherArticle(post) {
   postTitre = post.titre || 'Sans titre';
