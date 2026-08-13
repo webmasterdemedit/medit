@@ -1,5 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu"
 // ============================================================
 
 var slidesData = [];
@@ -11,6 +11,8 @@ var quizVerrouille = false;
 var tempsDebut = Date.now();
 var postId = '';
 var postTitre = '';
+var hasQuiz = false;
+var hasQuestion = false;
 
 // Stocker les données du quiz pour la sauvegarde finale
 var quizData = {
@@ -121,10 +123,12 @@ function afficherNotification(message) {
 }
 
 // ============================================================
-// AFFICHAGE (TON CODE EXISTANT)
+// AFFICHAGE
 // ============================================================
 function afficherArticle(post) {
   postTitre = post.titre || 'Sans titre';
+  hasQuiz = post.hasQuiz || (post.quiz && post.quiz.trim() !== '');
+  hasQuestion = post.hasQuestion || (post.question_ouverte && post.question_ouverte.trim() !== '');
 
   if (post.categorie) {
     document.getElementById('postLabel').textContent = post.categorie;
@@ -149,7 +153,7 @@ function afficherArticle(post) {
     });
   }
 
-  if (post.quiz) {
+  if (post.quiz && post.quiz.trim() !== '') {
     var quizBlocs = post.quiz.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
     quizBlocs.forEach(function(bloc) {
       var match = bloc.match(/^([^\n]*?)\s*RV\.\s*([^\n]*?)\s*RF\.\s*([^\n]*?)$/);
@@ -222,14 +226,14 @@ function afficherArticle(post) {
 }
 
 // ============================================================
-// GÉNÉRATION DES SLIDES (TON CODE EXISTANT)
+// GÉNÉRATION DES SLIDES
 // ============================================================
 function genererSlideTexte(data) {
   return '<div class="contenu-slide">' + data.contenu.replace(/\n/g, '<br>') + '</div>';
 }
 
 function genererSlideQuiz(data) {
-  var html = '<div class="quiz-container"><h3>Quiz</h3>';
+  var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
   data.questions.forEach(function(q, idx) {
     var qId = 'q' + (idx + 1);
     html += '<div class="quiz-question" data-question="' + qId + '" data-index="' + idx + '">';
@@ -247,20 +251,26 @@ function genererSlideQuiz(data) {
 }
 
 function genererSlideQuestionOuverte(data) {
-  return '<div id="openQuestion" style="display:block;"><h3>Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
+  return '<div id="openQuestion" style="display:block;"><h3>✍️ Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
 }
 
 function genererSlideMemo(data) {
   var html = '<div class="slide-memo">';
   html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
-  html += '<span class="memo-label">À retenir</span>';
+  html += '<span class="memo-label">📌 À retenir</span>';
   html += '<div class="contenu-memo">' + data.texte + '</div>';
+  
+  // Bouton "J'ai lu" - affiché seulement si pas de quiz ET pas de question
+  if (!hasQuiz && !hasQuestion) {
+    html += '<button class="btn-appris" onclick="marquerCommeLu()" style="margin-top:16px;">📖 J\'ai lu</button>';
+  }
+  
   html += '</div>';
   return html;
 }
 
 // ============================================================
-// DOTS & NAVIGATION (TON CODE EXISTANT)
+// DOTS & NAVIGATION
 // ============================================================
 function genererDots() {
   var container = document.getElementById('dotsContainer');
@@ -316,7 +326,6 @@ function updateSlides() {
     msg.textContent = '';
   }
 
-  // Gestion du bouton "J'ai appris" + message de fin
   var oldBtn = document.getElementById('btnAppris');
   if (oldBtn) oldBtn.remove();
   var oldMsg = document.getElementById('finMessage');
@@ -330,18 +339,8 @@ function updateSlides() {
 }
 
 function ajouterBoutonAppris() {
-  var btn = document.createElement('button');
-  btn.id = 'btnAppris';
-  btn.textContent = 'Revenir aux textes';
-  btn.className = 'btn-appris';
-  btn.onclick = function() {
-    window.location.href = '/medit/mes-textes.html';
-  };
-
-  var container = document.querySelector('.slide-memo');
-  if (container) {
-    container.appendChild(btn);
-  }
+  // Le bouton est déjà généré dans le slide memo
+  // On ajoute juste le comportement si besoin
 }
 
 function afficherMessageFin() {
@@ -411,8 +410,6 @@ function sauvegarderQuiz() {
     .then(function(data) {
       if (data.success) {
         console.log('Quiz sauvegardé');
-        
-        // ===== MISE À JOUR DU CACHE LOCAL =====
         miseAJourCacheLocal(nom, postId, quizData.bonnes, quizData.total);
       } else {
         console.error('Erreur :', data.message);
@@ -454,7 +451,6 @@ function validerReponse() {
         if (btn) btn.disabled = true;
         updateSlides();
         
-        // ===== MISE À JOUR DU CACHE LOCAL =====
         miseAJourCacheReponse(nom, postId);
         
         if (slideIndex === slidesData.length - 1) {
@@ -479,16 +475,13 @@ function validerReponse() {
 // MISE À JOUR DU CACHE LOCAL (après quiz)
 // ============================================================
 function miseAJourCacheLocal(nom, articleId, bonnes, total) {
-  // Récupérer le cache existant
   var cache = DataManager.getCacheForce(nom);
   if (!cache) return;
   
-  // Vérifier si cette réponse existe déjà
   var reponseExistante = false;
   if (cache.reponses) {
     for (var i = 0; i < cache.reponses.length; i++) {
       if (cache.reponses[i].articleId === articleId) {
-        // Mettre à jour l'existante
         cache.reponses[i].bonnes = bonnes;
         cache.reponses[i].total = total;
         cache.reponses[i].date = new Date().toISOString();
@@ -498,7 +491,6 @@ function miseAJourCacheLocal(nom, articleId, bonnes, total) {
     }
   }
   
-  // Si pas existante, l'ajouter
   if (!reponseExistante) {
     if (!cache.reponses) cache.reponses = [];
     cache.reponses.push({
@@ -514,7 +506,6 @@ function miseAJourCacheLocal(nom, articleId, bonnes, total) {
     });
   }
   
-  // Mettre à jour aussi dans historique (pour mon-compte)
   if (cache.historique) {
     var histoExistante = false;
     for (var j = 0; j < cache.historique.length; j++) {
@@ -542,7 +533,6 @@ function miseAJourCacheLocal(nom, articleId, bonnes, total) {
     }
   }
   
-  // Sauvegarder le cache mis à jour
   DataManager.setCache(nom, cache);
   console.log('✅ Cache local mis à jour pour le quiz');
 }
@@ -554,7 +544,6 @@ function miseAJourCacheReponse(nom, articleId) {
   var cache = DataManager.getCacheForce(nom);
   if (!cache) return;
   
-  // Marquer la réponse ouverte comme envoyée
   if (cache.reponses) {
     for (var i = 0; i < cache.reponses.length; i++) {
       if (cache.reponses[i].articleId === articleId) {
@@ -565,7 +554,6 @@ function miseAJourCacheReponse(nom, articleId) {
     }
   }
   
-  // Mettre à jour aussi dans historique
   if (cache.historique) {
     for (var j = 0; j < cache.historique.length; j++) {
       if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
@@ -581,7 +569,126 @@ function miseAJourCacheReponse(nom, articleId) {
 }
 
 // ============================================================
-// QUIZ (TON CODE EXISTANT)
+// MISE À JOUR DU CACHE LOCAL (après "J'ai lu")
+// ============================================================
+function miseAJourCacheLecture(nom, articleId) {
+  var cache = DataManager.getCacheForce(nom);
+  if (!cache) return;
+  
+  var reponseExistante = false;
+  if (cache.reponses) {
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === articleId) {
+        cache.reponses[i].bonnes = 1;
+        cache.reponses[i].total = 1;
+        cache.reponses[i].date = new Date().toISOString();
+        cache.reponses[i].reponseOuverte = 'Lu';
+        cache.reponses[i].dateEnvoi = new Date().toISOString();
+        reponseExistante = true;
+        break;
+      }
+    }
+  }
+  
+  if (!reponseExistante) {
+    if (!cache.reponses) cache.reponses = [];
+    cache.reponses.push({
+      articleId: articleId,
+      titre: postTitre || 'Méditation',
+      bonnes: 1,
+      total: 1,
+      date: new Date().toISOString(),
+      temps: '',
+      reponseOuverte: 'Lu',
+      dateEnvoi: new Date().toISOString(),
+      dureeTotale: ''
+    });
+  }
+  
+  if (cache.historique) {
+    var histoExistante = false;
+    for (var j = 0; j < cache.historique.length; j++) {
+      if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
+        cache.historique[j].bonnes = 1;
+        cache.historique[j].total = 1;
+        cache.historique[j].date = new Date().toISOString();
+        cache.historique[j].valide = true;
+        cache.historique[j].reponseOuverte = 'Lu';
+        cache.historique[j].dateEnvoi = new Date().toISOString();
+        histoExistante = true;
+        break;
+      }
+    }
+    if (!histoExistante) {
+      cache.historique.push({
+        date: new Date().toISOString(),
+        titre: postTitre || 'Méditation',
+        bonnes: 1,
+        total: 1,
+        valide: true,
+        temps: '',
+        reponseOuverte: 'Lu',
+        dateEnvoi: new Date().toISOString(),
+        dureeTotale: ''
+      });
+    }
+  }
+  
+  DataManager.setCache(nom, cache);
+  console.log('✅ Cache local mis à jour pour "J\'ai lu"');
+}
+
+// ============================================================
+// BOUTON "J'AI LU" (pour les posts sans quiz/question)
+// ============================================================
+function marquerCommeLu() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    afficherNotification('⚠️ Veuillez vous reconnecter.');
+    return;
+  }
+
+  // Vérifier si déjà marqué comme lu
+  var cache = DataManager.getCacheForce(nom);
+  if (cache && cache.reponses) {
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === postId) {
+        if (cache.reponses[i].bonnes === 1 && cache.reponses[i].total === 1) {
+          afficherNotification('📖 Déjà marqué comme lu.');
+          return;
+        }
+      }
+    }
+  }
+
+  var url = CONFIG.SCRIPT_URL + '?action=saveLecture&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&titre=' + encodeURIComponent(postTitre);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        afficherNotification('📖 Lecture enregistrée !');
+        miseAJourCacheLecture(nom, postId);
+        quizValide = true;
+        reponseValidee = true;
+        updateSlides();
+        
+        setTimeout(function() {
+          window.location.href = '/medit/mes-textes.html';
+        }, 1500);
+      } else {
+        afficherNotification('⚠️ Erreur : ' + (data.message || ''));
+      }
+    })
+    .catch(function() {
+      afficherNotification('⚠️ Erreur réseau.');
+    });
+}
+
+// ============================================================
+// QUIZ
 // ============================================================
 function verifierQuizAuto() {
   if (quizVerrouille) return;
@@ -689,7 +796,7 @@ function verifierQuizAuto() {
 }
 
 // ============================================================
-// ÉCOUTE DES RADIOS (TON CODE EXISTANT)
+// ÉCOUTE DES RADIOS
 // ============================================================
 document.addEventListener('change', function(e) {
   if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
@@ -708,7 +815,7 @@ document.addEventListener('change', function(e) {
 });
 
 // ============================================================
-// SWIPE TACTILE (TON CODE EXISTANT)
+// SWIPE TACTILE
 // ============================================================
 var touchStartX = 0;
 var touchEndX = 0;
@@ -730,7 +837,7 @@ document.addEventListener('touchend', function(e) {
 }, { passive: true });
 
 // ============================================================
-// CLAVIER (TON CODE EXISTANT)
+// CLAVIER
 // ============================================================
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
