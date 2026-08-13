@@ -7,7 +7,7 @@
   <title>Mon compte - MéditIslam</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/medit/css/style.css" />
+  <link rel="stylesheet" href="/medit/style.css" />
   <style>
     /* ============================================================
        RESET & BASE
@@ -156,33 +156,6 @@
       max-width: 60%;
     }
 
-    .champ-compte .valeur.mdp {
-      font-family: 'Courier New', monospace;
-      letter-spacing: 2px;
-      cursor: pointer;
-      user-select: none;
-      color: #2d6a4f;
-      font-weight: 600;
-    }
-
-    .champ-compte .valeur.mdp:hover {
-      text-decoration: underline;
-    }
-
-    .champ-compte .valeur .voir-mdp {
-      font-size: 12px;
-      color: #94a3b8;
-      font-weight: 400;
-      font-family: 'Segoe UI', sans-serif;
-      margin-left: 8px;
-      cursor: pointer;
-      letter-spacing: 0.2px;
-    }
-
-    .champ-compte .valeur .voir-mdp:hover {
-      color: #2d6a4f;
-    }
-
     /* ============================================================
        SECTION NIVEAU
        ============================================================ */
@@ -231,50 +204,6 @@
       font-style: italic;
       letter-spacing: 0.2px;
       margin-top: 4px;
-    }
-
-    /* ============================================================
-       MESSAGE PERSONNALISÉ
-       ============================================================ */
-    .message-section {
-      margin-top: 28px;
-      padding-top: 24px;
-      border-top: 2px solid #edeae5;
-    }
-
-    .message-section .message-label {
-      font-size: 14px;
-      color: #94a3b8;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      margin-bottom: 8px;
-      display: block;
-      font-family: 'Georgia', serif;
-      font-style: italic;
-    }
-
-    .message-section .message-cadre {
-      background: #faf9f7;
-      border-radius: 12px;
-      padding: 20px 26px;
-      border: 1px solid #e2e0db;
-      box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.02);
-      min-height: 60px;
-      display: flex;
-      align-items: center;
-    }
-
-    .message-section .message-cadre .contenu {
-      font-size: 16px;
-      color: #1a2a2e;
-      line-height: 1.8;
-      width: 100%;
-    }
-
-    .message-section .message-cadre .contenu.vide {
-      color: #b8b0a8;
-      font-style: italic;
-      font-size: 14px;
     }
 
     /* ============================================================
@@ -395,7 +324,7 @@
     }
 
     .tentative-item .statut.echec {
-      color: #b8b0a8;
+      color: #b8a0a0;
     }
 
     .tentative-item .temps-passe {
@@ -512,9 +441,6 @@
       .niveau-section .niveau-valeur {
         font-size: 32px;
       }
-      .message-section .message-cadre {
-        padding: 16px 18px;
-      }
       .graphique-ligne {
         gap: 8px;
       }
@@ -539,7 +465,7 @@
   <div id="header-container"></div>
 
   <script>
-    fetch('/medit/components/header.html')
+    fetch('/medit/header.html')
       .then(function(response) { return response.text(); })
       .then(function(data) {
         document.getElementById('header-container').innerHTML = data;
@@ -645,7 +571,7 @@
   <div id="footer-container"></div>
 
   <script>
-    fetch('/medit/components/footer.html')
+    fetch('/medit/footer.html')
       .then(function(response) { return response.text(); })
       .then(function(data) {
         document.getElementById('footer-container').innerHTML = data;
@@ -661,8 +587,8 @@
       });
   </script>
 
-  <script src="/medit/js/config.js"></script>
-  <script src="/medit/js/auth.js"></script>
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
 
   <script>
     // ============================================================
@@ -689,11 +615,8 @@
     }
 
     // ============================================================
-    // CHARGEMENT DU PROFIL
+    // CHARGEMENT DU PROFIL (utilise getNiveauEtDescription)
     // ============================================================
-    var mdpVisible = false;
-    var mdpCache = '';
-
     function chargerCompte() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -701,13 +624,14 @@
         return;
       }
 
-      var url = CONFIG.SCRIPT_URL + '?action=getProfilComplet&nom=' + encodeURIComponent(id);
+      // On utilise getNiveauEtDescription (fonction qui existe déjà)
+      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
 
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            afficherCompte(data);
+            afficherCompte(data, id);
           } else {
             document.getElementById('contenu-compte').innerHTML = `
               <p style="color:#c62828;text-align:center;">❌ Erreur : ${data.message || 'Impossible de charger les informations.'}</p>
@@ -721,32 +645,18 @@
         });
     }
 
-    function afficherCompte(data) {
+    function afficherCompte(data, id) {
       var html = '';
 
-      var dateInscription = data.dateInscription ? new Date(data.dateInscription).toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-      }) : 'Non renseignée';
-
+      // Identifiant
       html += `
         <div class="champ-compte">
-          <span class="label">📅 Date d'inscription</span>
-          <span class="valeur">${dateInscription}</span>
+          <span class="label">👤 Identifiant</span>
+          <span class="valeur">${id}</span>
         </div>
       `;
 
-      mdpCache = data.mdp || '';
-      var mdpAffiche = mdpVisible ? mdpCache : '••••••••';
-      html += `
-        <div class="champ-compte">
-          <span class="label">🔒 Mot de passe</span>
-          <span class="valeur mdp" onclick="basculerMdp()" title="Cliquer pour afficher/masquer">
-            ${mdpAffiche}
-            <span class="voir-mdp">${mdpVisible ? 'masquer' : 'voir'}</span>
-          </span>
-        </div>
-      `;
-
+      // Niveau et description
       var niveau = data.niveau || 0;
       var description = data.description || 'Aucune description disponible pour ce niveau.';
 
@@ -761,28 +671,14 @@
         </div>
       `;
 
-      var messagePerso = data.messagePerso || '';
-      html += `
-        <div class="message-section">
-          <span class="message-label">✉️ Message personnel de l'enseignant</span>
-          <div class="message-cadre">
-            <div class="contenu ${!messagePerso ? 'vide' : ''}">
-              ${messagePerso || 'Aucun message pour le moment.'}
-            </div>
-          </div>
-        </div>
-      `;
+      // Note : Le mot de passe n'est PAS affiché car il n'y a pas de fonction
+      // dans le script pour le récupérer (c'est plus sûr ainsi)
 
       document.getElementById('contenu-compte').innerHTML = html;
     }
 
-    function basculerMdp() {
-      mdpVisible = !mdpVisible;
-      chargerCompte();
-    }
-
     // ============================================================
-    // CHARGEMENT DE L'HISTORIQUE
+    // CHARGEMENT DE L'HISTORIQUE (utilise getReponses)
     // ============================================================
     function chargerHistorique() {
       var id = localStorage.getItem('etudiant_id');
@@ -832,63 +728,60 @@
     // AFFICHAGE DE L'HISTORIQUE
     // ============================================================
     function afficherHistorique(historique) {
-      var html = '';
+  var html = '';
 
-      // === GRAPHIQUE ===
-      html += `<div class="graphique-container"><div class="graphique-ligne">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : 'echec';
-        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+  // === GRAPHIQUE ===
+  html += `<div class="graphique-container"><div class="graphique-ligne">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
 
-        html += `
-          <div class="graphique-point">
-            <div class="cercle ${statutClass}"></div>
-            <span class="date-point">${dateFormatee}</span>
-          </div>
-        `;
-      });
-      html += `</div></div>`;
+    html += `
+      <div class="graphique-point">
+        <div class="cercle ${statutClass}"></div>
+        <span class="date-point">${dateFormatee}</span>
+      </div>
+    `;
+  });
+  html += `</div></div>`;
 
-      // === LÉGENDE ===
-      html += `
-        <div class="legende">
-          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
-          <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
-        </div>
-      `;
+  // === LÉGENDE ===
+  html += `
+    <div class="legende">
+      <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+      <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
+    </div>
+  `;
 
-      // === LISTE DES TENTATIVES ===
-      html += `<div class="liste-tentatives">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : 'echec';
-        var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
-        
-        var dateFormatee = 'Date inconnue';
-        if (item.date) {
-          var d = new Date(item.date);
-          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-            dateFormatee = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-          }
-        }
-
-        var tempsAffiche = (item.temps && item.temps !== '' && !item.temps.startsWith('1899')) ? '⏱ ' + item.temps : '';
-
-        html += `
-          <div class="tentative-item">
-            <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
-            <span style="display:flex;align-items:center;gap:12px;">
-              ${tempsAffiche ? `<span class="temps-passe">${tempsAffiche}</span>` : ''}
-              <span class="statut ${statutClass}">${statutTexte}</span>
-            </span>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-      document.getElementById('contenu-historique').innerHTML = html;
+  // === LISTE DES TENTATIVES ===
+  html += `<div class="liste-tentatives">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
+    
+    var dateFormatee = 'Date inconnue';
+    if (item.date) {
+      var d = new Date(item.date);
+      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+        dateFormatee = d.toLocaleDateString('fr-FR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        }) + ' à ' + d.toLocaleTimeString('fr-FR', {
+          hour: '2-digit', minute: '2-digit'
+        });
+      }
     }
+
+    html += `
+      <div class="tentative-item">
+        <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
+        <span class="statut ${statutClass}">${statutTexte}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  document.getElementById('contenu-historique').innerHTML = html;
+}
 
     // ============================================================
     // INIT
