@@ -517,33 +517,33 @@
       });
 
     function mettreAJourHeader() {
-  var id = localStorage.getItem('etudiant_id');
-  var nav = document.getElementById('headerNav');
-  var userNameSpan = document.getElementById('headerUserName');
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
 
-  if (userNameSpan) {
-    if (id) {
-      userNameSpan.textContent = '👤 ' + id;
-    } else {
-      userNameSpan.textContent = '';
-    }
-  }
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = '👤 ' + id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
 
-  if (nav) {
-    if (id) {
-      nav.innerHTML = `
-        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-        <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
-      `;
-    } else {
-      nav.innerHTML = `
-        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
-      `;
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
     }
-  }
-}
   </script>
 
   <div class="page">
@@ -608,277 +608,447 @@
   <script src="/medit/auth.js"></script>
 
   <script>
+    // ============================================================
+    // VERSION OPTIMISÉE - CHARGEMENT RAPIDE
+    // ============================================================
+
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
+    var chargementEnCours = false;
+    var dernierRafraichissement = 0;
 
     function ouvrirConnexion() {
-      window.location.href = '/medit/index.html';
+        window.location.href = '/medit/index.html';
     }
 
     function ouvrirInscription() {
-      window.location.href = '/medit/index.html';
+        window.location.href = '/medit/index.html';
     }
 
     function deconnecter() {
-      if (confirm('Se déconnecter ?')) {
-        localStorage.removeItem('etudiant_id');
-        localStorage.removeItem('etudiant_niveau');
-        window.location.href = '/medit/index.html';
-      }
+        if (confirm('Se déconnecter ?')) {
+            localStorage.removeItem('etudiant_id');
+            localStorage.removeItem('etudiant_niveau');
+            window.location.href = '/medit/index.html';
+        }
     }
 
-    function chargerNiveauEtDescription() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return Promise.reject('Non connecté');
-      }
-
-      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
-
-      return fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            niveauEtudiant = data.niveau || 0;
-            document.getElementById('niveauValeur').textContent = niveauEtudiant;
-          } else {
-            document.getElementById('niveauValeur').textContent = '?';
-          }
-        })
-        .catch(function() {
-          document.getElementById('niveauValeur').textContent = '?';
-        });
+    // ============================================================
+    // GESTION DU CACHE
+    // ============================================================
+    function sauvegarderCache(id, data) {
+        try {
+            var cache = {
+                data: data,
+                timestamp: Date.now()
+            };
+            localStorage.setItem('dashboard_cache_' + id, JSON.stringify(cache));
+        } catch(e) {
+            console.warn('Erreur sauvegarde cache:', e);
+        }
     }
 
+    function chargerCache(id) {
+        try {
+            var cache = localStorage.getItem('dashboard_cache_' + id);
+            if (!cache) return null;
+            cache = JSON.parse(cache);
+            
+            // Cache valide 5 minutes
+            if (Date.now() - cache.timestamp > 5 * 60 * 1000) {
+                return null;
+            }
+            return cache.data;
+        } catch(e) {
+            return null;
+        }
+    }
+
+    // ============================================================
+    // FONCTION PRINCIPALE OPTIMISÉE
+    // ============================================================
     function chargerTableauDeBord() {
-      var id = localStorage.getItem('etudiant_id');
-      var niveau = niveauEtudiant || 0;
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            window.location.href = '/medit/index.html';
+            return;
+        }
 
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
+        // 1. Vérifier le cache
+        var cachedData = chargerCache(id);
+        if (cachedData) {
+            console.log('📦 Utilisation du cache');
+            utiliserDonnees(cachedData);
+            // Rafraîchir en arrière-plan (pas trop souvent)
+            var maintenant = Date.now();
+            if (maintenant - dernierRafraichissement > 60000) { // 1 minute
+                dernierRafraichissement = maintenant;
+                chargerDepuisServeur(id, true);
+            }
+            return;
+        }
 
-      var urlPosts = CONFIG.SCRIPT_URL + '?action=getPosts&niveau=' + niveau;
+        // 2. Charger depuis le serveur
+        chargerDepuisServeur(id, false);
+    }
 
-      fetch(urlPosts)
-        .then(function(r) { return r.json(); })
-        .then(function(dataPosts) {
-          if (!dataPosts.success || !dataPosts.posts || dataPosts.posts.length === 0) {
+    function chargerDepuisServeur(id, estCache) {
+        if (chargementEnCours) return;
+        chargementEnCours = true;
+
+        // UN SEUL APPEL AU LIEU DE 3 !
+        var url = CONFIG.SCRIPT_URL + '?action=getDashboard&nom=' + encodeURIComponent(id);
+
+        fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                chargementEnCours = false;
+                
+                if (!data.success) {
+                    if (!estCache) {
+                        afficherVide();
+                    }
+                    return;
+                }
+
+                // Sauvegarder en cache
+                sauvegarderCache(id, data);
+
+                if (!estCache || !document.querySelector('.carte-post')) {
+                    utiliserDonnees(data);
+                } else {
+                    // Mise à jour en arrière-plan
+                    mettreAJourDonnees(data);
+                }
+            })
+            .catch(function(error) {
+                chargementEnCours = false;
+                console.error('Erreur serveur:', error);
+                if (!estCache) {
+                    document.getElementById('loader').style.display = 'none';
+                    document.getElementById('contenu').innerHTML = `
+                        <div class="vide">
+                            <span class="icone">⚠️</span>
+                            <h2>Erreur de chargement</h2>
+                            <p>Vérifiez votre connexion et réessayez.</p>
+                        </div>
+                    `;
+                    document.getElementById('tabsContainer').innerHTML = '';
+                }
+            });
+    }
+
+    // ============================================================
+    // UTILISATION DES DONNÉES
+    // ============================================================
+    function utiliserDonnees(data) {
+        niveauEtudiant = data.niveau || 0;
+        document.getElementById('niveauValeur').textContent = niveauEtudiant;
+
+        if (!data.posts || data.posts.length === 0) {
             afficherVide();
             return;
-          }
+        }
 
-          postsData = dataPosts.posts;
+        postsData = data.posts;
 
-          var urlReponses = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
-
-          return fetch(urlReponses)
-            .then(function(r) { return r.json(); })
-            .then(function(dataReponses) {
-              if (dataReponses.success && dataReponses.reponses) {
-                dataReponses.reponses.forEach(function(r) {
-                  toutesLesReponses[r.articleId] = r;
-                });
-              }
-              afficherAvecOnglets(postsData);
+        // Réinitialiser les réponses
+        toutesLesReponses = {};
+        if (data.reponses) {
+            data.reponses.forEach(function(r) {
+                toutesLesReponses[r.articleId] = r;
             });
-        })
-        .catch(function() {
-          document.getElementById('loader').style.display = 'none';
-          document.getElementById('contenu').innerHTML = `
-            <div class="vide">
-              <span class="icone">⚠️</span>
-              <h2>Erreur de chargement</h2>
-              <p>Vérifiez votre connexion et réessayez.</p>
-            </div>
-          `;
-          document.getElementById('tabsContainer').innerHTML = '';
+        }
+
+        afficherAvecOnglets(postsData);
+    }
+
+    function mettreAJourDonnees(data) {
+        // Mise à jour silencieuse en arrière-plan
+        var nouveauNiveau = data.niveau || 0;
+        if (nouveauNiveau !== niveauEtudiant) {
+            niveauEtudiant = nouveauNiveau;
+            document.getElementById('niveauValeur').textContent = niveauEtudiant;
+        }
+
+        // Mettre à jour les réponses
+        if (data.reponses) {
+            data.reponses.forEach(function(r) {
+                toutesLesReponses[r.articleId] = r;
+            });
+        }
+
+        // Mettre à jour les statistiques
+        var total = 0, valides = 0, aFaire = 0;
+        postsData.forEach(function(post) {
+            total++;
+            var reponse = toutesLesReponses[post.id];
+            if (reponse) {
+                var bonnes = reponse.bonnes || 0;
+                var totalQ = reponse.total || 0;
+                if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                    valides++;
+                } else {
+                    aFaire++;
+                }
+            } else {
+                aFaire++;
+            }
+        });
+
+        document.getElementById('totalPosts').textContent = total;
+        document.getElementById('validesPosts').textContent = valides;
+        document.getElementById('aFairePosts').textContent = aFaire;
+
+        // Mettre à jour les badges des cartes existantes
+        document.querySelectorAll('.carte-post').forEach(function(carte) {
+            var lien = carte.querySelector('.titre a');
+            if (lien) {
+                var postId = lien.href.split('id=')[1];
+                if (postId) {
+                    var reponse = toutesLesReponses[postId];
+                    var badge = carte.querySelector('.badge');
+                    var dateEl = carte.querySelector('.date-validation');
+                    var btn = carte.querySelector('.btn-lire');
+                    var retenirEl = carte.querySelector('.retenir-cadre');
+                    
+                    if (reponse) {
+                        var bonnes = reponse.bonnes || 0;
+                        var totalQ = reponse.total || 0;
+                        var estValide = totalQ > 0 && bonnes >= Math.ceil(totalQ / 2);
+                        
+                        if (estValide) {
+                            badge.className = 'badge valide';
+                            badge.textContent = '✓ Validé';
+                            if (dateEl) {
+                                dateEl.className = 'date-validation visible';
+                                var d = new Date(reponse.date);
+                                if (!isNaN(d.getTime())) {
+                                    dateEl.textContent = d.toLocaleDateString('fr-FR', {
+                                        day: '2-digit', month: 'long', year: 'numeric'
+                                    });
+                                }
+                            }
+                            if (btn) {
+                                btn.textContent = 'Relire →';
+                                btn.className = 'btn-lire reviser';
+                            }
+                            // Afficher "À retenir" si présent
+                            if (retenirEl && reponse.retenir) {
+                                retenirEl.className = 'retenir-cadre visible';
+                                retenirEl.innerHTML = '<strong>À retenir</strong>' + reponse.retenir;
+                            }
+                        } else {
+                            badge.className = 'badge a-faire';
+                            badge.textContent = '○ À faire';
+                            if (dateEl) {
+                                dateEl.className = 'date-validation';
+                            }
+                            if (btn) {
+                                btn.textContent = 'Ouvrir →';
+                                btn.className = 'btn-lire';
+                            }
+                            if (retenirEl) {
+                                retenirEl.className = 'retenir-cadre';
+                            }
+                        }
+                    } else {
+                        badge.className = 'badge non-vu';
+                        badge.textContent = '○ À faire';
+                        if (dateEl) {
+                            dateEl.className = 'date-validation';
+                        }
+                        if (btn) {
+                            btn.textContent = 'Ouvrir →';
+                            btn.className = 'btn-lire';
+                        }
+                        if (retenirEl) {
+                            retenirEl.className = 'retenir-cadre';
+                        }
+                    }
+                }
+            }
         });
     }
 
+    // ============================================================
+    // AFFICHAGE AVEC ONGLETS
+    // ============================================================
     function afficherAvecOnglets(posts) {
-      var contenu = document.getElementById('contenu');
-      document.getElementById('loader').style.display = 'none';
+        var contenu = document.getElementById('contenu');
+        document.getElementById('loader').style.display = 'none';
 
-      var total = 0;
-      var valides = 0;
-      var aFaire = 0;
+        var total = 0;
+        var valides = 0;
+        var aFaire = 0;
 
-      posts.forEach(function(post) {
-        total++;
-        var reponse = toutesLesReponses[post.id];
-        if (reponse) {
-          var bonnes = reponse.bonnes || 0;
-          var totalQ = reponse.total || 0;
-          if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
-            valides++;
-          } else {
-            aFaire++;
-          }
-        } else {
-          aFaire++;
-        }
-      });
-
-      document.getElementById('totalPosts').textContent = total;
-      document.getElementById('validesPosts').textContent = valides;
-      document.getElementById('aFairePosts').textContent = aFaire;
-
-      var cats = {};
-      posts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!cats[cat]) cats[cat] = [];
-        cats[cat].push(post);
-      });
-
-      var categoriesTriees = Object.keys(cats).sort();
-
-      var tabsHtml = '';
-      categoriesTriees.forEach(function(cat, index) {
-        var count = cats[cat].length;
-        var activeClass = index === 0 ? 'active' : '';
-        tabsHtml += `
-          <button class="tab-btn ${activeClass}" data-tab="tab-${index}" onclick="switchTab('tab-${index}')">
-            ${cat}
-            <span class="compteur-tab">${count}</span>
-          </button>
-        `;
-      });
-      document.getElementById('tabsContainer').innerHTML = tabsHtml;
-
-      var contenuHtml = '';
-      categoriesTriees.forEach(function(cat, index) {
-        var activeClass = index === 0 ? 'active' : '';
-        var postsDeCat = cats[cat];
-
-        contenuHtml += `<div class="tab-content ${activeClass}" id="tab-${index}">`;
-
-        var grilleHtml = '<div class="grille">';
-        postsDeCat.forEach(function(post) {
-          var reponse = toutesLesReponses[post.id];
-          var estValide = false;
-          var dateValidation = '';
-          var retenir = '';
-
-          if (reponse) {
-            var bonnes = reponse.bonnes || 0;
-            var totalQ = reponse.total || 0;
-            dateValidation = reponse.date || '';
-            retenir = reponse.retenir || '';
-
-            if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
-              estValide = true;
+        posts.forEach(function(post) {
+            total++;
+            var reponse = toutesLesReponses[post.id];
+            if (reponse) {
+                var bonnes = reponse.bonnes || 0;
+                var totalQ = reponse.total || 0;
+                if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                    valides++;
+                } else {
+                    aFaire++;
+                }
+            } else {
+                aFaire++;
             }
-          }
-
-          var badgeHtml = '';
-          var dateHtml = '';
-          if (estValide) {
-            badgeHtml = '<span class="badge valide">✓ Validé</span>';
-            if (dateValidation) {
-              var d = new Date(dateValidation);
-              if (!isNaN(d.getTime())) {
-                dateHtml = '<span class="date-validation visible">' + d.toLocaleDateString('fr-FR', {
-                  day: '2-digit', month: 'long', year: 'numeric'
-                }) + '</span>';
-              }
-            }
-          } else if (reponse) {
-            badgeHtml = '<span class="badge a-faire">○ À faire</span>';
-          } else {
-            badgeHtml = '<span class="badge non-vu">○ À faire</span>';
-          }
-
-          var btnClass = 'btn-lire';
-          var btnText = 'Ouvrir →';
-          if (estValide) {
-            btnClass += ' reviser';
-            btnText = 'Relire →';
-          }
-
-          var retenirHtml = '';
-          if (estValide && retenir) {
-            retenirHtml = `
-              <div class="retenir-cadre visible">
-                <strong>À retenir</strong>
-                ${retenir}
-              </div>
-            `;
-          }
-
-          grilleHtml += `
-            <div class="carte-post">
-              <div class="infos">
-                <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
-                <div class="meta">
-                  <span class="niveau-badge">Niveau ${post.niveau}</span>
-                  ${retenirHtml}
-                </div>
-              </div>
-              <div class="statut">
-                ${badgeHtml}
-                ${dateHtml}
-              </div>
-              <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
-            </div>
-          `;
         });
 
-        grilleHtml += '</div>';
-        contenuHtml += grilleHtml;
-        contenuHtml += `</div>`;
-      });
+        document.getElementById('totalPosts').textContent = total;
+        document.getElementById('validesPosts').textContent = valides;
+        document.getElementById('aFairePosts').textContent = aFaire;
 
-      contenu.innerHTML = contenuHtml;
+        var cats = {};
+        posts.forEach(function(post) {
+            var cat = post.categorie || 'Sans catégorie';
+            if (!cats[cat]) cats[cat] = [];
+            cats[cat].push(post);
+        });
+
+        var categoriesTriees = Object.keys(cats).sort();
+
+        var tabsHtml = '';
+        categoriesTriees.forEach(function(cat, index) {
+            var count = cats[cat].length;
+            var activeClass = index === 0 ? 'active' : '';
+            tabsHtml += `
+                <button class="tab-btn ${activeClass}" data-tab="tab-${index}" onclick="switchTab('tab-${index}')">
+                    ${cat}
+                    <span class="compteur-tab">${count}</span>
+                </button>
+            `;
+        });
+        document.getElementById('tabsContainer').innerHTML = tabsHtml;
+
+        var contenuHtml = '';
+        categoriesTriees.forEach(function(cat, index) {
+            var activeClass = index === 0 ? 'active' : '';
+            var postsDeCat = cats[cat];
+
+            contenuHtml += `<div class="tab-content ${activeClass}" id="tab-${index}">`;
+            contenuHtml += '<div class="grille">';
+            
+            postsDeCat.forEach(function(post) {
+                var reponse = toutesLesReponses[post.id];
+                var estValide = false;
+                var dateValidation = '';
+                var retenir = '';
+
+                if (reponse) {
+                    var bonnes = reponse.bonnes || 0;
+                    var totalQ = reponse.total || 0;
+                    dateValidation = reponse.date || '';
+                    retenir = reponse.retenir || '';
+
+                    if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                        estValide = true;
+                    }
+                }
+
+                var badgeHtml = '';
+                var dateHtml = '';
+                if (estValide) {
+                    badgeHtml = '<span class="badge valide">✓ Validé</span>';
+                    if (dateValidation) {
+                        var d = new Date(dateValidation);
+                        if (!isNaN(d.getTime())) {
+                            dateHtml = '<span class="date-validation visible">' + d.toLocaleDateString('fr-FR', {
+                                day: '2-digit', month: 'long', year: 'numeric'
+                            }) + '</span>';
+                        }
+                    }
+                } else if (reponse) {
+                    badgeHtml = '<span class="badge a-faire">○ À faire</span>';
+                } else {
+                    badgeHtml = '<span class="badge non-vu">○ À faire</span>';
+                }
+
+                var btnClass = 'btn-lire';
+                var btnText = 'Ouvrir →';
+                if (estValide) {
+                    btnClass += ' reviser';
+                    btnText = 'Relire →';
+                }
+
+                var retenirHtml = '';
+                if (estValide && retenir) {
+                    retenirHtml = `
+                        <div class="retenir-cadre visible">
+                            <strong>À retenir</strong>
+                            ${retenir}
+                        </div>
+                    `;
+                }
+
+                contenuHtml += `
+                    <div class="carte-post">
+                        <div class="infos">
+                            <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
+                            <div class="meta">
+                                <span class="niveau-badge">Niveau ${post.niveau}</span>
+                                ${retenirHtml}
+                            </div>
+                        </div>
+                        <div class="statut">
+                            ${badgeHtml}
+                            ${dateHtml}
+                        </div>
+                        <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
+                    </div>
+                `;
+            });
+
+            contenuHtml += '</div>'; // fin grille
+            contenuHtml += `</div>`; // fin tab-content
+        });
+
+        contenu.innerHTML = contenuHtml;
     }
 
     function switchTab(tabId) {
-      document.querySelectorAll('.tab-content').forEach(function(el) {
-        el.classList.remove('active');
-      });
-      document.querySelectorAll('.tab-btn').forEach(function(el) {
-        el.classList.remove('active');
-      });
+        document.querySelectorAll('.tab-content').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        document.querySelectorAll('.tab-btn').forEach(function(el) {
+            el.classList.remove('active');
+        });
 
-      document.getElementById(tabId).classList.add('active');
+        document.getElementById(tabId).classList.add('active');
 
-      document.querySelectorAll('.tab-btn').forEach(function(el) {
-        if (el.dataset.tab === tabId) {
-          el.classList.add('active');
-        }
-      });
-    }
-
-    function afficherVide() {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('contenu').innerHTML = `
-        <div class="vide">
-          <span class="icone">📭</span>
-          <h2>Aucune méditation disponible</h2>
-          <p>De nouvelles méditations seront ajoutées prochainement.</p>
-          <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
-        </div>
-      `;
-      document.getElementById('tabsContainer').innerHTML = '';
-    }
-
-    function demarrer() {
-      chargerNiveauEtDescription()
-        .then(function() {
-          chargerTableauDeBord();
-        })
-        .catch(function() {
-          chargerTableauDeBord();
+        document.querySelectorAll('.tab-btn').forEach(function(el) {
+            if (el.dataset.tab === tabId) {
+                el.classList.add('active');
+            }
         });
     }
 
+    function afficherVide() {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('contenu').innerHTML = `
+            <div class="vide">
+                <span class="icone">📭</span>
+                <h2>Aucune méditation disponible</h2>
+                <p>De nouvelles méditations seront ajoutées prochainement.</p>
+                <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+            </div>
+        `;
+        document.getElementById('tabsContainer').innerHTML = '';
+    }
+
+    function demarrer() {
+        chargerTableauDeBord();
+    }
+
+    // Démarrage
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
+        document.addEventListener('DOMContentLoaded', demarrer);
     } else {
-      demarrer();
+        demarrer();
     }
   </script>
 
