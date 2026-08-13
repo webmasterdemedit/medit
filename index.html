@@ -1030,4 +1030,66 @@
       }
 
       msg.textContent = 'Envoi de la demande...';
-      msg.className = '
+      msg.className = 'message info';
+
+      var url = CONFIG.SCRIPT_URL + '?action=registerDemande' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&contact=' + encodeURIComponent(contact) +
+        '&disciplines=' + encodeURIComponent(disciplinesStr) +
+        '&niveau=' + encodeURIComponent(niveau) +
+        '&message=' + encodeURIComponent(message);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            fermerModal();
+            afficherToast();
+            document.getElementById('registerNom').value = '';
+            document.getElementById('registerContact').value = '';
+            document.getElementById('registerNiveau').value = '';
+            document.getElementById('registerMessage').value = '';
+            document.querySelectorAll('input[name="disciplines"]').forEach(function(cb) {
+              cb.checked = false;
+            });
+          } else {
+            msg.textContent = '✗ ' + (data.message || 'Erreur lors de l\'envoi');
+            msg.className = 'message error';
+          }
+        })
+        .catch(function() {
+          msg.textContent = '✗ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // DÉCONNEXION
+    // ============================================================
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        location.reload();
+      }
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      var id = localStorage.getItem('etudiant_id');
+      if (id) {
+        window.location.href = '/medit/mes-textes.html';
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
