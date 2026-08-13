@@ -1037,4 +1037,40 @@
             msg.textContent = '✗ ' + (data.message || 'Erreur lors de l\'envoi');
             msg.className = 'message error';
           }
-       
+        })
+        .catch(function() {
+          msg.textContent = '✗ Erreur réseau. Vérifiez votre connexion.';
+          msg.className = 'message error';
+        });
+    }
+
+    // ============================================================
+    // DÉCONNEXION
+    // ============================================================
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        location.reload();
+      }
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      var id = localStorage.getItem('etudiant_id');
+      if (id) {
+        window.location.href = '/medit/mes-textes.html';
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
