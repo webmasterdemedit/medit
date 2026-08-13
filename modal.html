@@ -1,1 +1,272 @@
+<!-- ============================================================
+   POPUP CONNEXION / INSCRIPTION
+   ============================================================ -->
+<style>
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(6px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 99999;
+    padding: 20px;
+  }
 
+  .modal-overlay.visible {
+    display: flex;
+  }
+
+  .modal-content {
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 32px 36px;
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+    position: relative;
+    animation: modalFadeIn 0.3s ease;
+  }
+
+  @keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95) translateY(10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .modal-content .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    color: #94a3b8;
+    cursor: pointer;
+    transition: color 0.2s;
+    line-height: 1;
+  }
+
+  .modal-content .modal-close:hover {
+    color: #1a2a2e;
+  }
+
+  .modal-content h3 {
+    font-size: 22px;
+    font-weight: 400;
+    font-family: 'Georgia', serif;
+    color: #1a2a2e;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .modal-content .champ {
+    margin-bottom: 16px;
+  }
+
+  .modal-content label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    color: #475569;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .modal-content input,
+  .modal-content textarea,
+  .modal-content select {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1px solid #e2e0db;
+    border-radius: 10px;
+    font-size: 14px;
+    background: #faf9f7;
+    transition: border-color 0.3s;
+    font-family: inherit;
+    color: #1a2a2e;
+  }
+
+  .modal-content input:focus,
+  .modal-content textarea:focus,
+  .modal-content select:focus {
+    border-color: #2d6a4f;
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
+  }
+
+  .modal-content textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .modal-content select {
+    appearance: auto;
+    cursor: pointer;
+  }
+
+  .modal-content .btn-submit {
+    width: 100%;
+    padding: 14px;
+    background: #2d6a4f;
+    color: #ffffff;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.25s ease;
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  .modal-content .btn-submit:hover {
+    background: #1a4a3a;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
+  }
+
+  .modal-content .message {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .modal-content .message.success {
+    color: #065f46;
+    background: #d1fae5;
+  }
+
+  .modal-content .message.error {
+    color: #991b1b;
+    background: #fee2e2;
+  }
+
+  .modal-content .message.info {
+    color: #1e40af;
+    background: #dbeafe;
+  }
+
+  .modal-content .lien-form {
+    margin-top: 12px;
+    font-size: 14px;
+    color: #94a3b8;
+    text-align: center;
+  }
+
+  .modal-content .lien-form a {
+    color: #2d6a4f;
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  .modal-content .lien-form a:hover {
+    text-decoration: underline;
+  }
+
+  /* ============================================================
+     CASES À COCHER DISCIPLINES
+     ============================================================ */
+  #registerDisciplines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    background: #faf9f7;
+    padding: 12px 16px;
+    border-radius: 10px;
+    border: 1px solid #e2e0db;
+  }
+
+  #registerDisciplines label {
+    font-size: 14px;
+    color: #1e293b;
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  #registerDisciplines input[type="checkbox"] {
+    accent-color: #2d6a4f;
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .modal-content {
+      padding: 24px 20px;
+    }
+  }
+</style>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" onclick="fermerModal()">✕</button>
+
+    <!-- CONNEXION -->
+    <div id="formConnexion" style="display:block;">
+      <h3>Se connecter</h3>
+      <div class="champ">
+        <label>Identifiant</label>
+        <input type="text" id="loginId" placeholder="Votre identifiant" />
+      </div>
+      <div class="champ">
+        <label>Mot de passe</label>
+        <input type="password" id="loginMdp" placeholder="Votre mot de passe" />
+      </div>
+      <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
+      <div class="message" id="loginMessage"></div>
+      <div class="lien-form">
+        Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Faire une demande d'inscription</a>
+      </div>
+    </div>
+
+    <!-- INSCRIPTION -->
+    <div id="formInscription" style="display:none;">
+      <h3>Demande d'inscription</h3>
+
+      <div class="champ">
+        <label>Nom et prénom</label>
+        <input type="text" id="registerNom" placeholder="Votre nom et prénom" />
+      </div>
+
+      <div class="champ">
+        <label>Email ou numéro de téléphone</label>
+        <input type="text" id="registerContact" placeholder="ex: email@exemple.fr ou 06 12 34 56 78" />
+      </div>
+
+      <div class="champ">
+        <label>Discipline souhaitée</label>
+        <div id="registerDisciplines"></div>
+      </div>
+
+      <div class="champ">
+        <label>Niveau souhaité</label>
+        <select id="registerNiveau">
+          <option value="">— Choisissez un niveau —</option>
+        </select>
+      </div>
+
+      <div class="champ">
+        <label>Message libre</label>
+        <textarea id="registerMessage" placeholder="Votre motivation, vos attentes, vos questions..." rows="3"></textarea>
+      </div>
+
+      <button class="btn-submit" onclick="sInscrire()">Envoyer ma demande</button>
+      <div class="message" id="registerStatusMessage"></div>
+
+      <div class="lien-form">
+        Déjà un compte ? <a onclick="ouvrirConnexion();return false;">Se connecter</a>
+      </div>
+    </div>
+
+  </div>
+</div>
