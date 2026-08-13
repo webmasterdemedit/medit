@@ -961,22 +961,20 @@
             msg.textContent = '✓ Connexion réussie, chargement...';
             msg.className = 'message success';
             
-            // ===== PRÉCHARGEMENT =====
-            var urlComplet = CONFIG.SCRIPT_URL + '?action=getComplet&nom=' + encodeURIComponent(etudiantId);
-            fetch(urlComplet)
-              .then(function(r) { return r.json(); })
-              .then(function(d) {
-                if (d.success) {
-                  DataManager.setCache(etudiantId, d);
-                  console.log('✅ Données préchargées pour', etudiantId);
-                }
-                // Rediriger dans tous les cas
-                window.location.href = '/medit/mes-textes.html';
-              })
-              .catch(function() {
-                // En cas d'erreur, rediriger quand même
-                window.location.href = '/medit/mes-textes.html';
-              });
+         // ===== PRÉCHARGEMENT =====
+var urlComplet = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(etudiantId);
+fetch(urlComplet)
+    .then(function(r) { return r.json(); })
+    .then(function(d) {
+        if (d.success) {
+            DataManager.setCache(etudiantId, d);
+            console.log('✅ Données préchargées pour', etudiantId);
+        }
+        window.location.href = '/medit/mes-textes.html';
+    })
+    .catch(function() {
+        window.location.href = '/medit/mes-textes.html';
+    });
           } else {
             msg.textContent = '✗ ' + (data.message || 'Erreur de connexion');
             msg.className = 'message error';
