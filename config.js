@@ -4,7 +4,7 @@
 
 var CONFIG = {
   // L'URL de ton script Google Apps (À METTRE À JOUR APRÈS DÉPLOIEMENT)
-  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbx152KMLdfEcPQaKMLhC4BfcQfReiwN-C_SYCSYaq-3NKkdeSfK0vFiYVRhQAFPohKM/exec',
+  SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbxaIXP9xg6xAmlN3nVR6cy83DAjbhNq_jgwSVmSuM8QUZtwlZZOljKxwzmrT_RbVopj/exec',
   
   SITE_NAME: 'Méditations islamiques',
   SITE_URL: 'https://webmasterdemedit.github.io/medit/'
