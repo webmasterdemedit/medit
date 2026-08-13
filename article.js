@@ -436,6 +436,15 @@ function validerReponse() {
     return;
   }
 
+  // === CHANGEMENT 1 : Désactiver le bouton immédiatement ===
+  var btn = document.querySelector('#openQuestion .btn-nav');
+  var msgContainer = document.getElementById('form-message-mailto');
+  
+  btn.disabled = true;
+  btn.textContent = '⏳ Envoi...';
+  btn.style.opacity = '0.6';
+  msgContainer.innerHTML = '<span style="color:#94a3b8;">⏳ Envoi en cours...</span>';
+
   var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte&nom=' + encodeURIComponent(nom) +
     '&articleId=' + encodeURIComponent(postId) +
     '&reponseOuverte=' + encodeURIComponent(reponse);
@@ -444,11 +453,14 @@ function validerReponse() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Réponse enregistrée.</span>';
+        // === CHANGEMENT 2 : Feedback succès ===
+        btn.textContent = '✅ Envoyé !';
+        btn.style.background = '#2d6a4f';
+        btn.style.opacity = '1';
+        msgContainer.innerHTML = '<span style="color:#2d6a4f;">✅ Réponse enregistrée !</span>';
+        
         reponseValidee = true;
         document.getElementById('reponse-mailto').disabled = true;
-        var btn = document.querySelector('#openQuestion .btn-nav');
-        if (btn) btn.disabled = true;
         updateSlides();
         
         miseAJourCacheReponse(nom, postId);
@@ -463,14 +475,23 @@ function validerReponse() {
           }, 1000);
         }
       } else {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
+        // === CHANGEMENT 3 : Feedback erreur ===
+        btn.textContent = '❌ Réessayer';
+        btn.style.background = '#c62828';
+        btn.style.opacity = '1';
+        btn.disabled = false;
+        msgContainer.innerHTML = '<span style="color:#c62828;">❌ Erreur : ' + (data.message || '') + '</span>';
       }
     })
     .catch(function() {
-      document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
+      // === CHANGEMENT 4 : Feedback erreur réseau ===
+      btn.textContent = '❌ Réessayer';
+      btn.style.background = '#c62828';
+      btn.style.opacity = '1';
+      btn.disabled = false;
+      msgContainer.innerHTML = '<span style="color:#c62828;">❌ Erreur réseau. Vérifiez votre connexion.</span>';
     });
 }
-
 // ============================================================
 // MISE À JOUR DU CACHE LOCAL (après quiz)
 // ============================================================
