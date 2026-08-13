@@ -242,6 +242,10 @@
       font-size: 12px;
       color: #94a3b8;
       letter-spacing: 0.2px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
     }
 
     .carte-post .meta .niveau-badge {
@@ -252,6 +256,31 @@
       font-weight: 500;
       color: #94a3b8;
       display: inline-block;
+    }
+
+    .carte-post .meta .badge-icone {
+      font-size: 13px;
+      display: inline-block;
+      background: #f4f2ed;
+      padding: 1px 8px;
+      border-radius: 12px;
+      color: #64748b;
+      font-weight: 500;
+    }
+
+    .carte-post .meta .badge-icone.quiz {
+      background: #e8f0fe;
+      color: #1a5a8a;
+    }
+
+    .carte-post .meta .badge-icone.question {
+      background: #fef3e8;
+      color: #8a6a3a;
+    }
+
+    .carte-post .meta .mots {
+      font-size: 11px;
+      color: #b8b0a8;
     }
 
     .carte-post .retenir-cadre {
@@ -298,6 +327,11 @@
     }
 
     .carte-post .statut .badge.valide {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .carte-post .statut .badge.lu {
       background: #e8f5e9;
       color: #2d6a4f;
     }
@@ -353,6 +387,15 @@
     .carte-post .btn-lire.reviser:hover {
       background: #a07d55;
       box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
+    }
+
+    .carte-post .btn-lire.lire {
+      background: #5a7a8a;
+    }
+
+    .carte-post .btn-lire.lire:hover {
+      background: #4a6a7a;
+      box-shadow: 0 4px 12px rgba(90, 122, 138, 0.2);
     }
 
     /* ============================================================
@@ -643,14 +686,11 @@
             return;
         }
 
-        // Utiliser DataManager pour charger les données
         DataManager.charger()
             .then(function(data) {
-                // Mettre à jour les données globales
                 niveauEtudiant = data.niveau || 0;
                 postsData = data.posts || [];
                 
-                // Réinitialiser les réponses
                 toutesLesReponses = {};
                 if (data.reponses) {
                     data.reponses.forEach(function(r) {
@@ -658,7 +698,6 @@
                     });
                 }
                 
-                // Afficher
                 document.getElementById('niveauValeur').textContent = niveauEtudiant;
                 
                 if (postsData.length === 0) {
@@ -668,16 +707,13 @@
                 }
             })
             .catch(function() {
-                // Erreur : essayer le cache forcé
                 var cache = DataManager.getCacheForce(id);
                 if (cache) {
-                    // Utiliser le cache même expiré
                     niveauEtudiant = cache.niveau || 0;
                     postsData = cache.posts || [];
                     document.getElementById('niveauValeur').textContent = niveauEtudiant;
                     afficherAvecOnglets(postsData);
                 } else {
-                    // Vraie erreur
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('contenu').innerHTML = `
                         <div class="vide">
@@ -695,7 +731,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE AVEC ONGLETS (inchangé)
+    // AFFICHAGE AVEC ONGLETS
     // ============================================================
     function afficherAvecOnglets(posts) {
         var contenu = document.getElementById('contenu');
@@ -760,6 +796,7 @@
                 var estValide = false;
                 var dateValidation = '';
                 var retenir = '';
+                var estLu = false;
 
                 if (reponse) {
                     var bonnes = reponse.bonnes || 0;
@@ -767,34 +804,78 @@
                     dateValidation = reponse.date || '';
                     retenir = reponse.retenir || '';
 
-                    if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                    // Une lecture est validée si (total=1 et bonnes=1) OU (quiz validé)
+                    if (totalQ === 1 && bonnes === 1) {
+                        estLu = true;
+                        estValide = true;
+                    } else if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
                         estValide = true;
                     }
                 }
 
+                // Déterminer le type de contenu
+                var hasQuiz = post.hasQuiz || false;
+                var hasQuestion = post.hasQuestion || false;
+                var mots = post.mots || 0;
+
+                // Badges pour le type
+                var badgesHtml = '';
+                if (hasQuiz) {
+                    badgesHtml += '<span class="badge-icone quiz">📝 Quiz</span>';
+                }
+                if (hasQuestion) {
+                    badgesHtml += '<span class="badge-icone question">✍️ Question</span>';
+                }
+
+                // Texte du bouton
+                var btnClass = 'btn-lire';
+                var btnText = 'Ouvrir →';
+                
+                if (estValide || estLu) {
+                    btnClass += ' reviser';
+                    btnText = 'Relire →';
+                } else if (hasQuiz || hasQuestion) {
+                    btnText = 'Faire →';
+                } else {
+                    btnClass += ' lire';
+                    btnText = 'Lire →';
+                }
+
+                // Badge de statut
                 var badgeHtml = '';
                 var dateHtml = '';
-                if (estValide) {
+                if (estLu) {
+                    badgeHtml = '<span class="badge lu">✓ Lu</span>';
+                    if (dateValidation) {
+                        var d = new Date(dateValidation);
+                        if (!isNaN(d.getTime())) {
+                            var dateStr = d.toLocaleDateString('fr-FR', {
+                                day: '2-digit', month: 'long', year: 'numeric'
+                            });
+                            var heureStr = d.toLocaleTimeString('fr-FR', {
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+                        }
+                    }
+                } else if (estValide) {
                     badgeHtml = '<span class="badge valide">✓ Validé</span>';
                     if (dateValidation) {
                         var d = new Date(dateValidation);
                         if (!isNaN(d.getTime())) {
-                            dateHtml = '<span class="date-validation visible">' + d.toLocaleDateString('fr-FR', {
+                            var dateStr = d.toLocaleDateString('fr-FR', {
                                 day: '2-digit', month: 'long', year: 'numeric'
-                            }) + '</span>';
+                            });
+                            var heureStr = d.toLocaleTimeString('fr-FR', {
+                                hour: '2-digit', minute: '2-digit'
+                            });
+                            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
                         }
                     }
                 } else if (reponse) {
                     badgeHtml = '<span class="badge a-faire">○ À faire</span>';
                 } else {
                     badgeHtml = '<span class="badge non-vu">○ À faire</span>';
-                }
-
-                var btnClass = 'btn-lire';
-                var btnText = 'Ouvrir →';
-                if (estValide) {
-                    btnClass += ' reviser';
-                    btnText = 'Relire →';
                 }
 
                 var retenirHtml = '';
@@ -807,12 +888,19 @@
                     `;
                 }
 
+                var motsHtml = '';
+                if (mots > 0) {
+                    motsHtml = '<span class="mots">' + mots + ' mots</span>';
+                }
+
                 contenuHtml += `
                     <div class="carte-post">
                         <div class="infos">
                             <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
                             <div class="meta">
                                 <span class="niveau-badge">Niveau ${post.niveau}</span>
+                                ${badgesHtml}
+                                ${motsHtml}
                                 ${retenirHtml}
                             </div>
                         </div>
@@ -866,7 +954,6 @@
         chargerTableauDeBord();
     }
 
-    // Démarrage
     if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', demarrer);
     } else {
