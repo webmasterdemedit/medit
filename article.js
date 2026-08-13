@@ -441,7 +441,7 @@ function validerReponse() {
   var msgContainer = document.getElementById('form-message-mailto');
   
   btn.disabled = true;
-  btn.textContent = '⏳ Envoi...';
+  btn.innerHTML = '<span class="spinner-btn"></span> Envoi...';
   btn.style.opacity = '0.6';
   msgContainer.innerHTML = '<span style="color:#94a3b8;">⏳ Envoi en cours...</span>';
 
