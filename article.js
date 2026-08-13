@@ -1,5 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL
 // ============================================================
 
 var slidesData = [];
@@ -387,7 +387,7 @@ function allerSlide(index) {
 }
 
 // ============================================================
-// SAUVEGARDER LE QUIZ (TON CODE EXISTANT)
+// SAUVEGARDER LE QUIZ (avec mise à jour du cache local)
 // ============================================================
 function sauvegarderQuiz() {
   var nom = localStorage.getItem('etudiant_id');
@@ -411,6 +411,9 @@ function sauvegarderQuiz() {
     .then(function(data) {
       if (data.success) {
         console.log('Quiz sauvegardé');
+        
+        // ===== MISE À JOUR DU CACHE LOCAL =====
+        miseAJourCacheLocal(nom, postId, quizData.bonnes, quizData.total);
       } else {
         console.error('Erreur :', data.message);
       }
@@ -421,7 +424,7 @@ function sauvegarderQuiz() {
 }
 
 // ============================================================
-// SAUVEGARDER LA RÉPONSE OUVERTE (TON CODE EXISTANT)
+// SAUVEGARDER LA RÉPONSE OUVERTE (avec mise à jour du cache local)
 // ============================================================
 function validerReponse() {
   var nom = localStorage.getItem('etudiant_id');
@@ -451,6 +454,9 @@ function validerReponse() {
         if (btn) btn.disabled = true;
         updateSlides();
         
+        // ===== MISE À JOUR DU CACHE LOCAL =====
+        miseAJourCacheReponse(nom, postId);
+        
         if (slideIndex === slidesData.length - 1) {
           setTimeout(function() {
             afficherMessageFin();
@@ -467,6 +473,111 @@ function validerReponse() {
     .catch(function() {
       document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
     });
+}
+
+// ============================================================
+// MISE À JOUR DU CACHE LOCAL (après quiz)
+// ============================================================
+function miseAJourCacheLocal(nom, articleId, bonnes, total) {
+  // Récupérer le cache existant
+  var cache = DataManager.getCacheForce(nom);
+  if (!cache) return;
+  
+  // Vérifier si cette réponse existe déjà
+  var reponseExistante = false;
+  if (cache.reponses) {
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === articleId) {
+        // Mettre à jour l'existante
+        cache.reponses[i].bonnes = bonnes;
+        cache.reponses[i].total = total;
+        cache.reponses[i].date = new Date().toISOString();
+        reponseExistante = true;
+        break;
+      }
+    }
+  }
+  
+  // Si pas existante, l'ajouter
+  if (!reponseExistante) {
+    if (!cache.reponses) cache.reponses = [];
+    cache.reponses.push({
+      articleId: articleId,
+      titre: postTitre || 'Méditation',
+      bonnes: bonnes,
+      total: total,
+      date: new Date().toISOString(),
+      temps: '',
+      reponseOuverte: '',
+      dateEnvoi: '',
+      dureeTotale: ''
+    });
+  }
+  
+  // Mettre à jour aussi dans historique (pour mon-compte)
+  if (cache.historique) {
+    var histoExistante = false;
+    for (var j = 0; j < cache.historique.length; j++) {
+      if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
+        cache.historique[j].bonnes = bonnes;
+        cache.historique[j].total = total;
+        cache.historique[j].date = new Date().toISOString();
+        cache.historique[j].valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+        histoExistante = true;
+        break;
+      }
+    }
+    if (!histoExistante) {
+      cache.historique.push({
+        date: new Date().toISOString(),
+        titre: postTitre || 'Méditation',
+        bonnes: bonnes,
+        total: total,
+        valide: (total > 0 && bonnes >= Math.ceil(total / 2)),
+        temps: '',
+        reponseOuverte: '',
+        dateEnvoi: '',
+        dureeTotale: ''
+      });
+    }
+  }
+  
+  // Sauvegarder le cache mis à jour
+  DataManager.setCache(nom, cache);
+  console.log('✅ Cache local mis à jour pour le quiz');
+}
+
+// ============================================================
+// MISE À JOUR DU CACHE LOCAL (après réponse ouverte)
+// ============================================================
+function miseAJourCacheReponse(nom, articleId) {
+  var cache = DataManager.getCacheForce(nom);
+  if (!cache) return;
+  
+  // Marquer la réponse ouverte comme envoyée
+  if (cache.reponses) {
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === articleId) {
+        cache.reponses[i].reponseOuverte = document.getElementById('reponse-mailto').value.trim();
+        cache.reponses[i].dateEnvoi = new Date().toISOString();
+        break;
+      }
+    }
+  }
+  
+  // Mettre à jour aussi dans historique
+  if (cache.historique) {
+    for (var j = 0; j < cache.historique.length; j++) {
+      if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
+        cache.historique[j].reponseOuverte = document.getElementById('reponse-mailto').value.trim();
+        cache.historique[j].dateEnvoi = new Date().toISOString();
+        break;
+      }
+    }
+  }
+  
+  DataManager.setCache(nom, cache);
+  console.log('✅ Cache local mis à jour pour la réponse ouverte');
 }
 
 // ============================================================
