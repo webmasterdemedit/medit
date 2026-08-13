@@ -321,6 +321,89 @@ function allerSlide(index) {
 }
 
 // ============================================================
+// SAUVEGARDER LE QUIZ (appelé quand le quiz est fini)
+// ============================================================
+function sauvegarderQuiz() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    console.error('Non connecté');
+    return;
+  }
+
+  var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
+
+  var url = CONFIG.SCRIPT_URL + '?action=saveQuiz&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&titre=' + encodeURIComponent(postTitre) +
+    '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
+    '&bonnes=' + encodeURIComponent(quizData.bonnes) +
+    '&total=' + encodeURIComponent(quizData.total) +
+    '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        console.log('Quiz sauvegardé');
+      } else {
+        console.error('Erreur :', data.message);
+      }
+    })
+    .catch(function() {
+      console.error('Erreur réseau');
+    });
+}
+
+// ============================================================
+// SAUVEGARDER LA RÉPONSE OUVERTE (appelé quand l'étudiant l'envoie)
+// ============================================================
+function validerReponse() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
+    return;
+  }
+
+  var reponse = document.getElementById('reponse-mailto').value.trim();
+  if (!reponse) {
+    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose.</span>';
+    return;
+  }
+
+  var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&reponseOuverte=' + encodeURIComponent(reponse);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Réponse enregistrée.</span>';
+        reponseValidee = true;
+        document.getElementById('reponse-mailto').disabled = true;
+        var btn = document.querySelector('#openQuestion .btn-nav');
+        if (btn) btn.disabled = true;
+        updateSlides();
+        
+        if (slideIndex === slidesData.length - 1) {
+          setTimeout(function() {
+            afficherMessageFin();
+          }, 800);
+        } else {
+          setTimeout(function() {
+            if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+          }, 1000);
+        }
+      } else {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
+    });
+}
+
+// ============================================================
 // QUIZ
 // ============================================================
 function verifierQuizAuto() {
@@ -404,6 +487,9 @@ function verifierQuizAuto() {
     msg.textContent = 'Parfait !';
     msg.style.color = '#2d6a4f';
     quizValide = true;
+    
+    sauvegarderQuiz(); // ← Sauvegarde automatique du quiz
+    
     updateSlides();
     setTimeout(function() {
       if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
@@ -412,6 +498,9 @@ function verifierQuizAuto() {
     msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
     msg.style.color = '#b8956a';
     quizValide = true;
+    
+    sauvegarderQuiz(); // ← Sauvegarde automatique du quiz
+    
     updateSlides();
     setTimeout(function() {
       if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
@@ -420,71 +509,6 @@ function verifierQuizAuto() {
     msg.textContent = 'Prenez le temps de relire la méditation.';
     msg.style.color = '#c62828';
   }
-}
-
-// ============================================================
-// SAUVEGARDE FINALE
-// ============================================================
-function validerReponse() {
-  var nom = localStorage.getItem('etudiant_id');
-  if (!nom) {
-    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
-    return;
-  }
-
-  var reponse = document.getElementById('reponse-mailto').value.trim();
-  if (!reponse) {
-    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose.</span>';
-    return;
-  }
-
-  var retenir = '';
-  for (var i = 0; i < slidesData.length; i++) {
-    if (slidesData[i].type === 'memo') {
-      retenir = slidesData[i].data.texte || '';
-      break;
-    }
-  }
-
-  var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
-
-  var url = CONFIG.SCRIPT_URL + '?action=saveReponse&nom=' + encodeURIComponent(nom) +
-    '&articleId=' + encodeURIComponent(postId) +
-    '&titre=' + encodeURIComponent(postTitre) +
-    '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
-    '&bonnes=' + encodeURIComponent(quizData.bonnes) +
-    '&total=' + encodeURIComponent(quizData.total) +
-    '&reponseOuverte=' + encodeURIComponent(reponse) +
-    '&tempsPasse=' + encodeURIComponent(tempsPasse) +
-    '&retenir=' + encodeURIComponent(retenir);
-
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Sauvegardé.</span>';
-        reponseValidee = true;
-        document.getElementById('reponse-mailto').disabled = true;
-        var btn = document.querySelector('#openQuestion .btn-nav');
-        if (btn) btn.disabled = true;
-        updateSlides();
-        // Si c'était le dernier slide, on déclenche le message de fin
-        if (slideIndex === slidesData.length - 1) {
-          setTimeout(function() {
-            afficherMessageFin();
-          }, 800);
-        } else {
-          setTimeout(function() {
-            if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
-          }, 1000);
-        }
-      } else {
-        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
-      }
-    })
-    .catch(function() {
-      document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
-    });
 }
 
 // ============================================================
