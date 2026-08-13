@@ -443,7 +443,7 @@ function validerReponse() {
   btn.disabled = true;
   btn.innerHTML = '<span class="spinner-btn"></span> Envoi...';
   btn.style.opacity = '0.6';
-  msgContainer.innerHTML = '<span style="color:#94a3b8;">⏳ Envoi en cours...</span>';
+  msgContainer.innerHTML = '<span style="color:#94a3b8;">Envoi en cours...</span>';
 
   var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte&nom=' + encodeURIComponent(nom) +
     '&articleId=' + encodeURIComponent(postId) +
