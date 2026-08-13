@@ -6,48 +6,48 @@ var DataManager = {
     // === CONFIGURATION ===
     DUREE_CACHE: 60, // 1 heure (tu peux mettre 24h si tu veux)
     
-    // === CHARGER LES DONNÉES ===
-    charger: function(force) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
+   // === CHARGER LES DONNÉES ===
+charger: function(force) {
+    var id = localStorage.getItem('etudiant_id');
+    if (!id) {
+        return Promise.reject('Non connecté');
+    }
+    
+    // Vérifier le cache
+    if (!force) {
+        var cache = this.getCache(id);
+        if (cache) {
+            console.log('📦 Données chargées depuis le cache');
+            return Promise.resolve(cache);
         }
-        
-        // Vérifier le cache
-        if (!force) {
-            var cache = this.getCache(id);
-            if (cache) {
-                console.log('📦 Données chargées depuis le cache');
-                return Promise.resolve(cache);
+    }
+    
+    // Charger depuis le serveur
+    console.log('🌐 Chargement depuis le serveur...');
+    var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
+    
+    return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (data.success) {
+                DataManager.setCache(id, data);
+                console.log('✅ Données chargées et mises en cache');
+                return data;
+            } else {
+                throw new Error(data.message || 'Erreur de chargement');
             }
-        }
-        
-       // Charger depuis le serveur
-console.log('🌐 Chargement depuis le serveur...');
-var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
-        
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.setCache(id, data);
-                    console.log('✅ Données chargées et mises en cache');
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur de chargement');
-                }
-            })
-            .catch(function(error) {
-                console.error('❌ Erreur:', error);
-                // En cas d'erreur, essayer le cache même expiré
-                var cache = DataManager.getCacheForce(id);
-                if (cache) {
-                    console.log('⚠️ Utilisation du cache expiré (hors ligne)');
-                    return cache;
-                }
-                throw error;
-            });
-    },
+        })
+        .catch(function(error) {
+            console.error('❌ Erreur:', error);
+            // En cas d'erreur, essayer le cache même expiré
+            var cache = DataManager.getCacheForce(id);
+            if (cache) {
+                console.log('⚠️ Utilisation du cache expiré (hors ligne)');
+                return cache;
+            }
+            throw error;
+        });
+},
     
     // === LIRE LE CACHE ===
     getCache: function(id) {
