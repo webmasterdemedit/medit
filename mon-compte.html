@@ -589,8 +589,13 @@
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
 
   <script>
+    // ============================================================
+    // mon-compte.html - VERSION AVEC DATAMANAGER
+    // ============================================================
+
     // ============================================================
     // SWITCH D'ONGLET
     // ============================================================
@@ -609,13 +614,12 @@
         }
       });
 
-      if (tabId === 'historique') {
-        chargerHistorique();
-      }
+      // Plus besoin de recharger l'historique à chaque clic !
+      // Tout est déjà dans le cache
     }
 
     // ============================================================
-    // CHARGEMENT DU PROFIL (utilise getNiveauEtDescription)
+    // CHARGEMENT DU PROFIL + HISTORIQUE (UN SEUL APPEL)
     // ============================================================
     function chargerCompte() {
       var id = localStorage.getItem('etudiant_id');
@@ -624,27 +628,42 @@
         return;
       }
 
-      // On utilise getNiveauEtDescription (fonction qui existe déjà)
-      var url = CONFIG.SCRIPT_URL + '?action=getNiveauEtDescription&nom=' + encodeURIComponent(id);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
+      // Utiliser DataManager
+      DataManager.charger()
         .then(function(data) {
-          if (data.success) {
-            afficherCompte(data, id);
-          } else {
-            document.getElementById('contenu-compte').innerHTML = `
-              <p style="color:#c62828;text-align:center;">❌ Erreur : ${data.message || 'Impossible de charger les informations.'}</p>
-            `;
-          }
+          afficherCompte(data, id);
+          afficherHistorique(data.reponses || []);
         })
         .catch(function() {
-          document.getElementById('contenu-compte').innerHTML = `
-            <p style="color:#c62828;text-align:center;">❌ Erreur réseau. Vérifiez votre connexion.</p>
-          `;
+          // Erreur : essayer le cache forcé
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            afficherCompte(cache, id);
+            afficherHistorique(cache.reponses || []);
+          } else {
+            document.getElementById('contenu-compte').innerHTML = `
+              <div style="text-align:center;padding:30px 0;">
+                <p style="color:#c62828;">❌ Erreur de chargement.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();" 
+                        style="margin-top:12px;padding:10px 24px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;cursor:pointer;">
+                  🔄 Réessayer
+                </button>
+              </div>
+            `;
+            document.getElementById('contenu-historique').innerHTML = `
+              <div class="vide-histo">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+              </div>
+            `;
+          }
         });
     }
 
+    // ============================================================
+    // AFFICHAGE DU COMPTE
+    // ============================================================
     function afficherCompte(data, id) {
       var html = '';
 
@@ -671,117 +690,84 @@
         </div>
       `;
 
-      // Note : Le mot de passe n'est PAS affiché car il n'y a pas de fonction
-      // dans le script pour le récupérer (c'est plus sûr ainsi)
-
       document.getElementById('contenu-compte').innerHTML = html;
-    }
-
-    // ============================================================
-    // CHARGEMENT DE L'HISTORIQUE (utilise getReponses)
-    // ============================================================
-    function chargerHistorique() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) return;
-
-      var url = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.reponses && data.reponses.length > 0) {
-            var historique = data.reponses.map(function(r) {
-              var bonnes = parseInt(r.bonnes) || 0;
-              var total = parseInt(r.total) || 0;
-              var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
-              return {
-                date: r.date || '',
-                titre: r.titre || '',
-                valide: valide,
-                temps: r.temps || '',
-                retenir: r.retenir || ''
-              };
-            });
-            afficherHistorique(historique);
-          } else {
-            document.getElementById('contenu-historique').innerHTML = `
-              <div class="vide-histo">
-                <span class="icone">📭</span>
-                <h2>Aucune tentative enregistrée</h2>
-                <p>Commencez une méditation pour voir vos progrès apparaître ici.</p>
-              </div>
-            `;
-          }
-        })
-        .catch(function() {
-          document.getElementById('contenu-historique').innerHTML = `
-            <div class="vide-histo">
-              <span class="icone">⚠️</span>
-              <h2>Erreur de chargement</h2>
-              <p>Vérifiez votre connexion et réessayez.</p>
-            </div>
-          `;
-        });
     }
 
     // ============================================================
     // AFFICHAGE DE L'HISTORIQUE
     // ============================================================
     function afficherHistorique(historique) {
-  var html = '';
-
-  // === GRAPHIQUE ===
-  html += `<div class="graphique-container"><div class="graphique-ligne">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
-
-    html += `
-      <div class="graphique-point">
-        <div class="cercle ${statutClass}"></div>
-        <span class="date-point">${dateFormatee}</span>
-      </div>
-    `;
-  });
-  html += `</div></div>`;
-
-  // === LÉGENDE ===
-  html += `
-    <div class="legende">
-      <span class="item"><span class="cercle-legende valide"></span> Validé</span>
-      <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
-    </div>
-  `;
-
-  // === LISTE DES TENTATIVES ===
-  html += `<div class="liste-tentatives">`;
-  historique.forEach(function(item) {
-    var statutClass = item.valide ? 'valide' : 'echec';
-    var statutTexte = item.valide ? '✔ Validé' : '✖️ Non validé';
-    
-    var dateFormatee = 'Date inconnue';
-    if (item.date) {
-      var d = new Date(item.date);
-      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-        dateFormatee = d.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: 'long', year: 'numeric'
-        }) + ' à ' + d.toLocaleTimeString('fr-FR', {
-          hour: '2-digit', minute: '2-digit'
-        });
+      if (!historique || historique.length === 0) {
+        document.getElementById('contenu-historique').innerHTML = `
+          <div class="vide-histo">
+            <span class="icone">📭</span>
+            <h2>Aucune tentative enregistrée</h2>
+            <p>Commencez une méditation pour voir vos progrès apparaître ici.</p>
+          </div>
+        `;
+        return;
       }
+
+      var html = '';
+
+      // === GRAPHIQUE ===
+      html += `<div class="graphique-container"><div class="graphique-ligne">`;
+      historique.slice(-10).forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var total = parseInt(item.total) || 0;
+        var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+        var statutClass = valide ? 'valide' : 'echec';
+        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+
+        html += `
+          <div class="graphique-point">
+            <div class="cercle ${statutClass}"></div>
+            <span class="date-point">${dateFormatee}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+
+      // === LÉGENDE ===
+      html += `
+        <div class="legende">
+          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+          <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
+        </div>
+      `;
+
+      // === LISTE DES TENTATIVES ===
+      html += `<div class="liste-tentatives">`;
+      historique.slice().reverse().forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var total = parseInt(item.total) || 0;
+        var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+        var statutClass = valide ? 'valide' : 'echec';
+        var statutTexte = valide ? '✔ Validé' : '✖️ Non validé';
+        
+        var dateFormatee = 'Date inconnue';
+        if (item.date) {
+          var d = new Date(item.date);
+          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+            dateFormatee = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            }) + ' à ' + d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+          }
+        }
+
+        html += `
+          <div class="tentative-item">
+            <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
+            <span class="statut ${statutClass}">${statutTexte}</span>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      document.getElementById('contenu-historique').innerHTML = html;
     }
-
-    html += `
-      <div class="tentative-item">
-        <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
-        <span class="statut ${statutClass}">${statutTexte}</span>
-      </div>
-    `;
-  });
-  html += `</div>`;
-
-  document.getElementById('contenu-historique').innerHTML = html;
-}
 
     // ============================================================
     // INIT
