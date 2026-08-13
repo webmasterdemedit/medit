@@ -22,9 +22,9 @@ var DataManager = {
             }
         }
         
-        // Charger depuis le serveur
-        console.log('🌐 Chargement depuis le serveur...');
-        var url = CONFIG.SCRIPT_URL + '?action=getComplet&nom=' + encodeURIComponent(id);
+       // Charger depuis le serveur
+console.log('🌐 Chargement depuis le serveur...');
+var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
         
         return fetch(url)
             .then(function(r) { return r.json(); })
