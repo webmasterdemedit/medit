@@ -8,6 +8,675 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: #f4f2ed;
+      color: #1e293b;
+      min-height: 100vh;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    /* ============================================================
+       PAGE D'ACCUEIL
+       ============================================================ */
+    .page-home {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 30px 24px 60px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    /* ============================================================
+       HERO
+       ============================================================ */
+    .hero {
+      text-align: center;
+      padding: 30px 20px 40px;
+      margin-bottom: 10px;
+      background: linear-gradient(135deg, #f8f6f2 0%, #edeae5 100%);
+      border-radius: 24px;
+    }
+
+    .hero .logo {
+      font-size: 52px;
+      font-weight: 300;
+      color: #1a2a2e;
+      letter-spacing: 2px;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+    }
+
+    .hero .logo strong {
+      font-weight: 700;
+      color: #2d6a4f;
+    }
+
+    .hero .sous-titre {
+      font-size: 18px;
+      color: #6b7a8a;
+      font-style: italic;
+      margin-top: 8px;
+      letter-spacing: 0.5px;
+      font-family: 'Georgia', serif;
+    }
+
+    .hero .description {
+      max-width: 650px;
+      margin: 16px auto 0;
+      font-size: 16px;
+      color: #64748b;
+      line-height: 1.8;
+    }
+
+    /* ============================================================
+       BOUTON ENTRER
+       ============================================================ */
+    .btn-entrer {
+      display: inline-block;
+      margin-top: 28px;
+      padding: 16px 52px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 50px;
+      font-size: 18px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      letter-spacing: 0.5px;
+      font-family: 'Segoe UI', sans-serif;
+      box-shadow: 0 4px 20px rgba(45, 106, 79, 0.25);
+    }
+
+    .btn-entrer:hover {
+      background: #1a4a3a;
+      transform: translateY(-3px);
+      box-shadow: 0 8px 30px rgba(45, 106, 79, 0.35);
+    }
+
+    /* ============================================================
+       BANDEAU MISE EN AVANT
+       ============================================================ */
+    .highlight-banner {
+      margin: 10px 0 20px;
+      padding: 16px 24px;
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+      border-radius: 16px;
+      border-left: 6px solid #b45309;
+      text-align: center;
+      font-size: 15px;
+      color: #78350f;
+      line-height: 1.6;
+    }
+
+    .highlight-banner strong {
+      color: #92400e;
+      font-weight: 700;
+    }
+
+    .highlight-banner .highlight-icon {
+      font-size: 22px;
+      margin-right: 8px;
+    }
+
+    /* ============================================================
+       BLOCS VISUELS - 6 RAISONS
+       ============================================================ */
+    .blocs-section {
+      margin: 20px 0 10px;
+    }
+
+    .blocs-section .blocs-titre {
+      text-align: center;
+      font-size: 26px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      color: #1a2a2e;
+      margin-bottom: 8px;
+    }
+
+    .blocs-section .blocs-sous-titre {
+      text-align: center;
+      font-size: 15px;
+      color: #94a3b8;
+      margin-bottom: 30px;
+    }
+
+    .blocs-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .bloc-card {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 24px 20px 22px;
+      text-align: center;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+      border: 1px solid #edeae5;
+      transition: all 0.3s ease;
+    }
+
+    .bloc-card:hover {
+      transform: translateY(-6px);
+      box-shadow: 0 12px 36px rgba(45, 106, 79, 0.08);
+      border-color: #d4d0c8;
+    }
+
+    .bloc-card.featured {
+      border-color: #2d6a4f;
+      background: #f8fbf9;
+    }
+
+    .bloc-card.featured .bloc-icon {
+      color: #2d6a4f;
+    }
+
+    .bloc-icon {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 10px;
+    }
+
+    .bloc-card h4 {
+      font-size: 16px;
+      font-weight: 600;
+      color: #1a2a2e;
+      margin-bottom: 6px;
+    }
+
+    .bloc-card p {
+      font-size: 14px;
+      color: #64748b;
+      line-height: 1.5;
+    }
+
+    .bloc-card .bloc-badge {
+      display: inline-block;
+      margin-top: 8px;
+      padding: 2px 12px;
+      background: #2d6a4f;
+      color: #fff;
+      border-radius: 20px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+    }
+
+    /* ============================================================
+       SECTION PARENTS
+       ============================================================ */
+    .parents-section {
+      margin: 30px 0 10px;
+      padding: 30px 28px;
+      background: linear-gradient(135deg, #2d6a4f 0%, #1a4a3a 100%);
+      border-radius: 24px;
+      text-align: center;
+      color: #ffffff;
+    }
+
+    .parents-section .parents-icon {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .parents-section h3 {
+      font-size: 22px;
+      font-weight: 500;
+      font-family: 'Georgia', serif;
+      margin-bottom: 8px;
+    }
+
+    .parents-section p {
+      font-size: 15px;
+      color: #a7f3d0;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .parents-section .parents-benefits {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 20px 40px;
+      margin-top: 16px;
+    }
+
+    .parents-section .parents-benefits span {
+      font-size: 14px;
+      color: #d1fae5;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .parents-section .parents-benefits span::before {
+      content: "✓";
+      color: #a7f3d0;
+      font-weight: 700;
+    }
+
+    /* ============================================================
+       SECTION TRADITION
+       ============================================================ */
+    .tradition-section {
+      margin: 20px 0 10px;
+      padding: 28px 24px;
+      background: #f8f6f2;
+      border-radius: 20px;
+      border: 1px solid #e2ddd5;
+      text-align: center;
+    }
+
+    .tradition-section .trad-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 6px;
+    }
+
+    .tradition-section h3 {
+      font-size: 20px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      color: #1a2a2e;
+      margin-bottom: 6px;
+    }
+
+    .tradition-section p {
+      font-size: 15px;
+      color: #64748b;
+      max-width: 700px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+
+    .tradition-section .trad-tags {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .tradition-section .trad-tags span {
+      padding: 4px 16px;
+      background: #edeae5;
+      border-radius: 20px;
+      font-size: 13px;
+      color: #475569;
+    }
+
+    /* ============================================================
+       POPUP
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(6px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 99999;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-content {
+      background: #ffffff;
+      border-radius: 20px;
+      padding: 32px 36px;
+      max-width: 480px;
+      width: 100%;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 25px 60px rgba(0, 0, 0, 0.2);
+      position: relative;
+      animation: modalFadeIn 0.3s ease;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: scale(0.95) translateY(10px); }
+      to { opacity: 1; transform: scale(1) translateY(0); }
+    }
+
+    .modal-content .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 20px;
+      background: none;
+      border: none;
+      font-size: 28px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: color 0.2s;
+      line-height: 1;
+    }
+
+    .modal-content .modal-close:hover {
+      color: #1a2a2e;
+    }
+
+    .modal-content h3 {
+      font-size: 22px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      color: #1a2a2e;
+      text-align: center;
+      margin-bottom: 20px;
+      letter-spacing: 0.5px;
+    }
+
+    .modal-content .champ {
+      margin-bottom: 16px;
+    }
+
+    .modal-content label {
+      display: block;
+      font-size: 13px;
+      font-weight: 500;
+      color: #475569;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .modal-content input,
+    .modal-content textarea,
+    .modal-content select {
+      width: 100%;
+      padding: 12px 16px;
+      border: 1px solid #e2e0db;
+      border-radius: 10px;
+      font-size: 14px;
+      background: #faf9f7;
+      transition: border-color 0.3s;
+      font-family: inherit;
+      color: #1a2a2e;
+    }
+
+    .modal-content input:focus,
+    .modal-content textarea:focus,
+    .modal-content select:focus {
+      border-color: #2d6a4f;
+      outline: none;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
+    }
+
+    .modal-content textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .modal-content select {
+      appearance: auto;
+      cursor: pointer;
+    }
+
+    .modal-content .btn-submit {
+      width: 100%;
+      padding: 14px;
+      background: #2d6a4f;
+      color: #ffffff;
+      border: none;
+      border-radius: 30px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      margin-top: 4px;
+    }
+
+    .modal-content .btn-submit:hover {
+      background: #1a4a3a;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
+    }
+
+    .modal-content .btn-submit.secondary {
+      background: #b8956a;
+    }
+
+    .modal-content .btn-submit.secondary:hover {
+      background: #a07d55;
+    }
+
+    .modal-content .message {
+      margin-top: 12px;
+      font-size: 14px;
+      text-align: center;
+      padding: 8px 12px;
+      border-radius: 8px;
+    }
+
+    .modal-content .message.success {
+      color: #065f46;
+      background: #d1fae5;
+    }
+
+    .modal-content .message.error {
+      color: #991b1b;
+      background: #fee2e2;
+    }
+
+    .modal-content .message.info {
+      color: #1e40af;
+      background: #dbeafe;
+    }
+
+    .modal-content .lien-form {
+      margin-top: 12px;
+      font-size: 14px;
+      color: #94a3b8;
+      text-align: center;
+    }
+
+    .modal-content .lien-form a {
+      color: #2d6a4f;
+      font-weight: 500;
+      cursor: pointer;
+    }
+
+    .modal-content .lien-form a:hover {
+      text-decoration: underline;
+    }
+
+    /* ============================================================
+       CASES À COCHER DISCIPLINES
+       ============================================================ */
+    #registerDisciplines {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px 20px;
+      background: #faf9f7;
+      padding: 12px 16px;
+      border-radius: 10px;
+      border: 1px solid #e2e0db;
+    }
+
+    #registerDisciplines label {
+      font-size: 14px;
+      color: #1e293b;
+      cursor: pointer;
+      font-weight: 400;
+    }
+
+    #registerDisciplines input[type="checkbox"] {
+      accent-color: #2d6a4f;
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    /* ============================================================
+       DEVISE
+       ============================================================ */
+    .devise-home {
+      text-align: center;
+      padding: 30px 0 10px;
+      font-size: 16px;
+      color: #b8b0a8;
+      font-style: italic;
+      letter-spacing: 0.5px;
+      font-family: 'Georgia', serif;
+      border-top: 1px solid #edeae5;
+      margin-top: 30px;
+    }
+
+    /* ============================================================
+       TOAST MESSAGE
+       ============================================================ */
+    .toast-message {
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #065f46;
+      color: #ffffff;
+      padding: 20px 32px;
+      border-radius: 16px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      z-index: 999999;
+      max-width: 500px;
+      text-align: center;
+      font-size: 15px;
+      line-height: 1.6;
+      display: none;
+      animation: slideDown 0.5s ease;
+    }
+
+    .toast-message .toast-icon {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+    }
+
+    .toast-message .toast-titre {
+      font-weight: 600;
+      font-size: 17px;
+      margin-bottom: 4px;
+    }
+
+    .toast-message .toast-sous {
+      color: #a7f3d0;
+      font-size: 14px;
+    }
+
+    .toast-message .toast-btn {
+      margin-top: 12px;
+      padding: 8px 24px;
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      border-radius: 30px;
+      color: #fff;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.2s;
+    }
+
+    .toast-message .toast-btn:hover {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
+      to { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 900px) {
+      .blocs-grid {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 768px) {
+      .page-home {
+        padding: 20px 16px 40px;
+      }
+      .hero .logo {
+        font-size: 38px;
+      }
+      .modal-content {
+        padding: 24px 20px;
+      }
+      .toast-message {
+        max-width: 90%;
+        padding: 16px 20px;
+        top: 70px;
+      }
+      .parents-section {
+        padding: 24px 18px;
+      }
+      .parents-section .parents-benefits {
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+      }
+      .highlight-banner {
+        padding: 12px 16px;
+        font-size: 14px;
+      }
+      .tradition-section {
+        padding: 20px 16px;
+      }
+    }
+
+    @media (max-width: 550px) {
+      .blocs-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+      .hero .logo {
+        font-size: 30px;
+      }
+      .hero .description {
+        font-size: 14px;
+      }
+      .btn-entrer {
+        padding: 14px 32px;
+        font-size: 16px;
+      }
+      .blocs-section .blocs-titre {
+        font-size: 20px;
+      }
+    }
+  </style>
 </head>
 <body>
 
@@ -94,43 +763,56 @@
       <button class="btn-entrer" onclick="ouvrirModal()">Se connecter</button>
     </div>
 
+    <!-- ========== BANDEAU MISE EN AVANT ========== -->
+    <div class="highlight-banner">
+      <span class="highlight-icon">📚</span>
+      <strong>Correction personnelle par l'enseignant</strong> — Chaque réponse est relue et corrigée individuellement.<br>
+      <strong>Espace étudiant complet</strong> — Suivi des progrès, historique des lectures, résultats détaillés.
+    </div>
+
     <!-- ========== 6 BLOCS VISUELS ========== -->
     <div class="blocs-section">
       <div class="blocs-titre">Pourquoi MéditIslam ?</div>
       <div class="blocs-sous-titre">Un programme pensé pour nourrir l'intelligence, le cœur et la foi</div>
 
       <div class="blocs-grid">
+        <!-- Bloc 1 -->
         <div class="bloc-card featured">
           <span class="bloc-icon">📖</span>
           <h4>Vrais ouvrages traditionnels</h4>
           <p>Des textes issus des Madrasas, transmis en français pour préserver l'authenticité du savoir.</p>
           <span class="bloc-badge">Tradition</span>
         </div>
+        <!-- Bloc 2 -->
         <div class="bloc-card">
           <span class="bloc-icon">✍️</span>
           <h4>Correction personnelle</h4>
           <p>Chaque réponse est relue par l'enseignant qui guide, corrige et encourage l'élève.</p>
         </div>
+        <!-- Bloc 3 -->
         <div class="bloc-card">
           <span class="bloc-icon">📈</span>
           <h4>12 niveaux</h4>
           <p>Une progression douce, du débutant à l'avancé, à votre rythme et selon vos capacités.</p>
         </div>
+        <!-- Bloc 4 -->
         <div class="bloc-card featured">
           <span class="bloc-icon">🎯</span>
           <h4>QCM pour vérifier la lecture</h4>
           <p>Les questions ne sont pas des pièges : elles assurent simplement que l'enfant a bien lu.</p>
           <span class="bloc-badge">Pédagogie</span>
         </div>
+        <!-- Bloc 5 -->
         <div class="bloc-card">
-          <span class="bloc-icon">📊</span>
-          <h4>Espace étudiant complet</h4>
-          <p>Suivi des progrès, historique des lectures, résultats détaillés et corrections personnalisées.</p>
+          <span class="bloc-icon">🕊️</span>
+          <h4>Ambiance paisible</h4>
+          <p>Pas de pression, pas de compétition. La méditation avant la performance.</p>
         </div>
+        <!-- Bloc 6 -->
         <div class="bloc-card">
-          <span class="bloc-icon">📜</span>
-          <h4>Style classique & beau français</h4>
-          <p>Les enfants s'habituent au beau français, au style classique et élégant des ouvrages traditionnels.</p>
+          <span class="bloc-icon">👨‍👩‍👧‍👦</span>
+          <h4>Pour toute la famille</h4>
+          <p>Les enfants progressent en religion et en français, les parents accompagnent.</p>
         </div>
       </div>
     </div>
@@ -179,8 +861,70 @@
 
   </div>
 
-  <!-- ========== POPUP ========== -->
-  <div id="modal-container"></div>
+  <!-- ========== POPUP CONNEXION / INSCRIPTION ========== -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-content">
+      <button class="modal-close" onclick="fermerModal()">✕</button>
+
+      <!-- CONNEXION -->
+      <div id="formConnexion" style="display:block;">
+        <h3>Se connecter</h3>
+        <div class="champ">
+          <label>Identifiant</label>
+          <input type="text" id="loginId" placeholder="Votre identifiant" />
+        </div>
+        <div class="champ">
+          <label>Mot de passe</label>
+          <input type="password" id="loginMdp" placeholder="Votre mot de passe" />
+        </div>
+        <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
+        <div class="message" id="loginMessage"></div>
+        <div class="lien-form">
+          Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Faire une demande d'inscription</a>
+        </div>
+      </div>
+
+      <!-- INSCRIPTION -->
+      <div id="formInscription" style="display:none;">
+        <h3>Demande d'inscription</h3>
+
+        <div class="champ">
+          <label>Nom et prénom</label>
+          <input type="text" id="registerNom" placeholder="Votre nom et prénom" />
+        </div>
+
+        <div class="champ">
+          <label>Email ou numéro de téléphone</label>
+          <input type="text" id="registerContact" placeholder="ex: email@exemple.fr ou 06 12 34 56 78" />
+        </div>
+
+        <div class="champ">
+          <label>Discipline souhaitée</label>
+          <div id="registerDisciplines"></div>
+        </div>
+
+        <div class="champ">
+          <label>Niveau souhaité</label>
+          <select id="registerNiveau">
+            <option value="">— Choisissez un niveau —</option>
+          </select>
+        </div>
+
+        <div class="champ">
+          <label>Message libre</label>
+          <textarea id="registerMessage" placeholder="Votre motivation, vos attentes, vos questions..." rows="3"></textarea>
+        </div>
+
+        <button class="btn-submit" onclick="sInscrire()">Envoyer ma demande</button>
+        <div class="message" id="registerStatusMessage"></div>
+
+        <div class="lien-form">
+          Déjà un compte ? <a onclick="ouvrirConnexion();return false;">Se connecter</a>
+        </div>
+      </div>
+
+    </div>
+  </div>
 
   <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
@@ -195,7 +939,7 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
             <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
           </footer>
         `;
@@ -206,18 +950,6 @@
   <script src="/medit/auth.js"></script>
 
   <script>
-    // ============================================================
-    // CHARGEMENT DE LA POPUP
-    // ============================================================
-    fetch('/medit/modal.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('modal-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement popup:', error);
-      });
-
     // ============================================================
     // TOAST
     // ============================================================
@@ -233,31 +965,25 @@
     // MODAL
     // ============================================================
     function ouvrirModal() {
-      var overlay = document.getElementById('modalOverlay');
-      if (overlay) {
-        overlay.classList.add('visible');
-        document.getElementById('formInscription').style.display = 'none';
-        document.getElementById('formConnexion').style.display = 'block';
-        document.getElementById('loginMessage').textContent = '';
-        document.getElementById('loginMessage').className = 'message';
-        document.getElementById('registerStatusMessage').textContent = '';
-        document.getElementById('registerStatusMessage').className = 'message';
-      }
+      document.getElementById('modalOverlay').classList.add('visible');
+      document.getElementById('formInscription').style.display = 'none';
+      document.getElementById('formConnexion').style.display = 'block';
+      document.getElementById('loginMessage').textContent = '';
+      document.getElementById('loginMessage').className = 'message';
+      document.getElementById('registerStatusMessage').textContent = '';
+      document.getElementById('registerStatusMessage').className = 'message';
     }
 
     function fermerModal() {
-      var overlay = document.getElementById('modalOverlay');
-      if (overlay) {
-        overlay.classList.remove('visible');
-      }
+      document.getElementById('modalOverlay').classList.remove('visible');
     }
 
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') fermerModal();
     });
 
-    document.addEventListener('click', function(e) {
-      if (e.target && e.target.id === 'modalOverlay') fermerModal();
+    document.getElementById('modalOverlay').addEventListener('click', function(e) {
+      if (e.target === this) fermerModal();
     });
 
     // ============================================================
@@ -292,27 +1018,25 @@
         .then(function(data) {
           if (data.success && data.labels) {
             var container = document.getElementById('registerDisciplines');
-            if (container) {
-              container.innerHTML = '';
-              data.labels.forEach(function(label) {
-                var id = 'disc_' + label.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
-                var checkbox = document.createElement('input');
-                checkbox.type = 'checkbox';
-                checkbox.id = id;
-                checkbox.value = label;
-                checkbox.name = 'disciplines';
-                var labelEl = document.createElement('label');
-                labelEl.htmlFor = id;
-                labelEl.textContent = label;
-                var wrapper = document.createElement('div');
-                wrapper.style.display = 'inline-flex';
-                wrapper.style.alignItems = 'center';
-                wrapper.style.gap = '6px';
-                wrapper.appendChild(checkbox);
-                wrapper.appendChild(labelEl);
-                container.appendChild(wrapper);
-              });
-            }
+            container.innerHTML = '';
+            data.labels.forEach(function(label) {
+              var id = 'disc_' + label.replace(/\s/g, '_').replace(/[^a-zA-Z0-9_]/g, '');
+              var checkbox = document.createElement('input');
+              checkbox.type = 'checkbox';
+              checkbox.id = id;
+              checkbox.value = label;
+              checkbox.name = 'disciplines';
+              var labelEl = document.createElement('label');
+              labelEl.htmlFor = id;
+              labelEl.textContent = label;
+              var wrapper = document.createElement('div');
+              wrapper.style.display = 'inline-flex';
+              wrapper.style.alignItems = 'center';
+              wrapper.style.gap = '6px';
+              wrapper.appendChild(checkbox);
+              wrapper.appendChild(labelEl);
+              container.appendChild(wrapper);
+            });
           }
         })
         .catch(function() { console.error('Erreur chargement disciplines'); });
@@ -323,17 +1047,15 @@
         .then(function(data) {
           if (data.success && data.niveaux) {
             var select = document.getElementById('registerNiveau');
-            if (select) {
-              var firstOption = select.options[0];
-              select.innerHTML = '';
-              select.appendChild(firstOption);
-              data.niveaux.forEach(function(niveau) {
-                var option = document.createElement('option');
-                option.value = niveau.valeur;
-                option.textContent = niveau.description;
-                select.appendChild(option);
-              });
-            }
+            var firstOption = select.options[0];
+            select.innerHTML = '';
+            select.appendChild(firstOption);
+            data.niveaux.forEach(function(niveau) {
+              var option = document.createElement('option');
+              option.value = niveau.valeur;
+              option.textContent = niveau.description;
+              select.appendChild(option);
+            });
           }
         })
         .catch(function() { console.error('Erreur chargement niveaux'); });
