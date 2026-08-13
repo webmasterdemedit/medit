@@ -525,37 +525,6 @@
         gap: 4px;
       }
     }
-
-    /* ============================================================
-       STATS SECTION
-       ============================================================ */
-    .stats-section {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .stat-item {
-      background: #f8f6f2;
-      border-radius: 10px;
-      padding: 12px 16px;
-      text-align: center;
-    }
-
-    .stat-item .stat-nombre {
-      font-size: 24px;
-      font-weight: 700;
-      color: #2d6a4f;
-      font-family: 'Georgia', serif;
-    }
-
-    .stat-item .stat-label {
-      font-size: 12px;
-      color: #94a3b8;
-      margin-top: 2px;
-      letter-spacing: 0.3px;
-    }
   </style>
 </head>
 <body>
@@ -595,7 +564,7 @@
 
       if (userNameSpan) {
         if (id) {
-          userNameSpan.textContent = id;
+          userNameSpan.textContent =  id;
         } else {
           userNameSpan.textContent = '';
         }
@@ -679,7 +648,7 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
             <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
           </footer>
         `;
@@ -690,11 +659,6 @@
   <script src="/medit/auth.js"></script>
 
   <script>
-    // ============================================================
-    // CONFIGURATION
-    // ============================================================
-    var SCRIPT_URL = CONFIG.SCRIPT_URL;
-
     // ============================================================
     // SWITCH D'ONGLET
     // ============================================================
@@ -731,7 +695,7 @@
         return;
       }
 
-      var url = SCRIPT_URL + '?action=getProfilComplet&nom=' + encodeURIComponent(id);
+      var url = CONFIG.SCRIPT_URL + '?action=getProfilComplet&nom=' + encodeURIComponent(id);
 
       fetch(url)
         .then(function(r) { return r.json(); })
@@ -744,8 +708,7 @@
             `;
           }
         })
-        .catch(function(error) {
-          console.error('Erreur chargement profil:', error);
+        .catch(function() {
           document.getElementById('contenu-compte').innerHTML = `
             <p style="color:#c62828;text-align:center;">❌ Erreur réseau. Vérifiez votre connexion.</p>
           `;
@@ -755,7 +718,6 @@
     function afficherCompte(data) {
       var html = '';
 
-      // Date d'inscription
       var dateInscription = data.dateInscription ? new Date(data.dateInscription).toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric'
       }) : 'Non renseignée';
@@ -767,7 +729,6 @@
         </div>
       `;
 
-      // Mot de passe
       mdpCache = data.mdp || '';
       var mdpAffiche = mdpVisible ? mdpCache : '••••••••';
       html += `
@@ -780,25 +741,6 @@
         </div>
       `;
 
-      // Contact
-      var contact = data.contact || 'Non renseigné';
-      html += `
-        <div class="champ-compte">
-          <span class="label">📧 Contact</span>
-          <span class="valeur">${contact}</span>
-        </div>
-      `;
-
-      // Disciplines
-      var disciplines = data.disciplines || 'Non renseignées';
-      html += `
-        <div class="champ-compte">
-          <span class="label">📚 Disciplines</span>
-          <span class="valeur">${disciplines}</span>
-        </div>
-      `;
-
-      // Niveau
       var niveau = data.niveau || 0;
       var description = data.description || 'Aucune description disponible pour ce niveau.';
 
@@ -813,7 +755,6 @@
         </div>
       `;
 
-      // Message personnalisé
       var messagePerso = data.messagePerso || '';
       html += `
         <div class="message-section">
@@ -839,18 +780,9 @@
     // ============================================================
     function chargerHistorique() {
       var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        document.getElementById('contenu-historique').innerHTML = `
-          <div class="vide-histo">
-            <span class="icone">🔒</span>
-            <h2>Veuillez vous connecter</h2>
-            <p>Vous devez être connecté pour voir votre historique.</p>
-          </div>
-        `;
-        return;
-      }
+      if (!id) return;
 
-      var url = SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
+      var url = CONFIG.SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(id);
 
       fetch(url)
         .then(function(r) { return r.json(); })
@@ -863,11 +795,7 @@
               return {
                 date: r.date || '',
                 titre: r.titre || '',
-                valide: valide,
-                bonnes: bonnes,
-                total: total,
-                temps: r.temps || '',
-                retenir: r.retenir || ''
+                valide: valide
               };
             });
             afficherHistorique(historique);
@@ -881,8 +809,7 @@
             `;
           }
         })
-        .catch(function(error) {
-          console.error('Erreur chargement historique:', error);
+        .catch(function() {
           document.getElementById('contenu-historique').innerHTML = `
             <div class="vide-histo">
               <span class="icone">⚠️</span>
@@ -894,32 +821,10 @@
     }
 
     // ============================================================
-    // AFFICHAGE DE L'HISTORIQUE
+    // AFFICHAGE DE L'HISTORIQUE (version épurée, sans temps)
     // ============================================================
     function afficherHistorique(historique) {
       var html = '';
-
-      // === STATISTIQUES ===
-      var totalTentatives = historique.length;
-      var totalValidees = historique.filter(function(h) { return h.valide; }).length;
-      var pourcentage = totalTentatives > 0 ? Math.round((totalValidees / totalTentatives) * 100) : 0;
-
-      html += `
-        <div class="stats-section">
-          <div class="stat-item">
-            <div class="stat-nombre">${totalTentatives}</div>
-            <div class="stat-label">Tentatives</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-nombre">${totalValidees}</div>
-            <div class="stat-label">Validées</div>
-          </div>
-          <div class="stat-item">
-            <div class="stat-nombre">${pourcentage}%</div>
-            <div class="stat-label">Taux de réussite</div>
-          </div>
-        </div>
-      `;
 
       // === GRAPHIQUE ===
       html += `<div class="graphique-container"><div class="graphique-ligne">`;
@@ -946,7 +851,7 @@
 
       // === LISTE DES TENTATIVES ===
       html += `<div class="liste-tentatives">`;
-      historique.slice().reverse().forEach(function(item) {
+      historique.forEach(function(item) {
         var statutClass = item.valide ? 'valide' : 'echec';
         var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
         
@@ -960,17 +865,9 @@
           }
         }
 
-        var details = '';
-        if (item.bonnes !== undefined && item.total !== undefined) {
-          details = ` (${item.bonnes}/${item.total})`;
-        }
-        if (item.temps) {
-          details += ` ⏱ ${item.temps}`;
-        }
-
         html += `
           <div class="tentative-item">
-            <span>${dateFormatee} — ${item.titre || 'Méditation'}${details}</span>
+            <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
             <span class="statut ${statutClass}">${statutTexte}</span>
           </div>
         `;
@@ -984,23 +881,8 @@
     // INIT
     // ============================================================
     function demarrer() {
-      // Vérifier si l'utilisateur est connecté
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
-      
       chargerCompte();
-      
-      // Si l'onglet historique est actif par défaut, le charger
-      // (par défaut c'est profil qui est actif)
     }
-
-    // Gestionnaire d'erreur global
-    window.addEventListener('error', function(e) {
-      console.error('Erreur globale:', e);
-    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', demarrer);
