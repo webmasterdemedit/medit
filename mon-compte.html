@@ -728,63 +728,60 @@
     // AFFICHAGE DE L'HISTORIQUE
     // ============================================================
     function afficherHistorique(historique) {
-      var html = '';
+  var html = '';
 
-      // === GRAPHIQUE ===
-      html += `<div class="graphique-container"><div class="graphique-ligne">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : 'echec';
-        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+  // === GRAPHIQUE ===
+  html += `<div class="graphique-container"><div class="graphique-ligne">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
 
-        html += `
-          <div class="graphique-point">
-            <div class="cercle ${statutClass}"></div>
-            <span class="date-point">${dateFormatee}</span>
-          </div>
-        `;
-      });
-      html += `</div></div>`;
+    html += `
+      <div class="graphique-point">
+        <div class="cercle ${statutClass}"></div>
+        <span class="date-point">${dateFormatee}</span>
+      </div>
+    `;
+  });
+  html += `</div></div>`;
 
-      // === LÉGENDE ===
-      html += `
-        <div class="legende">
-          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
-          <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
-        </div>
-      `;
+  // === LÉGENDE ===
+  html += `
+    <div class="legende">
+      <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+      <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
+    </div>
+  `;
 
-      // === LISTE DES TENTATIVES ===
-      html += `<div class="liste-tentatives">`;
-      historique.forEach(function(item) {
-        var statutClass = item.valide ? 'valide' : 'echec';
-        var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
-        
-        var dateFormatee = 'Date inconnue';
-        if (item.date) {
-          var d = new Date(item.date);
-          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
-            dateFormatee = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-          }
-        }
-
-        var tempsAffiche = item.temps ? '⏱ ' + item.temps : '';
-
-        html += `
-          <div class="tentative-item">
-            <span>${dateFormatee} — ${item.titre || 'Méditation'}</span>
-            <span style="display:flex;align-items:center;gap:12px;">
-              <span class="temps-passe">${tempsAffiche}</span>
-              <span class="statut ${statutClass}">${statutTexte}</span>
-            </span>
-          </div>
-        `;
-      });
-      html += `</div>`;
-
-      document.getElementById('contenu-historique').innerHTML = html;
+  // === LISTE DES TENTATIVES ===
+  html += `<div class="liste-tentatives">`;
+  historique.forEach(function(item) {
+    var statutClass = item.valide ? 'valide' : 'echec';
+    var statutTexte = item.valide ? '✅ Validé' : '⬜ Non validé';
+    
+    var dateFormatee = 'Date inconnue';
+    if (item.date) {
+      var d = new Date(item.date);
+      if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+        dateFormatee = d.toLocaleDateString('fr-FR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        }) + ' à ' + d.toLocaleTimeString('fr-FR', {
+          hour: '2-digit', minute: '2-digit'
+        });
+      }
     }
+
+    html += `
+      <div class="tentative-item">
+        <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
+        <span class="statut ${statutClass}">${statutTexte}</span>
+      </div>
+    `;
+  });
+  html += `</div>`;
+
+  document.getElementById('contenu-historique').innerHTML = html;
+}
 
     // ============================================================
     // INIT
