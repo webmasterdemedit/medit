@@ -1,4 +1,8 @@
 // ============================================================
+// article.js - VERSION OPTIMISÉE AVEC CACHE
+// ============================================================
+
+// ============================================================
 // VARIABLES
 // ============================================================
 var slidesData = [];
@@ -18,44 +22,227 @@ var quizData = {
   total: 0
 };
 
+var chargementEnCours = false;
+var reponsesExistantes = null;
+
 // ============================================================
-// CHARGEMENT
+// CONFIGURATION DU CACHE
 // ============================================================
-function chargerArticle() {
-  var params = new URLSearchParams(window.location.search);
-  var id = params.get('id');
-  var loader = document.getElementById('loader');
-  var erreur = document.getElementById('erreur');
-  var articleCharge = document.getElementById('article-charge');
+var CACHE_CONFIG = {
+    DUREE_ARTICLE: 60,      // 1 heure
+    DUREE_QUIZ: 30,         // 30 minutes
+    DUREE_REPONSES: 5       // 5 minutes
+};
 
-  if (!id) {
-    loader.style.display = 'none';
-    erreur.style.display = 'block';
-    return;
-  }
+// ============================================================
+// FONCTIONS DE CACHE
+// ============================================================
+function sauvegarderCache(id, type, data) {
+    try {
+        var cache = {
+            data: data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('article_cache_' + type + '_' + id, JSON.stringify(cache));
+    } catch(e) {}
+}
 
-  postId = id;
+function chargerCache(id, type, dureeMax) {
+    try {
+        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
+        if (!cache) return null;
+        cache = JSON.parse(cache);
+        
+        var age = (Date.now() - cache.timestamp) / 60000;
+        if (age > dureeMax) return null;
+        
+        return cache.data;
+    } catch(e) {
+        return null;
+    }
+}
 
-  var url = CONFIG.SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id);
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      loader.style.display = 'none';
-      if (data.success && data.post) {
-        afficherArticle(data.post);
-        articleCharge.style.display = 'block';
-      } else {
-        erreur.style.display = 'block';
-      }
-    })
-    .catch(function() {
-      loader.style.display = 'none';
-      erreur.style.display = 'block';
-    });
+function chargerCacheForce(id, type) {
+    try {
+        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
+        if (!cache) return null;
+        cache = JSON.parse(cache);
+        return cache.data;
+    } catch(e) {
+        return null;
+    }
 }
 
 // ============================================================
-// AFFICHAGE
+// CHARGEMENT PRINCIPAL - UN SEUL APPEL !
+// ============================================================
+function chargerArticle() {
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    var loader = document.getElementById('loader');
+    var erreur = document.getElementById('erreur');
+    var articleCharge = document.getElementById('article-charge');
+
+    if (!id) {
+        loader.style.display = 'none';
+        erreur.style.display = 'block';
+        return;
+    }
+
+    postId = id;
+
+    // Vérifier si connecté
+    var nom = localStorage.getItem('etudiant_id');
+    if (!nom) {
+        window.location.href = '/medit/index.html';
+        return;
+    }
+
+    // 1. Essayer le cache
+    var articleCache = chargerCache(id, 'article', CACHE_CONFIG.DUREE_ARTICLE);
+    var quizCache = chargerCache(id, 'quiz', CACHE_CONFIG.DUREE_QUIZ);
+    var reponsesCache = chargerCache(id, 'reponses', CACHE_CONFIG.DUREE_REPONSES);
+
+    if (articleCache && quizCache) {
+        console.log('📦 Utilisation du cache pour l\'article', id);
+        loader.style.display = 'none';
+        articleCharge.style.display = 'block';
+        
+        // Construire l'objet post à partir du cache
+        var post = articleCache;
+        if (quizCache) {
+            post.quiz = quizCache.quiz || '';
+        }
+        if (reponsesCache) {
+            reponsesExistantes = reponsesCache;
+        }
+        
+        afficherArticle(post);
+        
+        // Rafraîchir en arrière-plan (silencieux)
+        rafraichirEnArrierePlan(id, nom);
+        return;
+    }
+
+    // 2. Charger depuis le serveur
+    chargerDepuisServeur(id, nom, loader, erreur, articleCharge);
+}
+
+// ============================================================
+// CHARGER DEPUIS LE SERVEUR
+// ============================================================
+function chargerDepuisServeur(id, nom, loader, erreur, articleCharge) {
+    if (chargementEnCours) return;
+    chargementEnCours = true;
+
+    // UN SEUL APPEL pour tout récupérer
+    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
+        '&nom=' + encodeURIComponent(nom);
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            chargementEnCours = false;
+            loader.style.display = 'none';
+            
+            if (data.success && data.article) {
+                // Sauvegarder en cache
+                sauvegarderCache(id, 'article', data.article);
+                
+                if (data.quiz) {
+                    sauvegarderCache(id, 'quiz', data.quiz);
+                }
+                if (data.reponses) {
+                    sauvegarderCache(id, 'reponses', data.reponses);
+                    reponsesExistantes = data.reponses;
+                }
+                
+                articleCharge.style.display = 'block';
+                afficherArticle(data.article);
+            } else {
+                // Essayer le cache même expiré
+                var articleExpire = chargerCacheForce(id, 'article');
+                if (articleExpire) {
+                    articleCharge.style.display = 'block';
+                    afficherArticle(articleExpire);
+                    afficherNotification('⚠️ Version en cache (hors ligne)');
+                } else {
+                    erreur.style.display = 'block';
+                }
+            }
+        })
+        .catch(function() {
+            chargementEnCours = false;
+            loader.style.display = 'none';
+            
+            // Essayer le cache même expiré
+            var articleExpire = chargerCacheForce(id, 'article');
+            if (articleExpire) {
+                articleCharge.style.display = 'block';
+                afficherArticle(articleExpire);
+                afficherNotification('⚠️ Version en cache (hors ligne)');
+            } else {
+                erreur.style.display = 'block';
+            }
+        });
+}
+
+// ============================================================
+// RAFRAÎCHIR EN ARRIÈRE-PLAN
+// ============================================================
+function rafraichirEnArrierePlan(id, nom) {
+    var dernier = localStorage.getItem('dernier_rafraichissement_' + id);
+    if (dernier && Date.now() - parseInt(dernier) < 60000) {
+        return; // Moins d'1 minute
+    }
+    localStorage.setItem('dernier_rafraichissement_' + id, Date.now());
+
+    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
+        '&nom=' + encodeURIComponent(nom);
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success || !data.article) return;
+            
+            // Vérifier si le contenu a changé (via version)
+            var ancien = chargerCacheForce(id, 'article');
+            if (ancien && data.article && data.article.version !== ancien.version) {
+                // Mise à jour
+                sauvegarderCache(id, 'article', data.article);
+                if (data.quiz) {
+                    sauvegarderCache(id, 'quiz', data.quiz);
+                }
+                if (data.reponses) {
+                    sauvegarderCache(id, 'reponses', data.reponses);
+                    reponsesExistantes = data.reponses;
+                }
+                
+                // Recharger l'affichage
+                afficherArticle(data.article);
+                afficherNotification('📝 Cet article a été mis à jour !');
+            }
+        })
+        .catch(function() {});
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+function afficherNotification(message) {
+    var notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:10px 24px;border-radius:30px;font-size:14px;font-family:Segoe UI,sans-serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(function() { notif.style.opacity = '1'; }, 50);
+    setTimeout(function() {
+        notif.style.opacity = '0';
+        setTimeout(function() { notif.remove(); }, 500);
+    }, 3000);
+}
+
+// ============================================================
+// AFFICHAGE (GARDER TON CODE EXISTANT)
 // ============================================================
 function afficherArticle(post) {
   postTitre = post.titre || 'Sans titre';
@@ -156,7 +343,7 @@ function afficherArticle(post) {
 }
 
 // ============================================================
-// GÉNÉRATION DES SLIDES
+// GÉNÉRATION DES SLIDES (TON CODE EXISTANT)
 // ============================================================
 function genererSlideTexte(data) {
   return '<div class="contenu-slide">' + data.contenu.replace(/\n/g, '<br>') + '</div>';
@@ -194,7 +381,7 @@ function genererSlideMemo(data) {
 }
 
 // ============================================================
-// DOTS & NAVIGATION
+// DOTS & NAVIGATION (TON CODE EXISTANT)
 // ============================================================
 function genererDots() {
   var container = document.getElementById('dotsContainer');
@@ -321,7 +508,7 @@ function allerSlide(index) {
 }
 
 // ============================================================
-// SAUVEGARDER LE QUIZ (appelé quand le quiz est fini)
+// SAUVEGARDER LE QUIZ (TON CODE EXISTANT)
 // ============================================================
 function sauvegarderQuiz() {
   var nom = localStorage.getItem('etudiant_id');
@@ -355,7 +542,7 @@ function sauvegarderQuiz() {
 }
 
 // ============================================================
-// SAUVEGARDER LA RÉPONSE OUVERTE (appelé quand l'étudiant l'envoie)
+// SAUVEGARDER LA RÉPONSE OUVERTE (TON CODE EXISTANT)
 // ============================================================
 function validerReponse() {
   var nom = localStorage.getItem('etudiant_id');
@@ -404,7 +591,7 @@ function validerReponse() {
 }
 
 // ============================================================
-// QUIZ
+// QUIZ (TON CODE EXISTANT)
 // ============================================================
 function verifierQuizAuto() {
   if (quizVerrouille) return;
@@ -488,7 +675,7 @@ function verifierQuizAuto() {
     msg.style.color = '#2d6a4f';
     quizValide = true;
     
-    sauvegarderQuiz(); // ← Sauvegarde automatique du quiz
+    sauvegarderQuiz();
     
     updateSlides();
     setTimeout(function() {
@@ -499,7 +686,7 @@ function verifierQuizAuto() {
     msg.style.color = '#b8956a';
     quizValide = true;
     
-    sauvegarderQuiz(); // ← Sauvegarde automatique du quiz
+    sauvegarderQuiz();
     
     updateSlides();
     setTimeout(function() {
@@ -512,7 +699,7 @@ function verifierQuizAuto() {
 }
 
 // ============================================================
-// ÉCOUTE DES RADIOS
+// ÉCOUTE DES RADIOS (TON CODE EXISTANT)
 // ============================================================
 document.addEventListener('change', function(e) {
   if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
@@ -531,7 +718,7 @@ document.addEventListener('change', function(e) {
 });
 
 // ============================================================
-// SWIPE TACTILE
+// SWIPE TACTILE (TON CODE EXISTANT)
 // ============================================================
 var touchStartX = 0;
 var touchEndX = 0;
@@ -553,7 +740,7 @@ document.addEventListener('touchend', function(e) {
 }, { passive: true });
 
 // ============================================================
-// CLAVIER
+// CLAVIER (TON CODE EXISTANT)
 // ============================================================
 document.addEventListener('keydown', function(e) {
   if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
