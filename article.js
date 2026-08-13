@@ -301,7 +301,15 @@ function isSlideAccessible(index) {
 function updateSlides() {
   var wrapper = document.getElementById('slideWrapper');
   if (slidesData.length === 0) return;
-  wrapper.style.transform = 'translateX(-' + (slideIndex * 100) + '%)';
+  // Cacher tous les slides
+var items = wrapper.querySelectorAll('.paragraphe-item');
+items.forEach(function(item, idx) {
+  item.classList.remove('active');
+});
+// Afficher le slide actif
+if (items[slideIndex]) {
+  items[slideIndex].classList.add('active');
+}
   document.getElementById('compteur').textContent = (slideIndex + 1) + ' / ' + slidesData.length;
 
   var dots = document.querySelectorAll('.dot');
