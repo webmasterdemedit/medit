@@ -134,7 +134,7 @@ function afficherArticle(post) {
     var label = document.getElementById('postLabel');
     label.textContent = post.categorie;
     // Si la catégorie est "Apprendre à lire", on ajoute la classe spéciale
-    if (post.categorie === 'Apprendre à lire') {
+    if (post.categorie && post.categorie.toLowerCase() === 'apprendre à lire') {
       label.classList.add('special');
     } else {
       label.classList.remove('special');
