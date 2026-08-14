@@ -1,5 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCF
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCF4
 // ============================================================
 
 var slidesData = [];
@@ -23,6 +23,39 @@ var quizData = {
 
 var chargementEnCours = false;
 var reponsesExistantes = null;
+
+// ============================================================
+// MAPPING PAGE → POLICE QCF4
+// ============================================================
+var fontMap = null;
+var chargementFontMap = false;
+
+function chargerFontMap() {
+  if (fontMap !== null) return Promise.resolve(fontMap);
+  if (chargementFontMap) {
+    return new Promise(function(resolve, reject) {
+      var check = setInterval(function() {
+        if (fontMap !== null) {
+          clearInterval(check);
+          resolve(fontMap);
+        }
+      }, 100);
+    });
+  }
+  
+  chargementFontMap = true;
+  return fetch('/medit/fonts/font-map.json')
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      fontMap = data;
+      chargementFontMap = false;
+      return fontMap;
+    })
+    .catch(function() {
+      chargementFontMap = false;
+      return null;
+    });
+}
 
 // ============================================================
 // CHARGEMENT AVEC DATAMANAGER
@@ -290,13 +323,20 @@ function genererSlideTexte(data) {
     return tableauHtml;
   }
   
-  // === DÉTECTION QCF (caractère arabe suivi d'un nombre) ===
+  // === DÉTECTION QCF4 (caractère arabe suivi d'un nombre) ===
   var matchQCF = contenu.match(/^([\uF000-\uF8FF]+)(\d{1,3})$/);
   if (matchQCF) {
     var caractere = matchQCF[1];
-    var page = matchQCF[2];
-    var classe = 'contenu-slide arabic qcf-page-' + page;
-    return '<div class="' + classe + '">' + caractere + '</div>';
+    var page = parseInt(matchQCF[2]);
+    
+    // Utiliser font-map pour trouver la bonne police
+    var police = 'QCF4_Hafs_01'; // fallback
+    if (fontMap && fontMap[page]) {
+      police = fontMap[page];
+    }
+    
+    var classe = 'contenu-slide arabic qcf4-page-' + page;
+    return '<div class="' + classe + '" style="font-family:\'' + police + '\', \'Amiri Quran\', serif;">' + caractere + '</div>';
   }
   
   // === TRAITEMENT NORMAL ===
@@ -932,6 +972,10 @@ function demarrer() {
     window.location.href = '/medit/index.html';
     return;
   }
+  
+  // Charger le font-map pour QCF4
+  chargerFontMap();
+  
   chargerArticle();
 }
 
