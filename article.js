@@ -229,7 +229,11 @@ function afficherArticle(post) {
 // GÉNÉRATION DES SLIDES
 // ============================================================
 function genererSlideTexte(data) {
-  return '<div class="contenu-slide">' + data.contenu.replace(/\n/g, '<br>') + '</div>';
+  var contenu = data.contenu.replace(/\n/g, '<br>');
+  // Détecter si le texte contient des caractères arabes
+  var isArabic = /[\u0600-\u06FF]/.test(data.contenu);
+  var classe = isArabic ? ' class="contenu-slide arabic"' : ' class="contenu-slide"';
+  return '<div' + classe + '>' + contenu + '</div>';
 }
 
 function genererSlideQuiz(data) {
