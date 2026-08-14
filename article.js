@@ -130,11 +130,26 @@ function afficherArticle(post) {
   hasQuiz = post.hasQuiz || (post.quiz && post.quiz.trim() !== '');
   hasQuestion = post.hasQuestion || (post.question_ouverte && post.question_ouverte.trim() !== '');
 
+  // === GESTION DES COULEURS SELON LA CATÉGORIE ===
+  var isSpecial = post.categorie && post.categorie.toLowerCase() === 'apprendre à lire';
+  var carte = document.querySelector('.blog-article');
+  var titre = document.getElementById('article-titre');
+
+  if (isSpecial) {
+    // Couleurs spéciales (bleu + jaune)
+    carte.style.background = 'rgb(105, 179, 242)';
+    titre.style.color = 'rgb(255, 241, 116)';
+  } else {
+    // Couleurs par défaut (blanc + noir)
+    carte.style.background = '#ffffff';
+    titre.style.color = '#1a2a2e';
+  }
+
+  // === LABEL SPÉCIAL ===
   if (post.categorie) {
     var label = document.getElementById('postLabel');
     label.textContent = post.categorie;
-    // Si la catégorie est "Apprendre à lire", on ajoute la classe spéciale
-    if (post.categorie && post.categorie.toLowerCase() === 'apprendre à lire') {
+    if (isSpecial) {
       label.classList.add('special');
     } else {
       label.classList.remove('special');
