@@ -131,7 +131,14 @@ function afficherArticle(post) {
   hasQuestion = post.hasQuestion || (post.question_ouverte && post.question_ouverte.trim() !== '');
 
   if (post.categorie) {
-    document.getElementById('postLabel').textContent = post.categorie;
+    var label = document.getElementById('postLabel');
+    label.textContent = post.categorie;
+    // Si la catégorie est "Apprendre à lire", on ajoute la classe spéciale
+    if (post.categorie === 'Apprendre à lire') {
+      label.classList.add('special');
+    } else {
+      label.classList.remove('special');
+    }
   }
 
   document.getElementById('article-titre').textContent = postTitre;
