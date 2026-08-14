@@ -250,7 +250,7 @@ function genererSlideTexte(data) {
       if (toutesOntPipe) {
         estTableau = true;
         tableauHtml = '<div class="tableau-container">';
-        tableauHtml += '<table class="tableau-slide">';
+         tableauHtml += '<table class="tableau-slide" dir="rtl">';  // ← ici
         for (var j = 0; j < lignes.length; j++) {
           var cellules = lignes[j].split('|').map(function(c) { return c.trim(); });
           tableauHtml += '<tr>';
