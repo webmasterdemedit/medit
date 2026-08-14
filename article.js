@@ -1,5 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu"
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCF
 // ============================================================
 
 var slidesData = [];
@@ -136,11 +136,9 @@ function afficherArticle(post) {
   var titre = document.getElementById('article-titre');
 
   if (isSpecial) {
-    // Couleurs spéciales (bleu + jaune)
     carte.style.background = 'rgb(105, 179, 242)';
     titre.style.color = 'rgb(255, 241, 116)';
   } else {
-    // Couleurs par défaut (blanc + noir)
     carte.style.background = '#ffffff';
     titre.style.color = '#1a2a2e';
   }
@@ -258,7 +256,6 @@ function genererSlideTexte(data) {
   var estTableau = false;
   var tableauHtml = '';
   
-  // Vérifier si toutes les lignes contiennent "|"
   if (lignes.length > 0) {
     var nbPipe = lignes[0].split('|').length - 1;
     if (nbPipe > 0) {
@@ -272,7 +269,7 @@ function genererSlideTexte(data) {
       if (toutesOntPipe) {
         estTableau = true;
         tableauHtml = '<div class="tableau-container">';
-         tableauHtml += '<table class="tableau-slide" dir="rtl">';  // ← ici
+        tableauHtml += '<table class="tableau-slide" dir="rtl">';
         for (var j = 0; j < lignes.length; j++) {
           var cellules = lignes[j].split('|').map(function(c) { return c.trim(); });
           tableauHtml += '<tr>';
@@ -289,12 +286,20 @@ function genererSlideTexte(data) {
     }
   }
   
-  // Si c'est un tableau, on le retourne
   if (estTableau) {
     return tableauHtml;
   }
   
-  // Sinon, traitement normal
+  // === DÉTECTION QCF (caractère arabe suivi d'un nombre) ===
+  var matchQCF = contenu.match(/^([\uF000-\uF8FF]+)(\d{1,3})$/);
+  if (matchQCF) {
+    var caractere = matchQCF[1];
+    var page = matchQCF[2];
+    var classe = 'contenu-slide arabic qcf-page-' + page;
+    return '<div class="' + classe + '">' + caractere + '</div>';
+  }
+  
+  // === TRAITEMENT NORMAL ===
   var isArabic = /[\u0600-\u06FF]/.test(contenu);
   var contenuBr = contenu.replace(/\n/g, '<br>');
   var classe = isArabic ? ' class="contenu-slide arabic"' : ' class="contenu-slide"';
@@ -329,7 +334,6 @@ function genererSlideMemo(data) {
   html += '<span class="memo-label">📌 À retenir</span>';
   html += '<div class="contenu-memo">' + data.texte + '</div>';
   
-  // Bouton "J'ai lu" - affiché seulement si pas de quiz ET pas de question
   if (!hasQuiz && !hasQuestion) {
     html += '<button class="btn-appris" onclick="marquerCommeLu()" style="margin-top:16px;">📖 J\'ai lu</button>';
   }
@@ -370,15 +374,15 @@ function isSlideAccessible(index) {
 function updateSlides() {
   var wrapper = document.getElementById('slideWrapper');
   if (slidesData.length === 0) return;
-  // Cacher tous les slides
-var items = wrapper.querySelectorAll('.paragraphe-item');
-items.forEach(function(item, idx) {
-  item.classList.remove('active');
-});
-// Afficher le slide actif
-if (items[slideIndex]) {
-  items[slideIndex].classList.add('active');
-}
+  
+  var items = wrapper.querySelectorAll('.paragraphe-item');
+  items.forEach(function(item, idx) {
+    item.classList.remove('active');
+  });
+  if (items[slideIndex]) {
+    items[slideIndex].classList.add('active');
+  }
+  
   document.getElementById('compteur').textContent = (slideIndex + 1) + ' / ' + slidesData.length;
 
   var dots = document.querySelectorAll('.dot');
@@ -415,10 +419,7 @@ if (items[slideIndex]) {
   }
 }
 
-function ajouterBoutonAppris() {
-  // Le bouton est déjà généré dans le slide memo
-  // On ajoute juste le comportement si besoin
-}
+function ajouterBoutonAppris() {}
 
 function afficherMessageFin() {
   if (document.getElementById('finMessage')) return;
@@ -463,7 +464,7 @@ function allerSlide(index) {
 }
 
 // ============================================================
-// SAUVEGARDER LE QUIZ (avec mise à jour du cache local)
+// SAUVEGARDER LE QUIZ
 // ============================================================
 function sauvegarderQuiz() {
   var nom = localStorage.getItem('etudiant_id');
@@ -498,7 +499,7 @@ function sauvegarderQuiz() {
 }
 
 // ============================================================
-// SAUVEGARDER LA RÉPONSE OUVERTE (avec mise à jour du cache local)
+// SAUVEGARDER LA RÉPONSE OUVERTE
 // ============================================================
 function validerReponse() {
   var nom = localStorage.getItem('etudiant_id');
@@ -513,7 +514,6 @@ function validerReponse() {
     return;
   }
 
-  // === CHANGEMENT 1 : Désactiver le bouton immédiatement ===
   var btn = document.querySelector('#openQuestion .btn-nav');
   var msgContainer = document.getElementById('form-message-mailto');
   
@@ -530,7 +530,6 @@ function validerReponse() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        // === CHANGEMENT 2 : Feedback succès ===
         btn.textContent = '✅ Envoyé !';
         btn.style.background = '#2d6a4f';
         btn.style.opacity = '1';
@@ -539,20 +538,16 @@ function validerReponse() {
         reponseValidee = true;
         document.getElementById('reponse-mailto').disabled = true;
         updateSlides();
-        
         miseAJourCacheReponse(nom, postId);
         
         if (slideIndex === slidesData.length - 1) {
-          setTimeout(function() {
-            afficherMessageFin();
-          }, 800);
+          setTimeout(function() { afficherMessageFin(); }, 800);
         } else {
           setTimeout(function() {
             if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
           }, 1000);
         }
       } else {
-        // === CHANGEMENT 3 : Feedback erreur ===
         btn.textContent = '❌ Réessayer';
         btn.style.background = '#c62828';
         btn.style.opacity = '1';
@@ -561,7 +556,6 @@ function validerReponse() {
       }
     })
     .catch(function() {
-      // === CHANGEMENT 4 : Feedback erreur réseau ===
       btn.textContent = '❌ Réessayer';
       btn.style.background = '#c62828';
       btn.style.opacity = '1';
@@ -569,8 +563,9 @@ function validerReponse() {
       msgContainer.innerHTML = '<span style="color:#c62828;">❌ Erreur réseau. Vérifiez votre connexion.</span>';
     });
 }
+
 // ============================================================
-// MISE À JOUR DU CACHE LOCAL (après quiz)
+// MISE À JOUR DU CACHE LOCAL
 // ============================================================
 function miseAJourCacheLocal(nom, articleId, bonnes, total) {
   var cache = DataManager.getCacheForce(nom);
@@ -635,9 +630,6 @@ function miseAJourCacheLocal(nom, articleId, bonnes, total) {
   console.log('✅ Cache local mis à jour pour le quiz');
 }
 
-// ============================================================
-// MISE À JOUR DU CACHE LOCAL (après réponse ouverte)
-// ============================================================
 function miseAJourCacheReponse(nom, articleId) {
   var cache = DataManager.getCacheForce(nom);
   if (!cache) return;
@@ -666,9 +658,6 @@ function miseAJourCacheReponse(nom, articleId) {
   console.log('✅ Cache local mis à jour pour la réponse ouverte');
 }
 
-// ============================================================
-// MISE À JOUR DU CACHE LOCAL (après "J'ai lu")
-// ============================================================
 function miseAJourCacheLecture(nom, articleId) {
   var cache = DataManager.getCacheForce(nom);
   if (!cache) return;
@@ -737,7 +726,7 @@ function miseAJourCacheLecture(nom, articleId) {
 }
 
 // ============================================================
-// BOUTON "J'AI LU" (pour les posts sans quiz/question)
+// BOUTON "J'AI LU"
 // ============================================================
 function marquerCommeLu() {
   var nom = localStorage.getItem('etudiant_id');
@@ -746,7 +735,6 @@ function marquerCommeLu() {
     return;
   }
 
-  // Vérifier si déjà marqué comme lu
   var cache = DataManager.getCacheForce(nom);
   if (cache && cache.reponses) {
     for (var i = 0; i < cache.reponses.length; i++) {
@@ -772,10 +760,7 @@ function marquerCommeLu() {
         quizValide = true;
         reponseValidee = true;
         updateSlides();
-        
-        setTimeout(function() {
-          window.location.href = '/medit/mes-textes.html';
-        }, 1500);
+        setTimeout(function() { window.location.href = '/medit/mes-textes.html'; }, 1500);
       } else {
         afficherNotification('⚠️ Erreur : ' + (data.message || ''));
       }
@@ -869,9 +854,7 @@ function verifierQuizAuto() {
     msg.textContent = 'Parfait !';
     msg.style.color = '#2d6a4f';
     quizValide = true;
-    
     sauvegarderQuiz();
-    
     updateSlides();
     setTimeout(function() {
       if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
@@ -880,9 +863,7 @@ function verifierQuizAuto() {
     msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
     msg.style.color = '#b8956a';
     quizValide = true;
-    
     sauvegarderQuiz();
-    
     updateSlides();
     setTimeout(function() {
       if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
