@@ -25,21 +25,6 @@ var chargementEnCours = false;
 var reponsesExistantes = null;
 
 // ============================================================
-// CONVERSION QCF : caractère + numéro → police correspondante
-// ============================================================
-function convertirQCF(texte) {
-  if (!texte) return texte;
-  // Détecte les motifs comme ﱍ50, ﭑ1, ﱁ98, etc.
-  // Le motif : un caractère QCF (de ﭐ à ﯿ) suivi d'un numéro (1 à 604)
-  return texte.replace(/([ﭐ-ﯿ])(\d{1,3})/g, function(match, caractere, page) {
-    var numPage = parseInt(page);
-    // Construit le nom de la police : QCF + 2 + numéro de page (avec 3 chiffres)
-    var policeNom = 'QCF2' + String(numPage).padStart(3, '0');
-    // Génère le span avec la bonne police
-    return '<span style="font-family: \'' + policeNom + '\';">' + caractere + '</span>';
-
-
-// ============================================================
 // CHARGEMENT AVEC DATAMANAGER
 // ============================================================
 function chargerArticle() {
