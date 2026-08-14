@@ -23,7 +23,7 @@
     <div class="blog-article" id="contenu-principal">
 
       <!-- ========== CROIX RETOUR ========== -->
-      <a href="/medit/mes-textes.html" class="btn-retour">✕</a>
+      <a href="/medit/mes-textes.html" class="btn-retour" aria-label="Retour">✕</a>
 
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -74,7 +74,13 @@
           </div>
         </div>
 
-        <div class="post-date" id="postDate"></div>
+        <!-- ========== FOOTER DE LA CARTE ========== -->
+        <div class="post-footer">
+          <span class="post-meta">
+            qiraat.fr · Sir Khan · <span id="postDate"></span>
+          </span>
+          <button class="btn-share" onclick="partager()" aria-label="Partager">↗</button>
+        </div>
 
       </div>
     </div>
@@ -122,6 +128,40 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = '';
       });
+  </script>
+
+  <script>
+    // ============================================================
+    // PARTAGE NATIF
+    // ============================================================
+    function partager() {
+      var url = window.location.href;
+      var titre = document.querySelector('h1')?.textContent || 'Méditation';
+
+      if (navigator.share) {
+        navigator.share({
+          title: titre,
+          text: '📖 ' + titre + ' — sur Qiraat',
+          url: url
+        }).catch(function() {});
+      } else {
+        // Fallback : copier le lien
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('🔗 Lien copié !');
+          }).catch(function() {});
+        } else {
+          // Fallback ultime
+          var input = document.createElement('input');
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          alert('🔗 Lien copié !');
+        }
+      }
+    }
   </script>
 
   <script src="/medit/config.js"></script>
