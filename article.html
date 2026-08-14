@@ -39,7 +39,12 @@
       <div id="article-charge" style="display:none; width:100%;">
 
         <span class="post-label" id="postLabel">Méditation</span>
-        <h1 id="article-titre">Titre</h1>
+        
+        <!-- ========== TITRE AVEC BOUTON DE PARTAGE ========== -->
+        <h1 id="article-titre">
+          Titre
+          <button class="btn-share-title" onclick="partager()" aria-label="Partager">↗</button>
+        </h1>
 
         <div class="dots-container" id="dotsContainer"></div>
 
@@ -74,12 +79,9 @@
           </div>
         </div>
 
-        <!-- ========== FOOTER DE LA CARTE ========== -->
+        <!-- ========== PIED DE CARTE ========== -->
         <div class="post-footer">
-          <span class="post-meta">
-            qiraat.fr · Sir Khan · <span id="postDate"></span>
-          </span>
-          <button class="btn-share" onclick="partager()" aria-label="Partager">↗</button>
+          <span class="post-meta">qiraat.fr · Sir Khan · <span id="postDate"></span></span>
         </div>
 
       </div>
@@ -128,6 +130,38 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = '';
       });
+  </script>
+
+  <script>
+    // ============================================================
+    // PARTAGE NATIF
+    // ============================================================
+    function partager() {
+      var url = window.location.href;
+      var titre = document.querySelector('h1')?.textContent || 'Méditation';
+
+      if (navigator.share) {
+        navigator.share({
+          title: titre,
+          text: '📖 ' + titre + ' — sur Qiraat',
+          url: url
+        }).catch(function() {});
+      } else {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('🔗 Lien copié !');
+          }).catch(function() {});
+        } else {
+          var input = document.createElement('input');
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          alert('🔗 Lien copié !');
+        }
+      }
+    }
   </script>
 
   <script src="/medit/config.js"></script>
