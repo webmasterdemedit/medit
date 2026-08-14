@@ -890,3 +890,33 @@ if (document.readyState === 'loading') {
 } else {
   demarrer();
 }
+
+// ============================================================
+// PARTAGE NATIF
+// ============================================================
+function partager() {
+  var url = window.location.href;
+  var titre = document.querySelector('h1')?.textContent || 'Méditation';
+
+  if (navigator.share) {
+    navigator.share({
+      title: titre,
+      text: '📖 ' + titre + ' — sur Qiraat',
+      url: url
+    }).catch(function() {});
+  } else {
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(url).then(function() {
+        alert('🔗 Lien copié !');
+      }).catch(function() {});
+    } else {
+      var input = document.createElement('input');
+      input.value = url;
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      alert('🔗 Lien copié !');
+    }
+  }
+}
