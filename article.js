@@ -229,11 +229,54 @@ function afficherArticle(post) {
 // GÉNÉRATION DES SLIDES
 // ============================================================
 function genererSlideTexte(data) {
-  var contenu = data.contenu.replace(/\n/g, '<br>');
-  // Détecter si le texte contient des caractères arabes
-  var isArabic = /[\u0600-\u06FF]/.test(data.contenu);
+  var contenu = data.contenu;
+  
+  // === DÉTECTION TABLEAU ===
+  var lignes = contenu.split('\n').filter(function(l) { return l.trim().length > 0; });
+  var estTableau = false;
+  var tableauHtml = '';
+  
+  // Vérifier si toutes les lignes contiennent "|"
+  if (lignes.length > 0) {
+    var nbPipe = lignes[0].split('|').length - 1;
+    if (nbPipe > 0) {
+      var toutesOntPipe = true;
+      for (var i = 0; i < lignes.length; i++) {
+        if (lignes[i].split('|').length - 1 !== nbPipe) {
+          toutesOntPipe = false;
+          break;
+        }
+      }
+      if (toutesOntPipe) {
+        estTableau = true;
+        tableauHtml = '<div class="tableau-container">';
+        tableauHtml += '<table class="tableau-slide">';
+        for (var j = 0; j < lignes.length; j++) {
+          var cellules = lignes[j].split('|').map(function(c) { return c.trim(); });
+          tableauHtml += '<tr>';
+          for (var k = 0; k < cellules.length; k++) {
+            var isArabic = /[\u0600-\u06FF]/.test(cellules[k]);
+            var classe = isArabic ? ' class="cellule-arabe"' : '';
+            tableauHtml += '<td' + classe + '>' + cellules[k] + '</td>';
+          }
+          tableauHtml += '</tr>';
+        }
+        tableauHtml += '</table>';
+        tableauHtml += '</div>';
+      }
+    }
+  }
+  
+  // Si c'est un tableau, on le retourne
+  if (estTableau) {
+    return tableauHtml;
+  }
+  
+  // Sinon, traitement normal
+  var isArabic = /[\u0600-\u06FF]/.test(contenu);
+  var contenuBr = contenu.replace(/\n/g, '<br>');
   var classe = isArabic ? ' class="contenu-slide arabic"' : ' class="contenu-slide"';
-  return '<div' + classe + '>' + contenu + '</div>';
+  return '<div' + classe + '>' + contenuBr + '</div>';
 }
 
 function genererSlideQuiz(data) {
