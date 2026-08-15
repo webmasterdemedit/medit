@@ -365,12 +365,12 @@ function genererSlideQuiz(data) {
 }
 
 function genererSlideQuestionOuverte(data) {
-  return '<div id="openQuestion" style="display:block;"><h3>✍️ Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
+  return '<div id="openQuestion" style="display:block;"><h3>✍️ Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
 }
 
 function genererSlideMemo(data) {
   var html = '<div class="slide-memo">';
-  html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
+  html += '<div class="confirmation-fin">✏ Vous avez fini ! ✏</div>';
   html += '<span class="memo-label">📌 À retenir</span>';
   html += '<div class="contenu-memo">' + data.texte + '</div>';
   
@@ -386,8 +386,21 @@ function genererSlideMemo(data) {
 // DOTS & NAVIGATION
 // ============================================================
 function genererDots() {
-  var container = document.getElementById('dotsContainer');
+  var container = document.getElementById('dotsContainerOutside');
+  if (!container) {
+    // Si le conteneur n'existe pas encore, le créer
+    container = document.createElement('div');
+    container.id = 'dotsContainerOutside';
+    container.className = 'dots-container-outside';
+    var pageArticle = document.querySelector('.page-article');
+    if (pageArticle) {
+      pageArticle.appendChild(container);
+    } else {
+      document.body.appendChild(container);
+    }
+  }
   container.innerHTML = '';
+  
   slidesData.forEach(function(slide, idx) {
     var dot = document.createElement('span');
     dot.className = 'dot';
@@ -425,7 +438,7 @@ function updateSlides() {
   
   document.getElementById('compteur').textContent = (slideIndex + 1) + ' / ' + slidesData.length;
 
-  var dots = document.querySelectorAll('.dot');
+  var dots = document.querySelectorAll('.dots-container-outside .dot');
   dots.forEach(function(dot, idx) {
     dot.classList.remove('active', 'done', 'locked');
     if (idx === slideIndex) dot.classList.add('active');
@@ -466,7 +479,7 @@ function afficherMessageFin() {
 
   var finMsg = document.createElement('div');
   finMsg.id = 'finMessage';
-  finMsg.innerHTML = '✔ Vous avez fini !';
+  finMsg.innerHTML = '✅ Vous avez fini !';
   finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
   document.body.appendChild(finMsg);
   setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
