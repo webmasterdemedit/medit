@@ -432,6 +432,32 @@ function updateSlides() {
     afficherMessageFin();
   }
 
+  var url = new URL(window.location.href);
+  url.searchParams.set('slide', slideIndex);
+  window.history.replaceState({}, '', url);
+
+  chargerAnnotation();
+  updateAnnotationButtonColor();
+
+  if (annotationPopupOpen) {
+    closeAnnotationPopup();
+  }
+
+  // ============================================================
+  // AJOUT : CLIC SUR LA ZONE POUR PASSER AU SLIDE SUIVANT
+  // ============================================================
+  var slideContainer = document.querySelector('.paragraphe-container');
+  if (slideContainer) {
+    slideContainer.onclick = function(e) {
+      // Évite que le clic sur un bouton ou input déclenche le changement
+      if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('label')) {
+        return;
+      }
+      slideSuivant();
+    };
+  }
+}
+
   // ============================================================
   // AJOUT : METTRE À JOUR L'URL AVEC LE NUMÉRO DE SLIDE
   // ============================================================
