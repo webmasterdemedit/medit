@@ -332,28 +332,12 @@ function genererSlideTexte(data) {
     return tableauHtml;
   }
   
-  // === DÉTECTION QCF4 (caractère arabe suivi d'un nombre) ===
-  var matchQCF = contenu.match(/^([\uF000-\uF8FF]+)(\d{1,3})$/);
-  if (matchQCF) {
-    var caractere = matchQCF[1];
-    var page = parseInt(matchQCF[2]);
-    
-    // Utiliser font-map pour trouver la bonne police
-    var police = 'QCF4_Hafs_01'; // fallback
-    if (fontMap && fontMap[page]) {
-      police = fontMap[page];
-    }
-    
-    var classe = 'contenu-slide arabic qcf4-page-' + page;
-    return '<div class="' + classe + '" style="font-family:\'' + police + '\', \'Amiri Quran\', serif;">' + caractere + '</div>';
-  }
-  
-  // === TRAITEMENT NORMAL ===
-  var isArabic = /[\u0600-\u06FF]/.test(contenu);
-  var contenuBr = contenu.replace(/\n/g, '<br>');
-  var classe = isArabic ? ' class="contenu-slide arabic"' : ' class="contenu-slide"';
-  return '<div' + classe + '>' + contenuBr + '</div>';
-}
+ 
+// === TRAITEMENT NORMAL ===
+var contenuBr = contenu.replace(/\n/g, '<br>');
+// Appliquer la police arabe uniquement sur les mots arabes
+var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
+return '<div class="contenu-slide">' + contenuArabe + '</div>';
 
 function genererSlideQuiz(data) {
   var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
