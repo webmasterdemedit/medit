@@ -1,5 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCF4 + ANNOTATION
+// post.js - Version nettoyée
 // ============================================================
 
 var slidesData = [];
@@ -14,7 +14,6 @@ var postTitre = '';
 var hasQuiz = false;
 var hasQuestion = false;
 
-// Stocker les données du quiz pour la sauvegarde finale
 var quizData = {
   choixQcm: [],
   bonnes: 0,
@@ -26,7 +25,7 @@ var reponsesExistantes = null;
 
 
 // ============================================================
-// CHARGEMENT AVEC DATAMANAGER
+// CHARGEMENT
 // ============================================================
 function chargerArticle() {
   var params = new URLSearchParams(window.location.search);
@@ -49,26 +48,20 @@ function chargerArticle() {
     return;
   }
 
-  // Utiliser DataManager
   DataManager.charger()
     .then(function(data) {
-      // Chercher l'article dans le cache
       var article = null;
       if (data.articlesComplets && data.articlesComplets[id]) {
         article = data.articlesComplets[id];
       }
       
       if (article) {
-        // Article trouvé dans le cache !
-        console.log('📦 Article trouvé dans le cache');
         loader.style.display = 'none';
         articleCharge.style.display = 'block';
         afficherArticle(article);
         return;
       }
       
-      // Article pas dans le cache, le charger depuis le serveur
-      console.log('🌐 Chargement de l\'article depuis le serveur');
       var url = CONFIG.SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id);
       return fetch(url)
         .then(function(r) { return r.json(); })
@@ -78,7 +71,6 @@ function chargerArticle() {
             articleCharge.style.display = 'block';
             afficherArticle(dataPost.post);
             
-            // Sauvegarder pour la prochaine fois
             if (!data.articlesComplets) data.articlesComplets = {};
             data.articlesComplets[id] = dataPost.post;
             DataManager.setCache(nom, data);
@@ -88,13 +80,12 @@ function chargerArticle() {
         });
     })
     .catch(function() {
-      // Erreur : essayer le cache forcé
       var cache = DataManager.getCacheForce(nom);
       if (cache && cache.articlesComplets && cache.articlesComplets[id]) {
         loader.style.display = 'none';
         articleCharge.style.display = 'block';
         afficherArticle(cache.articlesComplets[id]);
-        afficherNotification('⚠️ Version en cache (hors ligne)');
+        afficherNotification('Version en cache (hors ligne)');
       } else {
         loader.style.display = 'none';
         erreur.style.display = 'block';
@@ -113,14 +104,9 @@ function afficherNotification(message) {
   
   notif = document.createElement('div');
   notif.id = 'notificationArticle';
-  notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:10px 24px;border-radius:30px;font-size:14px;font-family:Segoe UI,sans-serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
   notif.textContent = message;
   document.body.appendChild(notif);
-  setTimeout(function() { notif.style.opacity = '1'; }, 50);
-  setTimeout(function() {
-    notif.style.opacity = '0';
-    setTimeout(function() { notif.remove(); }, 500);
-  }, 3000);
+  setTimeout(function() { notif.remove(); }, 3000);
 }
 
 // ============================================================
@@ -131,20 +117,19 @@ function afficherArticle(post) {
   hasQuiz = post.hasQuiz || (post.quiz && post.quiz.trim() !== '');
   hasQuestion = post.hasQuestion || (post.question_ouverte && post.question_ouverte.trim() !== '');
 
-  // === GESTION DES COULEURS SELON LA CATÉGORIE ===
+  // === CATÉGORIE ===
   var isSpecial = post.categorie && post.categorie.toLowerCase() === 'apprendre à lire';
   var carte = document.querySelector('.blog-article');
   var titre = document.getElementById('article-titre');
 
   if (isSpecial) {
-    carte.style.background = 'rgb(105, 179, 242)';
-    titre.style.color = 'rgb(255, 241, 116)';
+    carte.classList.add('special');
+    titre.classList.add('special');
   } else {
-    carte.style.background = '#ffffff';
-    titre.style.color = '#1a2a2e';
+    carte.classList.remove('special');
+    titre.classList.remove('special');
   }
 
-  // === LABEL SPÉCIAL ===
   if (post.categorie) {
     var label = document.getElementById('postLabel');
     label.textContent = post.categorie;
@@ -245,9 +230,6 @@ function afficherArticle(post) {
   genererDots();
   updateSlides();
   
-  // ============================================================
-  // AJOUT : INITIALISER LE SYSTÈME D'ANNOTATION
-  // ============================================================
   setTimeout(function() {
     initAnnotationSystem();
     chargerAnnotation();
@@ -261,7 +243,6 @@ function afficherArticle(post) {
 function genererSlideTexte(data) {
   var contenu = data.contenu;
   
-  // === DÉTECTION TABLEAU ===
   var lignes = contenu.split('\n').filter(function(l) { return l.trim().length > 0; });
   var estTableau = false;
   var tableauHtml = '';
@@ -300,15 +281,13 @@ function genererSlideTexte(data) {
     return tableauHtml;
   }
   
- 
-// === TRAITEMENT NORMAL ===
-var contenuBr = contenu.replace(/\n/g, '<br>');
-// Appliquer la police arabe uniquement sur les mots arabes
-var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
-return '<div class="contenu-slide">' + contenuArabe + '</div>';
+  var contenuBr = contenu.replace(/\n/g, '<br>');
+  var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
+  return '<div class="contenu-slide">' + contenuArabe + '</div>';
 }
+
 function genererSlideQuiz(data) {
-  var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
+  var html = '<div class="quiz-container"><h3>Quiz</h3>';
   data.questions.forEach(function(q, idx) {
     var qId = 'q' + (idx + 1);
     html += '<div class="quiz-question" data-question="' + qId + '" data-index="' + idx + '">';
@@ -326,17 +305,17 @@ function genererSlideQuiz(data) {
 }
 
 function genererSlideQuestionOuverte(data) {
-  return '<div id="openQuestion" style="display:block;"><h3>✍️ Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
+  return '<div id="openQuestion" style="display:block;"><h3>Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
 }
 
 function genererSlideMemo(data) {
   var html = '<div class="slide-memo">';
-  html += '<div class="confirmation-fin">✏ Vous avez fini ! ✏</div>';
-  html += '<span class="memo-label">📌 À retenir</span>';
+  html += '<div class="confirmation-fin">Vous avez fini</div>';
+  html += '<span class="memo-label">À retenir</span>';
   html += '<div class="contenu-memo">' + data.texte + '</div>';
   
   if (!hasQuiz && !hasQuestion) {
-    html += '<button class="btn-appris" onclick="marquerCommeLu()" style="margin-top:16px;">📖 J\'ai lu</button>';
+    html += '<button class="btn-appris" onclick="marquerCommeLu()">J\'ai lu</button>';
   }
   
   html += '</div>';
@@ -349,7 +328,6 @@ function genererSlideMemo(data) {
 function genererDots() {
   var container = document.getElementById('dotsContainerOutside');
   if (!container) {
-    // Si le conteneur n'existe pas encore, le créer
     container = document.createElement('div');
     container.id = 'dotsContainerOutside';
     container.className = 'dots-container-outside';
@@ -432,20 +410,13 @@ function updateSlides() {
     afficherMessageFin();
   }
 
-  // ============================================================
-  // AJOUT : METTRE À JOUR L'URL AVEC LE NUMÉRO DE SLIDE
-  // ============================================================
   var url = new URL(window.location.href);
   url.searchParams.set('slide', slideIndex);
   window.history.replaceState({}, '', url);
 
-  // ============================================================
-  // AJOUT : CHARGER L'ANNOTATION DE LA SLIDE ACTUELLE
-  // ============================================================
   chargerAnnotation();
   updateAnnotationButtonColor();
 
-  // Si le popup est ouvert, fermer proprement
   if (annotationPopupOpen) {
     closeAnnotationPopup();
   }
@@ -458,13 +429,12 @@ function afficherMessageFin() {
 
   var finMsg = document.createElement('div');
   finMsg.id = 'finMessage';
-  finMsg.innerHTML = '✅ Vous avez fini !';
-  finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+  finMsg.textContent = 'Vous avez fini';
   document.body.appendChild(finMsg);
-  setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
+  setTimeout(function() { finMsg.remove(); }, 2000);
 
   setTimeout(function() {
-    window.location.href = '/medit/mes-textes.html';
+    window.location.href = '/medit/my-posts.html';
   }, 2500);
 }
 
@@ -501,7 +471,6 @@ function allerSlide(index) {
 function sauvegarderQuiz() {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) {
-    console.error('Non connecté');
     return;
   }
 
@@ -519,15 +488,10 @@ function sauvegarderQuiz() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        console.log('Quiz sauvegardé');
         miseAJourCacheLocal(nom, postId, quizData.bonnes, quizData.total);
-      } else {
-        console.error('Erreur :', data.message);
       }
     })
-    .catch(function() {
-      console.error('Erreur réseau');
-    });
+    .catch(function() {});
 }
 
 // ============================================================
@@ -536,13 +500,13 @@ function sauvegarderQuiz() {
 function validerReponse() {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) {
-    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
+    document.getElementById('form-message-mailto').innerHTML = 'Veuillez vous reconnecter.';
     return;
   }
 
   var reponse = document.getElementById('reponse-mailto').value.trim();
   if (!reponse) {
-    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose.</span>';
+    document.getElementById('form-message-mailto').innerHTML = 'Écrivez quelque chose.';
     return;
   }
 
@@ -550,9 +514,8 @@ function validerReponse() {
   var msgContainer = document.getElementById('form-message-mailto');
   
   btn.disabled = true;
-  btn.innerHTML = '<span class="spinner-btn"></span> Envoi...';
-  btn.style.opacity = '0.6';
-  msgContainer.innerHTML = '<span style="color:#94a3b8;">Envoi en cours...</span>';
+  btn.innerHTML = 'Envoi...';
+  msgContainer.innerHTML = 'Envoi en cours...';
 
   var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte&nom=' + encodeURIComponent(nom) +
     '&articleId=' + encodeURIComponent(postId) +
@@ -562,10 +525,9 @@ function validerReponse() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        btn.textContent = '✅ Envoyé !';
-        btn.style.background = '#2d6a4f';
-        btn.style.opacity = '1';
-        msgContainer.innerHTML = '<span style="color:#2d6a4f;">✅ Réponse enregistrée !</span>';
+        btn.textContent = 'Envoyé';
+        btn.disabled = false;
+        msgContainer.innerHTML = 'Réponse enregistrée';
         
         reponseValidee = true;
         document.getElementById('reponse-mailto').disabled = true;
@@ -580,19 +542,15 @@ function validerReponse() {
           }, 1000);
         }
       } else {
-        btn.textContent = '❌ Réessayer';
-        btn.style.background = '#c62828';
-        btn.style.opacity = '1';
+        btn.textContent = 'Réessayer';
         btn.disabled = false;
-        msgContainer.innerHTML = '<span style="color:#c62828;">❌ Erreur : ' + (data.message || '') + '</span>';
+        msgContainer.innerHTML = 'Erreur : ' + (data.message || '');
       }
     })
     .catch(function() {
-      btn.textContent = '❌ Réessayer';
-      btn.style.background = '#c62828';
-      btn.style.opacity = '1';
+      btn.textContent = 'Réessayer';
       btn.disabled = false;
-      msgContainer.innerHTML = '<span style="color:#c62828;">❌ Erreur réseau. Vérifiez votre connexion.</span>';
+      msgContainer.innerHTML = 'Erreur réseau. Vérifiez votre connexion.';
     });
 }
 
@@ -659,7 +617,6 @@ function miseAJourCacheLocal(nom, articleId, bonnes, total) {
   }
   
   DataManager.setCache(nom, cache);
-  console.log('✅ Cache local mis à jour pour le quiz');
 }
 
 function miseAJourCacheReponse(nom, articleId) {
@@ -687,7 +644,6 @@ function miseAJourCacheReponse(nom, articleId) {
   }
   
   DataManager.setCache(nom, cache);
-  console.log('✅ Cache local mis à jour pour la réponse ouverte');
 }
 
 function miseAJourCacheLecture(nom, articleId) {
@@ -754,7 +710,6 @@ function miseAJourCacheLecture(nom, articleId) {
   }
   
   DataManager.setCache(nom, cache);
-  console.log('✅ Cache local mis à jour pour "J\'ai lu"');
 }
 
 // ============================================================
@@ -763,7 +718,7 @@ function miseAJourCacheLecture(nom, articleId) {
 function marquerCommeLu() {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) {
-    afficherNotification('⚠️ Veuillez vous reconnecter.');
+    afficherNotification('Veuillez vous reconnecter.');
     return;
   }
 
@@ -772,7 +727,7 @@ function marquerCommeLu() {
     for (var i = 0; i < cache.reponses.length; i++) {
       if (cache.reponses[i].articleId === postId) {
         if (cache.reponses[i].bonnes === 1 && cache.reponses[i].total === 1) {
-          afficherNotification('📖 Déjà marqué comme lu.');
+          afficherNotification('Déjà marqué comme lu.');
           return;
         }
       }
@@ -787,18 +742,18 @@ function marquerCommeLu() {
     .then(function(r) { return r.json(); })
     .then(function(data) {
       if (data.success) {
-        afficherNotification('📖 Lecture enregistrée !');
+        afficherNotification('Lecture enregistrée');
         miseAJourCacheLecture(nom, postId);
         quizValide = true;
         reponseValidee = true;
         updateSlides();
-        setTimeout(function() { window.location.href = '/medit/mes-textes.html'; }, 1500);
+        setTimeout(function() { window.location.href = '/medit/my-posts.html'; }, 1500);
       } else {
-        afficherNotification('⚠️ Erreur : ' + (data.message || ''));
+        afficherNotification('Erreur : ' + (data.message || ''));
       }
     })
     .catch(function() {
-      afficherNotification('⚠️ Erreur réseau.');
+      afficherNotification('Erreur réseau.');
     });
 }
 
@@ -838,14 +793,14 @@ function verifierQuizAuto() {
       if (isCorrect) {
         correct++;
         feedback.className = 'quiz-feedback correct';
-        feedback.textContent = '✓ Bonne réponse.';
+        feedback.textContent = 'Bonne réponse.';
         labels.forEach(function(l) {
           var r = l.querySelector('input[type="radio"]');
           if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
         });
       } else {
         feedback.className = 'quiz-feedback incorrect';
-        feedback.textContent = '✗ Réessayez, relisez le texte.';
+        feedback.textContent = 'Réessayez, relisez le texte.';
         selected.closest('label').classList.add('incorrect');
         labels.forEach(function(l) {
           var r = l.querySelector('input[type="radio"]');
@@ -867,7 +822,6 @@ function verifierQuizAuto() {
   var msg = document.getElementById('quiz-message');
   if (!toutesRepondues) {
     msg.textContent = 'Répondez à toutes les questions.';
-    msg.style.color = '#b8956a';
     return;
   }
 
@@ -884,7 +838,6 @@ function verifierQuizAuto() {
 
   if (correct === total) {
     msg.textContent = 'Parfait !';
-    msg.style.color = '#2d6a4f';
     quizValide = true;
     sauvegarderQuiz();
     updateSlides();
@@ -893,7 +846,6 @@ function verifierQuizAuto() {
     }, 1200);
   } else if (correct >= Math.ceil(total / 2)) {
     msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
-    msg.style.color = '#b8956a';
     quizValide = true;
     sauvegarderQuiz();
     updateSlides();
@@ -902,7 +854,6 @@ function verifierQuizAuto() {
     }, 1200);
   } else {
     msg.textContent = 'Prenez le temps de relire la méditation.';
-    msg.style.color = '#c62828';
   }
 }
 
@@ -975,7 +926,7 @@ if (document.readyState === 'loading') {
 }
 
 // ============================================================
-// PARTAGE NATIF
+// PARTAGE
 // ============================================================
 function partager() {
   var url = window.location.href;
@@ -984,13 +935,13 @@ function partager() {
   if (navigator.share) {
     navigator.share({
       title: titre,
-      text: '📖 ' + titre + ' — sur Qiraat',
+      text: titre + ' — sur Qiraat',
       url: url
     }).catch(function() {});
   } else {
     if (navigator.clipboard) {
       navigator.clipboard.writeText(url).then(function() {
-        alert('🔗 Lien copié !');
+        alert('Lien copié');
       }).catch(function() {});
     } else {
       var input = document.createElement('input');
@@ -999,13 +950,13 @@ function partager() {
       input.select();
       document.execCommand('copy');
       document.body.removeChild(input);
-      alert('🔗 Lien copié !');
+      alert('Lien copié');
     }
   }
 }
 
 // ============================================================
-// SYSTÈME D'ANNOTATION - SAUVEGARDE UNIQUEMENT À LA FERMETURE
+// ANNOTATION
 // ============================================================
 
 var annotationText = '';
@@ -1109,9 +1060,7 @@ function sauvegarderAnnotation(texte) {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) return;
 
-  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
   if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
-    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
     return;
   }
 
@@ -1147,9 +1096,7 @@ function chargerAnnotation() {
     return;
   }
 
-  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
   if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
-    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
     return;
   }
 
