@@ -771,116 +771,224 @@ a {
   border-radius: 16px;
 }
 
-/* RESPONSIVE */
+/* ============================================================
+   SYSTÈME D'ANNOTATION
+   ============================================================ */
+
+/* Bouton annoter */
+.btn-annotate {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  line-height: 1;
+  color: #94a3b8;
+  position: relative;
+}
+
+.btn-annotate:hover {
+  transform: scale(1.15);
+}
+
+.btn-annotate.has-note {
+  color: #2d6a4f;
+}
+
+.btn-annotate.has-note::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #2d6a4f;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* Couleur spéciale (titre jaune) */
+.btn-annotate.special {
+  color: rgb(255, 241, 116);
+}
+
+.btn-annotate.special:hover {
+  color: #fff3a0;
+}
+
+.btn-annotate.special.has-note::after {
+  background: rgb(255, 241, 116);
+}
+
+/* Couleur par défaut (titre gris) */
+.btn-annotate.default {
+  color: #94a3b8;
+}
+
+.btn-annotate.default:hover {
+  color: #1a2a2e;
+}
+
+.btn-annotate.default.has-note {
+  color: #2d6a4f;
+}
+
+/* Popup d'annotation */
+.annotate-popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.annotate-popup.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) scale(1);
+}
+
+.annotate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 10px 20px;
+  border-bottom: 1px solid #edeae5;
+}
+
+.annotate-header span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a2a2e;
+  font-family: 'Lora', 'Georgia', serif;
+}
+
+.annotate-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.3s;
+  line-height: 1;
+}
+
+.annotate-close:hover {
+  color: #1a2a2e;
+}
+
+#annotateTextarea {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  font-size: 15px;
+  font-family: 'Lora', 'Georgia', serif;
+  resize: vertical;
+  min-height: 120px;
+  background: #faf9f7;
+  color: #1a1a1a;
+  line-height: 1.7;
+  outline: none;
+}
+
+#annotateTextarea:focus {
+  background: #ffffff;
+}
+
+.annotate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px 14px 20px;
+  border-top: 1px solid #edeae5;
+  background: #faf9f7;
+}
+
+.annotate-auto-save {
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: 'Lora', 'Georgia', serif;
+}
+
+.annotate-status {
+  font-size: 12px;
+  color: #2d6a4f;
+  font-family: 'Lora', 'Georgia', serif;
+  transition: opacity 0.3s;
+}
+
+/* RESPONSIVE - AJOUT POUR L'ANNOTATION */
 @media (max-width: 768px) {
-  .blog-article {
-    height: auto;
-    max-height: 90vh;
-    min-height: 70vh;
-    padding: 48px 16px 20px;
+  .annotate-popup {
+    bottom: 70px;
+    width: 95%;
   }
-  .blog-article h1 {
-    font-size: 30px;
+  #annotateTextarea {
+    min-height: 100px;
+    font-size: 14px;
+    padding: 12px 16px;
   }
-  .contenu-slide {
-    font-size: 19px;
+  .annotate-header {
+    padding: 10px 16px 8px 16px;
   }
-  .slide-memo .contenu-memo {
-    font-size: 18px;
-    padding: 16px 20px;
-    max-width: 100%;
+  .annotate-header span {
+    font-size: 13px;
   }
-  .dots-container {
-    gap: 8px;
-  }
-  .dot {
-    width: 9px;
-    height: 9px;
-  }
-  .quiz-container h3 {
+  .btn-annotate {
     font-size: 20px;
   }
-  #openQuestion h3 {
-    font-size: 18px;
+  .annotate-footer {
+    padding: 6px 16px 10px 16px;
+    flex-wrap: wrap;
+    gap: 4px;
   }
-  .quiz-question p {
-    font-size: 16px;
+  .annotate-auto-save {
+    font-size: 11px;
   }
-  .quiz-question label {
-    font-size: 14px;
-  }
-  .post-meta {
-    font-size: 12px;
-  }
-  .btn-share-title {
-    font-size: 22px;
-    margin-left: 8px;
-  }
-  .tableau-slide td {
-    font-size: 42px;
-    padding: 20px 10px;
-  }
-  .tableau-slide .cellule-arabe {
-    font-size: 48px;
-  }
-  .tableau-slide {
-    border-spacing: 8px;
+  .annotate-status {
+    font-size: 11px;
   }
 }
 
 @media (max-width: 480px) {
-  .blog-article {
-    height: auto;
-    max-height: 92vh;
-    min-height: 60vh;
-    padding: 44px 12px 16px;
+  .annotate-popup {
+    bottom: 60px;
+    width: 95%;
+    border-radius: 12px;
   }
-  .blog-article h1 {
-    font-size: 24px;
-  }
-  .contenu-slide {
-    font-size: 17px;
-  }
-  .slide-memo .contenu-memo {
-    font-size: 17px;
-    padding: 14px 16px;
-  }
-  #openQuestion textarea {
+  #annotateTextarea {
     min-height: 80px;
-    font-size: 14px;
-  }
-  .btn-nav {
-    padding: 8px 20px;
     font-size: 13px;
-    width: 100%;
+    padding: 10px 14px;
   }
-  .btn-appris {
-    padding: 12px 24px;
-    font-size: 14px;
-    width: 100%;
+  .annotate-header span {
+    font-size: 12px;
   }
-  .btn-retour {
-    top: 12px;
-    right: 14px;
-    width: 34px;
-    height: 34px;
-    font-size: 16px;
-  }
-  .post-meta {
-    font-size: 11px;
-  }
-  .btn-share-title {
+  .btn-annotate {
     font-size: 18px;
-    margin-left: 6px;
+    padding: 2px 6px;
   }
-  .tableau-slide td {
-    font-size: 30px;
-    padding: 14px 8px;
+  .annotate-auto-save {
+    font-size: 10px;
   }
-  .tableau-slide .cellule-arabe {
-    font-size: 36px;
+  .annotate-status {
+    font-size: 10px;
   }
-  .tableau-slide {
-    border-spacing: 6px;
+  .annotate-header {
+    padding: 8px 12px 6px 12px;
+  }
+  .annotate-footer {
+    padding: 4px 12px 8px 12px;
   }
 }
