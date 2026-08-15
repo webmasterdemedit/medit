@@ -52,11 +52,15 @@ function updateToggleIcon(active) {
 }
 
 // ============================================================
-// Créer le toggle s'il n'existe pas
+// Créer le toggle s'il n'existe pas (avec retry)
 // ============================================================
 function ajouterToggleLecture() {
     var nav = document.getElementById('headerNav');
-    if (!nav) return;
+    if (!nav) {
+        // Si le nav n'existe pas encore, réessayer dans 200ms
+        setTimeout(ajouterToggleLecture, 200);
+        return;
+    }
     
     // Vérifier si le toggle existe déjà
     if (document.getElementById('toggleLecture')) return;
