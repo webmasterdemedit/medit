@@ -23,38 +23,6 @@ var quizData = {
 
 var chargementEnCours = false;
 var reponsesExistantes = null;
-
-// ============================================================
-// MAPPING PAGE → POLICE QCF4
-// ============================================================
-var fontMap = null;
-var chargementFontMap = false;
-
-function chargerFontMap() {
-  if (fontMap !== null) return Promise.resolve(fontMap);
-  if (chargementFontMap) {
-    return new Promise(function(resolve, reject) {
-      var check = setInterval(function() {
-        if (fontMap !== null) {
-          clearInterval(check);
-          resolve(fontMap);
-        }
-      }, 100);
-    });
-  }
-  
-  chargementFontMap = true;
-  return fetch('/medit/font/font-map.json')
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      fontMap = data;
-      chargementFontMap = false;
-      return fontMap;
-    })
-    .catch(function() {
-      chargementFontMap = false;
-      return null;
-    });
 }
 
 // ============================================================
@@ -996,10 +964,7 @@ function demarrer() {
     window.location.href = '/medit/index.html';
     return;
   }
-  
-  // Charger le font-map pour QCF4
-  chargerFontMap();
-  
+    
   chargerArticle();
 }
 
