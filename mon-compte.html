@@ -1,0 +1,836 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Mon compte - MéditIslam</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <style>
+    /* ============================================================
+       RESET & BASE
+       ============================================================ */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+      background-color: #f4f2ed;
+      color: #1e293b;
+      min-height: 100vh;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .page-compte {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 32px 20px 40px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .page-compte h1 {
+      font-size: 30px;
+      font-weight: 300;
+      color: #1a2a2e;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+
+    .page-compte h1 strong {
+      font-weight: 700;
+      color: #2d6a4f;
+    }
+
+    .page-compte .sous-titre-page {
+      font-size: 15px;
+      color: #94a3b8;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    /* ============================================================
+       ONGLETS INTERNES
+       ============================================================ */
+    .tabs-compte {
+      display: flex;
+      gap: 4px;
+      margin-bottom: 24px;
+      border-bottom: 2px solid #edeae5;
+    }
+
+    .tab-compte {
+      padding: 12px 28px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      font-size: 15px;
+      font-weight: 500;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+      letter-spacing: 0.3px;
+      border-radius: 8px 8px 0 0;
+    }
+
+    .tab-compte:hover {
+      color: #1a2a2e;
+      background: #f8f6f2;
+    }
+
+    .tab-compte.active {
+      color: #2d6a4f;
+      border-bottom-color: #2d6a4f;
+      font-weight: 600;
+    }
+
+    .tab-content-compte {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content-compte.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+       CARTE DU COMPTE
+       ============================================================ */
+    .carte-compte {
+      background: #ffffff;
+      border-radius: 16px;
+      padding: 32px 36px;
+      border: 1px solid #edeae5;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+      margin-bottom: 24px;
+    }
+
+    /* ============================================================
+       CHAMPS CLASSIQUES (Profil)
+       ============================================================ */
+    .champ-compte {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 0;
+      border-bottom: 1px solid #f0ede8;
+    }
+
+    .champ-compte:last-child {
+      border-bottom: none;
+    }
+
+    .champ-compte .label {
+      font-size: 14px;
+      color: #94a3b8;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      min-width: 140px;
+    }
+
+    .champ-compte .valeur {
+      font-size: 15px;
+      color: #1a2a2e;
+      font-weight: 500;
+      text-align: right;
+      word-break: break-word;
+      max-width: 60%;
+    }
+
+    /* ============================================================
+       SECTION NIVEAU
+       ============================================================ */
+    .niveau-section {
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 2px solid #edeae5;
+    }
+
+    .niveau-section .niveau-titre {
+      font-size: 16px;
+      color: #94a3b8;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+    }
+
+    .niveau-section .niveau-valeur {
+      font-size: 40px;
+      font-weight: 700;
+      color: #2d6a4f;
+      font-family: 'Georgia', serif;
+      letter-spacing: 1px;
+      line-height: 1.1;
+      margin-bottom: 12px;
+    }
+
+    .niveau-section .niveau-valeur small {
+      font-size: 18px;
+      font-weight: 400;
+      color: #94a3b8;
+      margin-left: 8px;
+      font-style: italic;
+    }
+
+    .niveau-section .description-niveau {
+      padding: 18px 24px;
+      background: #f8f6f2;
+      border-radius: 10px;
+      border-left: 4px solid #2d6a4f;
+      font-size: 15px;
+      color: #475569;
+      line-height: 1.7;
+      font-style: italic;
+      letter-spacing: 0.2px;
+      margin-top: 4px;
+    }
+
+    /* ============================================================
+       HISTORIQUE
+       ============================================================ */
+    .graphique-container {
+      margin: 16px 0 20px;
+      padding: 16px 0 12px;
+      overflow-x: auto;
+    }
+
+    .graphique-ligne {
+      display: flex;
+      align-items: flex-end;
+      gap: 12px;
+      justify-content: flex-start;
+      min-height: 60px;
+      padding: 0 4px;
+    }
+
+    .graphique-point {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+
+    .graphique-point .cercle {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      border: 2px solid #e2e0db;
+      transition: all 0.2s;
+    }
+
+    .graphique-point .cercle.valide {
+      background: #2d6a4f;
+      border-color: #2d6a4f;
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+    }
+
+    .graphique-point .cercle.echec {
+      background: #e8e0d8;
+      border-color: #b8b0a8;
+    }
+
+    .graphique-point .date-point {
+      font-size: 10px;
+      color: #b8b0a8;
+      letter-spacing: 0.2px;
+      white-space: nowrap;
+    }
+
+    .legende {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: #94a3b8;
+      letter-spacing: 0.2px;
+    }
+
+    .legende .item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .legende .cercle-legende {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      border: 1px solid #e2e0db;
+    }
+
+    .legende .cercle-legende.valide {
+      background: #2d6a4f;
+      border-color: #2d6a4f;
+    }
+
+    .legende .cercle-legende.echec {
+      background: #e8e0d8;
+      border-color: #b8b0a8;
+    }
+
+    .liste-tentatives {
+      margin-top: 12px;
+      border-top: 1px solid #f0ede8;
+      padding-top: 12px;
+    }
+
+    .tentative-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 6px 0;
+      font-size: 14px;
+      color: #475569;
+      border-bottom: 1px solid #f8f6f2;
+    }
+
+    .tentative-item:last-child {
+      border-bottom: none;
+    }
+
+    .tentative-item .statut {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-weight: 500;
+    }
+
+    .tentative-item .statut.valide {
+      color: #2d6a4f;
+    }
+
+    .tentative-item .statut.echec {
+      color: #b8a0a0;
+    }
+
+    .tentative-item .temps-passe {
+      font-size: 12px;
+      color: #94a3b8;
+      font-family: 'Courier New', monospace;
+    }
+
+    .loader-histo {
+      text-align: center;
+      padding: 40px 20px;
+      color: #94a3b8;
+    }
+
+    .loader-histo .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid #edeae5;
+      border-top-color: #2d6a4f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide-histo {
+      text-align: center;
+      padding: 40px 20px;
+      color: #b8b0a8;
+    }
+
+    .vide-histo .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .vide-histo h2 {
+      font-size: 20px;
+      font-weight: 400;
+      color: #1a2a2e;
+      margin-bottom: 4px;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+    }
+
+    .vide-histo p {
+      color: #b8b0a8;
+      font-size: 15px;
+    }
+
+    /* ============================================================
+       BOUTON RETOUR
+       ============================================================ */
+    .btn-retour-compte {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: #eef2f6;
+      color: #1a3a4a;
+      border: none;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      margin-top: 8px;
+    }
+
+    .btn-retour-compte:hover {
+      background: #dce2ea;
+      transform: translateX(-4px);
+    }
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 640px) {
+      .page-compte {
+        padding: 20px 16px;
+      }
+      .page-compte h1 {
+        font-size: 24px;
+      }
+      .carte-compte {
+        padding: 20px 18px;
+      }
+      .tabs-compte {
+        justify-content: center;
+      }
+      .tab-compte {
+        font-size: 13px;
+        padding: 10px 16px;
+      }
+      .champ-compte {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        padding: 12px 0;
+      }
+      .champ-compte .valeur {
+        text-align: left;
+        max-width: 100%;
+        width: 100%;
+      }
+      .niveau-section .niveau-valeur {
+        font-size: 32px;
+      }
+      .graphique-ligne {
+        gap: 8px;
+      }
+      .graphique-point .cercle {
+        width: 14px;
+        height: 14px;
+      }
+      .graphique-point .date-point {
+        font-size: 9px;
+      }
+      .tentative-item {
+        font-size: 13px;
+        flex-wrap: wrap;
+        gap: 4px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ========== HEADER ========== -->
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html">۞ <strong>Médit</strong>Islam</a>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+                <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+              </nav>
+            </div>
+          </header>
+        `;
+        mettreAJourHeader();
+      });
+
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
+
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
+
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+          `;
+        }
+      }
+    }
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    }
+  </script>
+
+  <div class="page-compte">
+
+    <h1><strong>Mon</strong> compte</h1>
+    <p class="sous-titre-page">Vos informations personnelles et votre progression.</p>
+
+    <!-- ========== ONGLETS ========== -->
+    <div class="tabs-compte" id="tabsContainer">
+      <button class="tab-compte active" data-tab="profil" onclick="switchTab('profil')">Mon profil</button>
+      <button class="tab-compte" data-tab="historique" onclick="switchTab('historique')">Mes résultats</button>
+    </div>
+
+    <!-- ========== CONTENU PROFIL ========== -->
+    <div id="tab-profil" class="tab-content-compte active">
+      <div class="carte-compte" id="carteCompte">
+        <div id="contenu-compte">
+          <div style="text-align:center;padding:30px 0;color:#94a3b8;">
+            <div style="display:inline-block;width:32px;height:32px;border:3px solid #edeae5;border-top-color:#2d6a4f;border-radius:50%;animation:spin 0.8s linear infinite;margin-bottom:12px;"></div>
+            <p>Chargement de vos informations...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== CONTENU HISTORIQUE ========== -->
+    <div id="tab-historique" class="tab-content-compte">
+      <div class="carte-compte" id="carteHistorique">
+        <div id="contenu-historique">
+          <div class="loader-histo">
+            <div class="spinner"></div>
+            <p>Chargement de vos résultats...</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ========== BOUTON RETOUR ========== -->
+    <a href="/medit/mes-textes.html" class="btn-retour-compte">← Retour à mes textes</a>
+
+  </div>
+
+  <!-- ========== FOOTER ========== -->
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // mon-compte.html - VERSION AVEC DATAMANAGER
+    // ============================================================
+
+    // ============================================================
+    // SWITCH D'ONGLET
+    // ============================================================
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content-compte').forEach(function(el) {
+        el.classList.remove('active');
+      });
+      document.querySelectorAll('.tab-compte').forEach(function(el) {
+        el.classList.remove('active');
+      });
+
+      document.getElementById('tab-' + tabId).classList.add('active');
+      document.querySelectorAll('.tab-compte').forEach(function(el) {
+        if (el.dataset.tab === tabId) {
+          el.classList.add('active');
+        }
+      });
+
+      // Plus besoin de recharger l'historique à chaque clic !
+      // Tout est déjà dans le cache
+    }
+
+    // ============================================================
+    // CHARGEMENT DU PROFIL + HISTORIQUE (UN SEUL APPEL)
+    // ============================================================
+    function chargerCompte() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      // Utiliser DataManager
+      DataManager.charger()
+        .then(function(data) {
+          afficherCompte(data, id);
+          afficherHistorique(data.reponses || []);
+        })
+        .catch(function() {
+          // Erreur : essayer le cache forcé
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            afficherCompte(cache, id);
+            afficherHistorique(cache.reponses || []);
+          } else {
+            document.getElementById('contenu-compte').innerHTML = `
+              <div style="text-align:center;padding:30px 0;">
+                <p style="color:#c62828;">❌ Erreur de chargement.</p>
+                <button onclick="rafraichirCache()" 
+                        style="margin-top:12px;padding:10px 24px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;cursor:pointer;">
+                  🔄 Réessayer
+                </button>
+              </div>
+            `;
+            document.getElementById('contenu-historique').innerHTML = `
+              <div class="vide-histo">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHAGE DU COMPTE
+    // ============================================================
+    function afficherCompte(data, id) {
+      var html = '';
+
+      // Identifiant
+      html += `
+        <div class="champ-compte">
+          <span class="label">👤 Identifiant</span>
+          <span class="valeur">${id}</span>
+        </div>
+      `;
+
+      // Niveau et description
+      var niveau = data.niveau || 0;
+      var description = data.description || 'Aucune description disponible pour ce niveau.';
+
+      html += `
+        <div class="niveau-section">
+          <div class="niveau-titre">Votre niveau actuel</div>
+          <div class="niveau-valeur">
+            ${niveau}
+            <small>sur 12</small>
+          </div>
+          <div class="description-niveau">${description}</div>
+        </div>
+      `;
+
+      // ===== BOUTON RAFRAÎCHIR =====
+      html += `
+        <div style="margin-top:20px;text-align:center;border-top:1px solid #f0ede8;padding-top:16px;">
+          <button onclick="rafraichirCache(event)" style="padding:10px 28px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;font-size:14px;font-weight:500;cursor:pointer;transition:all 0.3s ease;">
+            🔄 Rafraîchir les fichiers de mes textes.
+          </button>
+          <p style="font-size:12px;color:#94a3b8;margin-top:6px;">Cette action est égale à une reconnexion.</p>
+        </div>
+      `;
+
+      document.getElementById('contenu-compte').innerHTML = html;
+    }
+
+    // ============================================================
+    // RAFRAÎCHIR LE CACHE
+    // ============================================================
+    function rafraichirCache(event) {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) return;
+
+      var btn = event ? event.target : document.querySelector('#contenu-compte button');
+      if (!btn) return;
+
+      var originalText = btn.textContent;
+      btn.textContent = '⏳ Chargement...';
+      btn.disabled = true;
+      btn.style.opacity = '0.6';
+
+      DataManager.rafraichir()
+        .then(function(data) {
+          btn.textContent = '✅ Données actualisées !';
+          btn.style.background = '#2d6a4f';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          afficherCompte(data, id);
+          afficherHistorique(data.reponses || []);
+          setTimeout(function() {
+            btn.textContent = '🔄 Rafraîchir mes données';
+          }, 2000);
+        })
+        .catch(function() {
+          btn.textContent = '❌ Erreur';
+          btn.style.background = '#c62828';
+          btn.disabled = false;
+          btn.style.opacity = '1';
+          setTimeout(function() {
+            btn.textContent = '🔄 Rafraîchir mes données';
+            btn.style.background = '#2d6a4f';
+          }, 2000);
+        });
+    }
+
+    // ============================================================
+    // AFFICHAGE DE L'HISTORIQUE
+    // ============================================================
+    function afficherHistorique(historique) {
+      if (!historique || historique.length === 0) {
+        document.getElementById('contenu-historique').innerHTML = `
+          <div class="vide-histo">
+            <span class="icone">📭</span>
+            <h2>Aucune tentative enregistrée</h2>
+            <p>Commencez une méditation pour voir vos progrès apparaître ici.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '';
+
+      // === GRAPHIQUE ===
+      html += `<div class="graphique-container"><div class="graphique-ligne">`;
+      historique.slice(-10).forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var total = parseInt(item.total) || 0;
+        var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+        var statutClass = valide ? 'valide' : 'echec';
+        var dateFormatee = item.date ? new Date(item.date).toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
+
+        html += `
+          <div class="graphique-point">
+            <div class="cercle ${statutClass}"></div>
+            <span class="date-point">${dateFormatee}</span>
+          </div>
+        `;
+      });
+      html += `</div></div>`;
+
+      // === LÉGENDE ===
+      html += `
+        <div class="legende">
+          <span class="item"><span class="cercle-legende valide"></span> Validé</span>
+          <span class="item"><span class="cercle-legende echec"></span> Non validé</span>
+        </div>
+      `;
+
+      // === LISTE DES TENTATIVES ===
+      html += `<div class="liste-tentatives">`;
+      historique.slice().reverse().forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var total = parseInt(item.total) || 0;
+        var valide = (total > 0 && bonnes >= Math.ceil(total / 2));
+        var statutClass = valide ? 'valide' : 'echec';
+        var statutTexte = valide ? '✔ Validé' : '✖️ Non validé';
+        
+        var dateFormatee = 'Date inconnue';
+        if (item.date) {
+          var d = new Date(item.date);
+          if (!isNaN(d.getTime()) && d.getFullYear() > 2000) {
+            dateFormatee = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            }) + ' à ' + d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+          }
+        }
+
+        html += `
+          <div class="tentative-item">
+            <span>${item.titre || 'Méditation'} — ${dateFormatee}</span>
+            <span class="statut ${statutClass}">${statutTexte}</span>
+          </div>
+        `;
+      });
+      html += `</div>`;
+
+      document.getElementById('contenu-historique').innerHTML = html;
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      chargerCompte();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
