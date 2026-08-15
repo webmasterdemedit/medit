@@ -23,7 +23,7 @@ var quizData = {
 
 var chargementEnCours = false;
 var reponsesExistantes = null;
-}
+
 
 // ============================================================
 // CHARGEMENT AVEC DATAMANAGER
@@ -306,7 +306,7 @@ var contenuBr = contenu.replace(/\n/g, '<br>');
 // Appliquer la police arabe uniquement sur les mots arabes
 var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
 return '<div class="contenu-slide">' + contenuArabe + '</div>';
-
+}
 function genererSlideQuiz(data) {
   var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
   data.questions.forEach(function(q, idx) {
