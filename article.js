@@ -1145,6 +1145,12 @@ function chargerAnnotation() {
     return;
   }
 
+  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
+  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
+    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
+    return;
+  }
+
   var cache = DataManager.getCacheForce(nom);
   if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
     annotationText = cache.annotations[postId][slideIndex];
@@ -1152,7 +1158,6 @@ function chargerAnnotation() {
     annotationText = '';
   }
 
-  // Mettre à jour l'indicateur
   var btn = document.getElementById('btnAnnotate');
   if (btn) {
     if (annotationText && annotationText.trim().length > 0) {
