@@ -1,56 +1,45 @@
 // ============================================================
-// MODE LECTURE - Version ultra simple AVEC EXPOSITION GLOBALE
+// MODE LECTURE - Toujours activé
 // ============================================================
 
-var MODE_LECTURE_KEY = 'qiraat_mode_lecture';
-
 // ============================================================
-// Initialisation
+// Initialisation - ACTIVÉ TOUJOURS
 // ============================================================
 function initLectureMode() {
-    var mode = localStorage.getItem(MODE_LECTURE_KEY);
     var toggle = document.getElementById('toggleLecture');
     
-    if (mode === 'true') {
-        document.body.classList.add('mode-lecture');
-        if (toggle) {
-            toggle.textContent = '📖';
-            toggle.title = 'Désactiver le mode lecture';
-        }
-    } else {
-        document.body.classList.remove('mode-lecture');
-        if (toggle) {
-            toggle.textContent = '🌙';
-            toggle.title = 'Activer le mode lecture';
-        }
+    // 🔥 TOUJOURS ACTIVÉ
+    document.body.classList.add('mode-lecture');
+    
+    if (toggle) {
+        toggle.textContent = '📖';
+        toggle.title = 'Désactiver le mode lecture (temporairement)';
     }
+    
+    console.log('📖 Mode lecture TOUJOURS activé');
 }
 
 // ============================================================
-// Basculer le mode - EXPOSÉ GLOBALEMENT
+// Basculer le mode (pour test)
 // ============================================================
 window.toggleLectureMode = function() {
     var isActive = document.body.classList.contains('mode-lecture');
     var toggle = document.getElementById('toggleLecture');
     
-    console.log('🔄 Clic sur le bouton ! Mode actif :', isActive);
-    
     if (isActive) {
         document.body.classList.remove('mode-lecture');
-        localStorage.setItem(MODE_LECTURE_KEY, 'false');
         if (toggle) {
             toggle.textContent = '🌙';
             toggle.title = 'Activer le mode lecture';
         }
-        console.log('✅ Mode lecture DÉSACTIVÉ');
+        console.log('✅ Mode lecture DÉSACTIVÉ (temporairement)');
     } else {
         document.body.classList.add('mode-lecture');
-        localStorage.setItem(MODE_LECTURE_KEY, 'true');
         if (toggle) {
             toggle.textContent = '📖';
             toggle.title = 'Désactiver le mode lecture';
         }
-        console.log('✅ Mode lecture ACTIVÉ');
+        console.log('✅ Mode lecture RÉACTIVÉ');
     }
 };
 
@@ -58,11 +47,10 @@ window.toggleLectureMode = function() {
 // Démarrer
 // ============================================================
 function demarrerLectureMode() {
-    console.log('📖 Mode Lecture : initialisation...');
     initLectureMode();
 }
 
-// Attendre que le DOM soit chargé
+// Exécution
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', demarrerLectureMode);
 } else {
