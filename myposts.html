@@ -3,531 +3,12 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2d6a4f" />
-  <title>Mes lectures</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <meta name="theme-color" content="#f3f0e9" />
+  <title>Mes lectures - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◈</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
-  <style>
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      background-color: #f4f2ed;
-      color: #1e293b;
-      min-height: 100vh;
-      letter-spacing: 0.2px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* ============================================================
-       PAGE
-       ============================================================ */
-    .page {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 24px 20px 40px;
-      flex: 1;
-      width: 100%;
-    }
-
-    /* ============================================================
-       NIVEAU + DESCRIPTION
-       ============================================================ */
-    .niveau-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .niveau-badge {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 14px 24px;
-      border: 1px solid #edeae5;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-    }
-
-    .niveau-badge .label {
-      font-size: 13px;
-      color: #94a3b8;
-      font-weight: 500;
-      letter-spacing: 0.3px;
-    }
-
-    .niveau-badge .valeur {
-      font-size: 22px;
-      font-weight: 600;
-      color: #2d6a4f;
-      font-family: 'Georgia', serif;
-    }
-
-    /* ============================================================
-       STATS
-       ============================================================ */
-    .stats {
-      display: flex;
-      gap: 32px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 20px 28px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1px solid #edeae5;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
-    }
-
-    .stats .stat-item {
-      display: flex;
-      align-items: baseline;
-      gap: 8px;
-      font-size: 13px;
-      color: #94a3b8;
-      letter-spacing: 0.3px;
-    }
-
-    .stats .stat-item .nombre {
-      font-size: 22px;
-      font-weight: 600;
-      color: #1a2a2e;
-      font-family: 'Georgia', 'Times New Roman', serif;
-    }
-
-    .stats .stat-item .nombre.valide {
-      color: #2d6a4f;
-    }
-
-    /* ============================================================
-       ONGLETS
-       ============================================================ */
-    .tabs-container {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-      margin-bottom: 24px;
-      padding: 4px 0;
-      border-bottom: 1px solid #edeae5;
-    }
-
-    .tab-btn {
-      padding: 10px 24px;
-      background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
-      font-size: 14px;
-      font-weight: 500;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 0.3px;
-      font-family: 'Segoe UI', -apple-system, sans-serif;
-      border-radius: 8px 8px 0 0;
-    }
-
-    .tab-btn:hover {
-      color: #1a2a2e;
-      background: #f8f6f2;
-    }
-
-    .tab-btn.active {
-      color: #2d6a4f;
-      border-bottom-color: #2d6a4f;
-      font-weight: 600;
-    }
-
-    .tab-btn .compteur-tab {
-      display: inline-block;
-      background: #f0ede8;
-      color: #94a3b8;
-      font-size: 11px;
-      font-weight: 600;
-      padding: 0 10px;
-      border-radius: 30px;
-      margin-left: 6px;
-      line-height: 20px;
-    }
-
-    .tab-btn.active .compteur-tab {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    /* ============================================================
-       CONTENU DES ONGLETS
-       ============================================================ */
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ============================================================
-       GRILLE DES POSTS
-       ============================================================ */
-    .grille {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .carte-post {
-      background: #ffffff;
-      border-radius: 14px;
-      padding: 16px 22px;
-      border: 1px solid #edeae5;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
-      transition: all 0.25s ease;
-      display: grid;
-      grid-template-columns: 1fr auto auto;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .carte-post:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-      border-color: #d4cec7;
-    }
-
-    .carte-post .infos {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-    }
-
-    .carte-post .titre {
-      font-size: 17px;
-      font-weight: 500;
-      color: #1a2a2e;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      letter-spacing: 0.2px;
-      line-height: 1.3;
-    }
-
-    .carte-post .titre a {
-      color: #1a2a2e;
-      transition: color 0.2s;
-    }
-
-    .carte-post .titre a:hover {
-      color: #2d6a4f;
-    }
-
-    .carte-post .meta {
-      font-size: 12px;
-      color: #94a3b8;
-      letter-spacing: 0.2px;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .carte-post .meta .niveau-badge {
-      background: #f0ede8;
-      padding: 1px 10px;
-      border-radius: 30px;
-      font-size: 11px;
-      font-weight: 500;
-      color: #94a3b8;
-      display: inline-block;
-    }
-
-    .carte-post .meta .badge-icone {
-      font-size: 13px;
-      display: inline-block;
-      background: #f4f2ed;
-      padding: 1px 8px;
-      border-radius: 12px;
-      color: #64748b;
-      font-weight: 500;
-    }
-
-    .carte-post .meta .badge-icone.quiz {
-      background: #e8f0fe;
-      color: #1a5a8a;
-    }
-
-    .carte-post .meta .badge-icone.question {
-      background: #fef3e8;
-      color: #8a6a3a;
-    }
-
-    .carte-post .meta .mots {
-      font-size: 11px;
-      color: #b8b0a8;
-    }
-
-    .carte-post .retenir-cadre {
-      background: #f8f6f2;
-      border-left: 3px solid #b8956a;
-      padding: 10px 16px;
-      border-radius: 6px;
-      margin-top: 6px;
-      font-size: 13px;
-      color: #2d3748;
-      font-style: italic;
-      line-height: 1.5;
-      display: none;
-    }
-
-    .carte-post .retenir-cadre.visible {
-      display: block;
-    }
-
-    .carte-post .retenir-cadre strong {
-      font-style: normal;
-      color: #1a2a2e;
-      font-weight: 600;
-      display: block;
-      margin-bottom: 2px;
-      font-size: 12px;
-      letter-spacing: 0.5px;
-      text-transform: uppercase;
-      color: #94a3b8;
-    }
-
-    .carte-post .statut {
-      text-align: center;
-      min-width: 80px;
-    }
-
-    .carte-post .statut .badge {
-      display: inline-block;
-      padding: 4px 14px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-    }
-
-    .carte-post .statut .badge.valide {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    .carte-post .statut .badge.lu {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    .carte-post .statut .badge.a-faire {
-      background: #f5f0eb;
-      color: #8a7a6a;
-    }
-
-    .carte-post .statut .badge.non-vu {
-      background: #f0ede8;
-      color: #b8b0a8;
-    }
-
-    .carte-post .statut .date-validation {
-      font-size: 11px;
-      color: #b8b0a8;
-      margin-top: 4px;
-      display: none;
-      letter-spacing: 0.2px;
-    }
-
-    .carte-post .statut .date-validation.visible {
-      display: block;
-    }
-
-    .carte-post .btn-lire {
-      padding: 8px 20px;
-      background: #2d6a4f;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      text-decoration: none;
-      white-space: nowrap;
-      letter-spacing: 0.2px;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .carte-post .btn-lire:hover {
-      background: #1a4a3a;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
-    }
-
-    .carte-post .btn-lire.reviser {
-      background: #b8956a;
-    }
-
-    .carte-post .btn-lire.reviser:hover {
-      background: #a07d55;
-      box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
-    }
-
-    .carte-post .btn-lire.lire {
-      background: #5a7a8a;
-    }
-
-    .carte-post .btn-lire.lire:hover {
-      background: #4a6a7a;
-      box-shadow: 0 4px 12px rgba(90, 122, 138, 0.2);
-    }
-
-    /* ============================================================
-       LOADER / VIDE
-       ============================================================ */
-    .loader {
-      text-align: center;
-      padding: 60px 20px;
-      font-size: 16px;
-      color: #b8b0a8;
-    }
-
-    .loader .spinner {
-      display: inline-block;
-      width: 32px;
-      height: 32px;
-      border: 3px solid #edeae5;
-      border-top-color: #2d6a4f;
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin-bottom: 12px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    .vide {
-      text-align: center;
-      padding: 60px 20px;
-      background: #ffffff;
-      border-radius: 16px;
-      border: 1px solid #edeae5;
-    }
-
-    .vide .icone {
-      font-size: 48px;
-      display: block;
-      margin-bottom: 12px;
-      opacity: 0.4;
-    }
-
-    .vide h2 {
-      font-size: 20px;
-      font-weight: 400;
-      color: #1a2a2e;
-      margin-bottom: 4px;
-      font-family: 'Georgia', serif;
-      letter-spacing: 0.5px;
-    }
-
-    .vide p {
-      color: #b8b0a8;
-      font-size: 15px;
-    }
-
-    /* ============================================================
-       DEVISE
-       ============================================================ */
-    .devise {
-      text-align: center;
-      padding: 28px 0 8px;
-      font-size: 14px;
-      color: #b8b0a8;
-      font-style: italic;
-      letter-spacing: 0.5px;
-      border-top: 1px solid #edeae5;
-      margin-top: 32px;
-      font-family: 'Georgia', serif;
-    }
-
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
-    @media (max-width: 768px) {
-      .carte-post {
-        grid-template-columns: 1fr;
-        gap: 8px;
-        padding: 14px 16px;
-      }
-      .carte-post .statut {
-        display: flex;
-        flex-wrap: wrap;
-        align-items: center;
-        gap: 8px;
-        justify-content: flex-start;
-      }
-      .carte-post .btn-lire {
-        text-align: center;
-        width: 100%;
-      }
-      .stats {
-        justify-content: center;
-        gap: 16px;
-        padding: 16px 20px;
-      }
-      .tabs-container {
-        justify-content: center;
-      }
-      .tab-btn {
-        font-size: 13px;
-        padding: 8px 16px;
-      }
-      .niveau-container {
-        flex-direction: column;
-      }
-    }
-
-    @media (max-width: 480px) {
-      .carte-post .statut {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 4px;
-      }
-      .carte-post .statut .date-validation {
-        text-align: left;
-      }
-      .tab-btn {
-        font-size: 12px;
-        padding: 6px 12px;
-      }
-      .stats .stat-item .nombre {
-        font-size: 18px;
-      }
-      .niveau-badge {
-        padding: 12px 16px;
-      }
-      .niveau-description {
-        padding: 12px 16px;
-      }
-    }
-  </style>
+  <link rel="stylesheet" href="/medit/theme.css" />
 </head>
 <body>
 
@@ -547,11 +28,10 @@
           <header class="site-header">
             <div class="header-inner">
               <div class="header-logo">
-                <a href="/medit/index.html">✎ <strong>Médit</strong>Islam</a>
+                <a href="/medit/index.html">Qiraat</a>
               </div>
               <nav class="header-nav" id="headerNav">
                 <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-                <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
               </nav>
             </div>
           </header>
@@ -565,30 +45,34 @@
       var userNameSpan = document.getElementById('headerUserName');
 
       if (userNameSpan) {
-        if (id) {
-          userNameSpan.textContent = '👤 ' + id;
-        } else {
-          userNameSpan.textContent = '';
-        }
+        userNameSpan.textContent = id || '';
       }
 
       if (nav) {
         if (id) {
           nav.innerHTML = `
-            <a href="/medit/my-posts.html" class="header-link">Mes textes</a>
-            <a href="/medit/my-account.html" class="header-btn-compte">👤 Mon compte</a>
+            <a href="/medit/myposts.html" class="header-link">Mes textes</a>
+            <a href="/medit/myaccount.html" class="header-btn-compte">Mon compte</a>
             <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
           `;
         } else {
           nav.innerHTML = `
             <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-            <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
           `;
         }
       }
     }
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    }
   </script>
 
+  <!-- ========== PAGE ========== -->
   <div class="page">
 
     <div class="niveau-container" id="niveauContainer">
@@ -618,7 +102,7 @@
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Vos lectures vont s'afficher ici dans un instant...</p>
+        <p>Chargement...</p>
       </div>
     </div>
 
@@ -628,6 +112,7 @@
 
   </div>
 
+  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
   <script>
@@ -640,20 +125,19 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
-            <div class="footer-devise">“La méditation est la clé qui ouvre les portes de l'intelligence du cœur.”</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} MéditIslam</div>
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
           </footer>
         `;
       });
   </script>
 
   <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
 
   <script>
     // ============================================================
-    // my-posts.html - VERSION AVEC DATAMANAGER
+    // myposts.html
     // ============================================================
 
     var toutesLesReponses = {};
@@ -677,7 +161,7 @@
     }
 
     // ============================================================
-    // CHARGEMENT AVEC DATAMANAGER
+    // CHARGEMENT
     // ============================================================
     function chargerTableauDeBord() {
         var id = localStorage.getItem('etudiant_id');
@@ -717,12 +201,12 @@
                     document.getElementById('loader').style.display = 'none';
                     document.getElementById('contenu').innerHTML = `
                         <div class="vide">
-                            <span class="icone">⚠️</span>
+                            <span class="icone">◈</span>
                             <h2>Erreur de chargement</h2>
                             <p>Vérifiez votre connexion.</p>
                             <button onclick="DataManager.rafraichir(); location.reload();" 
-                                    style="margin-top:12px;padding:10px 24px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;cursor:pointer;">
-                                🔄 Réessayer
+                                    style="margin-top:12px;padding:10px 24px;background:transparent;color:#2c2c2c;border:1px solid #d1ccc4;border-radius:30px;cursor:pointer;">
+                                Réessayer
                             </button>
                         </div>
                     `;
@@ -731,7 +215,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE AVEC ONGLETS
+    // AFFICHAGE
     // ============================================================
     function afficherAvecOnglets(posts) {
         var contenu = document.getElementById('contenu');
@@ -804,7 +288,6 @@
                     dateValidation = reponse.date || '';
                     retenir = reponse.retenir || '';
 
-                    // Une lecture est validée si (total=1 et bonnes=1) OU (quiz validé)
                     if (totalQ === 1 && bonnes === 1) {
                         estLu = true;
                         estValide = true;
@@ -813,39 +296,35 @@
                     }
                 }
 
-                // Déterminer le type de contenu
                 var hasQuiz = post.hasQuiz || false;
                 var hasQuestion = post.hasQuestion || false;
                 var mots = post.mots || 0;
 
-                // Badges pour le type
                 var badgesHtml = '';
                 if (hasQuiz) {
-                    badgesHtml += '<span class="badge-icone quiz">📝 Quiz</span>';
+                    badgesHtml += '<span class="badge-icone quiz">Quiz</span>';
                 }
                 if (hasQuestion) {
-                    badgesHtml += '<span class="badge-icone question">✍️ Question</span>';
+                    badgesHtml += '<span class="badge-icone question">Question</span>';
                 }
 
-                // Texte du bouton
                 var btnClass = 'btn-lire';
-                var btnText = 'Ouvrir →';
+                var btnText = 'Ouvrir';
                 
                 if (estValide || estLu) {
                     btnClass += ' reviser';
-                    btnText = 'Relire →';
+                    btnText = 'Relire';
                 } else if (hasQuiz || hasQuestion) {
-                    btnText = 'Faire →';
+                    btnText = 'Faire';
                 } else {
                     btnClass += ' lire';
-                    btnText = 'Lire →';
+                    btnText = 'Lire';
                 }
 
-                // Badge de statut
                 var badgeHtml = '';
                 var dateHtml = '';
                 if (estLu) {
-                    badgeHtml = '<span class="badge lu">✓ Lu</span>';
+                    badgeHtml = '<span class="badge lu">Lu</span>';
                     if (dateValidation) {
                         var d = new Date(dateValidation);
                         if (!isNaN(d.getTime())) {
@@ -859,7 +338,7 @@
                         }
                     }
                 } else if (estValide) {
-                    badgeHtml = '<span class="badge valide">✓ Validé</span>';
+                    badgeHtml = '<span class="badge valide">Validé</span>';
                     if (dateValidation) {
                         var d = new Date(dateValidation);
                         if (!isNaN(d.getTime())) {
@@ -873,9 +352,9 @@
                         }
                     }
                 } else if (reponse) {
-                    badgeHtml = '<span class="badge a-faire">○ À faire</span>';
+                    badgeHtml = '<span class="badge a-faire">À faire</span>';
                 } else {
-                    badgeHtml = '<span class="badge non-vu">○ À faire</span>';
+                    badgeHtml = '<span class="badge non-vu">À faire</span>';
                 }
 
                 var retenirHtml = '';
@@ -941,10 +420,10 @@
         document.getElementById('loader').style.display = 'none';
         document.getElementById('contenu').innerHTML = `
             <div class="vide">
-                <span class="icone">📭</span>
+                <span class="icone">◈</span>
                 <h2>Aucune méditation disponible</h2>
                 <p>De nouvelles méditations seront ajoutées prochainement.</p>
-                <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+                <p style="font-size:13px;color:#6b7a8a;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
             </div>
         `;
         document.getElementById('tabsContainer').innerHTML = '';
@@ -960,7 +439,6 @@
         demarrer();
     }
   </script>
-  <link rel="stylesheet" href="/medit/theme.css" />
-  <script src="/medit/theme.js"></script>
+
 </body>
 </html>
