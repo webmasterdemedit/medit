@@ -477,24 +477,19 @@ function updateSlides() {
   var url = new URL(window.location.href);
   url.searchParams.set('slide', slideIndex);
   window.history.replaceState({}, '', url);
+
+  // ============================================================
+  // AJOUT : CHARGER L'ANNOTATION DE LA SLIDE ACTUELLE
+  // ============================================================
+  chargerAnnotation();
+  updateAnnotationButtonColor();
+
+  // Si le popup est ouvert, fermer proprement
+  if (annotationPopupOpen) {
+    closeAnnotationPopup();
+  }
 }
 
-function ajouterBoutonAppris() {}
-
-function afficherMessageFin() {
-  if (document.getElementById('finMessage')) return;
-
-  var finMsg = document.createElement('div');
-  finMsg.id = 'finMessage';
-  finMsg.innerHTML = '✅ Vous avez fini !';
-  finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
-  document.body.appendChild(finMsg);
-  setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
-
-  setTimeout(function() {
-    window.location.href = '/medit/mes-textes.html';
-  }, 2500);
-}
 function ajouterBoutonAppris() {}
 
 function afficherMessageFin() {
@@ -1013,6 +1008,13 @@ function demarrer() {
   chargerFontMap();
   
   chargerArticle();
+  
+  // Initialiser le système d'annotation après le chargement
+  setTimeout(function() {
+    initAnnotationSystem();
+    chargerAnnotation();
+    updateAnnotationButtonColor();
+  }, 500);
 }
 
 if (document.readyState === 'loading') {
@@ -1049,7 +1051,9 @@ function partager() {
       alert('🔗 Lien copié !');
     }
   }
-  // ============================================================
+}
+
+// ============================================================
 // SYSTÈME D'ANNOTATION PAR SLIDE
 // ============================================================
 
