@@ -3,37 +3,30 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2d6a4f" />
-  <title>Méditation islamique</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
+  <meta name="theme-color" content="#f3f0e9" />
+  <title>Méditation - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◈</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400..700;1,400..700&display=swap" rel="stylesheet" />
   <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
-     <style>
-    .qcf4-text {
-      font-family: 'QCF4_Hafs_02', sans-serif;
-      font-size: 30px;
-      line-height: 1.8;
-      direction: rtl;  /* Pour l'arabe */
-    }
-  </style>
+  <link rel="stylesheet" href="/medit/theme.css" />
 </head>
 <body>
 
   <!-- ========== HEADER - CACHÉ ========== -->
   <div id="header-container"></div>
 
-  <!-- ========== PAGE ARTICLE ========== -->
+  <!-- ========== PAGE ========== -->
   <div class="page-article">
 
     <div class="blog-article" id="contenu-principal">
 
-      <!-- ========== CROIX RETOUR ========== -->
-      <a href="/medit/mes-textes.html" class="btn-retour" aria-label="Retour">✕</a>
+      <!-- ========== RETOUR ========== -->
+      <a href="/medit/myposts.html" class="btn-retour" aria-label="Retour">✕</a>
 
-      <!-- ========== CONTENU SCROLLABLE ========== -->
+      <!-- ========== CONTENU ========== -->
       <div class="article-content">
 
         <div class="loader" id="loader">
@@ -44,14 +37,14 @@
         <div class="erreur-article" id="erreur" style="display:none;">
           <h2>Méditation introuvable</h2>
           <p>Cette méditation n'existe pas ou a été déplacée.</p>
-          <a href="/medit/mes-textes.html" style="margin-top:12px;display:inline-block;padding:10px 24px;background:#2d6a4f;color:#fff;border-radius:30px;font-weight:500;font-family:'Lora','Georgia',serif;">Voir toutes</a>
+          <a href="/medit/myposts.html" style="margin-top:12px;display:inline-block;padding:10px 24px;background:transparent;color:#2c2c2c;border:1px solid #d1ccc4;border-radius:30px;font-weight:500;font-family:'Lora','Georgia',serif;">Voir toutes</a>
         </div>
 
         <div id="article-charge" style="display:none; width:100%;">
 
           <span class="post-label" id="postLabel">Méditation</span>
           
-          <!-- ========== TITRE AVEC BOUTON DE PARTAGE ========== -->
+          <!-- ========== TITRE ========== -->
           <h1 id="article-titre">
             Titre
             <button class="btn-share-title" onclick="partager()" aria-label="Partager">↗</button>
@@ -91,42 +84,40 @@
         </div>
       </div>
 
-      <!-- ========== PIED DE CARTE - TOUJOURS EN BAS ========== -->
+      <!-- ========== PIED ========== -->
       <div class="post-footer">
-        <!-- Bouton Annoter -->
         <button class="btn-annotate" id="btnAnnotate" title="Annoter cette slide">
           <span id="annotateIcon">✏</span>
         </button>
         <span class="post-meta">qiraat.fr · Sir Khan · <span id="postDate"></span></span>
       </div>
 
-    </div> <!-- Fermeture de .blog-article -->
+    </div>
 
-    <!-- ========== POINTS (DOTS) - HORS DE LA CARTE ========== -->
-    <!-- L'ID "dotsContainerOutside" est utilisé par article.js -->
+    <!-- ========== POINTS ========== -->
     <div id="dotsContainerOutside" class="dots-container-outside"></div>
 
-  </div> <!-- Fermeture de .page-article -->
+  </div>
 
-  <!-- Popup d'annotation (HORS de la carte) -->
+  <!-- ========== POPUP ANNOTATION ========== -->
   <div class="annotate-popup" id="annotatePopup">
     <div class="annotate-header">
-      <span>📝 Note sur la slide <span id="annotateSlideNum">1</span></span>
+      <span>Note sur la slide <span id="annotateSlideNum">1</span></span>
       <button class="annotate-close" id="annotateClose">✕</button>
     </div>
     <textarea id="annotateTextarea" placeholder="Écris ta réflexion, une question, ce que tu retiens..." rows="4"></textarea>
     <div class="annotate-footer">
-      <span class="annotate-auto-save">💾 Sauvegarde automatique</span>
+      <span class="annotate-auto-save">Sauvegarde automatique</span>
       <span class="annotate-status" id="annotateStatus"></span>
     </div>
   </div>
 
-  <!-- ========== FOOTER - CACHÉ ========== -->
+  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
   <script>
     // ============================================================
-    // CHARGEMENT DU HEADER (VIDE)
+    // CHARGEMENT DU HEADER
     // ============================================================
     fetch('/medit/header.html')
       .then(function(response) { return response.text(); })
@@ -140,7 +131,7 @@
       });
 
     function mettreAJourHeader() {
-      // Header caché, rien à faire
+      // Header caché
     }
 
     function deconnecter() {
@@ -166,7 +157,7 @@
 
   <script>
     // ============================================================
-    // PARTAGE NATIF
+    // PARTAGE
     // ============================================================
     function partager() {
       var url = window.location.href;
@@ -175,13 +166,13 @@
       if (navigator.share) {
         navigator.share({
           title: titre,
-          text: '📖 ' + titre + ' — sur Qiraat',
+          text: titre + ' — sur Qiraat',
           url: url
         }).catch(function() {});
       } else {
         if (navigator.clipboard) {
           navigator.clipboard.writeText(url).then(function() {
-            alert('🔗 Lien copié !');
+            alert('Lien copié');
           }).catch(function() {});
         } else {
           var input = document.createElement('input');
@@ -190,17 +181,15 @@
           input.select();
           document.execCommand('copy');
           document.body.removeChild(input);
-          alert('🔗 Lien copié !');
+          alert('Lien copié');
         }
       }
     }
   </script>
 
   <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
-  <script src="/medit/article.js"></script>
-  <link rel="stylesheet" href="/medit/theme.css" />
-  <script src="/medit/lecture-mode.js"></script>
+  <script src="/medit/post.js"></script>
+
 </body>
 </html>
