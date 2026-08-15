@@ -1049,4 +1049,224 @@ function partager() {
       alert('🔗 Lien copié !');
     }
   }
+  // ============================================================
+// SYSTÈME D'ANNOTATION PAR SLIDE
+// ============================================================
+
+var annotationText = '';
+var annotationPopupOpen = false;
+var annotationSlideIndex = -1;
+var annotationTimer = null;
+
+function initAnnotationSystem() {
+  // Vérifier si les éléments existent déjà
+  var popup = document.getElementById('annotatePopup');
+  if (!popup) return;
+
+  var btn = document.getElementById('btnAnnotate');
+  var close = document.getElementById('annotateClose');
+  var textarea = document.getElementById('annotateTextarea');
+
+  // Ouvrir le popup
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleAnnotationPopup();
+    });
+  }
+
+  // Fermer avec le bouton ✕
+  if (close) {
+    close.addEventListener('click', function() {
+      closeAnnotationPopup();
+    });
+  }
+
+  // Fermer en cliquant en dehors
+  document.addEventListener('click', function(e) {
+    if (annotationPopupOpen && 
+        !e.target.closest('.annotate-popup') && 
+        !e.target.closest('.btn-annotate')) {
+      closeAnnotationPopup();
+    }
+  });
+
+  // Sauvegarde automatique en tapant (debounce)
+  if (textarea) {
+    textarea.addEventListener('input', function() {
+      clearTimeout(annotationTimer);
+      annotationTimer = setTimeout(function() {
+        sauvegarderAnnotation(textarea.value);
+        updateAnnotationStatus('💾 Sauvegardé', 'saved');
+      }, 800);
+    });
+
+    // Ctrl+Entrée pour fermer
+    textarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        closeAnnotationPopup();
+      }
+      // Échap pour fermer
+      if (e.key === 'Escape') {
+        closeAnnotationPopup();
+      }
+    });
+  }
+
+  // Mettre à jour la couleur du bouton
+  updateAnnotationButtonColor();
+}
+
+function toggleAnnotationPopup() {
+  if (annotationPopupOpen) {
+    closeAnnotationPopup();
+  } else {
+    openAnnotationPopup();
+  }
+}
+
+function openAnnotationPopup() {
+  var popup = document.getElementById('annotatePopup');
+  var textarea = document.getElementById('annotateTextarea');
+  var slideNum = document.getElementById('annotateSlideNum');
+  var status = document.getElementById('annotateStatus');
+
+  if (!popup) return;
+
+  // Numéro de la slide
+  if (slideNum) {
+    slideNum.textContent = slideIndex + 1;
+  }
+
+  // Charger le texte existant
+  if (textarea) {
+    textarea.value = annotationText;
+    textarea.focus();
+    // Placer le curseur à la fin
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  }
+
+  // Status
+  if (status) {
+    status.textContent = '';
+    status.className = 'annotate-status';
+  }
+
+  annotationPopupOpen = true;
+  annotationSlideIndex = slideIndex;
+  popup.classList.add('open');
+}
+
+function closeAnnotationPopup() {
+  var popup = document.getElementById('annotatePopup');
+  var textarea = document.getElementById('annotateTextarea');
+
+  // Sauvegarder avant de fermer
+  if (textarea) {
+    sauvegarderAnnotation(textarea.value);
+  }
+
+  annotationPopupOpen = false;
+  if (popup) popup.classList.remove('open');
+}
+
+function sauvegarderAnnotation(texte) {
+  annotationText = texte;
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) return;
+
+  // Mettre à jour l'indicateur
+  var btn = document.getElementById('btnAnnotate');
+  if (btn) {
+    if (texte && texte.trim().length > 0) {
+      btn.classList.add('has-note');
+    } else {
+      btn.classList.remove('has-note');
+    }
+  }
+
+  // Sauvegarde locale
+  var cache = DataManager.getCacheForce(nom);
+  if (!cache) cache = {};
+  if (!cache.annotations) cache.annotations = {};
+  if (!cache.annotations[postId]) cache.annotations[postId] = {};
+  cache.annotations[postId][slideIndex] = {
+    texte: texte,
+    date: new Date().toISOString()
+  };
+  DataManager.setCache(nom, cache);
+
+  // Sauvegarde serveur (silencieuse)
+  var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&slide=' + encodeURIComponent(slideIndex) +
+    '&annotation=' + encodeURIComponent(texte);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        console.log('📝 Annotation sauvegardée');
+      }
+    })
+    .catch(function() {
+      console.log('⚠️ Annotation sauvegardée en local uniquement');
+    });
+}
+
+function chargerAnnotation() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    annotationText = '';
+    return;
+  }
+
+  var cache = DataManager.getCacheForce(nom);
+  if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex]) {
+    var data = cache.annotations[postId][slideIndex];
+    annotationText = data.texte || '';
+  } else {
+    annotationText = '';
+  }
+
+  // Mettre à jour l'indicateur
+  var btn = document.getElementById('btnAnnotate');
+  if (btn) {
+    if (annotationText && annotationText.trim().length > 0) {
+      btn.classList.add('has-note');
+    } else {
+      btn.classList.remove('has-note');
+    }
+  }
+
+  // Si le popup est ouvert, mettre à jour le textarea
+  if (annotationPopupOpen) {
+    var textarea = document.getElementById('annotateTextarea');
+    if (textarea) {
+      textarea.value = annotationText;
+    }
+  }
+}
+
+function updateAnnotationStatus(message, type) {
+  var status = document.getElementById('annotateStatus');
+  if (!status) return;
+  status.textContent = message;
+  status.className = 'annotate-status ' + (type || '');
+}
+
+function updateAnnotationButtonColor() {
+  var btn = document.getElementById('btnAnnotate');
+  if (!btn) return;
+  
+  var isSpecial = document.querySelector('.blog-article.special') !== null;
+  
+  if (isSpecial) {
+    btn.classList.add('special');
+    btn.classList.remove('default');
+  } else {
+    btn.classList.add('default');
+    btn.classList.remove('special');
+  }
 }
