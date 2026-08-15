@@ -42,17 +42,19 @@ a {
   margin: 0;
   padding: 0 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
 }
 
-/* CARTE PRINCIPALE - PAR DÉFAUT (GRIS/BLANC) */
+/* CARTE PRINCIPALE - AVEC HAUTEUR MINIMUM */
 .blog-article {
   width: 100%;
   height: auto;
-  max-height: calc(100vh - 32px);
+  min-height: 480px;
+  max-height: calc(100vh - 80px);
   border-radius: 24px;
-  padding: 48px 36px 32px;
+  padding: 32px 36px 28px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
   display: flex;
   flex-direction: column;
@@ -60,6 +62,8 @@ a {
   overflow: hidden;
   transition: background 0.3s ease;
   background: #ffffff;
+  flex-shrink: 0;
+  flex-grow: 0;
 }
 
 /* CARTE SPÉCIALE - Apprendre à lire (gérée par JS) */
@@ -72,7 +76,7 @@ a {
   width: 100%;
   font-size: 40px;
   font-weight: 700;
-  margin: 0 0 16px 0;
+  margin: 0 0 12px 0;
   line-height: 1.2;
   letter-spacing: 0.8px;
   font-family: 'Lora', 'Georgia', 'Times New Roman', serif;
@@ -125,14 +129,14 @@ a {
   background: rgba(255, 255, 255, 0.4);
 }
 
-/* CROIX EN HAUT À DROITE */
+/* CROIX EN HAUT À DROITE - COULEUR GRISE */
 .btn-retour {
   position: absolute;
-  top: 16px;
-  right: 20px;
+  top: 14px;
+  right: 18px;
   background: transparent;
-  color: rgba(255, 255, 255, 0.6);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #94a3b8;
+  border: 1px solid #e8e5e0;
   border-radius: 50%;
   width: 40px;
   height: 40px;
@@ -149,8 +153,8 @@ a {
 }
 
 .btn-retour:hover {
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background: #e8e5e0;
+  color: #1a2a2e;
   transform: scale(1.05);
 }
 
@@ -159,7 +163,7 @@ a {
   background: transparent;
   border: none;
   font-size: 28px;
-  color: rgba(255, 255, 255, 0.4);
+  color: #94a3b8;
   cursor: pointer;
   transition: all 0.3s ease;
   margin-left: 12px;
@@ -170,7 +174,7 @@ a {
 }
 
 .btn-share-title:hover {
-  color: #fff;
+  color: #1a2a2e;
   transform: scale(1.1);
 }
 
@@ -196,66 +200,70 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* DOTS */
-.dots-container {
+/* ============================================================
+   DOTS - EN BAS DE LA PAGE (HORS CARTE)
+   ============================================================ */
+.dots-container-outside {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 16px;
-  padding: 4px 0;
+  padding: 12px 0 8px 0;
   width: 100%;
+  max-width: 950px;
   flex-shrink: 0;
+  margin-top: 6px;
 }
 
-.dot {
+.dots-container-outside .dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: #d4d0ca;
   transition: all 0.3s ease;
   cursor: pointer;
   border: none;
+  padding: 0;
 }
 
-.dot.active {
+.dots-container-outside .dot.active {
   background: #2d6a4f;
   transform: scale(1.25);
   box-shadow: 0 0 0 4px rgba(45, 106, 79, 0.2);
 }
 
-.dot.done {
-  background: rgba(255, 255, 255, 0.7);
+.dots-container-outside .dot.done {
+  background: #a0c4a8;
   transform: scale(0.85);
 }
 
-.dot.quiz-dot {
-  background: rgba(255, 255, 255, 0.3);
+.dots-container-outside .dot.quiz-dot {
+  background: #d4c9b8;
 }
 
-.dot.quiz-dot.active {
+.dots-container-outside .dot.quiz-dot.active {
   background: #b8956a;
-  box-shadow: 0 0 0 4px rgba(184, 149, 106, 0.2);
+  box-shadow: 0 0 0 4px rgba(184, 149, 106, 0.1);
 }
 
-.dot.memo-dot {
-  background: rgba(255, 255, 255, 0.3);
+.dots-container-outside .dot.memo-dot {
+  background: #c0cdd4;
 }
 
-.dot.memo-dot.active {
+.dots-container-outside .dot.memo-dot.active {
   background: #7a9aaa;
-  box-shadow: 0 0 0 4px rgba(122, 154, 170, 0.2);
+  box-shadow: 0 0 0 4px rgba(122, 154, 170, 0.1);
 }
 
-.dot.question-dot {
-  background: rgba(255, 255, 255, 0.3);
+.dots-container-outside .dot.question-dot {
+  background: #d4c9b8;
 }
 
-.dot.question-dot.active {
+.dots-container-outside .dot.question-dot.active {
   background: #b89a82;
-  box-shadow: 0 0 0 4px rgba(184, 154, 130, 0.2);
+  box-shadow: 0 0 0 4px rgba(184, 154, 130, 0.1);
 }
 
-.dot.locked {
+.dots-container-outside .dot.locked {
   opacity: 0.2;
   cursor: not-allowed;
 }
@@ -355,11 +363,11 @@ a {
   width: 100%;
   text-align: center;
   font-size: 13px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #b8b0a8;
   font-weight: 400;
   padding-top: 6px;
   margin-top: auto;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid #edeae5;
   letter-spacing: 0.3px;
   font-family: 'Lora', 'Georgia', serif;
   flex-shrink: 0;
@@ -372,8 +380,8 @@ a {
 }
 
 .quiz-container h3 {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: #1a1a1a;
+  border-bottom: 1px solid #edeae5;
+  color: #1a2a2e;
   font-size: 22px;
   font-weight: 400;
   margin-bottom: 16px;
@@ -384,11 +392,11 @@ a {
 }
 
 .quiz-question {
-  background: rgba(255, 255, 255, 0.2);
+  background: #f8f6f2;
   border-radius: 10px;
   padding: 14px 18px;
   margin-bottom: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #edeae5;
   transition: opacity 0.3s;
 }
 
@@ -425,7 +433,7 @@ a {
 }
 
 .quiz-question label:hover:not(.verrouille) {
-  background: rgba(255, 255, 255, 0.3);
+  background: #edeae5;
 }
 
 .quiz-question input[type="radio"] {
@@ -440,12 +448,12 @@ a {
 }
 
 .quiz-question label.correct {
-  background: rgba(45, 106, 79, 0.3);
+  background: #e8f5e9;
   border-left: 3px solid #2d6a4f;
 }
 
 .quiz-question label.incorrect {
-  background: rgba(198, 40, 40, 0.15);
+  background: #fde8e8;
   border-left: 3px solid #c62828;
 }
 
@@ -461,28 +469,28 @@ a {
 
 .quiz-feedback.correct {
   display: block;
-  background: rgba(45, 106, 79, 0.2);
-  color: #1a4a3a;
+  background: #e8f5e9;
+  color: #2d6a4f;
 }
 
 .quiz-feedback.incorrect {
   display: block;
-  background: rgba(198, 40, 40, 0.1);
-  color: #8a2a2a;
+  background: #fde8e8;
+  color: #c62828;
 }
 
 #quiz-result {
-  background: rgba(255, 255, 255, 0.2);
+  background: #f8f6f2;
   border-radius: 8px;
   display: none;
   margin-top: 12px;
   padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #edeae5;
 }
 
 #quiz-result p {
   font-size: 15px;
-  color: #1a1a1a;
+  color: #1a2a2e;
   margin-bottom: 2px;
   letter-spacing: 0.2px;
   font-family: 'Lora', 'Georgia', serif;
@@ -496,14 +504,14 @@ a {
 /* QUESTION OUVERTE */
 #openQuestion {
   width: 100%;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid #edeae5;
   margin-top: 16px;
   padding-top: 14px;
 }
 
 #openQuestion h3 {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  color: #1a1a1a;
+  border-bottom: 1px solid #edeae5;
+  color: #1a2a2e;
   font-size: 20px;
   font-weight: 400;
   margin-bottom: 12px;
@@ -515,7 +523,7 @@ a {
 
 #openQuestion h4 {
   border-left: 3px solid #b8956a;
-  color: #1a1a1a;
+  color: #1a2a2e;
   font-size: 17px;
   font-weight: 400;
   line-height: 1.6;
@@ -528,13 +536,13 @@ a {
 #openQuestion textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  border: 1px solid #e2e0db;
   border-radius: 10px;
   font-size: 15px;
   font-family: 'Lora', 'Georgia', serif;
   resize: vertical;
   min-height: 100px;
-  background: rgba(255, 255, 255, 0.3);
+  background: #faf9f7;
   transition: border-color 0.3s;
   letter-spacing: 0.2px;
   color: #1a1a1a;
@@ -557,7 +565,7 @@ a {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 2px;
-  color: rgba(255, 255, 255, 0.7);
+  color: #94a3b8;
   font-weight: 500;
   margin-bottom: 8px;
   display: block;
@@ -568,10 +576,10 @@ a {
   font-size: 21px;
   font-weight: 400;
   color: #1a2a2e;
-  background: rgba(255, 255, 255, 0.2);
+  background: #f8f6f2;
   padding: 20px 28px;
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid #edeae5;
   display: inline-block;
   max-width: 90%;
   line-height: 1.7;
@@ -588,7 +596,7 @@ a {
   padding: 16px 0 8px;
   font-family: 'Lora', 'Georgia', serif;
   letter-spacing: 0.5px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  border-top: 1px solid #edeae5;
   margin-top: 12px;
 }
 
@@ -618,7 +626,7 @@ a {
   width: 100%;
   text-align: center;
   font-size: 13px;
-  color: rgba(0, 0, 0, 0.5);
+  color: #b8956a;
   font-style: italic;
   padding-top: 4px;
   letter-spacing: 0.2px;
@@ -631,7 +639,7 @@ a {
   text-align: center;
   padding: 40px 20px;
   font-size: 16px;
-  color: rgba(0, 0, 0, 0.5);
+  color: #b8b0a8;
   font-family: 'Lora', 'Georgia', serif;
   flex: 1;
   display: flex;
@@ -644,7 +652,7 @@ a {
   display: inline-block;
   width: 32px;
   height: 32px;
-  border: 3px solid rgba(255, 255, 255, 0.3);
+  border: 3px solid #edeae5;
   border-top-color: #2d6a4f;
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -667,7 +675,7 @@ a {
 }
 
 .erreur-article h2 {
-  color: #1a1a1a;
+  color: #1a2a2e;
   font-size: 22px;
   font-weight: 400;
   font-family: 'Lora', 'Georgia', serif;
@@ -675,7 +683,7 @@ a {
 }
 
 .erreur-article p {
-  color: rgba(0, 0, 0, 0.5);
+  color: #94a3b8;
   font-size: 16px;
 }
 
@@ -771,29 +779,192 @@ a {
   border-radius: 16px;
 }
 
-/* RESPONSIVE */
+/* ============================================================
+   SYSTÈME D'ANNOTATION
+   ============================================================ */
+
+/* Bouton annoter */
+.btn-annotate {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 4px 8px;
+  line-height: 1;
+  color: #94a3b8;
+  position: relative;
+  font-family: 'Lora', 'Georgia', serif;
+}
+
+.btn-annotate:hover {
+  transform: scale(1.15);
+}
+
+.btn-annotate.has-note {
+  color: #2d6a4f;
+}
+
+.btn-annotate.has-note::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  width: 8px;
+  height: 8px;
+  background: #2d6a4f;
+  border-radius: 50%;
+  border: 2px solid #fff;
+}
+
+/* Couleur spéciale (titre jaune) */
+.btn-annotate.special {
+  color: rgb(255, 241, 116);
+}
+
+.btn-annotate.special:hover {
+  color: #fff3a0;
+}
+
+.btn-annotate.special.has-note::after {
+  background: rgb(255, 241, 116);
+}
+
+/* Couleur par défaut (titre gris) */
+.btn-annotate.default {
+  color: #94a3b8;
+}
+
+.btn-annotate.default:hover {
+  color: #1a2a2e;
+}
+
+.btn-annotate.default.has-note {
+  color: #2d6a4f;
+}
+
+/* Popup d'annotation */
+.annotate-popup {
+  position: fixed;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%) scale(0.9);
+  background: #ffffff;
+  border-radius: 16px;
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: all 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 90%;
+  max-width: 500px;
+  overflow: hidden;
+}
+
+.annotate-popup.open {
+  opacity: 1;
+  pointer-events: auto;
+  transform: translateX(-50%) scale(1);
+}
+
+.annotate-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 20px 10px 20px;
+  border-bottom: 1px solid #edeae5;
+}
+
+.annotate-header span {
+  font-size: 14px;
+  font-weight: 500;
+  color: #1a2a2e;
+  font-family: 'Lora', 'Georgia', serif;
+}
+
+.annotate-close {
+  background: transparent;
+  border: none;
+  font-size: 20px;
+  color: #94a3b8;
+  cursor: pointer;
+  padding: 0 4px;
+  transition: color 0.3s;
+  line-height: 1;
+}
+
+.annotate-close:hover {
+  color: #1a2a2e;
+}
+
+#annotateTextarea {
+  width: 100%;
+  padding: 14px 20px;
+  border: none;
+  font-size: 15px;
+  font-family: 'Lora', 'Georgia', serif;
+  resize: vertical;
+  min-height: 120px;
+  background: #faf9f7;
+  color: #1a1a1a;
+  line-height: 1.7;
+  outline: none;
+}
+
+#annotateTextarea:focus {
+  background: #ffffff;
+}
+
+.annotate-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 20px 14px 20px;
+  border-top: 1px solid #edeae5;
+  background: #faf9f7;
+}
+
+.annotate-auto-save {
+  font-size: 12px;
+  color: #94a3b8;
+  font-family: 'Lora', 'Georgia', serif;
+}
+
+.annotate-status {
+  font-size: 12px;
+  color: #2d6a4f;
+  font-family: 'Lora', 'Georgia', serif;
+  transition: opacity 0.3s;
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 768px) {
   .blog-article {
-    height: auto;
-    max-height: 90vh;
-    min-height: 70vh;
-    padding: 48px 16px 20px;
+    min-height: 420px;
+    max-height: calc(100vh - 100px);
+    padding: 24px 16px 18px;
+    border-radius: 20px;
   }
   .blog-article h1 {
-    font-size: 30px;
+    font-size: 28px;
+    margin: 0 0 10px 0;
   }
   .contenu-slide {
     font-size: 19px;
+    padding: 8px 0;
   }
   .slide-memo .contenu-memo {
     font-size: 18px;
     padding: 16px 20px;
     max-width: 100%;
   }
-  .dots-container {
+  .dots-container-outside {
     gap: 8px;
+    padding: 8px 0 4px 0;
   }
-  .dot {
+  .dots-container-outside .dot {
     width: 9px;
     height: 9px;
   }
@@ -826,20 +997,65 @@ a {
   .tableau-slide {
     border-spacing: 8px;
   }
+  .btn-retour {
+    top: 12px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    font-size: 18px;
+  }
+  .page-article {
+    padding: 0 12px;
+  }
+  .post-label {
+    font-size: 11px;
+    padding: 2px 12px;
+  }
+  .annotate-popup {
+    bottom: 70px;
+    width: 95%;
+  }
+  #annotateTextarea {
+    min-height: 100px;
+    font-size: 14px;
+    padding: 12px 16px;
+  }
+  .annotate-header {
+    padding: 10px 16px 8px 16px;
+  }
+  .annotate-header span {
+    font-size: 13px;
+  }
+  .btn-annotate {
+    font-size: 20px;
+  }
+  .annotate-footer {
+    padding: 6px 16px 10px 16px;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+  .annotate-auto-save {
+    font-size: 11px;
+  }
+  .annotate-status {
+    font-size: 11px;
+  }
 }
 
 @media (max-width: 480px) {
   .blog-article {
-    height: auto;
-    max-height: 92vh;
-    min-height: 60vh;
-    padding: 44px 12px 16px;
+    min-height: 360px;
+    max-height: calc(100vh - 100px);
+    padding: 18px 12px 14px;
+    border-radius: 16px;
   }
   .blog-article h1 {
-    font-size: 24px;
+    font-size: 22px;
+    margin: 0 0 8px 0;
   }
   .contenu-slide {
     font-size: 17px;
+    padding: 6px 0;
   }
   .slide-memo .contenu-memo {
     font-size: 17px;
@@ -860,11 +1076,11 @@ a {
     width: 100%;
   }
   .btn-retour {
-    top: 12px;
-    right: 14px;
-    width: 34px;
-    height: 34px;
-    font-size: 16px;
+    top: 10px;
+    right: 12px;
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
   }
   .post-meta {
     font-size: 11px;
@@ -882,5 +1098,73 @@ a {
   }
   .tableau-slide {
     border-spacing: 6px;
+  }
+  .dots-container-outside {
+    gap: 6px;
+    padding: 6px 0 3px 0;
+  }
+  .dots-container-outside .dot {
+    width: 8px;
+    height: 8px;
+  }
+  .page-article {
+    padding: 0 8px;
+  }
+  .post-label {
+    font-size: 10px;
+    padding: 1px 10px;
+    margin-bottom: 2px;
+  }
+  .compteur {
+    font-size: 11px;
+    padding-top: 4px;
+  }
+  .lock-message {
+    font-size: 11px;
+    padding-top: 2px;
+  }
+  .post-footer {
+    margin-top: 6px;
+    padding-top: 6px;
+  }
+  .quiz-container h3 {
+    font-size: 18px;
+    margin-bottom: 12px;
+  }
+  .quiz-question {
+    padding: 12px 14px;
+  }
+  .confirmation-fin {
+    font-size: 15px;
+    padding: 12px 0 6px;
+  }
+  .annotate-popup {
+    bottom: 60px;
+    width: 98%;
+    border-radius: 12px;
+  }
+  #annotateTextarea {
+    min-height: 80px;
+    font-size: 13px;
+    padding: 10px 14px;
+  }
+  .annotate-header span {
+    font-size: 12px;
+  }
+  .btn-annotate {
+    font-size: 18px;
+    padding: 2px 6px;
+  }
+  .annotate-auto-save {
+    font-size: 10px;
+  }
+  .annotate-status {
+    font-size: 10px;
+  }
+  .annotate-header {
+    padding: 8px 12px 6px 12px;
+  }
+  .annotate-footer {
+    padding: 4px 12px 8px 12px;
   }
 }
