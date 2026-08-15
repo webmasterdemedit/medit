@@ -470,14 +470,7 @@ function updateSlides() {
   } else if (slideIndex === slidesData.length - 1 && current && current.type !== 'memo' && reponseValidee) {
     afficherMessageFin();
   }
-
-  // ============================================================
-  // AJOUT : CHARGER LA NOTE DE LA SLIDE ACTUELLE
-  // ============================================================
-  chargerNote();
-  updateNoteButtonColor();
 }
-
 function ajouterBoutonAppris() {}
 
 function afficherMessageFin() {
