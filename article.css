@@ -42,15 +42,17 @@ a {
   margin: 0;
   padding: 0 16px;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 12px;
 }
 
 /* CARTE PRINCIPALE - PAR DÉFAUT (GRIS/BLANC) */
 .blog-article {
   width: 100%;
   height: auto;
-  max-height: calc(100vh - 32px);
+  max-height: calc(100vh - 120px);
   border-radius: 24px;
   padding: 48px 36px 32px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
@@ -60,6 +62,8 @@ a {
   overflow: hidden;
   transition: background 0.3s ease;
   background: #ffffff;
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* CARTE SPÉCIALE - Apprendre à lire (gérée par JS) */
@@ -196,22 +200,24 @@ a {
   border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-/* DOTS */
+/* ============================================================
+   POINTS (DOTS) - HORS DE LA CARTE
+   ============================================================ */
 .dots-container {
   display: flex;
   justify-content: center;
   gap: 10px;
-  margin-bottom: 16px;
   padding: 4px 0;
   width: 100%;
   flex-shrink: 0;
+  flex-grow: 0;
 }
 
 .dot {
   width: 10px;
   height: 10px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.4);
+  background: rgba(0, 0, 0, 0.15);
   transition: all 0.3s ease;
   cursor: pointer;
   border: none;
@@ -224,12 +230,12 @@ a {
 }
 
 .dot.done {
-  background: rgba(255, 255, 255, 0.7);
+  background: rgba(0, 0, 0, 0.25);
   transform: scale(0.85);
 }
 
 .dot.quiz-dot {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .dot.quiz-dot.active {
@@ -238,7 +244,7 @@ a {
 }
 
 .dot.memo-dot {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .dot.memo-dot.active {
@@ -247,7 +253,7 @@ a {
 }
 
 .dot.question-dot {
-  background: rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.15);
 }
 
 .dot.question-dot.active {
@@ -930,6 +936,41 @@ a {
 
 /* RESPONSIVE - AJOUT POUR L'ANNOTATION */
 @media (max-width: 768px) {
+  .page-article {
+    padding: 0 12px;
+    gap: 8px;
+  }
+
+  .blog-article {
+    padding: 32px 20px 24px;
+    max-height: calc(100vh - 100px);
+    border-radius: 18px;
+  }
+
+  .blog-article h1 {
+    font-size: 30px;
+  }
+
+  .contenu-slide {
+    font-size: 20px;
+    padding: 8px 0;
+  }
+
+  .contenu-slide:has(.arabic),
+  .contenu-slide.arabic,
+  .contenu-slide[lang="ar"] {
+    font-size: 28px;
+  }
+
+  .dots-container {
+    gap: 8px;
+  }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+  }
+
   .annotate-popup {
     bottom: 70px;
     width: 95%;
@@ -959,9 +1000,149 @@ a {
   .annotate-status {
     font-size: 11px;
   }
+
+  .btn-retour {
+    width: 34px;
+    height: 34px;
+    font-size: 17px;
+    top: 12px;
+    right: 14px;
+  }
+
+  .post-footer {
+    padding-top: 8px;
+    margin-top: 8px;
+  }
+
+  .post-meta {
+    font-size: 11px;
+  }
+
+  .tableau-slide td {
+    font-size: 40px;
+    padding: 16px 8px;
+  }
+  .tableau-slide .cellule-arabe {
+    font-size: 44px;
+  }
 }
 
 @media (max-width: 480px) {
+  .page-article {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  .blog-article {
+    padding: 24px 14px 18px;
+    max-height: calc(100vh - 90px);
+    border-radius: 14px;
+  }
+
+  .blog-article h1 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+
+  .contenu-slide {
+    font-size: 17px;
+    padding: 6px 0;
+    line-height: 1.8;
+  }
+
+  .contenu-slide:has(.arabic),
+  .contenu-slide.arabic,
+  .contenu-slide[lang="ar"] {
+    font-size: 24px;
+    line-height: 2;
+  }
+
+  .dots-container {
+    gap: 6px;
+    padding: 2px 0;
+  }
+
+  .dot {
+    width: 7px;
+    height: 7px;
+  }
+
+  .dot.active {
+    transform: scale(1.2);
+    box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.2);
+  }
+
+  .btn-retour {
+    width: 30px;
+    height: 30px;
+    font-size: 15px;
+    top: 10px;
+    right: 12px;
+  }
+
+  .btn-share-title {
+    font-size: 20px;
+    margin-left: 6px;
+  }
+
+  .post-label {
+    font-size: 10px;
+    padding: 1px 10px;
+  }
+
+  .compteur {
+    font-size: 11px;
+    padding-top: 4px;
+  }
+
+  .lock-message {
+    font-size: 11px;
+  }
+
+  .quiz-container h3 {
+    font-size: 18px;
+  }
+  .quiz-question p {
+    font-size: 15px;
+  }
+  .quiz-question label {
+    font-size: 13px;
+    padding: 4px 10px;
+  }
+
+  #openQuestion h3 {
+    font-size: 17px;
+  }
+  #openQuestion h4 {
+    font-size: 15px;
+    padding-left: 12px;
+  }
+  #openQuestion textarea {
+    font-size: 13px;
+    min-height: 70px;
+    padding: 10px 12px;
+  }
+
+  .btn-nav {
+    padding: 8px 20px;
+    font-size: 12px;
+  }
+
+  .post-footer {
+    padding-top: 6px;
+    margin-top: 6px;
+    gap: 8px;
+  }
+
+  .post-meta {
+    font-size: 10px;
+  }
+
+  .btn-annotate {
+    font-size: 16px;
+    padding: 2px 4px;
+  }
+
   .annotate-popup {
     bottom: 60px;
     width: 95%;
@@ -990,5 +1171,17 @@ a {
   }
   .annotate-footer {
     padding: 4px 12px 8px 12px;
+  }
+
+  .tableau-slide td {
+    font-size: 28px;
+    padding: 10px 6px;
+    border-radius: 10px;
+  }
+  .tableau-slide .cellule-arabe {
+    font-size: 32px;
+  }
+  .tableau-slide {
+    border-spacing: 6px;
   }
 }
