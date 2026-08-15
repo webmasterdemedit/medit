@@ -44,7 +44,7 @@ function chargerFontMap() {
   }
   
   chargementFontMap = true;
-  return fetch('/medit/fonts/font-map.json')
+  return fetch('/medit/font/font-map.json')
     .then(function(r) { return r.json(); })
     .then(function(data) {
       fontMap = data;
