@@ -1109,7 +1109,12 @@ function sauvegarderAnnotation(texte) {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) return;
 
-  // Mettre à jour l'indicateur (stylo vert)
+  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
+  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
+    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
+    return;
+  }
+
   var btn = document.getElementById('btnAnnotate');
   if (btn) {
     if (texte && texte.trim().length > 0) {
@@ -1119,17 +1124,14 @@ function sauvegarderAnnotation(texte) {
     }
   }
 
-  // Sauvegarde locale
   var cache = DataManager.getCacheForce(nom);
   if (!cache) cache = {};
   if (!cache.annotations) cache.annotations = {};
   if (!cache.annotations[postId]) cache.annotations[postId] = {};
   
-  // Sauvegarder le texte pour cette slide
   cache.annotations[postId][slideIndex] = texte;
   DataManager.setCache(nom, cache);
 
-  // Sauvegarde serveur (silencieuse, pas de message)
   var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation&nom=' + encodeURIComponent(nom) +
     '&articleId=' + encodeURIComponent(postId) +
     '&slide=' + encodeURIComponent(slideIndex) +
