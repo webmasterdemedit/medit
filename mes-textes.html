@@ -251,18 +251,23 @@
     }
 
     .carte-post .meta .badge-icone {
-      font-size: 13px;
+      font-size: 12px;
       display: inline-block;
       background: #f4f2ed;
-      padding: 1px 8px;
+      padding: 1px 10px;
       border-radius: 12px;
       color: #64748b;
       font-weight: 500;
     }
 
-    .carte-post .meta .badge-icone.quiz {
-      background: #e8f0fe;
-      color: #1a5a8a;
+    .carte-post .meta .badge-icone.quiz-oui {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .carte-post .meta .badge-icone.quiz-non {
+      background: #f5f0eb;
+      color: #b8b0a8;
     }
 
     .carte-post .meta .badge-icone.question {
@@ -348,6 +353,17 @@
 
     .carte-post .statut .date-validation.visible {
       display: block;
+    }
+
+    .carte-post .statut .date-label {
+      font-size: 11px;
+      color: #b8b0a8;
+      display: none;
+      letter-spacing: 0.2px;
+    }
+
+    .carte-post .statut .date-label.visible {
+      display: inline;
     }
 
     /* ============================================================
@@ -764,16 +780,24 @@
                 var hasQuestion = post.hasQuestion || false;
                 var mots = post.mots || 0;
 
-                var badgesHtml = '';
+                // Quiz : Oui / Non
+                var quizHtml = '';
                 if (hasQuiz) {
-                    badgesHtml += '<span class="badge-icone quiz">📝 Quiz</span>';
+                    quizHtml = '<span class="badge-icone quiz-oui">Quiz : Oui</span>';
+                } else {
+                    quizHtml = '<span class="badge-icone quiz-non">Quiz : Non</span>';
                 }
+
+                // Question si présente
+                var questionHtml = '';
                 if (hasQuestion) {
-                    badgesHtml += '<span class="badge-icone question">✍️ Question</span>';
+                    questionHtml = '<span class="badge-icone question">✍️ Question</span>';
                 }
 
                 var badgeHtml = '';
                 var dateHtml = '';
+                var dateLabelHtml = '';
+                
                 if (estLu) {
                     badgeHtml = '<span class="badge lu">✓ Lu</span>';
                     if (dateValidation) {
@@ -785,6 +809,7 @@
                             var heureStr = d.toLocaleTimeString('fr-FR', {
                                 hour: '2-digit', minute: '2-digit'
                             });
+                            dateLabelHtml = '<span class="date-label visible">Lu le</span>';
                             dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
                         }
                     }
@@ -824,7 +849,7 @@
                 }
 
                 // ============================================================
-                // CARTE ENTIÈRE CLICKABLE - Suppression du bouton "Ouvrir"
+                // CARTE ENTIÈRE CLICKABLE
                 // ============================================================
                 contenuHtml += `
                     <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
@@ -832,13 +857,15 @@
                             <div class="titre">${post.titre}</div>
                             <div class="meta">
                                 <span class="niveau-badge">Niveau ${post.niveau}</span>
-                                ${badgesHtml}
+                                ${quizHtml}
+                                ${questionHtml}
                                 ${motsHtml}
                                 ${retenirHtml}
                             </div>
                         </div>
                         <div class="statut">
                             ${badgeHtml}
+                            ${dateLabelHtml}
                             ${dateHtml}
                         </div>
                     </div>
