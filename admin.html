@@ -37,7 +37,7 @@
     .tab-content.active { display: block; }
 
     .grille { display: flex; flex-direction: column; gap: 10px; }
-    .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; }
+    .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; }
     .carte-post .infos { display: flex; flex-direction: column; gap: 4px; }
     .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; }
     .carte-post .meta { font-size: 12px; color: #6b7a8a; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
@@ -197,7 +197,6 @@
 
   <script>
     var tousLesPosts = [];
-    var postsFiltres = [];
     var ongletActuel = 'tous';
     var modeEdition = false;
 
@@ -245,6 +244,7 @@
       document.getElementById('compteurPublies').textContent = publies;
       document.getElementById('compteurBrouillons').textContent = brouillons;
 
+      var postsFiltres = [];
       if (ongletActuel === 'tous') {
         postsFiltres = tousLesPosts.slice();
       } else if (ongletActuel === 'publies') {
@@ -279,9 +279,9 @@
         html += `
           <div class="carte-post">
             <div class="infos">
-              <div class="titre">${post.titre}</div>
+              <div class="titre">${post.titre || 'Sans titre'}</div>
               <div class="meta">
-                <span>Niveau ${post.niveau}</span>
+                <span>Niveau ${post.niveau || 0}</span>
                 <span>${post.categorie || 'Sans catégorie'}</span>
                 <span class="badge ${statutClass}">${statutLabel}</span>
                 ${post.mots ? '<span>' + post.mots + ' mots</span>' : ''}
@@ -367,34 +367,63 @@
       msg.style.display = 'none';
 
       if (modeEdition && id) {
-        alert('⚠️ La modification sera disponible prochainement.');
-        btn.textContent = 'Mettre à jour';
-        btn.disabled = false;
-        return;
+        // MODIFICATION
+        DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenu, question, statut)
+          .then(function() {
+            msg.textContent = '✅ Post mis à jour avec succès !';
+            msg.style.display = 'block';
+            msg.className = 'message success';
+            btn.textContent = 'Mettre à jour';
+            btn.disabled = false;
+            fermerModalAjout();
+            chargerAdmin();
+          })
+          .catch(function(err) {
+            msg.textContent = '❌ Erreur : ' + err.message;
+            msg.style.display = 'block';
+            msg.className = 'message error';
+            btn.textContent = 'Mettre à jour';
+            btn.disabled = false;
+          });
+      } else {
+        // AJOUT
+        DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
+          .then(function() {
+            msg.textContent = '✅ Post créé avec succès !';
+            msg.style.display = 'block';
+            msg.className = 'message success';
+            btn.textContent = 'Enregistrer';
+            btn.disabled = false;
+            fermerModalAjout();
+            chargerAdmin();
+          })
+          .catch(function(err) {
+            msg.textContent = '❌ Erreur : ' + err.message;
+            msg.style.display = 'block';
+            msg.className = 'message error';
+            btn.textContent = 'Enregistrer';
+            btn.disabled = false;
+          });
       }
-
-      DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
-        .then(function() {
-          msg.textContent = '✅ Post créé avec succès !';
-          msg.style.display = 'block';
-          msg.className = 'message success';
-          btn.textContent = 'Enregistré';
-          btn.disabled = false;
-          fermerModalAjout();
-          chargerAdmin();
-        })
-        .catch(function(err) {
-          msg.textContent = '❌ Erreur : ' + err.message;
-          msg.style.display = 'block';
-          msg.className = 'message error';
-          btn.textContent = 'Enregistrer';
-          btn.disabled = false;
-        });
     }
 
     function supprimerPost(postId) {
       if (!confirm('Supprimer ce texte définitivement ?')) return;
-      alert('⚠️ La suppression sera disponible prochainement.');
+
+      var btn = document.querySelector('.btn-supprimer');
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      DataManager.supprimerPost(postId)
+        .then(function() {
+          alert('✅ Post supprimé avec succès !');
+          chargerAdmin();
+        })
+        .catch(function(err) {
+          alert('❌ Erreur : ' + err.message);
+          btn.textContent = '✕';
+          btn.disabled = false;
+        });
     }
 
     function demarrer() {
