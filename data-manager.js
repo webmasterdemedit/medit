@@ -182,6 +182,55 @@ var DataManager = {
                     throw new Error(data.message || 'Erreur lors de la création');
                 }
             });
+    },
+
+    // === MODIFIER UN POST (admin) ===
+    modifierPost: function(id, titre, niveau, categorie, contenu, question, statut) {
+        var userId = localStorage.getItem('etudiant_id');
+        if (!userId) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=updatePost' +
+            '&id=' + encodeURIComponent(id) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&niveau=' + encodeURIComponent(niveau) +
+            '&categorie=' + encodeURIComponent(categorie) +
+            '&contenu=' + encodeURIComponent(contenu) +
+            '&question=' + encodeURIComponent(question) +
+            '&statut=' + encodeURIComponent(statut);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la modification');
+                }
+            });
+    },
+
+    // === SUPPRIMER UN POST (admin) ===
+    supprimerPost: function(id) {
+        var userId = localStorage.getItem('etudiant_id');
+        if (!userId) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=deletePost&id=' + encodeURIComponent(id);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la suppression');
+                }
+            });
     }
 };
 
