@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ajouter un texte</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✎</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; background-color: #f3f0e9; }
+    a { text-decoration: none; color: inherit; }
+
+    .page-ajout { max-width: 800px; margin: 40px auto; padding: 0 20px 40px; width: 100%; flex: 1; }
+    .page-ajout h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; margin-bottom: 4px; color: #2c2c2c; }
+    .page-ajout .sous-titre { font-size: 15px; color: #6b7a8a; margin-bottom: 24px; font-style: italic; }
+
+    .carte-ajout { background: #f3f0e9; border-radius: 4px; padding: 32px 36px; border: 1px solid #d1ccc4; margin-bottom: 24px; }
+    .carte-ajout label { display: block; font-size: 13px; color: #6b7a8a; margin-top: 16px; margin-bottom: 4px; font-weight: 500; }
+    .carte-ajout label:first-of-type { margin-top: 0; }
+    .carte-ajout input[type="text"], .carte-ajout input[type="number"], .carte-ajout textarea, .carte-ajout select { width: 100%; padding: 10px 14px; border: 1px solid #d1ccc4; border-radius: 8px; font-size: 14px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; box-sizing: border-box; }
+    .carte-ajout input:focus, .carte-ajout textarea:focus, .carte-ajout select:focus { outline: none; border-color: #b8b0a8; }
+    .carte-ajout textarea { resize: vertical; min-height: 120px; }
+
+    .row { display: flex; gap: 20px; flex-wrap: wrap; }
+    .row > * { flex: 1; min-width: 150px; }
+
+    /* QUIZ */
+    .quiz-block { background: rgba(0,0,0,0.02); border: 1px solid #d1ccc4; border-radius: 8px; padding: 16px; margin-top: 12px; }
+    .quiz-question { border-bottom: 1px solid #e8e5e0; padding-bottom: 16px; margin-bottom: 16px; }
+    .quiz-question:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .quiz-question .q-titre { font-weight: 500; color: #2c2c2c; font-size: 14px; margin-bottom: 6px; }
+    .quiz-reponses { display: flex; flex-wrap: wrap; gap: 8px 16px; margin-top: 6px; }
+    .quiz-reponse { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #2c2c2c; }
+    .quiz-reponse input[type="text"] { width: 120px; padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 6px; font-size: 13px; background: #faf8f5; }
+    .quiz-reponse input[type="radio"] { accent-color: #2c2c2c; width: 16px; height: 16px; cursor: pointer; }
+    .quiz-reponse label { font-size: 13px; color: #6b7a8a; cursor: pointer; margin: 0; }
+
+    .btn-add { padding: 6px 16px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin-top: 8px; }
+    .btn-add:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    /* 3 champs à retenir */
+    .retenir-champs { display: flex; gap: 12px; flex-wrap: wrap; }
+    .retenir-champs input { flex: 1; min-width: 80px; padding: 8px 12px; border: 1px solid #d1ccc4; border-radius: 6px; font-size: 14px; background: #faf8f5; color: #2c2c2c; }
+    .retenir-champs input:focus { outline: none; border-color: #b8b0a8; }
+
+    .btn-groupe { display: flex; align-items: center; gap: 16px; margin-top: 24px; flex-wrap: wrap; }
+    .btn-submit { padding: 10px 32px; background: transparent; color: #2c2c2c; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 15px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+    .btn-submit:hover { background: #e8e5e0; }
+    .btn-retour { padding: 10px 32px; background: transparent; color: #6b7a8a; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 15px; cursor: pointer; font-family: 'Segoe UI', sans-serif; text-decoration: none; }
+    .btn-retour:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    .brouillon-check { display: flex; align-items: center; gap: 6px; font-size: 14px; color: #6b7a8a; }
+    .brouillon-check input[type="checkbox"] { accent-color: #2c2c2c; width: 16px; height: 16px; cursor: pointer; }
+
+    .date-display { font-size: 14px; color: #6b7a8a; margin-bottom: 16px; font-style: italic; }
+
+    .message { margin-top: 16px; font-size: 14px; text-align: center; padding: 10px 16px; border-radius: 4px; display: none; }
+    .message.success { display: block; color: #2c2c2c; background: #e8e5e0; }
+    .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
+
+    @media (max-width: 640px) {
+      .page-ajout { padding: 0 16px 30px; margin: 20px auto; }
+      .carte-ajout { padding: 20px 16px; }
+      .row { flex-direction: column; gap: 0; }
+      .btn-groupe { flex-direction: column; align-items: stretch; }
+      .btn-submit, .btn-retour { text-align: center; }
+      .brouillon-check { justify-content: center; }
+      .retenir-champs { flex-direction: column; }
+      .quiz-reponses { flex-direction: column; }
+      .quiz-reponse input[type="text"] { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        if (typeof mettreAJourHeader === 'function') mettreAJourHeader();
+      })
+      .catch(function(error) { console.error('Erreur chargement header:', error); });
+  </script>
+
+  <div class="page-ajout">
+
+    <h1>Ajouter un texte</h1>
+    <p class="sous-titre">Remplissez les champs ci-dessous.</p>
+
+    <div class="carte-ajout">
+
+      <!-- DATE AUTO -->
+      <div class="date-display" id="dateDisplay"></div>
+
+      <form id="formAjoutPost" onsubmit="return false;">
+
+        <label>Titre *</label>
+        <input type="text" id="inputTitre" placeholder="Titre du texte" required>
+
+        <div class="row">
+          <div>
+            <label>Niveau *</label>
+            <select id="inputNiveau">
+              <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+              <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+              <option value="7">7</option><option value="8">8</option><option value="9">9</option>
+              <option value="10">10</option><option value="11">11</option><option value="12">12</option>
+            </select>
+          </div>
+          <div>
+            <label>Catégorie</label>
+            <select id="inputCategorie">
+              <option value="Foi">Foi</option>
+              <option value="Rappels divers">Rappels divers</option>
+              <option value="Sourate">Sourate</option>
+              <option value="Hadith">Hadith</option>
+              <option value="Méditation">Méditation</option>
+              <option value="Invocation">Invocation</option>
+              <option value="Histoire">Histoire</option>
+              <option value="Morale">Morale</option>
+              <option value="Autre">Autre</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Contenu *</label>
+        <textarea id="inputContenu" rows="8" placeholder="Le texte de la méditation..."></textarea>
+
+        <!-- ============================================================ -->
+        <!-- QUIZ / QCM -->
+        <!-- ============================================================ -->
+        <label>Quiz / QCM</label>
+        <div id="quizContainer">
+          <div class="quiz-block" id="quizBlock">
+            <!-- Les questions seront ajoutées ici -->
+          </div>
+          <button type="button" class="btn-add" onclick="ajouterQuestion()">+ Ajouter une question</button>
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- QUESTIONS OUVERTES -->
+        <!-- ============================================================ -->
+        <label>Questions ouvertes</label>
+        <div id="openQuestionsContainer">
+          <div class="open-question-item" style="margin-bottom:8px;">
+            <input type="text" class="open-question-input" placeholder="Question ouverte..." style="width:100%;padding:10px 14px;border:1px solid #d1ccc4;border-radius:8px;font-size:14px;background:#faf8f5;color:#2c2c2c;">
+          </div>
+        </div>
+        <button type="button" class="btn-add" onclick="ajouterQuestionOuverte()">+ Ajouter une question ouverte</button>
+
+        <!-- ============================================================ -->
+        <!-- À RETENIR (3 champs) -->
+        <!-- ============================================================ -->
+        <label>À retenir</label>
+        <div class="retenir-champs">
+          <input type="text" id="retenir1" placeholder="Mot 1">
+          <input type="text" id="retenir2" placeholder="Mot 2">
+          <input type="text" id="retenir3" placeholder="Mot 3">
+        </div>
+
+        <!-- ============================================================ -->
+        <!-- INFORMATIONS RELATIVES -->
+        <!-- ============================================================ -->
+        <label>Informations relatives</label>
+        <textarea id="inputInfos" rows="3" placeholder="Références, notes, commentaires (pour vous)..."></textarea>
+
+        <!-- ============================================================ -->
+        <!-- BOUTONS -->
+        <!-- ============================================================ -->
+        <div class="btn-groupe">
+          <button type="button" onclick="enregistrerPost()" class="btn-submit">Créer</button>
+          <a href="/medit/mes-textes.html" class="btn-retour">Annuler</a>
+          <label class="brouillon-check">
+            <input type="checkbox" id="inputBrouillon"> Brouillon
+          </label>
+        </div>
+
+        <div id="messageAjout" class="message"></div>
+
+      </form>
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) { console.error('Erreur chargement footer:', error); });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // DATE AUTO
+    // ============================================================
+    document.getElementById('dateDisplay').textContent = '📅 ' + new Date().toLocaleDateString('fr-FR', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+
+    // ============================================================
+    // QUIZ - GESTION DES QUESTIONS
+    // ============================================================
+    var questionCount = 0;
+
+    function ajouterQuestion() {
+      questionCount++;
+      var container = document.getElementById('quizBlock');
+      var div = document.createElement('div');
+      div.className = 'quiz-question';
+      div.id = 'q-' + questionCount;
+      div.innerHTML = `
+        <div class="q-titre">Question ${questionCount}</div>
+        <input type="text" class="q-text" placeholder="Votre question..." style="width:100%;padding:8px 12px;border:1px solid #d1ccc4;border-radius:6px;font-size:14px;background:#faf8f5;color:#2c2c2c;margin-bottom:6px;">
+        <div class="quiz-reponses" id="reponses-${questionCount}">
+          <div class="quiz-reponse">
+            <input type="text" class="r-text" placeholder="Réponse A" style="width:100px;">
+            <input type="radio" name="correct-${questionCount}" value="0" checked> <label>Vrai</label>
+            <input type="radio" name="correct-${questionCount}" value="0"> <label>Faux</label>
+          </div>
+          <div class="quiz-reponse">
+            <input type="text" class="r-text" placeholder="Réponse B" style="width:100px;">
+            <input type="radio" name="correct-${questionCount}" value="1"> <label>Vrai</label>
+            <input type="radio" name="correct-${questionCount}" value="1" checked> <label>Faux</label>
+          </div>
+        </div>
+        <button type="button" class="btn-add" onclick="ajouterReponse(${questionCount})" style="font-size:12px;padding:4px 12px;margin-top:4px;">+ Ajouter une réponse</button>
+        <button type="button" onclick="supprimerQuestion(${questionCount})" style="font-size:12px;padding:4px 12px;background:transparent;border:none;color:#6b7a8a;cursor:pointer;margin-left:8px;">✕ Supprimer</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function ajouterReponse(qId) {
+      var container = document.getElementById('reponses-' + qId);
+      var count = container.children.length;
+      var lettre = String.fromCharCode(65 + count);
+      var div = document.createElement('div');
+      div.className = 'quiz-reponse';
+      div.innerHTML = `
+        <input type="text" class="r-text" placeholder="Réponse ${lettre}" style="width:100px;">
+        <input type="radio" name="correct-${qId}" value="${count}"> <label>Vrai</label>
+        <input type="radio" name="correct-${qId}" value="${count}"> <label>Faux</label>
+        <button type="button" onclick="this.parentElement.remove()" style="background:transparent;border:none;color:#6b7a8a;cursor:pointer;font-size:14px;">✕</button>
+      `;
+      container.appendChild(div);
+    }
+
+    function supprimerQuestion(qId) {
+      var el = document.getElementById('q-' + qId);
+      if (el) el.remove();
+    }
+
+    // ============================================================
+    // QUESTIONS OUVERTES
+    // ============================================================
+    function ajouterQuestionOuverte() {
+      var container = document.getElementById('openQuestionsContainer');
+      var div = document.createElement('div');
+      div.className = 'open-question-item';
+      div.style.marginBottom = '8px';
+      div.innerHTML = `
+        <input type="text" class="open-question-input" placeholder="Question ouverte..." style="width:100%;padding:10px 14px;border:1px solid #d1ccc4;border-radius:8px;font-size:14px;background:#faf8f5;color:#2c2c2c;">
+        <button type="button" onclick="this.parentElement.remove()" style="font-size:12px;padding:2px 10px;background:transparent;border:none;color:#6b7a8a;cursor:pointer;">✕ Supprimer</button>
+      `;
+      container.appendChild(div);
+    }
+
+    // ============================================================
+    // AJOUTER UNE QUESTION PAR DÉFAUT AU CHARGEMENT
+    // ============================================================
+    window.addEventListener('DOMContentLoaded', function() {
+      ajouterQuestion();
+    });
+
+    // ============================================================
+    // ENREGISTRER
+    // ============================================================
+    function enregistrerPost() {
+      var titre = document.getElementById('inputTitre').value.trim();
+      var niveau = document.getElementById('inputNiveau').value;
+      var categorie = document.getElementById('inputCategorie').value;
+      var contenu = document.getElementById('inputContenu').value.trim();
+      var infos = document.getElementById('inputInfos').value.trim();
+      var brouillon = document.getElementById('inputBrouillon').checked;
+      var statut = brouillon ? 'brouillon' : 'publie';
+      var msg = document.getElementById('messageAjout');
+
+      // Récupérer les 3 mots à retenir
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+
+      // Récupérer les questions ouvertes
+      var openQuestions = [];
+      document.querySelectorAll('.open-question-input').forEach(function(el) {
+        var val = el.value.trim();
+        if (val) openQuestions.push(val);
+      });
+
+      // Récupérer les quiz
+      var quizParts = [];
+      document.querySelectorAll('.quiz-question').forEach(function(qEl) {
+        var qText = qEl.querySelector('.q-text').value.trim();
+        if (!qText) return;
+
+        var reponses = [];
+        qEl.querySelectorAll('.quiz-reponse').forEach(function(rEl, index) {
+          var rText = rEl.querySelector('.r-text').value.trim();
+          if (!rText) return;
+          var radios = rEl.querySelectorAll('input[type="radio"]');
+          var estVraie = false;
+          radios.forEach(function(radio) {
+            if (radio.checked) {
+              estVraie = true;
+            }
+          });
+          reponses.push({ texte: rText, correct: estVraie });
+        });
+
+        if (reponses.length === 0) return;
+
+        var vraies = reponses.filter(function(r) { return r.correct; });
+        if (vraies.length === 0) {
+          // Si aucune vraie, mettre la première en vraie
+          reponses[0].correct = true;
+        }
+
+        quizParts.push({
+          question: qText,
+          reponses: reponses
+        });
+      });
+
+      // Construction du contenu final (colonne F)
+      var contenuFinal = contenu;
+
+      // Ajouter les quiz
+      quizParts.forEach(function(q) {
+        contenuFinal += '\n\nQ: ' + q.question;
+        q.reponses.forEach(function(r) {
+          if (r.correct) {
+            contenuFinal += '\nRV: ' + r.texte;
+          } else {
+            contenuFinal += '\nRF: ' + r.texte;
+          }
+        });
+      });
+
+      // Ajouter les questions ouvertes
+      openQuestions.forEach(function(q) {
+        contenuFinal += '\n\nQQ: ' + q;
+      });
+
+      // Ajouter À retenir
+      if (retenir) {
+        contenuFinal += '\n\nM: ' + retenir;
+      }
+
+      // Ajouter les infos relatives (pour toi)
+      if (infos) {
+        contenuFinal += '\n\nINFOS: ' + infos;
+      }
+
+      // Validation
+      if (!titre) { afficherMsg('Veuillez saisir un titre', 'error'); return; }
+      if (!contenu) { afficherMsg('Veuillez saisir le contenu', 'error'); return; }
+
+      var btn = document.querySelector('.btn-submit');
+      btn.textContent = 'Enregistrement...';
+      btn.disabled = true;
+      msg.className = 'message';
+      msg.style.display = 'none';
+
+      DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenuFinal, '')
+        .then(function() {
+          afficherMsg('✅ Post créé avec succès !', 'success');
+          btn.textContent = 'Créer';
+          btn.disabled = false;
+          document.getElementById('formAjoutPost').reset();
+          document.getElementById('inputContenu').value = '';
+          document.getElementById('inputInfos').value = '';
+          document.getElementById('retenir1').value = '';
+          document.getElementById('retenir2').value = '';
+          document.getElementById('retenir3').value = '';
+          document.getElementById('inputBrouillon').checked = false;
+          // Réinitialiser le quiz
+          document.getElementById('quizBlock').innerHTML = '';
+          questionCount = 0;
+          ajouterQuestion();
+          // Réinitialiser les questions ouvertes
+          document.getElementById('openQuestionsContainer').innerHTML = `
+            <div class="open-question-item" style="margin-bottom:8px;">
+              <input type="text" class="open-question-input" placeholder="Question ouverte..." style="width:100%;padding:10px 14px;border:1px solid #d1ccc4;border-radius:8px;font-size:14px;background:#faf8f5;color:#2c2c2c;">
+            </div>
+          `;
+          document.getElementById('inputTitre').focus();
+        })
+        .catch(function(err) {
+          afficherMsg('❌ Erreur : ' + err.message, 'error');
+          btn.textContent = 'Créer';
+          btn.disabled = false;
+        });
+    }
+
+    function afficherMsg(texte, type) {
+      var msg = document.getElementById('messageAjout');
+      msg.textContent = texte;
+      msg.className = 'message ' + type;
+      msg.style.display = 'block';
+    }
+  </script>
+
+</body>
+</html>
