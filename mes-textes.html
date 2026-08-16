@@ -45,14 +45,13 @@
     }
 
     /* ============================================================
-       NIVEAU + STATS sur une ligne
+       NIVEAU + DESCRIPTION
        ============================================================ */
     .niveau-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px 32px;
+      gap: 16px;
       margin-bottom: 24px;
-      align-items: center;
     }
 
     .niveau-badge {
@@ -80,44 +79,43 @@
       font-family: 'Georgia', serif;
     }
 
-    .stats-ligne {
+    /* ============================================================
+       STATS
+       ============================================================ */
+    .stats {
       display: flex;
+      gap: 32px;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 8px 20px;
+      margin-bottom: 28px;
+      padding: 20px 28px;
       background: #ffffff;
-      border-radius: 14px;
-      padding: 14px 24px;
+      border-radius: 16px;
       border: 1px solid #edeae5;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
     }
 
-    .stats-ligne .stat-item {
+    .stats .stat-item {
       display: flex;
       align-items: baseline;
-      gap: 4px;
+      gap: 8px;
       font-size: 13px;
       color: #94a3b8;
+      letter-spacing: 0.3px;
     }
 
-    .stats-ligne .stat-item .nombre {
+    .stats .stat-item .nombre {
       font-size: 22px;
       font-weight: 600;
       color: #1a2a2e;
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    .stats-ligne .stat-item .nombre.valide {
+    .stats .stat-item .nombre.valide {
       color: #2d6a4f;
     }
 
-    .stats-ligne .sep {
-      color: #edeae5;
-      font-size: 18px;
-    }
-
     /* ============================================================
-       ONGLETS - 2 onglets : À lire / Lus (soulignés)
+       ONGLETS - 2 onglets : À lire / Lus
        ============================================================ */
     .tabs-container {
       display: flex;
@@ -172,46 +170,62 @@
     }
 
     /* ============================================================
-       SOUS-ONGLETS CATÉGORIES - Style encadré arrondi (liseuse)
+       CONTENU DES ONGLETS
+       ============================================================ */
+    .tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+       SOUS-ONGLETS CATÉGORIES
        ============================================================ */
     .sous-tabs-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 4px;
       margin-bottom: 16px;
       padding: 4px 0;
+      border-bottom: 1px solid #f0ede8;
     }
 
     .sous-tab-btn {
       padding: 6px 18px;
       background: transparent;
-      border: 1.5px solid #edeae5;
-      border-radius: 30px;
+      border: none;
+      border-bottom: 2px solid transparent;
       font-size: 13px;
       font-weight: 400;
-      color: #94a3b8;
+      color: #b8b0a8;
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Segoe UI', -apple-system, sans-serif;
-      background: #ffffff;
+      border-radius: 6px 6px 0 0;
     }
 
     .sous-tab-btn:hover {
       color: #1a2a2e;
-      border-color: #b8b0a8;
       background: #f8f6f2;
     }
 
     .sous-tab-btn.active {
-      color: #ffffff;
-      background: #2d6a4f;
-      border-color: #2d6a4f;
+      color: #2d6a4f;
+      border-bottom-color: #2d6a4f;
       font-weight: 500;
     }
 
     .sous-tab-btn .compteur-sous-tab {
       display: inline-block;
-      background: rgba(255,255,255,0.2);
+      background: #f0ede8;
       color: #94a3b8;
       font-size: 10px;
       font-weight: 600;
@@ -222,8 +236,8 @@
     }
 
     .sous-tab-btn.active .compteur-sous-tab {
-      background: rgba(255,255,255,0.25);
-      color: #ffffff;
+      background: #e8f5e9;
+      color: #2d6a4f;
     }
 
     .sous-tab-content {
@@ -236,7 +250,7 @@
     }
 
     /* ============================================================
-       GRILLE DES POSTS - CARTE CLICKABLE - Style liseuse
+       GRILLE DES POSTS - CARTE CLICKABLE
        ============================================================ */
     .grille {
       display: flex;
@@ -309,9 +323,14 @@
       font-weight: 500;
     }
 
-    .carte-post .meta .badge-icone.quiz {
+    .carte-post .meta .badge-icone.quiz-oui {
       background: #e8f5e9;
       color: #2d6a4f;
+    }
+
+    .carte-post .meta .badge-icone.quiz-non {
+      background: #f5f0eb;
+      color: #b8b0a8;
     }
 
     .carte-post .meta .badge-icone.question {
@@ -353,12 +372,38 @@
       color: #94a3b8;
     }
 
-    /* ============================================================
-       STATUT DANS LA CARTE
-       ============================================================ */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
+    }
+
+    .carte-post .statut .badge {
+      display: inline-block;
+      padding: 4px 14px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+    }
+
+    .carte-post .statut .badge.valide {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .carte-post .statut .badge.lu {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .carte-post .statut .badge.a-faire {
+      background: #f5f0eb;
+      color: #8a7a6a;
+    }
+
+    .carte-post .statut .badge.non-vu {
+      background: #f0ede8;
+      color: #b8b0a8;
     }
 
     .carte-post .statut .date-validation {
@@ -454,33 +499,6 @@
     }
 
     /* ============================================================
-       DÉCONNEXION EN BAS
-       ============================================================ */
-    .deconnexion-bas {
-      text-align: center;
-      padding: 16px 0 8px;
-      margin-top: 20px;
-    }
-
-    .deconnexion-bas button {
-      background: transparent;
-      border: 1px solid #edeae5;
-      padding: 8px 24px;
-      border-radius: 30px;
-      font-size: 13px;
-      color: #94a3b8;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .deconnexion-bas button:hover {
-      border-color: #b8b0a8;
-      color: #1a2a2e;
-      background: #f8f6f2;
-    }
-
-    /* ============================================================
        RESPONSIVE
        ============================================================ */
     @media (max-width: 768px) {
@@ -496,6 +514,11 @@
         gap: 8px;
         justify-content: flex-start;
       }
+      .stats {
+        justify-content: center;
+        gap: 16px;
+        padding: 16px 20px;
+      }
       .tabs-container {
         justify-content: center;
       }
@@ -505,18 +528,13 @@
       }
       .niveau-container {
         flex-direction: column;
-        align-items: stretch;
       }
       .sous-tabs-container {
         justify-content: center;
       }
       .sous-tab-btn {
         font-size: 12px;
-        padding: 5px 14px;
-      }
-      .stats-ligne {
-        justify-content: center;
-        padding: 12px 16px;
+        padding: 4px 12px;
       }
     }
 
@@ -533,7 +551,7 @@
         font-size: 13px;
         padding: 6px 14px;
       }
-      .stats-ligne .stat-item .nombre {
+      .stats .stat-item .nombre {
         font-size: 18px;
       }
       .niveau-badge {
@@ -541,7 +559,7 @@
       }
       .sous-tab-btn {
         font-size: 11px;
-        padding: 4px 12px;
+        padding: 3px 10px;
       }
     }
   </style>
@@ -579,11 +597,22 @@
     function mettreAJourHeader() {
       var id = localStorage.getItem('etudiant_id');
       var nav = document.getElementById('headerNav');
+      var userNameSpan = document.getElementById('headerUserName');
+
+      if (userNameSpan) {
+        if (id) {
+          userNameSpan.textContent = '👤 ' + id;
+        } else {
+          userNameSpan.textContent = '';
+        }
+      }
 
       if (nav) {
         if (id) {
           nav.innerHTML = `
-            <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
+            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
+            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
           `;
         } else {
           nav.innerHTML = `
@@ -597,27 +626,25 @@
 
   <div class="page">
 
-    <!-- NIVEAU + STATS sur une ligne -->
     <div class="niveau-container" id="niveauContainer">
       <div class="niveau-badge">
         <span class="label">Vous êtes inscrit au niveau</span>
         <span class="valeur" id="niveauValeur">—</span>
       </div>
-      <div class="stats-ligne" id="statsLigne">
-        <div class="stat-item">
-          <span>Textes :</span>
-          <span class="nombre" id="totalPosts">0</span>
-        </div>
-        <span class="sep">|</span>
-        <div class="stat-item">
-          <span>Lus :</span>
-          <span class="nombre valide" id="validesPosts">0</span>
-        </div>
-        <span class="sep">|</span>
-        <div class="stat-item">
-          <span>À faire :</span>
-          <span class="nombre" id="aFairePosts">0</span>
-        </div>
+    </div>
+
+    <div class="stats" id="statsContainer">
+      <div class="stat-item">
+        <span class="nombre" id="totalPosts">0</span>
+        <span>disponibles</span>
+      </div>
+      <div class="stat-item">
+        <span class="nombre valide" id="validesPosts">0</span>
+        <span>validées</span>
+      </div>
+      <div class="stat-item">
+        <span class="nombre" id="aFairePosts">0</span>
+        <span>à faire</span>
       </div>
     </div>
 
@@ -634,11 +661,6 @@
 
     <div class="devise">
       “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
-    </div>
-
-    <!-- DÉCONNEXION EN BAS -->
-    <div class="deconnexion-bas">
-      <button onclick="deconnecter()">Se déconnecter</button>
     </div>
 
   </div>
@@ -668,15 +690,16 @@
 
   <script>
     // ============================================================
-    // mes-textes.html - VERSION LISEUSE PAPERINK
+    // mes-textes.html - VERSION AVEC 2 ONGLETS : À lire / Lus
     // ============================================================
 
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
 
-    var ongletActuel = 'a-lire';
-    var categorieActuelle = null;
+    // État actuel
+    var ongletActuel = 'a-lire'; // 'a-lire' ou 'lus'
+    var categorieActuelle = null; // null = toutes
 
     function ouvrirConnexion() {
         window.location.href = '/medit/index.html';
@@ -740,7 +763,7 @@
                             <p>Vérifiez votre connexion.</p>
                             <button onclick="DataManager.rafraichir(); location.reload();" 
                                     style="margin-top:12px;padding:10px 24px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;cursor:pointer;">
-                                Réessayer
+                                🔄 Réessayer
                             </button>
                         </div>
                     `;
@@ -788,11 +811,11 @@
         // --- ONGLETS PRINCIPAUX ---
         var tabsHtml = `
             <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
-                À lire
+                📖 À lire
                 <span class="compteur-tab">${aFaire}</span>
             </button>
             <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
-                Lus
+                ✅ Lus
                 <span class="compteur-tab">${valides}</span>
             </button>
         `;
@@ -830,7 +853,7 @@
     }
 
     // ============================================================
-    // GÉNÉRER LES SOUS-ONGLETS (CATÉGORIES) - Style encadré arrondi
+    // GÉNÉRER LES SOUS-ONGLETS (CATÉGORIES)
     // ============================================================
     function genererSousOnglets(categoriesTriees, categories, onglet) {
         var html = '';
@@ -885,6 +908,7 @@
     function switchOnglet(onglet) {
         ongletActuel = onglet;
 
+        // Mettre à jour les onglets principaux
         document.querySelectorAll('.tab-btn').forEach(function(el) {
             el.classList.remove('active');
             if (el.dataset.tab === onglet) {
@@ -892,11 +916,13 @@
             }
         });
 
+        // Afficher/masquer les contenus
         document.querySelectorAll('.tab-content').forEach(function(el) {
             el.classList.remove('active');
         });
         document.getElementById('tab-' + onglet).classList.add('active');
 
+        // Réinitialiser la catégorie
         var premierSousTab = document.querySelector('#sous-tabs-' + onglet + ' .sous-tab-btn');
         if (premierSousTab) {
             var cat = premierSousTab.dataset.sousTab.replace(onglet + '-', '');
@@ -911,6 +937,7 @@
         if (!onglet) onglet = ongletActuel;
         categorieActuelle = categorie;
 
+        // Mettre à jour les sous-onglets
         var container = document.getElementById('sous-tabs-' + onglet);
         if (container) {
             container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
@@ -922,6 +949,7 @@
             });
         }
 
+        // Filtrer et afficher les posts
         var postsFiltres = filtrerPosts(onglet, categorie);
         afficherPosts(postsFiltres, onglet);
     }
@@ -933,10 +961,12 @@
         var resultats = [];
 
         postsData.forEach(function(post) {
+            // Filtrer par statut (lu / à lire)
             var estLu = estPostLu(post);
             if (onglet === 'a-lire' && estLu) return;
             if (onglet === 'lus' && !estLu) return;
 
+            // Filtrer par catégorie
             var catPost = post.categorie || 'Sans catégorie';
             if (categorie !== 'toutes' && catPost !== categorie) return;
 
@@ -947,7 +977,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES POSTS FILTRÉS - Style liseuse paperink
+    // AFFICHER LES POSTS FILTRÉS
     // ============================================================
     function afficherPosts(posts, onglet) {
         var container = document.getElementById('sous-contenu-' + onglet);
@@ -968,10 +998,10 @@
 
         posts.forEach(function(post) {
             var reponse = toutesLesReponses[post.id];
+            var estValide = false;
             var dateValidation = '';
             var retenir = '';
             var estLu = false;
-            var estValide = false;
 
             if (reponse) {
                 var bonnes = reponse.bonnes || 0;
@@ -990,33 +1020,54 @@
             var hasQuiz = post.hasQuiz || false;
             var hasQuestion = post.hasQuestion || false;
             var mots = post.mots || 0;
-            var nbQuiz = post.nbQuestions || 0;
 
-            // Quiz : nombre (0 si non)
+            // Quiz : Oui / Non
             var quizHtml = hasQuiz 
-                ? '<span class="badge-icone quiz">Quiz : ' + nbQuiz + '</span>'
-                : '<span class="badge-icone quiz">Quiz : 0</span>';
+                ? '<span class="badge-icone quiz-oui">Quiz : Oui</span>'
+                : '<span class="badge-icone quiz-non">Quiz : Non</span>';
 
-            // Question : nombre (0 si non)
             var questionHtml = hasQuestion 
-                ? '<span class="badge-icone question">Question : 1</span>'
-                : '<span class="badge-icone question">Question : 0</span>';
+                ? '<span class="badge-icone question">✍️ Question</span>' 
+                : '';
 
+            // Badge de statut
+            var badgeHtml = '';
             var dateHtml = '';
             var dateLabelHtml = '';
 
-            if (estLu && dateValidation) {
-                var d = new Date(dateValidation);
-                if (!isNaN(d.getTime())) {
-                    var dateStr = d.toLocaleDateString('fr-FR', {
-                        day: '2-digit', month: 'long', year: 'numeric'
-                    });
-                    var heureStr = d.toLocaleTimeString('fr-FR', {
-                        hour: '2-digit', minute: '2-digit'
-                    });
-                    dateLabelHtml = '<span class="date-label visible">Lu le</span>';
-                    dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+            if (estLu) {
+                badgeHtml = '<span class="badge lu">✓ Lu</span>';
+                if (dateValidation) {
+                    var d = new Date(dateValidation);
+                    if (!isNaN(d.getTime())) {
+                        var dateStr = d.toLocaleDateString('fr-FR', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        var heureStr = d.toLocaleTimeString('fr-FR', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        dateLabelHtml = '<span class="date-label visible">Lu le</span>';
+                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+                    }
                 }
+            } else if (estValide) {
+                badgeHtml = '<span class="badge valide">✓ Validé</span>';
+                if (dateValidation) {
+                    var d = new Date(dateValidation);
+                    if (!isNaN(d.getTime())) {
+                        var dateStr = d.toLocaleDateString('fr-FR', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        var heureStr = d.toLocaleTimeString('fr-FR', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+                    }
+                }
+            } else if (reponse) {
+                badgeHtml = '<span class="badge a-faire">○ À faire</span>';
+            } else {
+                badgeHtml = '<span class="badge non-vu">○ À faire</span>';
             }
 
             var retenirHtml = '';
@@ -1044,6 +1095,7 @@
                         </div>
                     </div>
                     <div class="statut">
+                        ${badgeHtml}
                         ${dateLabelHtml}
                         ${dateHtml}
                     </div>
