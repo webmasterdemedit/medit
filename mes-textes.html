@@ -319,9 +319,34 @@
       color: #8a6a3a;
     }
 
+    .carte-post .meta .badge-icone.info {
+      background: #f0ede8;
+      color: #64748b;
+    }
+
+    .carte-post .meta .badge-icone.ok {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .carte-post .meta .badge-icone.ko {
+      background: #f5f0eb;
+      color: #b8b0a8;
+    }
+
     .carte-post .meta .mots {
       font-size: 11px;
       color: #b8b0a8;
+    }
+
+    .carte-post .meta .badge-icone.clickable {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .carte-post .meta .badge-icone.clickable:hover {
+      background: #e0d8d0;
+      transform: scale(1.02);
     }
 
     .carte-post .retenir-cadre {
@@ -382,6 +407,108 @@
 
     .carte-post .statut .date-label.visible {
       display: inline;
+    }
+
+    /* ============================================================
+       MODAL POPUP - Style liseuse
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .modal-contenu {
+      background: #ffffff;
+      border-radius: 16px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 32px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+      font-family: 'Georgia', serif;
+      line-height: 1.7;
+    }
+
+    .modal-contenu h3 {
+      font-size: 20px;
+      color: #1a2a2e;
+      margin-bottom: 4px;
+      font-weight: 600;
+      font-family: 'Georgia', serif;
+    }
+
+    .modal-contenu .modal-sous-titre {
+      font-size: 13px;
+      color: #94a3b8;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #edeae5;
+      padding-bottom: 12px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .modal-contenu .modal-annotation {
+      background: #f8f6f2;
+      border-left: 3px solid #b8956a;
+      padding: 12px 16px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      font-size: 14px;
+      color: #2d3748;
+    }
+
+    .modal-contenu .modal-annotation strong {
+      font-weight: 600;
+      color: #1a2a2e;
+      display: block;
+      font-size: 12px;
+      text-transform: uppercase;
+      color: #94a3b8;
+      letter-spacing: 0.5px;
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .modal-annotation .slide-num {
+      font-size: 12px;
+      color: #b8b0a8;
+      font-weight: 400;
+      margin-top: 4px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .modal-contenu .modal-close {
+      margin-top: 20px;
+      padding: 8px 28px;
+      background: #f0ede8;
+      border: none;
+      border-radius: 30px;
+      font-size: 13px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .modal-contenu .modal-close:hover {
+      background: #e0d8d0;
+      color: #1a2a2e;
+    }
+
+    .modal-contenu .aucune-annotation {
+      color: #b8b0a8;
+      font-style: italic;
+      font-size: 14px;
+      padding: 16px 0;
+      font-family: 'Segoe UI', sans-serif;
     }
 
     /* ============================================================
@@ -518,6 +645,9 @@
         justify-content: center;
         padding: 12px 16px;
       }
+      .modal-contenu {
+        padding: 24px 20px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -542,6 +672,12 @@
       .sous-tab-btn {
         font-size: 11px;
         padding: 4px 12px;
+      }
+      .modal-contenu {
+        padding: 20px 16px;
+      }
+      .modal-contenu h3 {
+        font-size: 17px;
       }
     }
   </style>
@@ -695,6 +831,66 @@
     }
 
     // ============================================================
+    // POPUP ANNOTATIONS
+    // ============================================================
+    function ouvrirAnnotations(articleId, titre) {
+        // Chercher la réponse correspondante
+        var reponse = null;
+        for (var i = 0; i < toutesLesReponses.length; i++) {
+            if (toutesLesReponses[i].articleId === articleId) {
+                reponse = toutesLesReponses[i];
+                break;
+            }
+        }
+
+        var annotations = reponse ? reponse.annotations : '';
+        var slides = reponse ? reponse.slides : '';
+
+        // Créer le modal
+        var modal = document.createElement('div');
+        modal.className = 'modal-overlay';
+        modal.id = 'modalAnnotations';
+        modal.onclick = function(e) {
+            if (e.target === this) fermerAnnotations();
+        };
+
+        var html = '<div class="modal-contenu">';
+        html += '<h3>' + titre + '</h3>';
+        html += '<div class="modal-sous-titre">Annotations</div>';
+
+        if (annotations && annotations.trim() !== '') {
+            // Parser les annotations : format "slide0:texte|slide1:texte"
+            var parts = annotations.split('|');
+            var slidesList = slides ? slides.split('|') : [];
+
+            for (var i = 0; i < parts.length; i++) {
+                var kv = parts[i].split(':');
+                if (kv.length === 2) {
+                    var slideNum = kv[0].replace('slide', '');
+                    var texte = kv[1];
+                    html += '<div class="modal-annotation">';
+                    html += '<strong>Slide ' + slideNum + '</strong>';
+                    html += texte;
+                    html += '</div>';
+                }
+            }
+        } else {
+            html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
+        }
+
+        html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+        html += '</div>';
+
+        modal.innerHTML = html;
+        document.body.appendChild(modal);
+    }
+
+    function fermerAnnotations() {
+        var modal = document.getElementById('modalAnnotations');
+        if (modal) modal.remove();
+    }
+
+    // ============================================================
     // CHARGEMENT AVEC DATAMANAGER
     // ============================================================
     function chargerTableauDeBord() {
@@ -709,10 +905,10 @@
                 niveauEtudiant = data.niveau || 0;
                 postsData = data.posts || [];
                 
-                toutesLesReponses = {};
+                toutesLesReponses = [];
                 if (data.reponses) {
                     data.reponses.forEach(function(r) {
-                        toutesLesReponses[r.articleId] = r;
+                        toutesLesReponses.push(r);
                     });
                 }
                 
@@ -752,13 +948,28 @@
     // VÉRIFIER SI UN POST EST LU
     // ============================================================
     function estPostLu(post) {
-        var reponse = toutesLesReponses[post.id];
-        if (!reponse) return false;
-        var bonnes = reponse.bonnes || 0;
-        var totalQ = reponse.total || 0;
-        if (totalQ === 1 && bonnes === 1) return true;
-        if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) return true;
+        for (var i = 0; i < toutesLesReponses.length; i++) {
+            if (toutesLesReponses[i].articleId === post.id) {
+                var bonnes = toutesLesReponses[i].bonnes || 0;
+                var total = toutesLesReponses[i].total || 0;
+                if (total === 1 && bonnes === 1) return true;
+                if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
+                return false;
+            }
+        }
         return false;
+    }
+
+    // ============================================================
+    // RÉCUPÉRER LA RÉPONSE D'UN POST
+    // ============================================================
+    function getReponse(postId) {
+        for (var i = 0; i < toutesLesReponses.length; i++) {
+            if (toutesLesReponses[i].articleId === postId) {
+                return toutesLesReponses[i];
+            }
+        }
+        return null;
     }
 
     // ============================================================
@@ -785,7 +996,7 @@
         document.getElementById('validesPosts').textContent = valides;
         document.getElementById('aFairePosts').textContent = aFaire;
 
-        // Récupérer les catégories pour les deux onglets
+        // Récupérer les catégories
         var categories = {};
         posts.forEach(function(post) {
             var cat = post.categorie || 'Sans catégorie';
@@ -808,14 +1019,12 @@
         document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
         // --- CONTENU ---
-        // Un seul conteneur qui sera mis à jour
         contenu.innerHTML = `
             <div id="contenu-onglet">
                 <div class="loader" style="display:none;"><div class="spinner"></div></div>
             </div>
         `;
 
-        // Afficher l'onglet actif
         afficherOnglet('a-lire', categoriesTriees, categories);
     }
 
@@ -888,7 +1097,6 @@
             }
         });
 
-        // Reconstruire l'onglet
         var categories = {};
         postsData.forEach(function(post) {
             var cat = post.categorie || 'Sans catégorie';
@@ -962,7 +1170,7 @@
         var html = '<div class="grille">';
 
         posts.forEach(function(post) {
-            var reponse = toutesLesReponses[post.id];
+            var reponse = getReponse(post.id);
             var dateValidation = '';
             var retenir = '';
             var estLu = false;
@@ -970,14 +1178,14 @@
 
             if (reponse) {
                 var bonnes = reponse.bonnes || 0;
-                var totalQ = reponse.total || 0;
+                var total = reponse.total || 0;
                 dateValidation = reponse.date || '';
                 retenir = reponse.retenir || '';
 
-                if (totalQ === 1 && bonnes === 1) {
+                if (total === 1 && bonnes === 1) {
                     estLu = true;
                     estValide = true;
-                } else if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
                     estValide = true;
                 }
             }
@@ -985,18 +1193,59 @@
             var hasQuiz = post.hasQuiz || false;
             var hasQuestion = post.hasQuestion || false;
             var mots = post.mots || 0;
-            var nbQuiz = post.nbQuestions || 0;
+            var nbQuiz = post.nbQuiz || 0;
+            var nbQuestion = post.nbQuestion || 0;
 
-            // Quiz : nombre (0 si non)
-            var quizHtml = hasQuiz 
-                ? '<span class="badge-icone quiz">Quiz : ' + nbQuiz + '</span>'
-                : '<span class="badge-icone quiz">Quiz : 0</span>';
+            // --- Pour "À lire" : Nbr questions ---
+            var nbQuestions = nbQuiz + nbQuestion;
 
-            // Question : nombre (0 si non)
-            var questionHtml = hasQuestion 
-                ? '<span class="badge-icone question">Question : 1</span>'
-                : '<span class="badge-icone question">Question : 0</span>';
+            // --- Pour "Lus" : métadonnées ---
+            var metaHtml = '';
 
+            if (ongletActuel === 'a-lire') {
+                // À lire : afficher Nbr questions
+                metaHtml = '<span class="badge-icone info">Nbr questions : ' + nbQuestions + '</span>';
+            } else {
+                // Lus : afficher résultat, question, annoté
+                var resultatHtml = '';
+                var questionHtml = '';
+                var annoteHtml = '';
+
+                if (reponse) {
+                    // Résultat du quiz
+                    var bonnes = reponse.bonnes || 0;
+                    var total = reponse.total || 0;
+                    if (total > 0) {
+                        resultatHtml = '<span class="badge-icone info">Résultat : ' + bonnes + '/' + total + '</span>';
+                    }
+
+                    // Question envoyée ?
+                    var reponseOuverte = reponse.reponseOuverte || '';
+                    if (reponseOuverte && reponseOuverte.trim() !== '') {
+                        questionHtml = '<span class="badge-icone ok">Question envoyée ✓</span>';
+                    } else if (hasQuestion) {
+                        questionHtml = '<span class="badge-icone ko">Question non envoyée</span>';
+                    }
+
+                    // Annoté ?
+                    var annotations = reponse.annotations || '';
+                    if (annotations && annotations.trim() !== '') {
+                        annoteHtml = '<span class="badge-icone clickable ok" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+                    } else {
+                        annoteHtml = '<span class="badge-icone ko">Non annoté</span>';
+                    }
+                } else {
+                    resultatHtml = '<span class="badge-icone info">Résultat : 0/0</span>';
+                    if (hasQuestion) {
+                        questionHtml = '<span class="badge-icone ko">Question non envoyée</span>';
+                    }
+                    annoteHtml = '<span class="badge-icone ko">Non annoté</span>';
+                }
+
+                metaHtml = resultatHtml + questionHtml + annoteHtml;
+            }
+
+            // Date
             var dateHtml = '';
             var dateLabelHtml = '';
 
@@ -1032,8 +1281,7 @@
                         <div class="titre">${post.titre}</div>
                         <div class="meta">
                             <span class="niveau-badge">Niveau ${post.niveau}</span>
-                            ${quizHtml}
-                            ${questionHtml}
+                            ${metaHtml}
                             ${motsHtml}
                             ${retenirHtml}
                         </div>
