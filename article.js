@@ -430,6 +430,12 @@ function updateSlides() {
     ajouterBoutonAppris();
   } else if (slideIndex === slidesData.length - 1 && current && current.type !== 'memo' && reponseValidee) {
     afficherMessageFin();
+      // ============================================================
+  // AJOUT : METTRE À JOUR L'URL AVEC LE NUMÉRO DE SLIDE
+  // ============================================================
+  var url = new URL(window.location.href);
+  url.searchParams.set('slide', slideIndex);
+  window.history.replaceState({}, '', url);
   }
 
   // ============================================================
