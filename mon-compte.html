@@ -778,6 +778,63 @@
       demarrer();
     }
   </script>
+<script>
+  // ============================================================
+  // AJOUTER UN POST - FONCTIONS (copiées depuis header.html)
+  // ============================================================
+  
+  function ouvrirAjoutPost() {
+    var modal = document.getElementById('modalAjoutPost');
+    if (modal) {
+      modal.style.display = 'flex';
+      var inputTitre = document.getElementById('inputTitre');
+      if (inputTitre) {
+        inputTitre.value = '';
+        document.getElementById('inputNiveau').value = '';
+        document.getElementById('inputCategorie').value = '';
+        document.getElementById('inputContenu').value = '';
+        document.getElementById('inputQuestion').value = '';
+        inputTitre.focus();
+      }
+    }
+  }
 
+  function fermerAjoutPost() {
+    var modal = document.getElementById('modalAjoutPost');
+    if (modal) modal.style.display = 'none';
+  }
+
+  function creerPost() {
+    var titre = document.getElementById('inputTitre').value.trim();
+    var niveau = document.getElementById('inputNiveau').value.trim();
+    var categorie = document.getElementById('inputCategorie').value.trim();
+    var contenu = document.getElementById('inputContenu').value.trim();
+    var question = document.getElementById('inputQuestion').value.trim();
+
+    if (!titre) { alert('Veuillez saisir un titre'); return; }
+    if (!niveau) { alert('Veuillez saisir un niveau'); return; }
+    if (!contenu) { alert('Veuillez saisir le contenu'); return; }
+
+    var btn = document.querySelector('#formAjoutPost .btn-submit');
+    btn.textContent = 'Création...';
+    btn.disabled = true;
+
+    DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
+      .then(function() {
+        alert('✅ Post créé avec succès !');
+        fermerAjoutPost();
+        btn.textContent = 'Créer';
+        btn.disabled = false;
+        if (window.location.pathname.includes('mes-textes.html')) {
+          window.location.reload();
+        }
+      })
+      .catch(function(err) {
+        alert('❌ Erreur : ' + err.message);
+        btn.textContent = 'Créer';
+        btn.disabled = false;
+      });
+  }
+</script>
 </body>
 </html>
