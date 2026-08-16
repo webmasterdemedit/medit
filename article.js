@@ -449,7 +449,22 @@ function updateSlides() {
   if (annotationPopupOpen) {
     closeAnnotationPopup();
   }
+    // ============================================================
+  // AJOUT : CLIC / TAP SUR LA ZONE POUR PASSER AU SLIDE SUIVANT
+  // ============================================================
+  var slideContainer = document.querySelector('.paragraphe-container');
+  if (slideContainer) {
+    slideContainer.onclick = function(e) {
+      // Ignorer les clics sur les boutons, inputs, textarea, labels
+      if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('label')) {
+        return;
+      }
+      slideSuivant();
+    };
+  }
 }
+
+
 
 function ajouterBoutonAppris() {}
 
