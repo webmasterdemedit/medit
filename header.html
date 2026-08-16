@@ -12,6 +12,87 @@
     <nav class="header-nav">
       <a href="/medit/mes-textes.html" class="header-link">Mes lectures</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
+      <button onclick="toggleDarkMode()" class="btn-darkmode" id="darkModeBtn" title="Mode sombre/clair">
+        <span id="darkModeIcon">🌙</span>
+      </button>
     </nav>
   </div>
 </header>
+
+<script>
+// ============================================================
+// MODE SOMBRE
+// ============================================================
+function toggleDarkMode() {
+  document.body.classList.toggle('dark-mode');
+  var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+  localStorage.setItem('theme', mode);
+  updateDarkModeIcon();
+}
+
+function updateDarkModeIcon() {
+  var icon = document.getElementById('darkModeIcon');
+  if (icon) {
+    icon.textContent = document.body.classList.contains('dark-mode') ? '☀️' : '🌙';
+  }
+}
+
+// Restaurer le thème au chargement
+(function() {
+  var theme = localStorage.getItem('theme');
+  if (theme === 'sombre') {
+    document.body.classList.add('dark-mode');
+  }
+  updateDarkModeIcon();
+})();
+</script>
+
+<style>
+/* Bouton mode sombre moderne */
+.btn-darkmode {
+  background: transparent;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  padding: 4px 10px;
+  border-radius: 30px;
+  transition: all 0.2s ease;
+  line-height: 1;
+  margin-left: 8px;
+}
+
+.btn-darkmode:hover {
+  transform: scale(1.1);
+}
+
+body.dark-mode .btn-darkmode {
+  background: rgba(255,255,255,0.05);
+}
+
+/* Style header en mode sombre */
+body.dark-mode .site-header {
+  border-bottom-color: #3a3a3a !important;
+}
+
+body.dark-mode .header-logo a,
+body.dark-mode .header-logo a strong {
+  color: #e8e5e0 !important;
+}
+
+body.dark-mode .header-link {
+  color: #b8b0a8 !important;
+}
+
+body.dark-mode .header-link:hover {
+  color: #ffffff !important;
+}
+
+body.dark-mode .header-btn-compte {
+  color: #e8e5e0 !important;
+  border-color: #3a3a3a !important;
+}
+
+body.dark-mode .header-btn-compte:hover {
+  background: #2a2a2a !important;
+}
+</style>
