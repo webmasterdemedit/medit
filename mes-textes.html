@@ -80,7 +80,7 @@
     }
 
     /* ============================================================
-       STATS
+       STATS - avec badges simplifiés
        ============================================================ */
     .stats {
       display: flex;
@@ -111,6 +111,22 @@
     }
 
     .stats .stat-item .nombre.valide {
+      color: #2d6a4f;
+    }
+
+    .stats .stat-item .badge-stat {
+      display: inline-block;
+      padding: 2px 12px;
+      border-radius: 30px;
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
+      background: #f0ede8;
+      color: #8a7a6a;
+    }
+
+    .stats .stat-item .badge-stat.lu {
+      background: #e8f5e9;
       color: #2d6a4f;
     }
 
@@ -250,7 +266,7 @@
     }
 
     /* ============================================================
-       GRILLE DES POSTS - CARTE CLICKABLE
+       GRILLE DES POSTS - CARTE CLICKABLE - Style liseuse
        ============================================================ */
     .grille {
       display: flex;
@@ -372,6 +388,9 @@
       color: #94a3b8;
     }
 
+    /* ============================================================
+       STATUT DANS LA CARTE - Style liseuse paperink
+       ============================================================ */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
@@ -633,18 +652,22 @@
       </div>
     </div>
 
+    <!-- STATS avec badges simplifiés -->
     <div class="stats" id="statsContainer">
       <div class="stat-item">
         <span class="nombre" id="totalPosts">0</span>
         <span>disponibles</span>
+        <span class="badge-stat" id="badgeTotal">○</span>
       </div>
       <div class="stat-item">
         <span class="nombre valide" id="validesPosts">0</span>
-        <span>validées</span>
+        <span>lus</span>
+        <span class="badge-stat lu" id="badgeLus">✓</span>
       </div>
       <div class="stat-item">
         <span class="nombre" id="aFairePosts">0</span>
         <span>à faire</span>
+        <span class="badge-stat" id="badgeAFaire">○</span>
       </div>
     </div>
 
@@ -690,16 +713,15 @@
 
   <script>
     // ============================================================
-    // mes-textes.html - VERSION AVEC 2 ONGLETS : À lire / Lus
+    // mes-textes.html - VERSION LISEUSE PAPERINK
     // ============================================================
 
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
 
-    // État actuel
-    var ongletActuel = 'a-lire'; // 'a-lire' ou 'lus'
-    var categorieActuelle = null; // null = toutes
+    var ongletActuel = 'a-lire';
+    var categorieActuelle = null;
 
     function ouvrirConnexion() {
         window.location.href = '/medit/index.html';
@@ -811,11 +833,11 @@
         // --- ONGLETS PRINCIPAUX ---
         var tabsHtml = `
             <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
-                ○ À faire
+                À lire
                 <span class="compteur-tab">${aFaire}</span>
             </button>
             <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
-                ✓ Lu
+                Lus
                 <span class="compteur-tab">${valides}</span>
             </button>
         `;
@@ -908,7 +930,6 @@
     function switchOnglet(onglet) {
         ongletActuel = onglet;
 
-        // Mettre à jour les onglets principaux
         document.querySelectorAll('.tab-btn').forEach(function(el) {
             el.classList.remove('active');
             if (el.dataset.tab === onglet) {
@@ -916,13 +937,11 @@
             }
         });
 
-        // Afficher/masquer les contenus
         document.querySelectorAll('.tab-content').forEach(function(el) {
             el.classList.remove('active');
         });
         document.getElementById('tab-' + onglet).classList.add('active');
 
-        // Réinitialiser la catégorie
         var premierSousTab = document.querySelector('#sous-tabs-' + onglet + ' .sous-tab-btn');
         if (premierSousTab) {
             var cat = premierSousTab.dataset.sousTab.replace(onglet + '-', '');
@@ -937,7 +956,6 @@
         if (!onglet) onglet = ongletActuel;
         categorieActuelle = categorie;
 
-        // Mettre à jour les sous-onglets
         var container = document.getElementById('sous-tabs-' + onglet);
         if (container) {
             container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
@@ -949,7 +967,6 @@
             });
         }
 
-        // Filtrer et afficher les posts
         var postsFiltres = filtrerPosts(onglet, categorie);
         afficherPosts(postsFiltres, onglet);
     }
@@ -961,12 +978,10 @@
         var resultats = [];
 
         postsData.forEach(function(post) {
-            // Filtrer par statut (lu / à lire)
             var estLu = estPostLu(post);
             if (onglet === 'a-lire' && estLu) return;
             if (onglet === 'lus' && !estLu) return;
 
-            // Filtrer par catégorie
             var catPost = post.categorie || 'Sans catégorie';
             if (categorie !== 'toutes' && catPost !== categorie) return;
 
@@ -977,7 +992,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES POSTS FILTRÉS
+    // AFFICHER LES POSTS FILTRÉS - Style liseuse paperink
     // ============================================================
     function afficherPosts(posts, onglet) {
         var container = document.getElementById('sous-contenu-' + onglet);
@@ -998,10 +1013,10 @@
 
         posts.forEach(function(post) {
             var reponse = toutesLesReponses[post.id];
-            var estValide = false;
             var dateValidation = '';
             var retenir = '';
             var estLu = false;
+            var estValide = false;
 
             if (reponse) {
                 var bonnes = reponse.bonnes || 0;
@@ -1030,44 +1045,24 @@
                 ? '<span class="badge-icone question">✍️ Question</span>' 
                 : '';
 
-            // Badge de statut
-            var badgeHtml = '';
+            // PAS DE BADGE DANS LA CARTE - on les a déjà en haut
+            // On garde juste la date si lu
+
             var dateHtml = '';
             var dateLabelHtml = '';
 
-            if (estLu) {
-                badgeHtml = '<span class="badge lu">✓ Lu</span>';
-                if (dateValidation) {
-                    var d = new Date(dateValidation);
-                    if (!isNaN(d.getTime())) {
-                        var dateStr = d.toLocaleDateString('fr-FR', {
-                            day: '2-digit', month: 'long', year: 'numeric'
-                        });
-                        var heureStr = d.toLocaleTimeString('fr-FR', {
-                            hour: '2-digit', minute: '2-digit'
-                        });
-                        dateLabelHtml = '<span class="date-label visible">Lu le</span>';
-                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-                    }
+            if (estLu && dateValidation) {
+                var d = new Date(dateValidation);
+                if (!isNaN(d.getTime())) {
+                    var dateStr = d.toLocaleDateString('fr-FR', {
+                        day: '2-digit', month: 'long', year: 'numeric'
+                    });
+                    var heureStr = d.toLocaleTimeString('fr-FR', {
+                        hour: '2-digit', minute: '2-digit'
+                    });
+                    dateLabelHtml = '<span class="date-label visible">Lu le</span>';
+                    dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
                 }
-            } else if (estValide) {
-                badgeHtml = '<span class="badge valide">✓ Validé</span>';
-                if (dateValidation) {
-                    var d = new Date(dateValidation);
-                    if (!isNaN(d.getTime())) {
-                        var dateStr = d.toLocaleDateString('fr-FR', {
-                            day: '2-digit', month: 'long', year: 'numeric'
-                        });
-                        var heureStr = d.toLocaleTimeString('fr-FR', {
-                            hour: '2-digit', minute: '2-digit'
-                        });
-                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-                    }
-                }
-            } else if (reponse) {
-                badgeHtml = '<span class="badge a-faire">○ À faire</span>';
-            } else {
-                badgeHtml = '<span class="badge non-vu">○ À faire</span>';
             }
 
             var retenirHtml = '';
@@ -1095,7 +1090,6 @@
                         </div>
                     </div>
                     <div class="statut">
-                        ${badgeHtml}
                         ${dateLabelHtml}
                         ${dateHtml}
                     </div>
