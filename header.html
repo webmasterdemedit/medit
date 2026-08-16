@@ -60,6 +60,83 @@
   </div>
 </div>
 
+<style>
+/* ============================================================
+   MODAL AJOUT POST - STRUCTURE UNIQUEMENT
+   Les couleurs sont dans lecture-mode.css
+   ============================================================ */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-contenu.ajout-post {
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 32px 36px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-contenu.ajout-post h3 {
+  font-size: 22px;
+  margin-bottom: 4px;
+  font-family: 'Georgia', serif;
+}
+
+.modal-contenu.ajout-post .modal-sous-titre {
+  font-size: 13px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+}
+
+.modal-contenu.ajout-post label {
+  display: block;
+  font-size: 13px;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.modal-contenu.ajout-post input,
+.modal-contenu.ajout-post textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  box-sizing: border-box;
+}
+
+.modal-contenu.ajout-post input:focus,
+.modal-contenu.ajout-post textarea:focus {
+  outline: none;
+}
+
+.modal-contenu.ajout-post .btn-submit {
+  padding: 10px 28px;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-contenu.ajout-post .btn-retour {
+  padding: 10px 28px;
+  border-radius: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+}
+</style>
+
 <script>
 // ============================================================
 // FONCTIONS HEADER
@@ -73,14 +150,6 @@ function ouvrirInscription() {
   window.location.href = '/medit/index.html';
 }
 
-function deconnecter() {
-  if (confirm('Se déconnecter ?')) {
-    localStorage.removeItem('etudiant_id');
-    localStorage.removeItem('etudiant_niveau');
-    window.location.href = '/medit/index.html';
-  }
-}
-
 function mettreAJourHeader() {
   var id = localStorage.getItem('etudiant_id');
   var nav = document.getElementById('headerNav');
@@ -89,8 +158,8 @@ function mettreAJourHeader() {
     if (id) {
       nav.innerHTML = `
         <a href="#" class="header-link" onclick="ouvrirAjoutPost(); return false;">Ajouter un post</a>
+        <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
         <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
-        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
       `;
     } else {
       nav.innerHTML = `
