@@ -187,7 +187,7 @@
     }
 
     /* ============================================================
-       GRILLE DES POSTS
+       GRILLE DES POSTS - CARTE CLICKABLE
        ============================================================ */
     .grille {
       display: flex;
@@ -203,15 +203,16 @@
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
       transition: all 0.25s ease;
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr auto;
       align-items: center;
       gap: 16px;
+      cursor: pointer;
     }
 
     .carte-post:hover {
       transform: translateY(-2px);
       box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
-      border-color: #d4cec7;
+      border-color: #2d6a4f;
     }
 
     .carte-post .infos {
@@ -227,15 +228,6 @@
       font-family: 'Georgia', 'Times New Roman', serif;
       letter-spacing: 0.2px;
       line-height: 1.3;
-    }
-
-    .carte-post .titre a {
-      color: #1a2a2e;
-      transition: color 0.2s;
-    }
-
-    .carte-post .titre a:hover {
-      color: #2d6a4f;
     }
 
     .carte-post .meta {
@@ -358,46 +350,6 @@
       display: block;
     }
 
-    .carte-post .btn-lire {
-      padding: 8px 20px;
-      background: #2d6a4f;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      text-decoration: none;
-      white-space: nowrap;
-      letter-spacing: 0.2px;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .carte-post .btn-lire:hover {
-      background: #1a4a3a;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
-    }
-
-    .carte-post .btn-lire.reviser {
-      background: #b8956a;
-    }
-
-    .carte-post .btn-lire.reviser:hover {
-      background: #a07d55;
-      box-shadow: 0 4px 12px rgba(184, 149, 106, 0.2);
-    }
-
-    .carte-post .btn-lire.lire {
-      background: #5a7a8a;
-    }
-
-    .carte-post .btn-lire.lire:hover {
-      background: #4a6a7a;
-      box-shadow: 0 4px 12px rgba(90, 122, 138, 0.2);
-    }
-
     /* ============================================================
        LOADER / VIDE
        ============================================================ */
@@ -482,10 +434,6 @@
         align-items: center;
         gap: 8px;
         justify-content: flex-start;
-      }
-      .carte-post .btn-lire {
-        text-align: center;
-        width: 100%;
       }
       .stats {
         justify-content: center;
@@ -653,7 +601,7 @@
 
   <script>
     // ============================================================
-    // mes-textes.html - VERSION AVEC DATAMANAGER
+    // mes-textes.html - VERSION AVEC CARTE CLICKABLE
     // ============================================================
 
     var toutesLesReponses = {};
@@ -731,7 +679,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE AVEC ONGLETS
+    // AFFICHAGE AVEC ONGLETS - CARTE ENTIÈRE CLICKABLE
     // ============================================================
     function afficherAvecOnglets(posts) {
         var contenu = document.getElementById('contenu');
@@ -804,7 +752,6 @@
                     dateValidation = reponse.date || '';
                     retenir = reponse.retenir || '';
 
-                    // Une lecture est validée si (total=1 et bonnes=1) OU (quiz validé)
                     if (totalQ === 1 && bonnes === 1) {
                         estLu = true;
                         estValide = true;
@@ -813,12 +760,10 @@
                     }
                 }
 
-                // Déterminer le type de contenu
                 var hasQuiz = post.hasQuiz || false;
                 var hasQuestion = post.hasQuestion || false;
                 var mots = post.mots || 0;
 
-                // Badges pour le type
                 var badgesHtml = '';
                 if (hasQuiz) {
                     badgesHtml += '<span class="badge-icone quiz">📝 Quiz</span>';
@@ -827,21 +772,6 @@
                     badgesHtml += '<span class="badge-icone question">✍️ Question</span>';
                 }
 
-                // Texte du bouton
-                var btnClass = 'btn-lire';
-                var btnText = 'Ouvrir →';
-                
-                if (estValide || estLu) {
-                    btnClass += ' reviser';
-                    btnText = 'Relire →';
-                } else if (hasQuiz || hasQuestion) {
-                    btnText = 'Faire →';
-                } else {
-                    btnClass += ' lire';
-                    btnText = 'Lire →';
-                }
-
-                // Badge de statut
                 var badgeHtml = '';
                 var dateHtml = '';
                 if (estLu) {
@@ -893,10 +823,13 @@
                     motsHtml = '<span class="mots">' + mots + ' mots</span>';
                 }
 
+                // ============================================================
+                // CARTE ENTIÈRE CLICKABLE - Suppression du bouton "Ouvrir"
+                // ============================================================
                 contenuHtml += `
-                    <div class="carte-post">
+                    <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
                         <div class="infos">
-                            <div class="titre"><a href="/medit/article.html?id=${post.id}">${post.titre}</a></div>
+                            <div class="titre">${post.titre}</div>
                             <div class="meta">
                                 <span class="niveau-badge">Niveau ${post.niveau}</span>
                                 ${badgesHtml}
@@ -908,7 +841,6 @@
                             ${badgeHtml}
                             ${dateHtml}
                         </div>
-                        <a href="/medit/article.html?id=${post.id}" class="${btnClass}">${btnText}</a>
                     </div>
                 `;
             });
