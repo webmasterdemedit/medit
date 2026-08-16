@@ -11,7 +11,14 @@
   <link rel="stylesheet" href="/medit/article.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; display: flex; flex-direction: column; background-color: #f3f0e9; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      background-color: #f3f0e9;
+      overflow-y: auto; /* ← AJOUTÉ */
+    }
     a { text-decoration: none; color: inherit; }
 
     .page-ajout { max-width: 900px; margin: 30px auto; padding: 0 20px 40px; width: 100%; flex: 1; }
@@ -33,9 +40,6 @@
     input:focus, textarea:focus, select:focus { outline: none; border-color: #b8b0a8; }
     textarea { resize: vertical; min-height: 80px; }
 
-    /* ============================================================
-       APERÇU DES SLIDES - Style article.css
-       ============================================================ */
     .slides-preview { margin: 16px 0 8px; }
     .slides-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
     .slide-card { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; padding: 14px 16px; position: relative; }
@@ -43,16 +47,12 @@
     .slide-card textarea { width: 100%; border: none; background: transparent; font-family: 'Georgia', serif; font-size: 15px; color: #2c2c2c; resize: vertical; min-height: 60px; padding: 4px 0; line-height: 1.6; }
     .slide-card textarea:focus { outline: none; background: rgba(0,0,0,0.02); border-radius: 4px; }
     .slide-card .slide-type { font-size: 10px; color: #6b7a8a; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
-
     .slide-card .btn-del-slide { position: absolute; top: 6px; right: 8px; background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 16px; }
     .slide-card .btn-del-slide:hover { color: #2c2c2c; }
 
     .btn-add-slide { margin-top: 12px; padding: 8px 20px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
     .btn-add-slide:hover { background: #e8e5e0; color: #2c2c2c; }
 
-    /* ============================================================
-       QUIZ - Réponses sur une ligne
-       ============================================================ */
     .quiz-block { background: rgba(0,0,0,0.02); border: 1px solid #d1ccc4; border-radius: 6px; padding: 14px; margin-top: 10px; }
     .quiz-question { border-bottom: 1px solid #e8e5e0; padding-bottom: 12px; margin-bottom: 12px; }
     .quiz-question:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
@@ -146,13 +146,11 @@
         </div>
 
         <!-- ============================================================
-             APERÇU DES SLIDES (éditable directement)
+             APERÇU DES SLIDES
              ============================================================ -->
         <label>Slides (aperçu)</label>
         <div class="slides-preview">
-          <div class="slides-grid" id="slidesGrid">
-            <!-- Les slides sont ajoutées ici -->
-          </div>
+          <div class="slides-grid" id="slidesGrid"></div>
           <button type="button" class="btn-add-slide" onclick="ajouterSlide()">+ Ajouter une slide</button>
         </div>
 
@@ -161,9 +159,7 @@
              ============================================================ -->
         <label>Quiz / QCM</label>
         <div id="quizContainer">
-          <div class="quiz-block" id="quizBlock">
-            <!-- Les questions sont ajoutées ici -->
-          </div>
+          <div class="quiz-block" id="quizBlock"></div>
           <button type="button" class="btn-add" onclick="ajouterQuestion()">+ Ajouter une question</button>
         </div>
 
@@ -242,7 +238,7 @@
     }
 
     // ============================================================
-    // SLIDES - GESTION
+    // SLIDES
     // ============================================================
     var slideCount = 0;
 
@@ -449,7 +445,6 @@
           btn.textContent = 'Créer';
           btn.disabled = false;
           document.getElementById('formAjoutPost').reset();
-          document.getElementById('inputContenu') && (document.getElementById('inputContenu').value = '');
           document.getElementById('inputInfos').value = '';
           document.getElementById('retenir1').value = '';
           document.getElementById('retenir2').value = '';
