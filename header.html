@@ -23,8 +23,6 @@
       <span id="headerUserName" class="header-username"></span>
     </div>
     <nav class="header-nav" id="headerNav">
-      <!-- Le lien "Ajouter un post" sera ajouté par JavaScript si admin -->
-      <!-- Le toggle "Mode Lecture" sera ajouté ici par JavaScript -->
       <!-- Les liens sont gérés par JavaScript -->
     </nav>
   </div>
@@ -61,3 +59,200 @@
     </form>
   </div>
 </div>
+
+<style>
+/* MODAL AJOUT POST */
+.modal-overlay {
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.4);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-contenu.ajout-post {
+  background: #ffffff;
+  border-radius: 16px;
+  max-width: 600px;
+  width: 90%;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 32px 36px;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-contenu.ajout-post h3 {
+  font-size: 22px;
+  color: #1a2a2e;
+  margin-bottom: 4px;
+  font-family: 'Georgia', serif;
+}
+
+.modal-contenu.ajout-post .modal-sous-titre {
+  font-size: 13px;
+  color: #94a3b8;
+  margin-bottom: 16px;
+  border-bottom: 1px solid #edeae5;
+  padding-bottom: 12px;
+}
+
+.modal-contenu.ajout-post label {
+  display: block;
+  font-size: 13px;
+  color: #94a3b8;
+  margin-top: 12px;
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.modal-contenu.ajout-post input,
+.modal-contenu.ajout-post textarea {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid #edeae5;
+  border-radius: 8px;
+  font-size: 14px;
+  font-family: 'Segoe UI', sans-serif;
+  background: #faf8f5;
+  color: #1a2a2e;
+  box-sizing: border-box;
+}
+
+.modal-contenu.ajout-post input:focus,
+.modal-contenu.ajout-post textarea:focus {
+  outline: none;
+  border-color: #b8b0a8;
+}
+
+.modal-contenu.ajout-post .btn-submit {
+  padding: 10px 28px;
+  background: #2d6a4f;
+  color: #fff;
+  border: none;
+  border-radius: 30px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-contenu.ajout-post .btn-submit:hover {
+  background: #1a4a3a;
+}
+
+.modal-contenu.ajout-post .btn-retour {
+  padding: 10px 28px;
+  background: transparent;
+  color: #94a3b8;
+  border: 1px solid #edeae5;
+  border-radius: 30px;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.modal-contenu.ajout-post .btn-retour:hover {
+  background: #f8f6f2;
+  color: #1a2a2e;
+}
+</style>
+
+<script>
+// ============================================================
+// FONCTIONS HEADER
+// ============================================================
+
+function ouvrirConnexion() {
+  window.location.href = '/medit/index.html';
+}
+
+function ouvrirInscription() {
+  window.location.href = '/medit/index.html';
+}
+
+function deconnecter() {
+  if (confirm('Se déconnecter ?')) {
+    localStorage.removeItem('etudiant_id');
+    localStorage.removeItem('etudiant_niveau');
+    window.location.href = '/medit/index.html';
+  }
+}
+
+function mettreAJourHeader() {
+  var id = localStorage.getItem('etudiant_id');
+  var nav = document.getElementById('headerNav');
+
+  if (nav) {
+    if (id) {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirAjoutPost(); return false;">Ajouter un post</a>
+        <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
+        <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+      `;
+    }
+  }
+}
+
+// ============================================================
+// AJOUTER UN POST - OUVERTURE/FERMETURE
+// ============================================================
+
+function ouvrirAjoutPost() {
+  var modal = document.getElementById('modalAjoutPost');
+  if (modal) {
+    modal.style.display = 'flex';
+    document.getElementById('inputTitre').value = '';
+    document.getElementById('inputNiveau').value = '';
+    document.getElementById('inputCategorie').value = '';
+    document.getElementById('inputContenu').value = '';
+    document.getElementById('inputQuestion').value = '';
+    document.getElementById('inputTitre').focus();
+  }
+}
+
+function fermerAjoutPost() {
+  var modal = document.getElementById('modalAjoutPost');
+  if (modal) {
+    modal.style.display = 'none';
+  }
+}
+
+function creerPost() {
+  var titre = document.getElementById('inputTitre').value.trim();
+  var niveau = document.getElementById('inputNiveau').value.trim();
+  var categorie = document.getElementById('inputCategorie').value.trim();
+  var contenu = document.getElementById('inputContenu').value.trim();
+  var question = document.getElementById('inputQuestion').value.trim();
+
+  if (!titre) { alert('Veuillez saisir un titre'); return; }
+  if (!niveau) { alert('Veuillez saisir un niveau'); return; }
+  if (!contenu) { alert('Veuillez saisir le contenu'); return; }
+
+  var btn = document.querySelector('#formAjoutPost .btn-submit');
+  btn.textContent = 'Création...';
+  btn.disabled = true;
+
+  DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
+    .then(function() {
+      alert('✅ Post créé avec succès !');
+      fermerAjoutPost();
+      btn.textContent = 'Créer';
+      btn.disabled = false;
+      if (window.location.pathname.includes('mes-textes.html')) {
+        window.location.reload();
+      }
+    })
+    .catch(function(err) {
+      alert('❌ Erreur : ' + err.message);
+      btn.textContent = 'Créer';
+      btn.disabled = false;
+    });
+}
+</script>
