@@ -3,175 +3,90 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ajouter un texte</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✎</text></svg>" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Administration</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <style>
     /* ============================================================
-       PAGE AJOUT POST - STRUCTURE UNIQUEMENT
-       Les couleurs sont dans lecture-mode.css
+       STRUCTURE UNIQUEMENT - les couleurs sont dans lecture-mode.css
        ============================================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; }
+    a { text-decoration: none; color: inherit; }
 
-    body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      background-color: #f3f0e9;
-    }
+    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1; width: 100%; }
 
-    .page-ajout {
-      max-width: 700px;
-      margin: 40px auto;
-      padding: 0 20px 40px;
-      width: 100%;
-      flex: 1;
-    }
+    .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #d1ccc4; }
+    .header-admin h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; }
+    .header-admin .btn-ajout { padding: 8px 20px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
+    .header-admin .btn-ajout:hover { background: #e8e5e0; }
 
-    .page-ajout h1 {
-      font-size: 28px;
-      font-weight: 400;
-      font-family: 'Georgia', serif;
-      margin-bottom: 4px;
-      color: #2c2c2c;
-    }
+    .stats-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-radius: 4px; padding: 14px 24px; margin-bottom: 24px; border: 1px solid #d1ccc4; }
+    .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b7a8a; }
+    .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; color: #2c2c2c; font-family: 'Georgia', serif; }
+    .stats-ligne .sep { color: #d1ccc4; font-size: 18px; }
 
-    .page-ajout .sous-titre {
-      font-size: 15px;
-      color: #6b7a8a;
-      margin-bottom: 24px;
-      font-style: italic;
-    }
+    .tabs-container { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; padding: 4px 0; border-bottom: 1px solid #d1ccc4; }
+    .tab-btn { padding: 10px 28px; background: transparent; border: none; border-bottom: 2px solid transparent; font-size: 15px; font-weight: 500; color: #6b7a8a; cursor: pointer; font-family: 'Segoe UI', sans-serif; border-radius: 0; }
+    .tab-btn:hover { color: #2c2c2c; background: #e8e5e0; }
+    .tab-btn.active { color: #2c2c2c; border-bottom-color: #2c2c2c; font-weight: 600; }
+    .tab-btn .compteur-tab { display: inline-block; background: #e8e5e0; color: #6b7a8a; font-size: 11px; font-weight: 600; padding: 0 10px; border-radius: 30px; margin-left: 6px; line-height: 20px; }
+    .tab-btn.active .compteur-tab { background: #e8e5e0; color: #2c2c2c; }
 
-    .carte-ajout {
-      background: #f3f0e9;
-      border-radius: 4px;
-      padding: 32px 36px;
-      border: 1px solid #d1ccc4;
-      margin-bottom: 24px;
-    }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
 
-    .carte-ajout label {
-      display: block;
-      font-size: 13px;
-      color: #6b7a8a;
-      margin-top: 16px;
-      margin-bottom: 4px;
-      font-weight: 500;
-    }
+    .grille { display: flex; flex-direction: column; gap: 10px; }
+    .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; }
+    .carte-post .infos { display: flex; flex-direction: column; gap: 4px; }
+    .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; }
+    .carte-post .meta { font-size: 12px; color: #6b7a8a; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .carte-post .meta .badge { padding: 1px 10px; border-radius: 30px; font-size: 11px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
+    .carte-post .meta .badge.publie { background: #e8e5e0; color: #2c2c2c; }
+    .carte-post .meta .badge.brouillon { background: #e8e5e0; color: #6b7a8a; }
+    .carte-post .actions { display: flex; gap: 8px; }
+    .carte-post .actions button { padding: 6px 14px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .carte-post .actions button:hover { background: #e8e5e0; color: #2c2c2c; }
+    .carte-post .actions .btn-supprimer:hover { background: #f5f0eb; color: #6b7a8a; }
 
-    .carte-ajout label:first-of-type {
-      margin-top: 0;
-    }
+    .loader { text-align: center; padding: 60px 20px; color: #b8b0a8; }
+    .loader .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #d1ccc4; border-top-color: #2c2c2c; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
 
-    .carte-ajout input,
-    .carte-ajout textarea {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #d1ccc4;
-      border-radius: 8px;
-      font-size: 14px;
-      font-family: 'Segoe UI', sans-serif;
-      background: #faf8f5;
-      color: #2c2c2c;
-      box-sizing: border-box;
-    }
+    .vide { text-align: center; padding: 60px 20px; border: 1px solid #d1ccc4; border-radius: 4px; background: #f3f0e9; }
+    .vide .icone { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
+    .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 4px; }
+    .vide p { color: #b8b0a8; font-size: 15px; }
 
-    .carte-ajout input:focus,
-    .carte-ajout textarea:focus {
-      outline: none;
-      border-color: #b8b0a8;
-    }
-
-    .carte-ajout textarea {
-      resize: vertical;
-      min-height: 120px;
-    }
-
-    .btn-groupe {
-      display: flex;
-      gap: 12px;
-      margin-top: 20px;
-    }
-
-    .btn-submit {
-      padding: 10px 28px;
-      background: transparent;
-      color: #2c2c2c;
-      border: 1px solid #d1ccc4;
-      border-radius: 30px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .btn-submit:hover {
-      background: #e8e5e0;
-    }
-
-    .btn-retour {
-      padding: 10px 28px;
-      background: transparent;
-      color: #6b7a8a;
-      border: 1px solid #d1ccc4;
-      border-radius: 30px;
-      font-size: 14px;
-      cursor: pointer;
-      font-family: 'Segoe UI', sans-serif;
-      text-decoration: none;
-      display: inline-block;
-    }
-
-    .btn-retour:hover {
-      background: #e8e5e0;
-      color: #2c2c2c;
-    }
-
-    .message {
-      margin-top: 12px;
-      font-size: 14px;
-      text-align: center;
-      padding: 8px 12px;
-      border-radius: 4px;
-    }
-
-    .message.success {
-      color: #2c2c2c;
-      background: #e8e5e0;
-    }
-
-    .message.error {
-      color: #6b7a8a;
-      background: #f5f0eb;
-    }
+    /* MODAL AJOUT POST (copié depuis addpost.html) */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
+    .modal-overlay.visible { display: flex; }
+    .modal-contenu.ajout-post { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 32px 36px; font-family: 'Segoe UI', sans-serif; }
+    .modal-contenu.ajout-post h3 { font-size: 22px; margin-bottom: 4px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .modal-contenu.ajout-post .modal-sous-titre { font-size: 13px; color: #6b7a8a; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #d1ccc4; }
+    .modal-contenu.ajout-post label { display: block; font-size: 13px; color: #6b7a8a; margin-top: 12px; margin-bottom: 4px; font-weight: 500; }
+    .modal-contenu.ajout-post input, .modal-contenu.ajout-post textarea, .modal-contenu.ajout-post select { width: 100%; padding: 10px 14px; border: 1px solid #d1ccc4; border-radius: 8px; font-size: 14px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; box-sizing: border-box; }
+    .modal-contenu.ajout-post input:focus, .modal-contenu.ajout-post textarea:focus, .modal-contenu.ajout-post select:focus { outline: none; border-color: #b8b0a8; }
+    .modal-contenu.ajout-post textarea { resize: vertical; min-height: 120px; }
+    .modal-contenu.ajout-post select { appearance: auto; cursor: pointer; }
+    .btn-groupe { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
+    .btn-submit { padding: 10px 28px; background: transparent; color: #2c2c2c; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+    .btn-submit:hover { background: #e8e5e0; }
+    .btn-retour { padding: 10px 28px; background: transparent; color: #6b7a8a; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+    .btn-retour:hover { background: #e8e5e0; color: #2c2c2c; }
+    .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; }
+    .message.success { color: #2c2c2c; background: #e8e5e0; }
+    .message.error { color: #6b7a8a; background: #f5f0eb; }
 
     @media (max-width: 640px) {
-      .page-ajout {
-        padding: 0 16px 30px;
-        margin: 20px auto;
-      }
-      .carte-ajout {
-        padding: 20px 18px;
-      }
-      .page-ajout h1 {
-        font-size: 24px;
-      }
-      .btn-groupe {
-        flex-direction: column;
-      }
-      .btn-submit,
-      .btn-retour {
-        width: 100%;
-        text-align: center;
-      }
+      .carte-post { grid-template-columns: 1fr; gap: 8px; }
+      .carte-post .actions { justify-content: flex-start; }
+      .modal-contenu.ajout-post { padding: 20px 16px; }
+      .btn-groupe { flex-direction: column; }
+      .btn-submit, .btn-retour { width: 100%; text-align: center; }
     }
   </style>
 </head>
@@ -194,14 +109,49 @@
       });
   </script>
 
-  <!-- ========== PAGE ========== -->
-  <div class="page-ajout">
+  <!-- ========== PAGE ADMIN ========== -->
+  <div class="page">
 
-    <h1>Ajouter un texte</h1>
-    <p class="sous-titre">Remplissez les champs ci-dessous pour créer une nouvelle méditation.</p>
+    <div class="header-admin">
+      <h1>⚙ Administration</h1>
+      <button class="btn-ajout" onclick="ouvrirModalAjout()">+ Ajouter un texte</button>
+    </div>
 
-    <div class="carte-ajout">
+    <!-- STATS -->
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item"><span>Total :</span><span class="nombre" id="totalPosts">0</span></div>
+      <span class="sep">|</span>
+      <div class="stat-item"><span>Publiés :</span><span class="nombre" id="publiesPosts">0</span></div>
+      <span class="sep">|</span>
+      <div class="stat-item"><span>Brouillons :</span><span class="nombre" id="brouillonsPosts">0</span></div>
+    </div>
+
+    <!-- ONGLETS -->
+    <div class="tabs-container" id="tabsContainer">
+      <button class="tab-btn active" data-tab="tous" onclick="switchTab('tous')">Tous <span class="compteur-tab" id="compteurTous">0</span></button>
+      <button class="tab-btn" data-tab="publies" onclick="switchTab('publies')">Publiés <span class="compteur-tab" id="compteurPublies">0</span></button>
+      <button class="tab-btn" data-tab="brouillons" onclick="switchTab('brouillons')">Brouillons <span class="compteur-tab" id="compteurBrouillons">0</span></button>
+    </div>
+
+    <!-- CONTENU -->
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des textes...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ========== MODAL AJOUT / MODIFICATION ========== -->
+  <div id="modalAjoutPost" class="modal-overlay">
+    <div class="modal-contenu ajout-post">
+      <h3 id="modalTitre">Ajouter un texte</h3>
+      <div class="modal-sous-titre">Remplissez les champs ci-dessous</div>
+
       <form id="formAjoutPost" onsubmit="return false;">
+        <input type="hidden" id="editId" value="">
+
         <label>Titre *</label>
         <input type="text" id="inputTitre" placeholder="Titre du texte" required>
 
@@ -217,15 +167,20 @@
         <label>Question</label>
         <textarea id="inputQuestion" rows="3" placeholder="Question ouverte (optionnel)"></textarea>
 
+        <label>Statut</label>
+        <select id="inputStatut">
+          <option value="brouillon">Brouillon</option>
+          <option value="publie">Publié</option>
+        </select>
+
         <div class="btn-groupe">
-          <button type="button" onclick="creerPost()" class="btn-submit">Créer</button>
-          <a href="/medit/mes-textes.html" class="btn-retour">Annuler</a>
+          <button type="button" onclick="enregistrerPost()" class="btn-submit" id="btnEnregistrer">Enregistrer</button>
+          <button type="button" onclick="fermerModalAjout()" class="btn-retour">Annuler</button>
         </div>
 
         <div id="messageAjout" class="message" style="display:none;"></div>
       </form>
     </div>
-
   </div>
 
   <!-- ========== FOOTER ========== -->
@@ -247,47 +202,259 @@
 
   <script>
     // ============================================================
-    // AJOUTER UN POST - PAGE AUTONOME
+    // ADMIN - GESTION DES POSTS
     // ============================================================
 
-    function creerPost() {
+    var tousLesPosts = [];
+    var postsFiltres = [];
+    var ongletActuel = 'tous';
+    var modeEdition = false;
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerAdmin() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      DataManager.charger()
+        .then(function(data) {
+          tousLesPosts = data.posts || [];
+          // Ajouter le statut par défaut (brouillon) si absent
+          tousLesPosts.forEach(function(p) {
+            if (!p.statut) p.statut = 'publie';
+          });
+          afficherAdmin();
+        })
+        .catch(function() {
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            tousLesPosts = cache.posts || [];
+            tousLesPosts.forEach(function(p) {
+              if (!p.statut) p.statut = 'publie';
+            });
+            afficherAdmin();
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('contenu').innerHTML = `
+              <div class="vide">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+                <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:30px;cursor:pointer;">Réessayer</button>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHAGE
+    // ============================================================
+    function afficherAdmin() {
+      document.getElementById('loader').style.display = 'none';
+
+      // Stats
+      var total = tousLesPosts.length;
+      var publies = tousLesPosts.filter(function(p) { return p.statut === 'publie'; }).length;
+      var brouillons = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; }).length;
+
+      document.getElementById('totalPosts').textContent = total;
+      document.getElementById('publiesPosts').textContent = publies;
+      document.getElementById('brouillonsPosts').textContent = brouillons;
+
+      document.getElementById('compteurTous').textContent = total;
+      document.getElementById('compteurPublies').textContent = publies;
+      document.getElementById('compteurBrouillons').textContent = brouillons;
+
+      // Filtrer selon l'onglet
+      if (ongletActuel === 'tous') {
+        postsFiltres = tousLesPosts.slice();
+      } else if (ongletActuel === 'publies') {
+        postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'publie'; });
+      } else {
+        postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
+      }
+
+      afficherPosts(postsFiltres);
+    }
+
+    // ============================================================
+    // AFFICHER LES POSTS
+    // ============================================================
+    function afficherPosts(posts) {
+      var container = document.getElementById('contenu');
+
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="vide">
+            <span class="icone">📭</span>
+            <h2>Aucun texte</h2>
+            <p>Aucun texte dans cette catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="grille">';
+
+      posts.forEach(function(post) {
+        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
+        var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
+
+        html += `
+          <div class="carte-post">
+            <div class="infos">
+              <div class="titre">${post.titre}</div>
+              <div class="meta">
+                <span>Niveau ${post.niveau}</span>
+                <span>${post.categorie || 'Sans catégorie'}</span>
+                <span class="badge ${statutClass}">${statutLabel}</span>
+                ${post.mots ? '<span>' + post.mots + ' mots</span>' : ''}
+              </div>
+            </div>
+            <div class="actions">
+              <button onclick="modifierPost('${post.id}')">✎ Modifier</button>
+              <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">✕</button>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // CHANGER D'ONGLET
+    // ============================================================
+    function switchTab(tab) {
+      ongletActuel = tab;
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.tab === tab) el.classList.add('active');
+      });
+      afficherAdmin();
+    }
+
+    // ============================================================
+    // MODAL AJOUT / MODIFICATION
+    // ============================================================
+    function ouvrirModalAjout() {
+      modeEdition = false;
+      document.getElementById('modalTitre').textContent = 'Ajouter un texte';
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+      document.getElementById('editId').value = '';
+      document.getElementById('inputTitre').value = '';
+      document.getElementById('inputNiveau').value = '';
+      document.getElementById('inputCategorie').value = '';
+      document.getElementById('inputContenu').value = '';
+      document.getElementById('inputQuestion').value = '';
+      document.getElementById('inputStatut').value = 'brouillon';
+      document.getElementById('messageAjout').style.display = 'none';
+      document.getElementById('modalAjoutPost').classList.add('visible');
+      document.getElementById('inputTitre').focus();
+    }
+
+    function modifierPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) return;
+
+      modeEdition = true;
+      document.getElementById('modalTitre').textContent = 'Modifier le texte';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('editId').value = postId;
+      document.getElementById('inputTitre').value = post.titre || '';
+      document.getElementById('inputNiveau').value = post.niveau || '';
+      document.getElementById('inputCategorie').value = post.categorie || '';
+      document.getElementById('inputContenu').value = post.contenu || '';
+      document.getElementById('inputQuestion').value = post.question_ouverte || '';
+      document.getElementById('inputStatut').value = post.statut || 'brouillon';
+      document.getElementById('messageAjout').style.display = 'none';
+      document.getElementById('modalAjoutPost').classList.add('visible');
+      document.getElementById('inputTitre').focus();
+    }
+
+    function fermerModalAjout() {
+      document.getElementById('modalAjoutPost').classList.remove('visible');
+    }
+
+    // ============================================================
+    // ENREGISTRER POST (AJOUT OU MODIFICATION)
+    // ============================================================
+    function enregistrerPost() {
+      var id = document.getElementById('editId').value;
       var titre = document.getElementById('inputTitre').value.trim();
       var niveau = document.getElementById('inputNiveau').value.trim();
       var categorie = document.getElementById('inputCategorie').value.trim();
       var contenu = document.getElementById('inputContenu').value.trim();
       var question = document.getElementById('inputQuestion').value.trim();
+      var statut = document.getElementById('inputStatut').value;
       var msg = document.getElementById('messageAjout');
 
       if (!titre) { msg.textContent = 'Veuillez saisir un titre'; msg.style.display = 'block'; msg.className = 'message error'; return; }
       if (!niveau) { msg.textContent = 'Veuillez saisir un niveau'; msg.style.display = 'block'; msg.className = 'message error'; return; }
       if (!contenu) { msg.textContent = 'Veuillez saisir le contenu'; msg.style.display = 'block'; msg.className = 'message error'; return; }
 
-      var btn = document.querySelector('#formAjoutPost .btn-submit');
-      btn.textContent = 'Création...';
+      var btn = document.getElementById('btnEnregistrer');
+      btn.textContent = 'Enregistrement...';
       btn.disabled = true;
       msg.style.display = 'none';
 
+      if (modeEdition && id) {
+        // MODIFICATION : on appelle une nouvelle action updatePost
+        // Pour l'instant, on simule en supprimant et recréant
+        // TODO: Ajouter action updatePost dans Google Script
+        alert('⚠️ La modification sera disponible prochainement. Pour l\'instant, vous pouvez supprimer et recréer.');
+        btn.textContent = modeEdition ? 'Mettre à jour' : 'Enregistrer';
+        btn.disabled = false;
+        return;
+      }
+
+      // AJOUT
       DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
         .then(function() {
           msg.textContent = '✅ Post créé avec succès !';
           msg.style.display = 'block';
           msg.className = 'message success';
-          btn.textContent = 'Créer';
+          btn.textContent = 'Enregistré';
           btn.disabled = false;
-          document.getElementById('inputTitre').value = '';
-          document.getElementById('inputNiveau').value = '';
-          document.getElementById('inputCategorie').value = '';
-          document.getElementById('inputContenu').value = '';
-          document.getElementById('inputQuestion').value = '';
-          document.getElementById('inputTitre').focus();
+          fermerModalAjout();
+          chargerAdmin();
         })
         .catch(function(err) {
           msg.textContent = '❌ Erreur : ' + err.message;
           msg.style.display = 'block';
           msg.className = 'message error';
-          btn.textContent = 'Créer';
+          btn.textContent = modeEdition ? 'Mettre à jour' : 'Enregistrer';
           btn.disabled = false;
         });
+    }
+
+    // ============================================================
+    // SUPPRIMER UN POST
+    // ============================================================
+    function supprimerPost(postId) {
+      if (!confirm('Supprimer ce texte définitivement ?')) return;
+
+      // TODO: Ajouter action deletePost dans Google Script
+      alert('⚠️ La suppression sera disponible prochainement.');
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      chargerAdmin();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
     }
   </script>
 
