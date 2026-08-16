@@ -113,15 +113,38 @@
   <div id="header-container"></div>
 
   <script>
-   fetch('/medit/header.html')
-  .then(function(response) { return response.text(); })
-  .then(function(data) {
-    document.getElementById('header-container').innerHTML = data;
-    // Plus d'appel à mettreAJourHeader()
-  })
-  .catch(function(error) {
-    console.error('Erreur chargement header:', error);
-  });
+    // Chargement simplifié du header - sans fonction mettreAJourHeader
+    fetch('/medit/header.html')
+      .then(function(response) { 
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text(); 
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        // Header de secours en cas d'erreur
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
 
     // ============================================================
     // MODE SOMBRE
@@ -139,6 +162,15 @@
         document.body.classList.add('dark-mode');
       }
     })();
+
+    // Fonctions pour la connexion (utilisées par le header de secours)
+    function ouvrirConnexion() {
+      window.location.href = '/medit/index.html';
+    }
+
+    function ouvrirInscription() {
+      window.location.href = '/medit/index.html';
+    }
   </script>
 
   <div class="page">
@@ -210,7 +242,7 @@
 
   <script>
     // ============================================================
-    // mes-textes.html
+    // mes-textes.html - Logique principale
     // ============================================================
 
     var toutesLesReponses = {};
@@ -222,6 +254,7 @@
       if (confirm('Se déconnecter ?')) {
         localStorage.removeItem('etudiant_id');
         localStorage.removeItem('etudiant_niveau');
+        localStorage.removeItem('etudiant_nom');
         window.location.href = '/medit/index.html';
       }
     }
