@@ -8,10 +8,9 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
-  <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <style>
     /* ============================================================
-       STYLES SPÉCIFIQUES À MES-TEXTES
+       RESET & BASE
        ============================================================ */
     * {
       margin: 0;
@@ -34,6 +33,9 @@
       color: inherit;
     }
 
+    /* ============================================================
+       PAGE
+       ============================================================ */
     .page {
       max-width: 1000px;
       margin: 0 auto;
@@ -42,7 +44,9 @@
       width: 100%;
     }
 
-    /* NIVEAU + STATS */
+    /* ============================================================
+       NIVEAU + STATS sur une ligne
+       ============================================================ */
     .niveau-container {
       display: flex;
       flex-wrap: wrap;
@@ -59,6 +63,7 @@
       display: flex;
       align-items: center;
       gap: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
     .niveau-badge .label {
@@ -84,6 +89,7 @@
       border-radius: 14px;
       padding: 14px 24px;
       border: 1px solid #edeae5;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
     .stats-ligne .stat-item {
@@ -110,7 +116,9 @@
       font-size: 18px;
     }
 
-    /* ONGLETS PRINCIPAUX */
+    /* ============================================================
+       ONGLETS - 2 onglets : À lire / Lus (soulignés)
+       ============================================================ */
     .tabs-container {
       display: flex;
       flex-wrap: wrap;
@@ -163,7 +171,9 @@
       color: #2d6a4f;
     }
 
-    /* SOUS-ONGLETS CATÉGORIES */
+    /* ============================================================
+       SOUS-ONGLETS CATÉGORIES - Style encadré arrondi (liseuse)
+       ============================================================ */
     .sous-tabs-container {
       display: flex;
       flex-wrap: wrap;
@@ -174,7 +184,7 @@
 
     .sous-tab-btn {
       padding: 6px 18px;
-      background: #ffffff;
+      background: transparent;
       border: 1.5px solid #edeae5;
       border-radius: 30px;
       font-size: 13px;
@@ -183,6 +193,7 @@
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Segoe UI', -apple-system, sans-serif;
+      background: #ffffff;
     }
 
     .sous-tab-btn:hover {
@@ -215,7 +226,18 @@
       color: #ffffff;
     }
 
-    /* GRILLE DES POSTS */
+    .sous-tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .sous-tab-content.active {
+      display: block;
+    }
+
+    /* ============================================================
+       GRILLE DES POSTS - CARTE CLICKABLE - Style liseuse
+       ============================================================ */
     .grille {
       display: flex;
       flex-direction: column;
@@ -227,6 +249,7 @@
       border-radius: 14px;
       padding: 16px 22px;
       border: 1px solid #edeae5;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
       transition: all 0.25s ease;
       display: grid;
       grid-template-columns: 1fr auto;
@@ -237,6 +260,7 @@
 
     .carte-post:hover {
       transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.05);
       border-color: #2d6a4f;
     }
 
@@ -275,9 +299,6 @@
       display: inline-block;
     }
 
-    /* ============================================================
-       BADGE-ICONE - UTILISE LA CLASSE EXISTANTE DANS LECTURE-MODE
-       ============================================================ */
     .carte-post .meta .badge-icone {
       font-size: 12px;
       display: inline-block;
@@ -288,14 +309,29 @@
       font-weight: 500;
     }
 
-    .carte-post .meta .badge-icone.quiz {
+    .carte-post .meta .badge-icone.info {
+      background: #f0ede8;
+      color: #64748b;
+    }
+
+    .carte-post .meta .badge-icone.ok {
       background: #e8f5e9;
       color: #2d6a4f;
     }
 
-    .carte-post .meta .badge-icone.question {
-      background: #fef3e8;
-      color: #8a6a3a;
+    .carte-post .meta .badge-icone.ko {
+      background: #f5f0eb;
+      color: #b8b0a8;
+    }
+
+    .carte-post .meta .badge-icone.clickable {
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .carte-post .meta .badge-icone.clickable:hover {
+      background: #e0d8d0;
+      transform: scale(1.02);
     }
 
     .carte-post .meta .mots {
@@ -332,7 +368,9 @@
       color: #94a3b8;
     }
 
-    /* STATUT */
+    /* ============================================================
+       STATUT DANS LA CARTE
+       ============================================================ */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
@@ -361,7 +399,9 @@
       display: inline;
     }
 
-    /* MODAL */
+    /* ============================================================
+       MODAL POPUP - Style liseuse
+       ============================================================ */
     .modal-overlay {
       position: fixed;
       top: 0;
@@ -373,6 +413,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      animation: fadeIn 0.3s ease;
     }
 
     .modal-contenu {
@@ -383,6 +424,7 @@
       max-height: 80vh;
       overflow-y: auto;
       padding: 32px 36px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.15);
       font-family: 'Georgia', serif;
       line-height: 1.7;
     }
@@ -425,6 +467,14 @@
       margin-bottom: 2px;
     }
 
+    .modal-contenu .modal-annotation .slide-num {
+      font-size: 12px;
+      color: #b8b0a8;
+      font-weight: 400;
+      margin-top: 4px;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
     .modal-contenu .modal-close {
       margin-top: 20px;
       padding: 8px 28px;
@@ -434,6 +484,7 @@
       font-size: 13px;
       color: #94a3b8;
       cursor: pointer;
+      transition: all 0.3s ease;
       font-family: 'Segoe UI', sans-serif;
     }
 
@@ -450,7 +501,9 @@
       font-family: 'Segoe UI', sans-serif;
     }
 
-    /* LOADER / VIDE */
+    /* ============================================================
+       LOADER / VIDE
+       ============================================================ */
     .loader {
       text-align: center;
       padding: 60px 20px;
@@ -502,7 +555,9 @@
       font-size: 15px;
     }
 
-    /* DEVISE */
+    /* ============================================================
+       DEVISE
+       ============================================================ */
     .devise {
       text-align: center;
       padding: 28px 0 8px;
@@ -515,7 +570,9 @@
       font-family: 'Georgia', serif;
     }
 
-    /* DÉCONNEXION */
+    /* ============================================================
+       DÉCONNEXION EN BAS
+       ============================================================ */
     .deconnexion-bas {
       text-align: center;
       padding: 16px 0 8px;
@@ -530,6 +587,7 @@
       font-size: 13px;
       color: #94a3b8;
       cursor: pointer;
+      transition: all 0.3s ease;
       font-family: 'Segoe UI', sans-serif;
     }
 
@@ -539,7 +597,9 @@
       background: #f8f6f2;
     }
 
-    /* RESPONSIVE */
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
     @media (max-width: 768px) {
       .carte-post {
         grid-template-columns: 1fr;
@@ -614,7 +674,7 @@
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- ========== HEADER ========== -->
   <div id="header-container"></div>
 
   <script>
@@ -663,7 +723,7 @@
 
   <div class="page">
 
-    <!-- NIVEAU + STATS -->
+    <!-- NIVEAU + STATS sur une ligne -->
     <div class="niveau-container" id="niveauContainer">
       <div class="niveau-badge">
         <span class="label">Vous êtes inscrit au niveau</span>
@@ -687,10 +747,10 @@
       </div>
     </div>
 
-    <!-- ONGLETS PRINCIPAUX -->
+    <!-- ONGLETS PRINCIPAUX : À lire / Lus -->
     <div class="tabs-container" id="tabsContainer"></div>
 
-    <!-- CONTENU -->
+    <!-- CONTENU PRINCIPAL -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -702,7 +762,7 @@
       “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
 
-    <!-- DÉCONNEXION -->
+    <!-- DÉCONNEXION EN BAS -->
     <div class="deconnexion-bas">
       <button onclick="deconnecter()">Se déconnecter</button>
     </div>
@@ -731,11 +791,10 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
-  <script src="/medit/lecture-mode.js"></script>
 
   <script>
     // ============================================================
-    // mes-textes.html
+    // mes-textes.html - VERSION LISEUSE PAPERINK
     // ============================================================
 
     var toutesLesReponses = {};
@@ -810,7 +869,7 @@
     }
 
     // ============================================================
-    // CHARGEMENT
+    // CHARGEMENT AVEC DATAMANAGER
     // ============================================================
     function chargerTableauDeBord() {
         var id = localStorage.getItem('etudiant_id');
@@ -877,7 +936,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE
+    // AFFICHAGE AVEC 2 ONGLETS
     // ============================================================
     function afficherAvecOnglets(posts) {
         var contenu = document.getElementById('contenu');
@@ -979,7 +1038,7 @@
     }
 
     // ============================================================
-    // CHANGER D'ONGLET
+    // CHANGER D'ONGLET PRINCIPAL
     // ============================================================
     function switchOnglet(onglet) {
         ongletActuel = onglet;
@@ -1044,7 +1103,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES POSTS
+    // AFFICHER LES POSTS FILTRÉS
     // ============================================================
     function afficherPosts(posts) {
         var container = document.getElementById('sous-contenu');
@@ -1088,19 +1147,18 @@
             var hasQuestion = post.hasQuestion || false;
             var mots = post.mots || 0;
 
-            // Nbr questions (quiz + question)
+            // --- "À lire" : Nbr questions (quiz + question) ---
             var nbQuestions = 0;
             if (hasQuiz) nbQuestions++;
             if (hasQuestion) nbQuestions++;
 
-            // --- MÉTADONNÉES AVEC LA CLASSE badge-icone UNIQUEMENT ---
+            // --- "Lus" : métadonnées ---
             var metaHtml = '';
 
             if (ongletActuel === 'a-lire') {
-                // "À lire" : Nbr questions
-                metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
+                metaHtml = '<span class="badge-icone info">Nbr questions : ' + nbQuestions + '</span>';
             } else {
-                // "Lus" : résultat, question, annoté
+                // Lus : résultat, question, annoté
                 var resultatHtml = '';
                 var questionHtml = '';
                 var annoteHtml = '';
@@ -1109,34 +1167,33 @@
                     var bonnes = reponse.bonnes || 0;
                     var total = reponse.total || 0;
                     if (total > 0) {
-                        resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+                        resultatHtml = '<span class="badge-icone info">Résultat : ' + bonnes + '/' + total + '</span>';
                     }
 
                     var reponseOuverte = reponse.reponseOuverte || '';
                     if (reponseOuverte && reponseOuverte.trim() !== '') {
-                        questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
+                        questionHtml = '<span class="badge-icone ok">Question envoyée ✓</span>';
                     } else if (hasQuestion) {
-                        questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+                        questionHtml = '<span class="badge-icone ko">Question non envoyée</span>';
                     }
 
                     var annotations = reponse.annotations || '';
                     if (annotations && annotations.trim() !== '') {
-                        annoteHtml = '<span class="badge-icone" style="cursor:pointer;" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+                        annoteHtml = '<span class="badge-icone clickable ok" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
                     } else {
-                        annoteHtml = '<span class="badge-icone">Non annoté</span>';
+                        annoteHtml = '<span class="badge-icone ko">Non annoté</span>';
                     }
                 } else {
-                    resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+                    resultatHtml = '<span class="badge-icone info">Résultat : 0/0</span>';
                     if (hasQuestion) {
-                        questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+                        questionHtml = '<span class="badge-icone ko">Question non envoyée</span>';
                     }
-                    annoteHtml = '<span class="badge-icone">Non annoté</span>';
+                    annoteHtml = '<span class="badge-icone ko">Non annoté</span>';
                 }
 
                 metaHtml = resultatHtml + questionHtml + annoteHtml;
             }
 
-            // DATE
             var dateHtml = '';
             var dateLabelHtml = '';
 
@@ -1218,6 +1275,7 @@
         demarrer();
     }
   </script>
-
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <script src="/medit/lecture-mode.js"></script>
 </body>
 </html>
