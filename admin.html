@@ -10,9 +10,6 @@
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <style>
-    /* ============================================================
-       STRUCTURE UNIQUEMENT - les couleurs sont dans lecture-mode.css
-       ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; }
     a { text-decoration: none; color: inherit; }
@@ -61,10 +58,12 @@
     .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 4px; }
     .vide p { color: #b8b0a8; font-size: 15px; }
 
-    /* MODAL AJOUT POST (copié depuis addpost.html) */
+    /* MODAL */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
     .modal-overlay.visible { display: flex; }
-    .modal-contenu.ajout-post { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 32px 36px; font-family: 'Segoe UI', sans-serif; }
+    .modal-contenu.ajout-post { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 32px 36px; font-family: 'Segoe UI', sans-serif; position: relative; }
+    .modal-contenu.ajout-post .modal-close { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 24px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .modal-contenu.ajout-post .modal-close:hover { color: #2c2c2c; }
     .modal-contenu.ajout-post h3 { font-size: 22px; margin-bottom: 4px; font-family: 'Georgia', serif; color: #2c2c2c; }
     .modal-contenu.ajout-post .modal-sous-titre { font-size: 13px; color: #6b7a8a; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #d1ccc4; }
     .modal-contenu.ajout-post label { display: block; font-size: 13px; color: #6b7a8a; margin-top: 12px; margin-bottom: 4px; font-weight: 500; }
@@ -92,7 +91,6 @@
 </head>
 <body>
 
-  <!-- ========== HEADER ========== -->
   <div id="header-container"></div>
 
   <script>
@@ -109,7 +107,7 @@
       });
   </script>
 
-  <!-- ========== PAGE ADMIN ========== -->
+  <!-- PAGE ADMIN -->
   <div class="page">
 
     <div class="header-admin">
@@ -117,7 +115,6 @@
       <button class="btn-ajout" onclick="ouvrirModalAjout()">+ Ajouter un texte</button>
     </div>
 
-    <!-- STATS -->
     <div class="stats-ligne" id="statsLigne">
       <div class="stat-item"><span>Total :</span><span class="nombre" id="totalPosts">0</span></div>
       <span class="sep">|</span>
@@ -126,14 +123,12 @@
       <div class="stat-item"><span>Brouillons :</span><span class="nombre" id="brouillonsPosts">0</span></div>
     </div>
 
-    <!-- ONGLETS -->
     <div class="tabs-container" id="tabsContainer">
       <button class="tab-btn active" data-tab="tous" onclick="switchTab('tous')">Tous <span class="compteur-tab" id="compteurTous">0</span></button>
       <button class="tab-btn" data-tab="publies" onclick="switchTab('publies')">Publiés <span class="compteur-tab" id="compteurPublies">0</span></button>
       <button class="tab-btn" data-tab="brouillons" onclick="switchTab('brouillons')">Brouillons <span class="compteur-tab" id="compteurBrouillons">0</span></button>
     </div>
 
-    <!-- CONTENU -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -143,9 +138,10 @@
 
   </div>
 
-  <!-- ========== MODAL AJOUT / MODIFICATION ========== -->
+  <!-- MODAL -->
   <div id="modalAjoutPost" class="modal-overlay">
     <div class="modal-contenu ajout-post">
+      <button class="modal-close" onclick="fermerModalAjout()">✕</button>
       <h3 id="modalTitre">Ajouter un texte</h3>
       <div class="modal-sous-titre">Remplissez les champs ci-dessous</div>
 
@@ -183,7 +179,6 @@
     </div>
   </div>
 
-  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
   <script>
@@ -201,41 +196,26 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // ADMIN - GESTION DES POSTS
-    // ============================================================
-
     var tousLesPosts = [];
     var postsFiltres = [];
     var ongletActuel = 'tous';
     var modeEdition = false;
 
-    // ============================================================
-    // CHARGEMENT
-    // ============================================================
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
+      if (!id) { window.location.href = '/medit/index.html'; return; }
 
       DataManager.charger()
         .then(function(data) {
           tousLesPosts = data.posts || [];
-          // Ajouter le statut par défaut (brouillon) si absent
-          tousLesPosts.forEach(function(p) {
-            if (!p.statut) p.statut = 'publie';
-          });
+          tousLesPosts.forEach(function(p) { if (!p.statut) p.statut = 'publie'; });
           afficherAdmin();
         })
         .catch(function() {
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             tousLesPosts = cache.posts || [];
-            tousLesPosts.forEach(function(p) {
-              if (!p.statut) p.statut = 'publie';
-            });
+            tousLesPosts.forEach(function(p) { if (!p.statut) p.statut = 'publie'; });
             afficherAdmin();
           } else {
             document.getElementById('loader').style.display = 'none';
@@ -251,13 +231,9 @@
         });
     }
 
-    // ============================================================
-    // AFFICHAGE
-    // ============================================================
     function afficherAdmin() {
       document.getElementById('loader').style.display = 'none';
 
-      // Stats
       var total = tousLesPosts.length;
       var publies = tousLesPosts.filter(function(p) { return p.statut === 'publie'; }).length;
       var brouillons = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; }).length;
@@ -265,12 +241,10 @@
       document.getElementById('totalPosts').textContent = total;
       document.getElementById('publiesPosts').textContent = publies;
       document.getElementById('brouillonsPosts').textContent = brouillons;
-
       document.getElementById('compteurTous').textContent = total;
       document.getElementById('compteurPublies').textContent = publies;
       document.getElementById('compteurBrouillons').textContent = brouillons;
 
-      // Filtrer selon l'onglet
       if (ongletActuel === 'tous') {
         postsFiltres = tousLesPosts.slice();
       } else if (ongletActuel === 'publies') {
@@ -282,9 +256,6 @@
       afficherPosts(postsFiltres);
     }
 
-    // ============================================================
-    // AFFICHER LES POSTS
-    // ============================================================
     function afficherPosts(posts) {
       var container = document.getElementById('contenu');
 
@@ -328,9 +299,6 @@
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // CHANGER D'ONGLET
-    // ============================================================
     function switchTab(tab) {
       ongletActuel = tab;
       document.querySelectorAll('.tab-btn').forEach(function(el) {
@@ -340,9 +308,6 @@
       afficherAdmin();
     }
 
-    // ============================================================
-    // MODAL AJOUT / MODIFICATION
-    // ============================================================
     function ouvrirModalAjout() {
       modeEdition = false;
       document.getElementById('modalTitre').textContent = 'Ajouter un texte';
@@ -361,7 +326,7 @@
 
     function modifierPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) return;
+      if (!post) { alert('Post introuvable'); return; }
 
       modeEdition = true;
       document.getElementById('modalTitre').textContent = 'Modifier le texte';
@@ -382,9 +347,6 @@
       document.getElementById('modalAjoutPost').classList.remove('visible');
     }
 
-    // ============================================================
-    // ENREGISTRER POST (AJOUT OU MODIFICATION)
-    // ============================================================
     function enregistrerPost() {
       var id = document.getElementById('editId').value;
       var titre = document.getElementById('inputTitre').value.trim();
@@ -405,16 +367,12 @@
       msg.style.display = 'none';
 
       if (modeEdition && id) {
-        // MODIFICATION : on appelle une nouvelle action updatePost
-        // Pour l'instant, on simule en supprimant et recréant
-        // TODO: Ajouter action updatePost dans Google Script
-        alert('⚠️ La modification sera disponible prochainement. Pour l\'instant, vous pouvez supprimer et recréer.');
-        btn.textContent = modeEdition ? 'Mettre à jour' : 'Enregistrer';
+        alert('⚠️ La modification sera disponible prochainement.');
+        btn.textContent = 'Mettre à jour';
         btn.disabled = false;
         return;
       }
 
-      // AJOUT
       DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
         .then(function() {
           msg.textContent = '✅ Post créé avec succès !';
@@ -429,24 +387,16 @@
           msg.textContent = '❌ Erreur : ' + err.message;
           msg.style.display = 'block';
           msg.className = 'message error';
-          btn.textContent = modeEdition ? 'Mettre à jour' : 'Enregistrer';
+          btn.textContent = 'Enregistrer';
           btn.disabled = false;
         });
     }
 
-    // ============================================================
-    // SUPPRIMER UN POST
-    // ============================================================
     function supprimerPost(postId) {
       if (!confirm('Supprimer ce texte définitivement ?')) return;
-
-      // TODO: Ajouter action deletePost dans Google Script
       alert('⚠️ La suppression sera disponible prochainement.');
     }
 
-    // ============================================================
-    // INIT
-    // ============================================================
     function demarrer() {
       chargerAdmin();
     }
