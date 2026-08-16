@@ -445,13 +445,26 @@ function updateSlides() {
   chargerAnnotation();
   updateAnnotationButtonColor();
 
+  // Si le popup est ouvert, fermer proprement
+  if (annotationPopupOpen) {
+    closeAnnotationPopup();
+  }
+    // ============================================================
+  // AJOUT : CLIC / TAP SUR LA ZONE POUR PASSER AU SLIDE SUIVANT
   // ============================================================
-  // SUPPRIMÉ : le popup ne se ferme plus automatiquement
-  // ============================================================
-  // if (annotationPopupOpen) {
-  //   closeAnnotationPopup();
-  // }
+  var slideContainer = document.querySelector('.paragraphe-container');
+  if (slideContainer) {
+    slideContainer.onclick = function(e) {
+      // Ignorer les clics sur les boutons, inputs, textarea, labels
+      if (e.target.closest('button') || e.target.closest('input') || e.target.closest('textarea') || e.target.closest('label')) {
+        return;
+      }
+      slideSuivant();
+    };
+  }
 }
+
+
 
 function ajouterBoutonAppris() {}
 
@@ -1007,7 +1020,7 @@ function partager() {
 }
 
 // ============================================================
-// SYSTÈME D'ANNOTATION - UNE NOTE PAR POST + POPUP RESTE OUVERT
+// SYSTÈME D'ANNOTATION - SAUVEGARDE UNIQUEMENT À LA FERMETURE
 // ============================================================
 
 var annotationText = '';
@@ -1080,9 +1093,8 @@ function openAnnotationPopup() {
   if (textarea) {
     var nom = localStorage.getItem('etudiant_id');
     var cache = DataManager.getCacheForce(nom);
-    // CHARGER LA NOTE DU POST (pas par slide)
-    if (cache && cache.annotations && cache.annotations[postId] !== undefined) {
-      annotationText = cache.annotations[postId];
+    if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
+      annotationText = cache.annotations[postId][slideIndex];
     } else {
       annotationText = '';
     }
@@ -1130,9 +1142,9 @@ function sauvegarderAnnotation(texte) {
   var cache = DataManager.getCacheForce(nom);
   if (!cache) cache = {};
   if (!cache.annotations) cache.annotations = {};
+  if (!cache.annotations[postId]) cache.annotations[postId] = {};
   
-  // SAUVEGARDER UNE NOTE PAR POST (pas par slide)
-  cache.annotations[postId] = texte;
+  cache.annotations[postId][slideIndex] = texte;
   DataManager.setCache(nom, cache);
 
   var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation&nom=' + encodeURIComponent(nom) +
@@ -1157,9 +1169,8 @@ function chargerAnnotation() {
   }
 
   var cache = DataManager.getCacheForce(nom);
-  // CHARGER LA NOTE DU POST (pas par slide)
-  if (cache && cache.annotations && cache.annotations[postId] !== undefined) {
-    annotationText = cache.annotations[postId];
+  if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
+    annotationText = cache.annotations[postId][slideIndex];
   } else {
     annotationText = '';
   }
