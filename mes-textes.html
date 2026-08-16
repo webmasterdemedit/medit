@@ -115,7 +115,7 @@
     }
 
     /* ============================================================
-       ONGLETS
+       ONGLETS - 2 onglets : À lire / Lus
        ============================================================ */
     .tabs-container {
       display: flex;
@@ -127,11 +127,11 @@
     }
 
     .tab-btn {
-      padding: 10px 24px;
+      padding: 10px 28px;
       background: transparent;
       border: none;
       border-bottom: 2px solid transparent;
-      font-size: 14px;
+      font-size: 15px;
       font-weight: 500;
       color: #94a3b8;
       cursor: pointer;
@@ -184,6 +184,69 @@
     @keyframes fadeIn {
       from { opacity: 0; transform: translateY(8px); }
       to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ============================================================
+       SOUS-ONGLETS CATÉGORIES
+       ============================================================ */
+    .sous-tabs-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-bottom: 16px;
+      padding: 4px 0;
+      border-bottom: 1px solid #f0ede8;
+    }
+
+    .sous-tab-btn {
+      padding: 6px 18px;
+      background: transparent;
+      border: none;
+      border-bottom: 2px solid transparent;
+      font-size: 13px;
+      font-weight: 400;
+      color: #b8b0a8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', -apple-system, sans-serif;
+      border-radius: 6px 6px 0 0;
+    }
+
+    .sous-tab-btn:hover {
+      color: #1a2a2e;
+      background: #f8f6f2;
+    }
+
+    .sous-tab-btn.active {
+      color: #2d6a4f;
+      border-bottom-color: #2d6a4f;
+      font-weight: 500;
+    }
+
+    .sous-tab-btn .compteur-sous-tab {
+      display: inline-block;
+      background: #f0ede8;
+      color: #94a3b8;
+      font-size: 10px;
+      font-weight: 600;
+      padding: 0 8px;
+      border-radius: 30px;
+      margin-left: 4px;
+      line-height: 18px;
+    }
+
+    .sous-tab-btn.active .compteur-sous-tab {
+      background: #e8f5e9;
+      color: #2d6a4f;
+    }
+
+    .sous-tab-content {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .sous-tab-content.active {
+      display: block;
     }
 
     /* ============================================================
@@ -460,11 +523,18 @@
         justify-content: center;
       }
       .tab-btn {
-        font-size: 13px;
-        padding: 8px 16px;
+        font-size: 14px;
+        padding: 8px 18px;
       }
       .niveau-container {
         flex-direction: column;
+      }
+      .sous-tabs-container {
+        justify-content: center;
+      }
+      .sous-tab-btn {
+        font-size: 12px;
+        padding: 4px 12px;
       }
     }
 
@@ -478,8 +548,8 @@
         text-align: left;
       }
       .tab-btn {
-        font-size: 12px;
-        padding: 6px 12px;
+        font-size: 13px;
+        padding: 6px 14px;
       }
       .stats .stat-item .nombre {
         font-size: 18px;
@@ -487,8 +557,9 @@
       .niveau-badge {
         padding: 12px 16px;
       }
-      .niveau-description {
-        padding: 12px 16px;
+      .sous-tab-btn {
+        font-size: 11px;
+        padding: 3px 10px;
       }
     }
   </style>
@@ -577,8 +648,10 @@
       </div>
     </div>
 
+    <!-- ONGLETS PRINCIPAUX : À lire / Lus -->
     <div class="tabs-container" id="tabsContainer"></div>
 
+    <!-- CONTENU PRINCIPAL -->
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
@@ -617,12 +690,16 @@
 
   <script>
     // ============================================================
-    // mes-textes.html - VERSION AVEC CARTE CLICKABLE
+    // mes-textes.html - VERSION AVEC 2 ONGLETS : À lire / Lus
     // ============================================================
 
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
+
+    // État actuel
+    var ongletActuel = 'a-lire'; // 'a-lire' ou 'lus'
+    var categorieActuelle = null; // null = toutes
 
     function ouvrirConnexion() {
         window.location.href = '/medit/index.html';
@@ -695,27 +772,33 @@
     }
 
     // ============================================================
-    // AFFICHAGE AVEC ONGLETS - CARTE ENTIÈRE CLICKABLE
+    // VÉRIFIER SI UN POST EST LU
+    // ============================================================
+    function estPostLu(post) {
+        var reponse = toutesLesReponses[post.id];
+        if (!reponse) return false;
+        var bonnes = reponse.bonnes || 0;
+        var totalQ = reponse.total || 0;
+        if (totalQ === 1 && bonnes === 1) return true;
+        if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) return true;
+        return false;
+    }
+
+    // ============================================================
+    // AFFICHAGE AVEC 2 ONGLETS
     // ============================================================
     function afficherAvecOnglets(posts) {
         var contenu = document.getElementById('contenu');
         document.getElementById('loader').style.display = 'none';
 
-        var total = 0;
+        // Stats
+        var total = posts.length;
         var valides = 0;
         var aFaire = 0;
 
         posts.forEach(function(post) {
-            total++;
-            var reponse = toutesLesReponses[post.id];
-            if (reponse) {
-                var bonnes = reponse.bonnes || 0;
-                var totalQ = reponse.total || 0;
-                if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
-                    valides++;
-                } else {
-                    aFaire++;
-                }
+            if (estPostLu(post)) {
+                valides++;
             } else {
                 aFaire++;
             }
@@ -725,177 +808,308 @@
         document.getElementById('validesPosts').textContent = valides;
         document.getElementById('aFairePosts').textContent = aFaire;
 
-        var cats = {};
-        posts.forEach(function(post) {
-            var cat = post.categorie || 'Sans catégorie';
-            if (!cats[cat]) cats[cat] = [];
-            cats[cat].push(post);
-        });
-
-        var categoriesTriees = Object.keys(cats).sort();
-
-        var tabsHtml = '';
-        categoriesTriees.forEach(function(cat, index) {
-            var count = cats[cat].length;
-            var activeClass = index === 0 ? 'active' : '';
-            tabsHtml += `
-                <button class="tab-btn ${activeClass}" data-tab="tab-${index}" onclick="switchTab('tab-${index}')">
-                    ${cat}
-                    <span class="compteur-tab">${count}</span>
-                </button>
-            `;
-        });
+        // --- ONGLETS PRINCIPAUX ---
+        var tabsHtml = `
+            <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
+                📖 À lire
+                <span class="compteur-tab">${aFaire}</span>
+            </button>
+            <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
+                ✅ Lus
+                <span class="compteur-tab">${valides}</span>
+            </button>
+        `;
         document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
-        var contenuHtml = '';
-        categoriesTriees.forEach(function(cat, index) {
-            var activeClass = index === 0 ? 'active' : '';
-            var postsDeCat = cats[cat];
-
-            contenuHtml += `<div class="tab-content ${activeClass}" id="tab-${index}">`;
-            contenuHtml += '<div class="grille">';
-            
-            postsDeCat.forEach(function(post) {
-                var reponse = toutesLesReponses[post.id];
-                var estValide = false;
-                var dateValidation = '';
-                var retenir = '';
-                var estLu = false;
-
-                if (reponse) {
-                    var bonnes = reponse.bonnes || 0;
-                    var totalQ = reponse.total || 0;
-                    dateValidation = reponse.date || '';
-                    retenir = reponse.retenir || '';
-
-                    if (totalQ === 1 && bonnes === 1) {
-                        estLu = true;
-                        estValide = true;
-                    } else if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
-                        estValide = true;
-                    }
-                }
-
-                var hasQuiz = post.hasQuiz || false;
-                var hasQuestion = post.hasQuestion || false;
-                var mots = post.mots || 0;
-
-                // Quiz : Oui / Non
-                var quizHtml = '';
-                if (hasQuiz) {
-                    quizHtml = '<span class="badge-icone quiz-oui">Quiz : Oui</span>';
-                } else {
-                    quizHtml = '<span class="badge-icone quiz-non">Quiz : Non</span>';
-                }
-
-                // Question si présente
-                var questionHtml = '';
-                if (hasQuestion) {
-                    questionHtml = '<span class="badge-icone question">✍️ Question</span>';
-                }
-
-                var badgeHtml = '';
-                var dateHtml = '';
-                var dateLabelHtml = '';
-                
-                if (estLu) {
-                    badgeHtml = '<span class="badge lu">✓ Lu</span>';
-                    if (dateValidation) {
-                        var d = new Date(dateValidation);
-                        if (!isNaN(d.getTime())) {
-                            var dateStr = d.toLocaleDateString('fr-FR', {
-                                day: '2-digit', month: 'long', year: 'numeric'
-                            });
-                            var heureStr = d.toLocaleTimeString('fr-FR', {
-                                hour: '2-digit', minute: '2-digit'
-                            });
-                            dateLabelHtml = '<span class="date-label visible">Lu le</span>';
-                            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-                        }
-                    }
-                } else if (estValide) {
-                    badgeHtml = '<span class="badge valide">✓ Validé</span>';
-                    if (dateValidation) {
-                        var d = new Date(dateValidation);
-                        if (!isNaN(d.getTime())) {
-                            var dateStr = d.toLocaleDateString('fr-FR', {
-                                day: '2-digit', month: 'long', year: 'numeric'
-                            });
-                            var heureStr = d.toLocaleTimeString('fr-FR', {
-                                hour: '2-digit', minute: '2-digit'
-                            });
-                            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-                        }
-                    }
-                } else if (reponse) {
-                    badgeHtml = '<span class="badge a-faire">○ À faire</span>';
-                } else {
-                    badgeHtml = '<span class="badge non-vu">○ À faire</span>';
-                }
-
-                var retenirHtml = '';
-                if (estValide && retenir) {
-                    retenirHtml = `
-                        <div class="retenir-cadre visible">
-                            <strong>À retenir</strong>
-                            ${retenir}
-                        </div>
-                    `;
-                }
-
-                var motsHtml = '';
-                if (mots > 0) {
-                    motsHtml = '<span class="mots">' + mots + ' mots</span>';
-                }
-
-                // ============================================================
-                // CARTE ENTIÈRE CLICKABLE
-                // ============================================================
-                contenuHtml += `
-                    <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
-                        <div class="infos">
-                            <div class="titre">${post.titre}</div>
-                            <div class="meta">
-                                <span class="niveau-badge">Niveau ${post.niveau}</span>
-                                ${quizHtml}
-                                ${questionHtml}
-                                ${motsHtml}
-                                ${retenirHtml}
-                            </div>
-                        </div>
-                        <div class="statut">
-                            ${badgeHtml}
-                            ${dateLabelHtml}
-                            ${dateHtml}
-                        </div>
-                    </div>
-                `;
-            });
-
-            contenuHtml += '</div>';
-            contenuHtml += `</div>`;
+        // Récupérer les catégories
+        var categories = {};
+        posts.forEach(function(post) {
+            var cat = post.categorie || 'Sans catégorie';
+            if (!categories[cat]) categories[cat] = [];
+            categories[cat].push(post);
         });
+        var categoriesTriees = Object.keys(categories).sort();
+
+        // --- CONTENU ---
+        var contenuHtml = '';
+
+        // Onglet "À lire"
+        contenuHtml += `<div class="tab-content active" id="tab-a-lire">`;
+        contenuHtml += genererSousOnglets(categoriesTriees, categories, 'a-lire');
+        contenuHtml += `</div>`;
+
+        // Onglet "Lus"
+        contenuHtml += `<div class="tab-content" id="tab-lus">`;
+        contenuHtml += genererSousOnglets(categoriesTriees, categories, 'lus');
+        contenuHtml += `</div>`;
 
         contenu.innerHTML = contenuHtml;
+
+        // Activer la première catégorie par défaut
+        if (categoriesTriees.length > 0) {
+            categorieActuelle = categoriesTriees[0];
+            switchCategorie(categorieActuelle);
+        }
     }
 
-    function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(function(el) {
-            el.classList.remove('active');
+    // ============================================================
+    // GÉNÉRER LES SOUS-ONGLETS (CATÉGORIES)
+    // ============================================================
+    function genererSousOnglets(categoriesTriees, categories, onglet) {
+        var html = '';
+
+        // Barre des sous-onglets
+        html += `<div class="sous-tabs-container" id="sous-tabs-${onglet}">`;
+
+        // "Toutes" en premier
+        var totalPosts = 0;
+        categoriesTriees.forEach(function(cat) {
+            categories[cat].forEach(function(post) {
+                if (onglet === 'a-lire' && !estPostLu(post)) totalPosts++;
+                if (onglet === 'lus' && estPostLu(post)) totalPosts++;
+            });
         });
-        document.querySelectorAll('.tab-btn').forEach(function(el) {
-            el.classList.remove('active');
+        html += `
+            <button class="sous-tab-btn active" data-sous-tab="${onglet}-toutes" onclick="switchCategorie('toutes', '${onglet}')">
+                Toutes
+                <span class="compteur-sous-tab">${totalPosts}</span>
+            </button>
+        `;
+
+        // Chaque catégorie
+        categoriesTriees.forEach(function(cat) {
+            var count = 0;
+            categories[cat].forEach(function(post) {
+                if (onglet === 'a-lire' && !estPostLu(post)) count++;
+                if (onglet === 'lus' && estPostLu(post)) count++;
+            });
+            if (count > 0) {
+                html += `
+                    <button class="sous-tab-btn" data-sous-tab="${onglet}-${cat}" onclick="switchCategorie('${cat}', '${onglet}')">
+                        ${cat}
+                        <span class="compteur-sous-tab">${count}</span>
+                    </button>
+                `;
+            }
         });
 
-        document.getElementById(tabId).classList.add('active');
+        html += `</div>`;
 
+        // Contenu des sous-onglets
+        html += `<div id="sous-contenu-${onglet}">`;
+        html += `</div>`;
+
+        return html;
+    }
+
+    // ============================================================
+    // CHANGER D'ONGLET PRINCIPAL
+    // ============================================================
+    function switchOnglet(onglet) {
+        ongletActuel = onglet;
+
+        // Mettre à jour les onglets principaux
         document.querySelectorAll('.tab-btn').forEach(function(el) {
-            if (el.dataset.tab === tabId) {
+            el.classList.remove('active');
+            if (el.dataset.tab === onglet) {
                 el.classList.add('active');
             }
         });
+
+        // Afficher/masquer les contenus
+        document.querySelectorAll('.tab-content').forEach(function(el) {
+            el.classList.remove('active');
+        });
+        document.getElementById('tab-' + onglet).classList.add('active');
+
+        // Réinitialiser la catégorie
+        var premierSousTab = document.querySelector('#sous-tabs-' + onglet + ' .sous-tab-btn');
+        if (premierSousTab) {
+            var cat = premierSousTab.dataset.sousTab.replace(onglet + '-', '');
+            switchCategorie(cat, onglet);
+        }
     }
 
+    // ============================================================
+    // CHANGER DE CATÉGORIE
+    // ============================================================
+    function switchCategorie(categorie, onglet) {
+        if (!onglet) onglet = ongletActuel;
+        categorieActuelle = categorie;
+
+        // Mettre à jour les sous-onglets
+        var container = document.getElementById('sous-tabs-' + onglet);
+        if (container) {
+            container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
+                el.classList.remove('active');
+                var cat = el.dataset.sousTab.replace(onglet + '-', '');
+                if (cat === categorie) {
+                    el.classList.add('active');
+                }
+            });
+        }
+
+        // Filtrer et afficher les posts
+        var postsFiltres = filtrerPosts(onglet, categorie);
+        afficherPosts(postsFiltres, onglet);
+    }
+
+    // ============================================================
+    // FILTRER LES POSTS
+    // ============================================================
+    function filtrerPosts(onglet, categorie) {
+        var resultats = [];
+
+        postsData.forEach(function(post) {
+            // Filtrer par statut (lu / à lire)
+            var estLu = estPostLu(post);
+            if (onglet === 'a-lire' && estLu) return;
+            if (onglet === 'lus' && !estLu) return;
+
+            // Filtrer par catégorie
+            var catPost = post.categorie || 'Sans catégorie';
+            if (categorie !== 'toutes' && catPost !== categorie) return;
+
+            resultats.push(post);
+        });
+
+        return resultats;
+    }
+
+    // ============================================================
+    // AFFICHER LES POSTS FILTRÉS
+    // ============================================================
+    function afficherPosts(posts, onglet) {
+        var container = document.getElementById('sous-contenu-' + onglet);
+        if (!container) return;
+
+        if (posts.length === 0) {
+            container.innerHTML = `
+                <div class="vide" style="padding:30px 20px;">
+                    <span class="icone" style="font-size:32px;">📭</span>
+                    <h2 style="font-size:18px;">Aucun texte</h2>
+                    <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+                </div>
+            `;
+            return;
+        }
+
+        var html = '<div class="grille">';
+
+        posts.forEach(function(post) {
+            var reponse = toutesLesReponses[post.id];
+            var estValide = false;
+            var dateValidation = '';
+            var retenir = '';
+            var estLu = false;
+
+            if (reponse) {
+                var bonnes = reponse.bonnes || 0;
+                var totalQ = reponse.total || 0;
+                dateValidation = reponse.date || '';
+                retenir = reponse.retenir || '';
+
+                if (totalQ === 1 && bonnes === 1) {
+                    estLu = true;
+                    estValide = true;
+                } else if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+                    estValide = true;
+                }
+            }
+
+            var hasQuiz = post.hasQuiz || false;
+            var hasQuestion = post.hasQuestion || false;
+            var mots = post.mots || 0;
+
+            // Quiz : Oui / Non
+            var quizHtml = hasQuiz 
+                ? '<span class="badge-icone quiz-oui">Quiz : Oui</span>'
+                : '<span class="badge-icone quiz-non">Quiz : Non</span>';
+
+            var questionHtml = hasQuestion 
+                ? '<span class="badge-icone question">✍️ Question</span>' 
+                : '';
+
+            // Badge de statut
+            var badgeHtml = '';
+            var dateHtml = '';
+            var dateLabelHtml = '';
+
+            if (estLu) {
+                badgeHtml = '<span class="badge lu">✓ Lu</span>';
+                if (dateValidation) {
+                    var d = new Date(dateValidation);
+                    if (!isNaN(d.getTime())) {
+                        var dateStr = d.toLocaleDateString('fr-FR', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        var heureStr = d.toLocaleTimeString('fr-FR', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        dateLabelHtml = '<span class="date-label visible">Lu le</span>';
+                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+                    }
+                }
+            } else if (estValide) {
+                badgeHtml = '<span class="badge valide">✓ Validé</span>';
+                if (dateValidation) {
+                    var d = new Date(dateValidation);
+                    if (!isNaN(d.getTime())) {
+                        var dateStr = d.toLocaleDateString('fr-FR', {
+                            day: '2-digit', month: 'long', year: 'numeric'
+                        });
+                        var heureStr = d.toLocaleTimeString('fr-FR', {
+                            hour: '2-digit', minute: '2-digit'
+                        });
+                        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+                    }
+                }
+            } else if (reponse) {
+                badgeHtml = '<span class="badge a-faire">○ À faire</span>';
+            } else {
+                badgeHtml = '<span class="badge non-vu">○ À faire</span>';
+            }
+
+            var retenirHtml = '';
+            if (estValide && retenir) {
+                retenirHtml = `
+                    <div class="retenir-cadre visible">
+                        <strong>À retenir</strong>
+                        ${retenir}
+                    </div>
+                `;
+            }
+
+            var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+            html += `
+                <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
+                    <div class="infos">
+                        <div class="titre">${post.titre}</div>
+                        <div class="meta">
+                            <span class="niveau-badge">Niveau ${post.niveau}</span>
+                            ${quizHtml}
+                            ${questionHtml}
+                            ${motsHtml}
+                            ${retenirHtml}
+                        </div>
+                    </div>
+                    <div class="statut">
+                        ${badgeHtml}
+                        ${dateLabelHtml}
+                        ${dateHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        html += '</div>';
+        container.innerHTML = html;
+    }
+
+    // ============================================================
+    // VIDE
+    // ============================================================
     function afficherVide() {
         document.getElementById('loader').style.display = 'none';
         document.getElementById('contenu').innerHTML = `
@@ -909,6 +1123,9 @@
         document.getElementById('tabsContainer').innerHTML = '';
     }
 
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
     function demarrer() {
         chargerTableauDeBord();
     }
