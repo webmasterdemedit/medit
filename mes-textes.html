@@ -45,13 +45,14 @@
     }
 
     /* ============================================================
-       NIVEAU + DESCRIPTION
+       NIVEAU + STATS sur une ligne
        ============================================================ */
     .niveau-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 16px;
+      gap: 16px 32px;
       margin-bottom: 24px;
+      align-items: center;
     }
 
     .niveau-badge {
@@ -79,59 +80,44 @@
       font-family: 'Georgia', serif;
     }
 
-    /* ============================================================
-       STATS - avec badges simplifiés
-       ============================================================ */
-    .stats {
+    .stats-ligne {
       display: flex;
-      gap: 32px;
       flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 20px 28px;
+      align-items: center;
+      gap: 8px 20px;
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 14px;
+      padding: 14px 24px;
       border: 1px solid #edeae5;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
     }
 
-    .stats .stat-item {
+    .stats-ligne .stat-item {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 4px;
       font-size: 13px;
       color: #94a3b8;
-      letter-spacing: 0.3px;
     }
 
-    .stats .stat-item .nombre {
+    .stats-ligne .stat-item .nombre {
       font-size: 22px;
       font-weight: 600;
       color: #1a2a2e;
       font-family: 'Georgia', 'Times New Roman', serif;
     }
 
-    .stats .stat-item .nombre.valide {
+    .stats-ligne .stat-item .nombre.valide {
       color: #2d6a4f;
     }
 
-    .stats .stat-item .badge-stat {
-      display: inline-block;
-      padding: 2px 12px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-      background: #f0ede8;
-      color: #8a7a6a;
-    }
-
-    .stats .stat-item .badge-stat.lu {
-      background: #e8f5e9;
-      color: #2d6a4f;
+    .stats-ligne .sep {
+      color: #edeae5;
+      font-size: 18px;
     }
 
     /* ============================================================
-       ONGLETS - 2 onglets : À lire / Lus
+       ONGLETS - 2 onglets : À lire / Lus (soulignés)
        ============================================================ */
     .tabs-container {
       display: flex;
@@ -186,62 +172,46 @@
     }
 
     /* ============================================================
-       CONTENU DES ONGLETS
-       ============================================================ */
-    .tab-content {
-      display: none;
-      animation: fadeIn 0.3s ease;
-    }
-
-    .tab-content.active {
-      display: block;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(8px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    /* ============================================================
-       SOUS-ONGLETS CATÉGORIES
+       SOUS-ONGLETS CATÉGORIES - Style encadré arrondi (liseuse)
        ============================================================ */
     .sous-tabs-container {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
+      gap: 8px;
       margin-bottom: 16px;
       padding: 4px 0;
-      border-bottom: 1px solid #f0ede8;
     }
 
     .sous-tab-btn {
       padding: 6px 18px;
       background: transparent;
-      border: none;
-      border-bottom: 2px solid transparent;
+      border: 1.5px solid #edeae5;
+      border-radius: 30px;
       font-size: 13px;
       font-weight: 400;
-      color: #b8b0a8;
+      color: #94a3b8;
       cursor: pointer;
       transition: all 0.3s ease;
       font-family: 'Segoe UI', -apple-system, sans-serif;
-      border-radius: 6px 6px 0 0;
+      background: #ffffff;
     }
 
     .sous-tab-btn:hover {
       color: #1a2a2e;
+      border-color: #b8b0a8;
       background: #f8f6f2;
     }
 
     .sous-tab-btn.active {
-      color: #2d6a4f;
-      border-bottom-color: #2d6a4f;
+      color: #ffffff;
+      background: #2d6a4f;
+      border-color: #2d6a4f;
       font-weight: 500;
     }
 
     .sous-tab-btn .compteur-sous-tab {
       display: inline-block;
-      background: #f0ede8;
+      background: rgba(255,255,255,0.2);
       color: #94a3b8;
       font-size: 10px;
       font-weight: 600;
@@ -252,8 +222,8 @@
     }
 
     .sous-tab-btn.active .compteur-sous-tab {
-      background: #e8f5e9;
-      color: #2d6a4f;
+      background: rgba(255,255,255,0.25);
+      color: #ffffff;
     }
 
     .sous-tab-content {
@@ -339,14 +309,9 @@
       font-weight: 500;
     }
 
-    .carte-post .meta .badge-icone.quiz-oui {
+    .carte-post .meta .badge-icone.quiz {
       background: #e8f5e9;
       color: #2d6a4f;
-    }
-
-    .carte-post .meta .badge-icone.quiz-non {
-      background: #f5f0eb;
-      color: #b8b0a8;
     }
 
     .carte-post .meta .badge-icone.question {
@@ -389,40 +354,11 @@
     }
 
     /* ============================================================
-       STATUT DANS LA CARTE - Style liseuse paperink
+       STATUT DANS LA CARTE
        ============================================================ */
     .carte-post .statut {
       text-align: center;
       min-width: 80px;
-    }
-
-    .carte-post .statut .badge {
-      display: inline-block;
-      padding: 4px 14px;
-      border-radius: 30px;
-      font-size: 12px;
-      font-weight: 500;
-      letter-spacing: 0.2px;
-    }
-
-    .carte-post .statut .badge.valide {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    .carte-post .statut .badge.lu {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    .carte-post .statut .badge.a-faire {
-      background: #f5f0eb;
-      color: #8a7a6a;
-    }
-
-    .carte-post .statut .badge.non-vu {
-      background: #f0ede8;
-      color: #b8b0a8;
     }
 
     .carte-post .statut .date-validation {
@@ -518,6 +454,33 @@
     }
 
     /* ============================================================
+       DÉCONNEXION EN BAS
+       ============================================================ */
+    .deconnexion-bas {
+      text-align: center;
+      padding: 16px 0 8px;
+      margin-top: 20px;
+    }
+
+    .deconnexion-bas button {
+      background: transparent;
+      border: 1px solid #edeae5;
+      padding: 8px 24px;
+      border-radius: 30px;
+      font-size: 13px;
+      color: #94a3b8;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .deconnexion-bas button:hover {
+      border-color: #b8b0a8;
+      color: #1a2a2e;
+      background: #f8f6f2;
+    }
+
+    /* ============================================================
        RESPONSIVE
        ============================================================ */
     @media (max-width: 768px) {
@@ -533,11 +496,6 @@
         gap: 8px;
         justify-content: flex-start;
       }
-      .stats {
-        justify-content: center;
-        gap: 16px;
-        padding: 16px 20px;
-      }
       .tabs-container {
         justify-content: center;
       }
@@ -547,13 +505,18 @@
       }
       .niveau-container {
         flex-direction: column;
+        align-items: stretch;
       }
       .sous-tabs-container {
         justify-content: center;
       }
       .sous-tab-btn {
         font-size: 12px;
-        padding: 4px 12px;
+        padding: 5px 14px;
+      }
+      .stats-ligne {
+        justify-content: center;
+        padding: 12px 16px;
       }
     }
 
@@ -570,7 +533,7 @@
         font-size: 13px;
         padding: 6px 14px;
       }
-      .stats .stat-item .nombre {
+      .stats-ligne .stat-item .nombre {
         font-size: 18px;
       }
       .niveau-badge {
@@ -578,7 +541,7 @@
       }
       .sous-tab-btn {
         font-size: 11px;
-        padding: 3px 10px;
+        padding: 4px 12px;
       }
     }
   </style>
@@ -616,22 +579,11 @@
     function mettreAJourHeader() {
       var id = localStorage.getItem('etudiant_id');
       var nav = document.getElementById('headerNav');
-      var userNameSpan = document.getElementById('headerUserName');
-
-      if (userNameSpan) {
-        if (id) {
-          userNameSpan.textContent = '👤 ' + id;
-        } else {
-          userNameSpan.textContent = '';
-        }
-      }
 
       if (nav) {
         if (id) {
           nav.innerHTML = `
-            <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-            <a href="/medit/mon-compte.html" class="header-btn-compte">👤 Mon compte</a>
-            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+            <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
           `;
         } else {
           nav.innerHTML = `
@@ -645,29 +597,27 @@
 
   <div class="page">
 
+    <!-- NIVEAU + STATS sur une ligne -->
     <div class="niveau-container" id="niveauContainer">
       <div class="niveau-badge">
         <span class="label">Vous êtes inscrit au niveau</span>
         <span class="valeur" id="niveauValeur">—</span>
       </div>
-    </div>
-
-    <!-- STATS avec badges simplifiés -->
-    <div class="stats" id="statsContainer">
-      <div class="stat-item">
-        <span class="nombre" id="totalPosts">0</span>
-        <span>disponibles</span>
-        <span class="badge-stat" id="badgeTotal">○</span>
-      </div>
-      <div class="stat-item">
-        <span class="nombre valide" id="validesPosts">0</span>
-        <span>lus</span>
-        <span class="badge-stat lu" id="badgeLus">✓</span>
-      </div>
-      <div class="stat-item">
-        <span class="nombre" id="aFairePosts">0</span>
-        <span>à faire</span>
-        <span class="badge-stat" id="badgeAFaire">○</span>
+      <div class="stats-ligne" id="statsLigne">
+        <div class="stat-item">
+          <span>Textes :</span>
+          <span class="nombre" id="totalPosts">0</span>
+        </div>
+        <span class="sep">|</span>
+        <div class="stat-item">
+          <span>Lus :</span>
+          <span class="nombre valide" id="validesPosts">0</span>
+        </div>
+        <span class="sep">|</span>
+        <div class="stat-item">
+          <span>À faire :</span>
+          <span class="nombre" id="aFairePosts">0</span>
+        </div>
       </div>
     </div>
 
@@ -684,6 +634,11 @@
 
     <div class="devise">
       “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+    <!-- DÉCONNEXION EN BAS -->
+    <div class="deconnexion-bas">
+      <button onclick="deconnecter()">Se déconnecter</button>
     </div>
 
   </div>
@@ -785,7 +740,7 @@
                             <p>Vérifiez votre connexion.</p>
                             <button onclick="DataManager.rafraichir(); location.reload();" 
                                     style="margin-top:12px;padding:10px 24px;background:#2d6a4f;color:#fff;border:none;border-radius:30px;cursor:pointer;">
-                                🔄 Réessayer
+                                Réessayer
                             </button>
                         </div>
                     `;
@@ -875,7 +830,7 @@
     }
 
     // ============================================================
-    // GÉNÉRER LES SOUS-ONGLETS (CATÉGORIES)
+    // GÉNÉRER LES SOUS-ONGLETS (CATÉGORIES) - Style encadré arrondi
     // ============================================================
     function genererSousOnglets(categoriesTriees, categories, onglet) {
         var html = '';
@@ -1035,18 +990,17 @@
             var hasQuiz = post.hasQuiz || false;
             var hasQuestion = post.hasQuestion || false;
             var mots = post.mots || 0;
+            var nbQuiz = post.nbQuestions || 0;
 
-            // Quiz : Oui / Non
+            // Quiz : nombre (0 si non)
             var quizHtml = hasQuiz 
-                ? '<span class="badge-icone quiz-oui">Quiz : Oui</span>'
-                : '<span class="badge-icone quiz-non">Quiz : Non</span>';
+                ? '<span class="badge-icone quiz">Quiz : ' + nbQuiz + '</span>'
+                : '<span class="badge-icone quiz">Quiz : 0</span>';
 
+            // Question : nombre (0 si non)
             var questionHtml = hasQuestion 
-                ? '<span class="badge-icone question">✍️ Question</span>' 
-                : '';
-
-            // PAS DE BADGE DANS LA CARTE - on les a déjà en haut
-            // On garde juste la date si lu
+                ? '<span class="badge-icone question">Question : 1</span>'
+                : '<span class="badge-icone question">Question : 0</span>';
 
             var dateHtml = '';
             var dateLabelHtml = '';
