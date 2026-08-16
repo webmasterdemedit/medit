@@ -1,6 +1,4 @@
-<!-- ============================================================
-   HEADER - Navigation principale
-   ============================================================ -->
+<!-- header.html -->
 <header class="site-header">
   <div class="header-inner">
     <div class="header-left">
@@ -13,12 +11,64 @@
       <span id="headerUserName" class="header-username"></span>
     </div>
     <nav class="header-nav" id="headerNav">
-      <!-- Les liens sont gérés par JavaScript -->
+      <!-- Le contenu sera généré par JavaScript ci-dessous -->
     </nav>
   </div>
 </header>
 
 <script>
+// ============================================================
+// GESTION DU HEADER - Auto-connexion
+// ============================================================
+(function() {
+  // Récupérer l'état de connexion
+  var id = localStorage.getItem('etudiant_id');
+  var name = localStorage.getItem('etudiant_nom') || '';
+  var nav = document.getElementById('headerNav');
+  var userNameEl = document.getElementById('headerUserName');
+  
+  // Afficher le nom si connecté
+  if (userNameEl) {
+    userNameEl.textContent = name ? 'Bonjour ' + name : '';
+  }
+  
+  // Générer les liens de navigation
+  if (nav) {
+    if (id) {
+      nav.innerHTML = `
+        <a href="/medit/mes-textes.html" class="header-link">Mes lectures</a>
+        <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
+        <button onclick="deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+        <a href="#" class="header-link" onclick="ouvrirInscription(); return false;">S'inscrire</a>
+      `;
+    }
+  }
+})();
+
+// ============================================================
+// FONCTIONS UTILES
+// ============================================================
+function deconnecter() {
+  if (confirm('Se déconnecter ?')) {
+    localStorage.removeItem('etudiant_id');
+    localStorage.removeItem('etudiant_nom');
+    localStorage.removeItem('etudiant_niveau');
+    window.location.href = '/medit/index.html';
+  }
+}
+
+function ouvrirConnexion() {
+  window.location.href = '/medit/index.html';
+}
+
+function ouvrirInscription() {
+  window.location.href = '/medit/index.html';
+}
+
 // ============================================================
 // MODE SOMBRE
 // ============================================================
@@ -37,7 +87,7 @@ function toggleDarkMode() {
 })();
 
 // ============================================================
-// AJOUTER UN POST - OUVERTURE/FERMETURE (pour le modal)
+// AJOUTER UN POST - OUVERTURE/FERMETURE (si nécessaire)
 // ============================================================
 function ouvrirAjoutPost() {
   var modal = document.getElementById('modalAjoutPost');
@@ -89,13 +139,5 @@ function creerPost() {
       btn.textContent = 'Créer';
       btn.disabled = false;
     });
-}
-
-function ouvrirConnexion() {
-  window.location.href = '/medit/index.html';
-}
-
-function ouvrirInscription() {
-  window.location.href = '/medit/index.html';
 }
 </script>
