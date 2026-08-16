@@ -309,16 +309,6 @@
       font-weight: 500;
     }
 
-    .carte-post .meta .badge-icone.quiz {
-      background: #e8f5e9;
-      color: #2d6a4f;
-    }
-
-    .carte-post .meta .badge-icone.question {
-      background: #fef3e8;
-      color: #8a6a3a;
-    }
-
     .carte-post .meta .badge-icone.info {
       background: #f0ede8;
       color: #64748b;
@@ -334,11 +324,6 @@
       color: #b8b0a8;
     }
 
-    .carte-post .meta .mots {
-      font-size: 11px;
-      color: #b8b0a8;
-    }
-
     .carte-post .meta .badge-icone.clickable {
       cursor: pointer;
       transition: all 0.2s;
@@ -347,6 +332,11 @@
     .carte-post .meta .badge-icone.clickable:hover {
       background: #e0d8d0;
       transform: scale(1.02);
+    }
+
+    .carte-post .meta .mots {
+      font-size: 11px;
+      color: #b8b0a8;
     }
 
     .carte-post .retenir-cadre {
@@ -834,19 +824,10 @@
     // POPUP ANNOTATIONS
     // ============================================================
     function ouvrirAnnotations(articleId, titre) {
-        // Chercher la réponse correspondante
-        var reponse = null;
-        for (var i = 0; i < toutesLesReponses.length; i++) {
-            if (toutesLesReponses[i].articleId === articleId) {
-                reponse = toutesLesReponses[i];
-                break;
-            }
-        }
-
+        var reponse = toutesLesReponses[articleId] || null;
         var annotations = reponse ? reponse.annotations : '';
         var slides = reponse ? reponse.slides : '';
 
-        // Créer le modal
         var modal = document.createElement('div');
         modal.className = 'modal-overlay';
         modal.id = 'modalAnnotations';
@@ -859,10 +840,7 @@
         html += '<div class="modal-sous-titre">Annotations</div>';
 
         if (annotations && annotations.trim() !== '') {
-            // Parser les annotations : format "slide0:texte|slide1:texte"
             var parts = annotations.split('|');
-            var slidesList = slides ? slides.split('|') : [];
-
             for (var i = 0; i < parts.length; i++) {
                 var kv = parts[i].split(':');
                 if (kv.length === 2) {
@@ -905,10 +883,10 @@
                 niveauEtudiant = data.niveau || 0;
                 postsData = data.posts || [];
                 
-                toutesLesReponses = [];
+                toutesLesReponses = {};
                 if (data.reponses) {
                     data.reponses.forEach(function(r) {
-                        toutesLesReponses.push(r);
+                        toutesLesReponses[r.articleId] = r;
                     });
                 }
                 
@@ -948,28 +926,13 @@
     // VÉRIFIER SI UN POST EST LU
     // ============================================================
     function estPostLu(post) {
-        for (var i = 0; i < toutesLesReponses.length; i++) {
-            if (toutesLesReponses[i].articleId === post.id) {
-                var bonnes = toutesLesReponses[i].bonnes || 0;
-                var total = toutesLesReponses[i].total || 0;
-                if (total === 1 && bonnes === 1) return true;
-                if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
-                return false;
-            }
-        }
+        var reponse = toutesLesReponses[post.id];
+        if (!reponse) return false;
+        var bonnes = reponse.bonnes || 0;
+        var total = reponse.total || 0;
+        if (total === 1 && bonnes === 1) return true;
+        if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
         return false;
-    }
-
-    // ============================================================
-    // RÉCUPÉRER LA RÉPONSE D'UN POST
-    // ============================================================
-    function getReponse(postId) {
-        for (var i = 0; i < toutesLesReponses.length; i++) {
-            if (toutesLesReponses[i].articleId === postId) {
-                return toutesLesReponses[i];
-            }
-        }
-        return null;
     }
 
     // ============================================================
@@ -979,7 +942,6 @@
         var contenu = document.getElementById('contenu');
         document.getElementById('loader').style.display = 'none';
 
-        // Stats
         var total = posts.length;
         var valides = 0;
         var aFaire = 0;
@@ -996,7 +958,6 @@
         document.getElementById('validesPosts').textContent = valides;
         document.getElementById('aFairePosts').textContent = aFaire;
 
-        // Récupérer les catégories
         var categories = {};
         posts.forEach(function(post) {
             var cat = post.categorie || 'Sans catégorie';
@@ -1005,7 +966,6 @@
         });
         var categoriesTriees = Object.keys(categories).sort();
 
-        // --- ONGLETS PRINCIPAUX ---
         var tabsHtml = `
             <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
                 À lire
@@ -1018,7 +978,6 @@
         `;
         document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
-        // --- CONTENU ---
         contenu.innerHTML = `
             <div id="contenu-onglet">
                 <div class="loader" style="display:none;"><div class="spinner"></div></div>
@@ -1037,10 +996,8 @@
 
         var html = '';
 
-        // Barre des sous-onglets
         html += `<div class="sous-tabs-container" id="sous-tabs">`;
 
-        // "Toutes" en premier
         var totalPosts = 0;
         categoriesTriees.forEach(function(cat) {
             categories[cat].forEach(function(post) {
@@ -1055,7 +1012,6 @@
             </button>
         `;
 
-        // Chaque catégorie
         categoriesTriees.forEach(function(cat) {
             var count = 0;
             categories[cat].forEach(function(post) {
@@ -1073,13 +1029,10 @@
         });
 
         html += `</div>`;
-
-        // Contenu des sous-onglets
         html += `<div id="sous-contenu"></div>`;
 
         container.innerHTML = html;
 
-        // Afficher "Toutes" par défaut
         var postsFiltres = filtrerPosts(onglet, 'toutes');
         afficherPosts(postsFiltres);
     }
@@ -1150,7 +1103,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES POSTS FILTRÉS - Style liseuse paperink
+    // AFFICHER LES POSTS FILTRÉS
     // ============================================================
     function afficherPosts(posts) {
         var container = document.getElementById('sous-contenu');
@@ -1170,7 +1123,7 @@
         var html = '<div class="grille">';
 
         posts.forEach(function(post) {
-            var reponse = getReponse(post.id);
+            var reponse = toutesLesReponses[post.id] || null;
             var dateValidation = '';
             var retenir = '';
             var estLu = false;
@@ -1193,33 +1146,30 @@
             var hasQuiz = post.hasQuiz || false;
             var hasQuestion = post.hasQuestion || false;
             var mots = post.mots || 0;
-            var nbQuiz = post.nbQuiz || 0;
-            var nbQuestion = post.nbQuestion || 0;
 
-            // --- Pour "À lire" : Nbr questions ---
-            var nbQuestions = nbQuiz + nbQuestion;
+            // --- "À lire" : Nbr questions (quiz + question) ---
+            var nbQuestions = 0;
+            if (hasQuiz) nbQuestions++;
+            if (hasQuestion) nbQuestions++;
 
-            // --- Pour "Lus" : métadonnées ---
+            // --- "Lus" : métadonnées ---
             var metaHtml = '';
 
             if (ongletActuel === 'a-lire') {
-                // À lire : afficher Nbr questions
                 metaHtml = '<span class="badge-icone info">Nbr questions : ' + nbQuestions + '</span>';
             } else {
-                // Lus : afficher résultat, question, annoté
+                // Lus : résultat, question, annoté
                 var resultatHtml = '';
                 var questionHtml = '';
                 var annoteHtml = '';
 
                 if (reponse) {
-                    // Résultat du quiz
                     var bonnes = reponse.bonnes || 0;
                     var total = reponse.total || 0;
                     if (total > 0) {
                         resultatHtml = '<span class="badge-icone info">Résultat : ' + bonnes + '/' + total + '</span>';
                     }
 
-                    // Question envoyée ?
                     var reponseOuverte = reponse.reponseOuverte || '';
                     if (reponseOuverte && reponseOuverte.trim() !== '') {
                         questionHtml = '<span class="badge-icone ok">Question envoyée ✓</span>';
@@ -1227,7 +1177,6 @@
                         questionHtml = '<span class="badge-icone ko">Question non envoyée</span>';
                     }
 
-                    // Annoté ?
                     var annotations = reponse.annotations || '';
                     if (annotations && annotations.trim() !== '') {
                         annoteHtml = '<span class="badge-icone clickable ok" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
@@ -1245,7 +1194,6 @@
                 metaHtml = resultatHtml + questionHtml + annoteHtml;
             }
 
-            // Date
             var dateHtml = '';
             var dateLabelHtml = '';
 
