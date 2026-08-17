@@ -1307,6 +1307,57 @@
     }
   </script>
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
-      <script src="https://webmasterdemedit.github.io/medit/eink.js"></script>
+  
+  <!-- ============================================================
+       EFFET E-INK REFRESH - CODE DIRECTEMENT DANS LA PAGE
+       ============================================================ -->
+  <script>
+    // Fonction pour déclencher le refresh e-ink
+    function triggerEinkRefresh() {
+      // Retirer la classe si déjà présente
+      document.body.classList.remove('eink-refresh');
+      
+      // Forcer un reflow pour réinitialiser l'animation
+      void document.body.offsetHeight;
+      
+      // Ajouter la classe pour démarrer l'animation
+      document.body.classList.add('eink-refresh');
+      
+      // Retirer la classe après l'animation
+      setTimeout(function() {
+        document.body.classList.remove('eink-refresh');
+      }, 400);
+    }
+
+    // DÉCLENCHER AU CHANGEMENT DE PAGE
+    // Exécuter au chargement de la page
+    document.addEventListener('DOMContentLoaded', function() {
+      
+      // 1. Pour tous les liens qui changent de page
+      var liens = document.querySelectorAll('a[href]');
+      for (var i = 0; i < liens.length; i++) {
+        (function(link) {
+          link.addEventListener('click', function(e) {
+            // Ne pas capturer les liens qui ouvrent dans un nouvel onglet
+            if (this.target === '_blank') return;
+            // Ne pas capturer les ancres internes (#)
+            if (this.getAttribute('href').startsWith('#')) return;
+            // Déclencher le refresh
+            triggerEinkRefresh();
+          });
+        })(liens[i]);
+      }
+      
+      // 2. Pour les boutons de navigation
+      var boutons = document.querySelectorAll('.btn-nav, .btn-entrer, .btn-lire, .btn-submit');
+      for (var j = 0; j < boutons.length; j++) {
+        (function(btn) {
+          btn.addEventListener('click', function() {
+            triggerEinkRefresh();
+          });
+        })(boutons[j]);
+      }
+    });
+  </script>
 </body>
 </html>
