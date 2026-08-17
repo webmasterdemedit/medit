@@ -97,7 +97,7 @@
     .quiz-item:last-child { border-bottom: none; }
     .quiz-item .q-text { width: 100%; padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
     .quiz-item .q-text:focus { outline: none; background: rgba(0,0,0,0.02); }
-    .quiz-item .quiz-reponses { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 2px 0; }
+    .quiz-item .quiz-reponses { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 2px 0; align-items: center; }
     .quiz-item .quiz-reponses input { flex: 1; min-width: 60px; padding: 2px 6px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; background: #faf8f5; color: #2c2c2c; }
     .quiz-item .vf-group { display: flex; gap: 2px; }
     .quiz-item .vf-btn { padding: 2px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; background: #faf8f5; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
@@ -140,18 +140,31 @@
     .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
 
     /* ============================================================
-       COMPOSEUR PLEIN ÉCRAN
+       COMPOSEUR PLEIN ÉCRAN - Fond blanc, sans bordure, mode noir
        ============================================================ */
-    .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+    .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
     .composer-overlay.visible { display: flex; }
-    .composer-content { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 800px; width: 95%; max-height: 90vh; padding: 32px 40px; position: relative; font-family: 'Georgia', serif; }
-    .composer-content .composer-close { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 24px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .composer-content { background: #ffffff; border: none; border-radius: 0; max-width: 100%; width: 100%; height: 100%; padding: 40px 60px; position: relative; font-family: 'Georgia', serif; box-shadow: none; }
+    .composer-content .composer-close { position: absolute; top: 16px; right: 24px; background: transparent; border: none; font-size: 28px; color: #6b7a8a; cursor: pointer; line-height: 1; }
     .composer-content .composer-close:hover { color: #2c2c2c; }
-    .composer-content textarea { width: 100%; height: 60vh; border: none; background: transparent; font-size: 20px; font-family: 'Georgia', serif; color: #2c2c2c; resize: none; padding: 8px 0; line-height: 1.8; outline: none; }
-    .composer-content textarea::placeholder { color: #b8b0a8; font-style: italic; }
-    .composer-content .composer-actions { display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end; border-top: 1px solid #d1ccc4; padding-top: 16px; }
+    .composer-content textarea { width: 100%; height: calc(100% - 80px); border: none; background: transparent; font-size: 30px; font-family: 'Georgia', serif; color: #2c2c2c; resize: none; padding: 20px 0; line-height: 1.8; outline: none; }
+    .composer-content textarea::placeholder { color: #d1ccc4; font-style: italic; }
+    .composer-content .composer-actions { display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end; padding-top: 16px; }
     .composer-content .composer-actions button { padding: 8px 28px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
     .composer-content .composer-actions button:hover { background: #e8e5e0; }
+
+    /* Mode noir dans le composeur */
+    .composer-content.dark-mode { background: #1a1a1a; }
+    .composer-content.dark-mode textarea { color: #d4d4d4; }
+    .composer-content.dark-mode textarea::placeholder { color: #4a4a4a; }
+    .composer-content.dark-mode .composer-close { color: #6b7a8a; }
+    .composer-content.dark-mode .composer-close:hover { color: #e8e5e0; }
+    .composer-content.dark-mode .composer-actions button { border-color: #3a3a3a; color: #b8b0a8; }
+    .composer-content.dark-mode .composer-actions button:hover { background: #2a2a2a; color: #e8e5e0; }
+
+    /* Toggle mode noir */
+    .composer-toggle { position: absolute; bottom: 20px; left: 24px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; padding: 4px 14px; font-size: 12px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .composer-toggle:hover { background: #e8e5e0; }
 
     @media (max-width: 640px) {
       .carte-post { grid-template-columns: 1fr; gap: 8px; }
@@ -162,7 +175,7 @@
       .btn-groupe { flex-direction: column; align-items: stretch; }
       .btn-groupe .btn { text-align: center; }
       .composer-content { padding: 20px; }
-      .composer-content textarea { font-size: 17px; height: 50vh; }
+      .composer-content textarea { font-size: 20px; height: calc(100% - 100px); }
     }
   </style>
 </head>
@@ -229,19 +242,8 @@
         <div class="row-compact">
           <input type="date" id="inputDate">
           <input type="text" id="inputTitre" placeholder="Titre">
-          <select id="inputNiveau">
-            <option value="1">Nvx 1</option><option value="2">Nvx 2</option><option value="3">Nvx 3</option>
-            <option value="4">Nvx 4</option><option value="5">Nvx 5</option><option value="6">Nvx 6</option>
-            <option value="7">Nvx 7</option><option value="8">Nvx 8</option><option value="9">Nvx 9</option>
-            <option value="10">Nvx 10</option><option value="11">Nvx 11</option><option value="12">Nvx 12</option>
-          </select>
-          <select id="inputCategorie">
-            <option value="Foi">Foi</option><option value="Rappels divers">Rappels divers</option>
-            <option value="Sourate">Sourate</option><option value="Hadith">Hadith</option>
-            <option value="Méditation">Méditation</option><option value="Invocation">Invocation</option>
-            <option value="Histoire">Histoire</option><option value="Morale">Morale</option>
-            <option value="Autre">Autre</option>
-          </select>
+          <select id="inputNiveau"></select>
+          <select id="inputCategorie"></select>
         </div>
 
         <!-- ==================== SLIDES ==================== -->
@@ -292,8 +294,9 @@
        COMPOSEUR PLEIN ÉCRAN
        ============================================================ -->
   <div id="composeurOverlay" class="composer-overlay">
-    <div class="composer-content">
+    <div class="composer-content" id="composerContent">
       <button class="composer-close" onclick="fermerComposeur()">✕</button>
+      <button class="composer-toggle" onclick="toggleComposeurMode()">🌓 Mode noir</button>
       <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
       <div class="composer-actions">
         <button onclick="validerComposeur()">✓ Valider</button>
@@ -328,12 +331,89 @@
     var modeEdition = false;
     var estBrouillon = false;
 
+    // Niveaux et catégories chargés dynamiquement
+    var niveauxData = [];
+    var categoriesData = [];
+
+    // ============================================================
+    // CHARGER LES NIVEAUX ET CATÉGORIES
+    // ============================================================
+    function chargerNiveauxEtCategories() {
+      // Charger les niveaux
+      var urlNiveaux = CONFIG.SCRIPT_URL + '?action=getNiveaux';
+      fetch(urlNiveaux)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            niveauxData = data.niveaux || [];
+            remplirSelectNiveaux();
+          }
+        })
+        .catch(function(e) { console.error('Erreur chargement niveaux:', e); });
+
+      // Charger les catégories
+      var urlCategories = CONFIG.SCRIPT_URL + '?action=getLabels';
+      fetch(urlCategories)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            categoriesData = data.labels || [];
+            remplirSelectCategories();
+          }
+        })
+        .catch(function(e) { console.error('Erreur chargement catégories:', e); });
+    }
+
+    function remplirSelectNiveaux() {
+      var select = document.getElementById('inputNiveau');
+      select.innerHTML = '';
+      if (niveauxData.length === 0) {
+        for (var i = 1; i <= 12; i++) {
+          var opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = 'Nvx ' + i;
+          select.appendChild(opt);
+        }
+      } else {
+        niveauxData.forEach(function(n) {
+          var opt = document.createElement('option');
+          opt.value = n.valeur;
+          opt.textContent = 'Nvx ' + n.valeur + (n.description ? ' - ' + n.description : '');
+          select.appendChild(opt);
+        });
+      }
+    }
+
+    function remplirSelectCategories() {
+      var select = document.getElementById('inputCategorie');
+      select.innerHTML = '';
+      if (categoriesData.length === 0) {
+        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Méditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
+        defaults.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      } else {
+        categoriesData.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      }
+    }
+
     // ============================================================
     // CHARGEMENT
     // ============================================================
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) { window.location.href = '/medit/index.html'; return; }
+
+      // Charger niveaux et catégories
+      chargerNiveauxEtCategories();
 
       DataManager.charger()
         .then(function(data) {
@@ -470,12 +550,16 @@
       var d = String(today.getDate()).padStart(2, '0');
       document.getElementById('inputDate').value = y + '-' + m + '-' + d;
       document.getElementById('inputTitre').value = '';
-      document.getElementById('inputNiveau').value = '1';
-      document.getElementById('inputCategorie').value = 'Foi';
       document.getElementById('retenir1').value = '';
       document.getElementById('retenir2').value = '';
       document.getElementById('retenir3').value = '';
       document.getElementById('messageTexte').style.display = 'none';
+
+      // Sélectionner le premier niveau et la première catégorie
+      var selectNiveau = document.getElementById('inputNiveau');
+      if (selectNiveau.options.length > 0) selectNiveau.selectedIndex = 0;
+      var selectCategorie = document.getElementById('inputCategorie');
+      if (selectCategorie.options.length > 0) selectCategorie.selectedIndex = 0;
 
       afficherSlides();
       afficherQuiz();
@@ -494,6 +578,7 @@
     // COMPOSEUR PLEIN ÉCRAN
     // ============================================================
     var composeurIndex = -1;
+    var composeurModeSombre = false;
 
     function ouvrirComposeur(index) {
       composeurIndex = (index !== undefined) ? index : -1;
@@ -511,6 +596,16 @@
       document.getElementById('composeurOverlay').classList.remove('visible');
     }
 
+    function toggleComposeurMode() {
+      composeurModeSombre = !composeurModeSombre;
+      var content = document.getElementById('composerContent');
+      if (composeurModeSombre) {
+        content.classList.add('dark-mode');
+      } else {
+        content.classList.remove('dark-mode');
+      }
+    }
+
     function validerComposeur() {
       var texte = document.getElementById('composeurTextarea').value.trim();
       if (!texte) { alert('Veuillez écrire du contenu.'); return; }
@@ -525,8 +620,104 @@
     }
 
     // ============================================================
-    // AFFICHER SLIDES
+    // RACCOURCIS CLAVIER (Ctrl+Suppr, Ctrl++, Tab)
     // ============================================================
+    document.addEventListener('keydown', function(e) {
+      // Ctrl + Suppr : supprimer l'élément actif
+      if (e.ctrlKey && e.key === 'Backspace') {
+        // Trouver l'élément actif
+        var active = document.activeElement;
+        if (active) {
+          // Supprimer la slide si on est dans une slide
+          var slideItem = active.closest('.slide-item');
+          if (slideItem) {
+            var index = Array.from(slideItem.parentElement.children).indexOf(slideItem);
+            if (index >= 0 && slidesData.length > 1) {
+              supprimerSlide(index);
+              e.preventDefault();
+              return;
+            }
+          }
+          // Supprimer le quiz si on est dans un quiz
+          var quizItem = active.closest('.quiz-item');
+          if (quizItem) {
+            var index = Array.from(quizItem.parentElement.children).indexOf(quizItem);
+            if (index >= 0 && quizData.length > 1) {
+              supprimerQuestion(index);
+              e.preventDefault();
+              return;
+            }
+          }
+          // Supprimer la question ouverte
+          var openItem = active.closest('.open-question-item');
+          if (openItem) {
+            var index = Array.from(openItem.parentElement.children).indexOf(openItem);
+            if (index >= 0 && openQuestionsData.length > 1) {
+              supprimerQuestionOuverte(index);
+              e.preventDefault();
+              return;
+            }
+          }
+          // Supprimer l'info
+          var infoItem = active.closest('.info-item');
+          if (infoItem) {
+            var index = Array.from(infoItem.parentElement.children).indexOf(infoItem);
+            if (index >= 0 && infosData.length > 1) {
+              supprimerInfo(index);
+              e.preventDefault();
+              return;
+            }
+          }
+        }
+      }
+
+      // Ctrl + + : ajouter un élément
+      if (e.ctrlKey && e.key === '=') {
+        var active = document.activeElement;
+        if (active) {
+          var slidesList = active.closest('#slidesList');
+          if (slidesList) { ajouterSlide(); e.preventDefault(); return; }
+          var quizList = active.closest('#quizList');
+          if (quizList) { ajouterQuestion(); e.preventDefault(); return; }
+          var openList = active.closest('#openQuestionsList');
+          if (openList) { ajouterQuestionOuverte(); e.preventDefault(); return; }
+          var infosList = active.closest('#infosList');
+          if (infosList) { ajouterInfo(); e.preventDefault(); return; }
+        }
+      }
+
+      // Tab : passer au champ texte suivant, ignorer les boutons V/F
+      if (e.key === 'Tab') {
+        var active = document.activeElement;
+        if (active) {
+          var vfBtn = active.closest('.vf-btn');
+          if (vfBtn) {
+            e.preventDefault();
+            var inputs = Array.from(document.querySelectorAll('#formTexte input:not([type="hidden"]), #formTexte textarea, #formTexte select'));
+            var idx = inputs.indexOf(active);
+            if (idx >= 0 && idx < inputs.length - 1) {
+              inputs[idx + 1].focus();
+            }
+            return;
+          }
+        }
+      }
+    });
+
+    // ============================================================
+    // SLIDES
+    // ============================================================
+    function ajouterSlide() {
+      slidesData.push('');
+      afficherSlides();
+    }
+
+    function supprimerSlide(index) {
+      slidesData.splice(index, 1);
+      if (slidesData.length === 0) slidesData.push('');
+      afficherSlides();
+    }
+
     function afficherSlides() {
       var container = document.getElementById('slidesList');
       if (slidesData.length === 0) {
@@ -538,17 +729,12 @@
         var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
         html += `
           <div class="slide-item" onclick="ouvrirComposeur(${index})">
-            ${preview}
+            ${preview || '<span class="slide-placeholder">Slide vide</span>'}
             <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
           </div>
         `;
       });
       container.innerHTML = html;
-    }
-
-    function supprimerSlide(index) {
-      slidesData.splice(index, 1);
-      afficherSlides();
     }
 
     // ============================================================
@@ -567,6 +753,9 @@
 
     function supprimerQuestion(index) {
       quizData.splice(index, 1);
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
       afficherQuiz();
     }
 
@@ -635,6 +824,7 @@
 
     function supprimerQuestionOuverte(index) {
       openQuestionsData.splice(index, 1);
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
       afficherOpenQuestions();
     }
 
@@ -667,6 +857,7 @@
 
     function supprimerInfo(index) {
       infosData.splice(index, 1);
+      if (infosData.length === 0) infosData.push('');
       afficherInfos();
     }
 
@@ -711,7 +902,6 @@
       var statut = estBrouillon ? 'brouillon' : 'publie';
       var msg = document.getElementById('messageTexte');
 
-      // Récupérer les 3 mots à retenir
       var r1 = document.getElementById('retenir1').value.trim();
       var r2 = document.getElementById('retenir2').value.trim();
       var r3 = document.getElementById('retenir3').value.trim();
@@ -720,10 +910,8 @@
       if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
       if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
 
-      // Construction du contenu final (format colonnes séparées par |)
       var contenuFinal = '';
 
-      // Slides
       slidesData.forEach(function(slide, index) {
         if (index === 0) {
           contenuFinal += '-s- ' + slide;
@@ -732,7 +920,6 @@
         }
       });
 
-      // Quiz
       quizData.forEach(function(q) {
         if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
           var chaine = '-q- ' + q.question;
@@ -743,19 +930,16 @@
         }
       });
 
-      // Questions ouvertes
       openQuestionsData.forEach(function(q) {
         if (q.trim()) {
           contenuFinal += ' | -qs- ' + q;
         }
       });
 
-      // Retenir
       if (retenir) {
         contenuFinal += ' | -r- ' + retenir;
       }
 
-      // Infos
       infosData.forEach(function(info) {
         if (info.trim()) {
           contenuFinal += ' | -i- ' + info;
@@ -818,7 +1002,6 @@
       document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
       document.getElementById('editId').value = postId;
 
-      // Date
       if (post.date) {
         var d = new Date(post.date);
         if (!isNaN(d.getTime())) {
@@ -830,10 +1013,25 @@
       }
 
       document.getElementById('inputTitre').value = post.titre || '';
-      document.getElementById('inputNiveau').value = post.niveau || 1;
-      document.getElementById('inputCategorie').value = post.categorie || 'Foi';
 
-      // Brouillon
+      // Sélectionner le niveau
+      var selectNiveau = document.getElementById('inputNiveau');
+      for (var i = 0; i < selectNiveau.options.length; i++) {
+        if (selectNiveau.options[i].value == post.niveau) {
+          selectNiveau.selectedIndex = i;
+          break;
+        }
+      }
+
+      // Sélectionner la catégorie
+      var selectCategorie = document.getElementById('inputCategorie');
+      for (var i = 0; i < selectCategorie.options.length; i++) {
+        if (selectCategorie.options[i].value === post.categorie) {
+          selectCategorie.selectedIndex = i;
+          break;
+        }
+      }
+
       var btnBrouillon = document.getElementById('btnBrouillon');
       if (estBrouillon) {
         btnBrouillon.classList.add('active');
@@ -843,18 +1041,13 @@
         btnBrouillon.textContent = 'Brouillon';
       }
 
-      // Parser le contenu
       slidesData = [];
       quizData = [];
       openQuestionsData = [];
       infosData = [];
 
       if (post.contenu) {
-        // Essayer de parser le contenu avec les indicateurs
         var lignes = post.contenu.split('\n');
-        var currentQuiz = null;
-        var currentSlide = null;
-
         for (var i = 0; i < lignes.length; i++) {
           var ligne = lignes[i].trim();
           if (!ligne) continue;
@@ -864,7 +1057,6 @@
           } else if (ligne.startsWith('-q-')) {
             var qText = ligne.replace('-q-', '').trim();
             var reponses = [];
-            // Chercher les réponses dans les lignes suivantes
             for (var j = i + 1; j < lignes.length; j++) {
               var nextLine = lignes[j].trim();
               if (nextLine.startsWith('-v-')) {
@@ -896,25 +1088,12 @@
         }
       }
 
-      // Si pas de slides, ajouter une slide vide
-      if (slidesData.length === 0) {
-        slidesData.push('');
-      }
-
-      // Si pas de quiz, ajouter un quiz vide
+      if (slidesData.length === 0) slidesData.push('');
       if (quizData.length === 0) {
         quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
       }
-
-      // Si pas de questions ouvertes, ajouter une vide
-      if (openQuestionsData.length === 0) {
-        openQuestionsData.push('');
-      }
-
-      // Si pas d'infos, ajouter une vide
-      if (infosData.length === 0) {
-        infosData.push('');
-      }
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      if (infosData.length === 0) infosData.push('');
 
       afficherSlides();
       afficherQuiz();
@@ -955,7 +1134,7 @@
     }
 
     // ============================================================
-    // EXPORTER DEPUIS LE MODAL (le texte en cours d'édition)
+    // EXPORTER DEPUIS LE MODAL
     // ============================================================
     function exporterTexte() {
       var titre = document.getElementById('inputTitre').value.trim() || 'texte';
@@ -966,12 +1145,10 @@
       contenu += 'Nvx: ' + niveau + '\n';
       contenu += 'Cat: ' + categorie + '\n\n';
 
-      // Slides
       slidesData.forEach(function(slide) {
         contenu += '-s- ' + slide + '\n\n';
       });
 
-      // Quiz
       quizData.forEach(function(q) {
         if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
           contenu += '-q- ' + q.question + '\n';
@@ -982,14 +1159,12 @@
         }
       });
 
-      // Questions ouvertes
       openQuestionsData.forEach(function(q) {
         if (q.trim()) {
           contenu += '-qs- ' + q + '\n\n';
         }
       });
 
-      // Retenir
       var r1 = document.getElementById('retenir1').value.trim();
       var r2 = document.getElementById('retenir2').value.trim();
       var r3 = document.getElementById('retenir3').value.trim();
@@ -998,7 +1173,6 @@
         contenu += '-r- ' + retenir + '\n\n';
       }
 
-      // Infos
       infosData.forEach(function(info) {
         if (info.trim()) {
           contenu += '-i- ' + info + '\n';
@@ -1017,7 +1191,7 @@
     }
 
     // ============================================================
-    // IMPORTER UN FICHIER .TXT
+    // IMPORTER
     // ============================================================
     function importerTexte() {
       document.getElementById('fileInput').click();
@@ -1037,7 +1211,6 @@
     }
 
     function parserContenu(contenu) {
-      // Réinitialiser les données
       slidesData = [];
       quizData = [];
       openQuestionsData = [];
@@ -1053,15 +1226,26 @@
         var ligne = lignes[i].trim();
         if (!ligne) continue;
 
-        // Métadonnées
         if (ligne.startsWith('Nvx:')) {
           var niveau = ligne.replace('Nvx:', '').trim();
-          document.getElementById('inputNiveau').value = niveau || '1';
+          var selectNiveau = document.getElementById('inputNiveau');
+          for (var si = 0; si < selectNiveau.options.length; si++) {
+            if (selectNiveau.options[si].value == niveau) {
+              selectNiveau.selectedIndex = si;
+              break;
+            }
+          }
           continue;
         }
         if (ligne.startsWith('Cat:')) {
           var cat = ligne.replace('Cat:', '').trim();
-          document.getElementById('inputCategorie').value = cat || 'Foi';
+          var selectCategorie = document.getElementById('inputCategorie');
+          for (var si = 0; si < selectCategorie.options.length; si++) {
+            if (selectCategorie.options[si].value === cat) {
+              selectCategorie.selectedIndex = si;
+              break;
+            }
+          }
           continue;
         }
 
@@ -1070,7 +1254,6 @@
         } else if (ligne.startsWith('-q-')) {
           var qText = ligne.replace('-q-', '').trim();
           var reponses = [];
-          // Chercher les réponses dans les lignes suivantes
           for (var j = i + 1; j < lignes.length; j++) {
             var nextLine = lignes[j].trim();
             if (nextLine.startsWith('-v-')) {
@@ -1101,25 +1284,12 @@
         }
       }
 
-      // Si pas de slides, ajouter une slide vide
-      if (slidesData.length === 0) {
-        slidesData.push('');
-      }
-
-      // Si pas de quiz, ajouter un quiz vide
+      if (slidesData.length === 0) slidesData.push('');
       if (quizData.length === 0) {
         quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
       }
-
-      // Si pas de questions ouvertes, ajouter une vide
-      if (openQuestionsData.length === 0) {
-        openQuestionsData.push('');
-      }
-
-      // Si pas d'infos, ajouter une vide
-      if (infosData.length === 0) {
-        infosData.push('');
-      }
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      if (infosData.length === 0) infosData.push('');
 
       afficherSlides();
       afficherQuiz();
