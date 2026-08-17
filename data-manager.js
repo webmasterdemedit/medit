@@ -171,10 +171,6 @@ var DataManager = {
         return false;
     },
 
-    // ============================================================
-    // TOUTES LES ACTIONS UTILISENT CONFIG.SCRIPT_URL
-    // ============================================================
-
     marquerRevise: function(articleId, revise) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -198,18 +194,45 @@ var DataManager = {
             });
     },
 
+    // ============================================================
+    // AJOUTER UN POST - AVEC DÉCOUPAGE EN COLONNES
+    // ============================================================
     ajouterPost: function(titre, niveau, categorie, contenu, question) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
         }
 
+        // Découper le contenu séparé par " | "
+        var elements = contenu.split(' | ');
+        
+        // Préparer les paramètres pour chaque colonne
+        // F = elements[0] (slide1), G = elements[1] (slide2), etc.
+        var params = {
+            titre: titre,
+            niveau: niveau,
+            categorie: categorie,
+            question: question || ''
+        };
+
+        // Ajouter chaque élément comme paramètre séparé
+        for (var i = 0; i < elements.length; i++) {
+            var key = 'col' + (i + 1);
+            params[key] = elements[i] || '';
+        }
+
+        // Construire l'URL
         var url = CONFIG.SCRIPT_URL + '?action=addPost' +
-            '&titre=' + encodeURIComponent(titre) +
-            '&niveau=' + encodeURIComponent(niveau) +
-            '&categorie=' + encodeURIComponent(categorie) +
-            '&contenu=' + encodeURIComponent(contenu) +
-            '&question=' + encodeURIComponent(question);
+            '&titre=' + encodeURIComponent(params.titre) +
+            '&niveau=' + encodeURIComponent(params.niveau) +
+            '&categorie=' + encodeURIComponent(params.categorie) +
+            '&question=' + encodeURIComponent(params.question);
+
+        // Ajouter les colonnes
+        for (var i = 0; i < elements.length; i++) {
+            var key = 'col' + (i + 1);
+            url += '&' + key + '=' + encodeURIComponent(params[key] || '');
+        }
 
         return fetch(url)
             .then(function(r) { return r.json(); })
