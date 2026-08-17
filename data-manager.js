@@ -158,6 +158,65 @@ var DataManager = {
         return 0;
     },
 
+    // === RÉCUPÉRER LA DESCRIPTION DU NIVEAU ===
+    getDescriptionNiveau: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+
+        var cache = this.getCacheForce(id);
+        if (cache && cache.description) {
+            return cache.description;
+        }
+        return '';
+    },
+
+    // === RÉCUPÉRER LES ANNOTATIONS D'UN ARTICLE ===
+    getAnnotations: function(articleId) {
+        var reponses = this.getReponses();
+        for (var i = 0; i < reponses.length; i++) {
+            if (reponses[i].articleId === articleId) {
+                return reponses[i].annotations || '';
+            }
+        }
+        return '';
+    },
+
+    // === RÉCUPÉRER LE STATUT RÉVISÉ D'UN ARTICLE ===
+    getReviseStatus: function(articleId) {
+        var reponses = this.getReponses();
+        for (var i = 0; i < reponses.length; i++) {
+            if (reponses[i].articleId === articleId) {
+                return reponses[i].revise === '1' || reponses[i].revise === 1 || reponses[i].revise === true;
+            }
+        }
+        return false;
+    },
+
+    // === MARQUER COMME RÉVISÉ (appel serveur) ===
+    marquerRevise: function(articleId, revise) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&revise=' + encodeURIComponent(revise ? '1' : '0');
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // Invalider le cache pour forcer le rechargement
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la mise à jour');
+                }
+            });
+    },
+
     // === AJOUTER UN POST (admin) ===
     ajouterPost: function(titre, niveau, categorie, contenu, question) {
         var id = localStorage.getItem('etudiant_id');
@@ -231,6 +290,107 @@ var DataManager = {
                     throw new Error(data.message || 'Erreur lors de la suppression');
                 }
             });
+    },
+
+    // === SAUVEGARDER UNE ANNOTATION ===
+    sauvegarderAnnotation: function(articleId, slide, annotation) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&slide=' + encodeURIComponent(slide) +
+            '&annotation=' + encodeURIComponent(annotation);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
+                }
+            });
+    },
+
+    // === SAUVEGARDER UNE RÉPONSE OUVERTE ===
+    sauvegarderReponseOuverte: function(articleId, reponse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&reponseOuverte=' + encodeURIComponent(reponse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
+                }
+            });
+    },
+
+    // === SAUVEGARDER UN QUIZ ===
+    sauvegarderQuiz: function(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&choixQcm=' + encodeURIComponent(choixQcm) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde du quiz');
+                }
+            });
+    },
+
+    // === SAUVEGARDER UNE LECTURE ===
+    sauvegarderLecture: function(articleId, titre) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&titre=' + encodeURIComponent(titre);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
+                }
+            });
     }
 };
 
@@ -252,4 +412,36 @@ function getReponsesEtudiant() {
 
 function getNiveauEtudiant() {
     return DataManager.getNiveau();
+}
+
+function getDescriptionNiveau() {
+    return DataManager.getDescriptionNiveau();
+}
+
+function getAnnotations(articleId) {
+    return DataManager.getAnnotations(articleId);
+}
+
+function getReviseStatus(articleId) {
+    return DataManager.getReviseStatus(articleId);
+}
+
+function marquerRevise(articleId, revise) {
+    return DataManager.marquerRevise(articleId, revise);
+}
+
+function sauvegarderAnnotation(articleId, slide, annotation) {
+    return DataManager.sauvegarderAnnotation(articleId, slide, annotation);
+}
+
+function sauvegarderReponseOuverte(articleId, reponse) {
+    return DataManager.sauvegarderReponseOuverte(articleId, reponse);
+}
+
+function sauvegarderQuiz(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderQuiz(articleId, titre, choixQcm, bonnes, total, tempsPasse);
+}
+
+function sauvegarderLecture(articleId, titre) {
+    return DataManager.sauvegarderLecture(articleId, titre);
 }
