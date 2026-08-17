@@ -193,10 +193,69 @@
     }
   </script>
 
+  <!-- ========== CHARGEMENT DES SCRIPTS ========== -->
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/article.js"></script>
+  
+  <!-- ========== FONCTION VALIDER REPONSE (après config.js) ========== -->
+  <script>
+    // ============================================================
+    // VALIDER LA RÉPONSE OUVERTE
+    // ============================================================
+    function validerReponse() {
+      var reponse = document.getElementById('reponse-mailto').value;
+      var messageDiv = document.getElementById('form-message-mailto');
+      
+      if (!reponse || reponse.trim() === '') {
+        messageDiv.innerHTML = '<span style="color:#d9534f;">Veuillez écrire une réponse avant d\'enregistrer.</span>';
+        return;
+      }
+
+      var nom = localStorage.getItem('etudiant_id');
+      var articleId = getArticleIdFromUrl();
+
+      if (!nom || !articleId) {
+        messageDiv.innerHTML = '<span style="color:#d9534f;">Erreur : utilisateur ou article non identifié.</span>';
+        return;
+      }
+
+      // Utiliser CONFIG.scriptUrl de config.js
+      if (typeof CONFIG === 'undefined' || !CONFIG.scriptUrl) {
+        messageDiv.innerHTML = '<span style="color:#d9534f;">Erreur : configuration non trouvée.</span>';
+        return;
+      }
+
+      var params = new URLSearchParams();
+      params.append('action', 'saveReponseOuverte');
+      params.append('nom', nom);
+      params.append('articleId', articleId);
+      params.append('reponseOuverte', reponse);
+
+      var url = CONFIG.scriptUrl + '?' + params.toString();
+
+      fetch(url)
+        .then(function(response) { return response.json(); })
+        .then(function(data) {
+          if (data.success) {
+            messageDiv.innerHTML = '<span style="color:#2d6a4f;">✅ Réponse enregistrée avec succès !</span>';
+            document.getElementById('reponse-mailto').disabled = true;
+          } else {
+            messageDiv.innerHTML = '<span style="color:#d9534f;">❌ Erreur : ' + (data.message || 'inconnue') + '</span>';
+          }
+        })
+        .catch(function(error) {
+          messageDiv.innerHTML = '<span style="color:#d9534f;">❌ Erreur réseau : ' + error.message + '</span>';
+        });
+    }
+
+    function getArticleIdFromUrl() {
+      var params = new URLSearchParams(window.location.search);
+      return params.get('id') || params.get('postId') || null;
+    }
+  </script>
+
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <script src="/medit/lecture-mode.js"></script>
 </body>
