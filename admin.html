@@ -9,23 +9,27 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <link rel="stylesheet" href="/medit/article.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; }
+    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; background: #f3f0e9; }
     a { text-decoration: none; color: inherit; }
 
     .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1; width: 100%; }
 
+    /* HEADER ADMIN */
     .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #d1ccc4; }
-    .header-admin h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; }
+    .header-admin h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; }
     .header-admin .btn-ajout { padding: 8px 20px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
     .header-admin .btn-ajout:hover { background: #e8e5e0; }
 
-    .stats-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-radius: 4px; padding: 14px 24px; margin-bottom: 24px; border: 1px solid #d1ccc4; }
+    /* STATS */
+    .stats-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-radius: 4px; padding: 14px 24px; margin-bottom: 24px; border: 1px solid #d1ccc4; background: #f3f0e9; }
     .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b7a8a; }
     .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; color: #2c2c2c; font-family: 'Georgia', serif; }
     .stats-ligne .sep { color: #d1ccc4; font-size: 18px; }
 
+    /* ONGLETS */
     .tabs-container { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; padding: 4px 0; border-bottom: 1px solid #d1ccc4; }
     .tab-btn { padding: 10px 28px; background: transparent; border: none; border-bottom: 2px solid transparent; font-size: 15px; font-weight: 500; color: #6b7a8a; cursor: pointer; font-family: 'Segoe UI', sans-serif; border-radius: 0; }
     .tab-btn:hover { color: #2c2c2c; background: #e8e5e0; }
@@ -36,15 +40,16 @@
     .tab-content { display: none; }
     .tab-content.active { display: block; }
 
+    /* CARTES POSTS */
     .grille { display: flex; flex-direction: column; gap: 10px; }
     .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; }
     .carte-post .infos { display: flex; flex-direction: column; gap: 4px; }
-    .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; }
+    .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; color: #2c2c2c; }
     .carte-post .meta { font-size: 12px; color: #6b7a8a; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
     .carte-post .meta .badge { padding: 1px 10px; border-radius: 30px; font-size: 11px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
     .carte-post .meta .badge.publie { background: #e8e5e0; color: #2c2c2c; }
     .carte-post .meta .badge.brouillon { background: #e8e5e0; color: #6b7a8a; }
-    .carte-post .actions { display: flex; gap: 8px; }
+    .carte-post .actions { display: flex; gap: 8px; flex-wrap: wrap; }
     .carte-post .actions button { padding: 6px 14px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
     .carte-post .actions button:hover { background: #e8e5e0; color: #2c2c2c; }
     .carte-post .actions .btn-supprimer:hover { background: #f5f0eb; color: #6b7a8a; }
@@ -58,41 +63,112 @@
     .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 4px; }
     .vide p { color: #b8b0a8; font-size: 15px; }
 
-    /* MODAL */
+    /* ============================================================
+       MODAL TEXTE - Style liseuse épuré
+       ============================================================ */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
     .modal-overlay.visible { display: flex; }
-    .modal-contenu.ajout-post { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 600px; width: 90%; max-height: 85vh; overflow-y: auto; padding: 32px 36px; font-family: 'Segoe UI', sans-serif; position: relative; }
-    .modal-contenu.ajout-post .modal-close { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 24px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .modal-contenu.ajout-post { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 800px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 28px 32px; font-family: 'Segoe UI', sans-serif; position: relative; }
+    .modal-contenu.ajout-post .modal-close { position: absolute; top: 10px; right: 14px; background: transparent; border: none; font-size: 22px; color: #6b7a8a; cursor: pointer; line-height: 1; }
     .modal-contenu.ajout-post .modal-close:hover { color: #2c2c2c; }
-    .modal-contenu.ajout-post h3 { font-size: 22px; margin-bottom: 4px; font-family: 'Georgia', serif; color: #2c2c2c; }
-    .modal-contenu.ajout-post .modal-sous-titre { font-size: 13px; color: #6b7a8a; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #d1ccc4; }
-    .modal-contenu.ajout-post label { display: block; font-size: 13px; color: #6b7a8a; margin-top: 12px; margin-bottom: 4px; font-weight: 500; }
-    .modal-contenu.ajout-post input, .modal-contenu.ajout-post textarea, .modal-contenu.ajout-post select { width: 100%; padding: 10px 14px; border: 1px solid #d1ccc4; border-radius: 8px; font-size: 14px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; box-sizing: border-box; }
-    .modal-contenu.ajout-post input:focus, .modal-contenu.ajout-post textarea:focus, .modal-contenu.ajout-post select:focus { outline: none; border-color: #b8b0a8; }
-    .modal-contenu.ajout-post textarea { resize: vertical; min-height: 120px; }
-    .modal-contenu.ajout-post select { appearance: auto; cursor: pointer; }
-    .btn-groupe { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; }
-    .btn-submit { padding: 10px 28px; background: transparent; color: #2c2c2c; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
-    .btn-submit:hover { background: #e8e5e0; }
-    .btn-retour { padding: 10px 28px; background: transparent; color: #6b7a8a; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
-    .btn-retour:hover { background: #e8e5e0; color: #2c2c2c; }
-    .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; }
-    .message.success { color: #2c2c2c; background: #e8e5e0; }
-    .message.error { color: #6b7a8a; background: #f5f0eb; }
+    .modal-contenu.ajout-post h3 { font-size: 24px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 16px; }
+
+    /* Ligne compacte : date + titre + niveau + catégorie */
+    .row-compact { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 16px; }
+    .row-compact input, .row-compact select { padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; }
+    .row-compact input[type="date"] { width: auto; }
+    .row-compact input[type="text"] { flex: 1; min-width: 120px; }
+    .row-compact select { width: auto; }
+
+    /* Slides - liste verticale sans cadre */
+    .slides-list { margin: 8px 0; }
+    .slide-item { padding: 6px 0; border-bottom: 1px solid #e8e5e0; color: #2c2c2c; font-family: 'Georgia', serif; font-size: 15px; line-height: 1.5; cursor: pointer; }
+    .slide-item:last-child { border-bottom: none; }
+    .slide-item .slide-placeholder { color: #b8b0a8; font-style: italic; }
+    .slide-item .btn-del-slide { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 14px; margin-left: 8px; float: right; }
+    .slide-item .btn-del-slide:hover { color: #2c2c2c; }
+
+    .btn-composer { padding: 6px 16px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 4px 0; }
+    .btn-composer:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    /* Quiz - sans cadre */
+    .quiz-list { margin: 8px 0; }
+    .quiz-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; font-size: 14px; color: #2c2c2c; }
+    .quiz-item:last-child { border-bottom: none; }
+    .quiz-item .q-text { width: 100%; padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .quiz-item .q-text:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .quiz-item .quiz-reponses { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 2px 0; }
+    .quiz-item .quiz-reponses input { flex: 1; min-width: 60px; padding: 2px 6px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; background: #faf8f5; color: #2c2c2c; }
+    .quiz-item .vf-group { display: flex; gap: 2px; }
+    .quiz-item .vf-btn { padding: 2px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; background: #faf8f5; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .quiz-item .vf-btn.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+    .quiz-item .vf-btn:hover { background: #e8e5e0; }
+    .quiz-item .btn-del-quiz { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; }
+
+    /* Questions ouvertes - sans cadre */
+    .open-questions-list { margin: 8px 0; }
+    .open-question-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; }
+    .open-question-item:last-child { border-bottom: none; }
+    .open-question-item input { width: 100%; padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .open-question-item input:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .open-question-item .btn-del-open { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; float: right; }
+
+    /* Retenir - 3 champs sur une ligne */
+    .retenir-champs { display: flex; gap: 8px; flex-wrap: wrap; margin: 8px 0; }
+    .retenir-champs input { flex: 1; min-width: 60px; padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 14px; background: #faf8f5; color: #2c2c2c; }
+
+    /* Infos - liste */
+    .infos-list { margin: 8px 0; }
+    .info-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; }
+    .info-item:last-child { border-bottom: none; }
+    .info-item input { width: 100%; padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .info-item input:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .info-item .btn-del-info { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; float: right; }
+
+    .btn-add { padding: 4px 14px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 2px 0; }
+    .btn-add:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    .btn-groupe { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; border-top: 1px solid #d1ccc4; padding-top: 16px; }
+    .btn-groupe .btn { padding: 8px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; border: 1px solid #d1ccc4; background: transparent; color: #2c2c2c; }
+    .btn-groupe .btn:hover { background: #e8e5e0; }
+    .btn-groupe .btn-annuler { color: #6b7a8a; text-decoration: none; }
+    .btn-groupe .btn-brouillon { color: #6b7a8a; }
+    .btn-groupe .btn-brouillon.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+
+    .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; display: none; }
+    .message.success { display: block; color: #2c2c2c; background: #e8e5e0; }
+    .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
+
+    /* ============================================================
+       COMPOSEUR PLEIN ÉCRAN
+       ============================================================ */
+    .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.6); }
+    .composer-overlay.visible { display: flex; }
+    .composer-content { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 800px; width: 95%; max-height: 90vh; padding: 32px 40px; position: relative; font-family: 'Georgia', serif; }
+    .composer-content .composer-close { position: absolute; top: 12px; right: 16px; background: transparent; border: none; font-size: 24px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .composer-content .composer-close:hover { color: #2c2c2c; }
+    .composer-content textarea { width: 100%; height: 60vh; border: none; background: transparent; font-size: 20px; font-family: 'Georgia', serif; color: #2c2c2c; resize: none; padding: 8px 0; line-height: 1.8; outline: none; }
+    .composer-content textarea::placeholder { color: #b8b0a8; font-style: italic; }
+    .composer-content .composer-actions { display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end; border-top: 1px solid #d1ccc4; padding-top: 16px; }
+    .composer-content .composer-actions button { padding: 8px 28px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
+    .composer-content .composer-actions button:hover { background: #e8e5e0; }
 
     @media (max-width: 640px) {
       .carte-post { grid-template-columns: 1fr; gap: 8px; }
       .carte-post .actions { justify-content: flex-start; }
-      .modal-contenu.ajout-post { padding: 20px 16px; }
-      .btn-groupe { flex-direction: column; }
-      .btn-submit, .btn-retour { width: 100%; text-align: center; }
+      .modal-contenu.ajout-post { padding: 16px; }
+      .row-compact { flex-direction: column; align-items: stretch; }
+      .row-compact input[type="date"] { width: 100%; }
+      .btn-groupe { flex-direction: column; align-items: stretch; }
+      .btn-groupe .btn { text-align: center; }
+      .composer-content { padding: 20px; }
+      .composer-content textarea { font-size: 17px; height: 50vh; }
     }
   </style>
 </head>
 <body>
 
   <div id="header-container"></div>
-
   <script>
     fetch('/medit/header.html')
       .then(function(response) { return response.text(); })
@@ -112,7 +188,7 @@
 
     <div class="header-admin">
       <h1>⚙ Administration</h1>
-      <button class="btn-ajout" onclick="ouvrirModalAjout()">+ Ajouter un texte</button>
+      <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
     </div>
 
     <div class="stats-ligne" id="statsLigne">
@@ -138,44 +214,91 @@
 
   </div>
 
-  <!-- MODAL -->
-  <div id="modalAjoutPost" class="modal-overlay">
+  <!-- ============================================================
+       MODAL TEXTE (Ajouter / Modifier)
+       ============================================================ -->
+  <div id="modalTexte" class="modal-overlay">
     <div class="modal-contenu ajout-post">
-      <button class="modal-close" onclick="fermerModalAjout()">✕</button>
-      <h3 id="modalTitre">Ajouter un texte</h3>
-      <div class="modal-sous-titre">Remplissez les champs ci-dessous</div>
+      <button class="modal-close" onclick="fermerModalTexte()">✕</button>
+      <h3 id="modalTitre">Texte</h3>
 
-      <form id="formAjoutPost" onsubmit="return false;">
+      <form id="formTexte" onsubmit="return false;">
         <input type="hidden" id="editId" value="">
 
-        <label>Titre *</label>
-        <input type="text" id="inputTitre" placeholder="Titre du texte" required>
-
-        <label>Niveau *</label>
-        <input type="number" id="inputNiveau" placeholder="1" min="1" max="10" required>
-
-        <label>Catégorie</label>
-        <input type="text" id="inputCategorie" placeholder="Ex: Sourate, Hadith, Méditation...">
-
-        <label>Contenu *</label>
-        <textarea id="inputContenu" rows="8" placeholder="Le texte de la méditation..." required></textarea>
-
-        <label>Question</label>
-        <textarea id="inputQuestion" rows="3" placeholder="Question ouverte (optionnel)"></textarea>
-
-        <label>Statut</label>
-        <select id="inputStatut">
-          <option value="brouillon">Brouillon</option>
-          <option value="publie">Publié</option>
-        </select>
-
-        <div class="btn-groupe">
-          <button type="button" onclick="enregistrerPost()" class="btn-submit" id="btnEnregistrer">Enregistrer</button>
-          <button type="button" onclick="fermerModalAjout()" class="btn-retour">Annuler</button>
+        <!-- Ligne compacte : Date, Titre, Niveau, Catégorie -->
+        <div class="row-compact">
+          <input type="date" id="inputDate">
+          <input type="text" id="inputTitre" placeholder="Titre">
+          <select id="inputNiveau">
+            <option value="1">Nvx 1</option><option value="2">Nvx 2</option><option value="3">Nvx 3</option>
+            <option value="4">Nvx 4</option><option value="5">Nvx 5</option><option value="6">Nvx 6</option>
+            <option value="7">Nvx 7</option><option value="8">Nvx 8</option><option value="9">Nvx 9</option>
+            <option value="10">Nvx 10</option><option value="11">Nvx 11</option><option value="12">Nvx 12</option>
+          </select>
+          <select id="inputCategorie">
+            <option value="Foi">Foi</option><option value="Rappels divers">Rappels divers</option>
+            <option value="Sourate">Sourate</option><option value="Hadith">Hadith</option>
+            <option value="Méditation">Méditation</option><option value="Invocation">Invocation</option>
+            <option value="Histoire">Histoire</option><option value="Morale">Morale</option>
+            <option value="Autre">Autre</option>
+          </select>
         </div>
 
-        <div id="messageAjout" class="message" style="display:none;"></div>
+        <!-- ==================== SLIDES ==================== -->
+        <div style="margin: 12px 0 4px 0; font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px;">Slides</div>
+        <div class="slides-list" id="slidesList"></div>
+        <button type="button" class="btn-composer" onclick="ouvrirComposeur()">✎ Composer</button>
+
+        <!-- ==================== QUIZ ==================== -->
+        <div style="margin: 12px 0 4px 0; font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px;">Quiz</div>
+        <div class="quiz-list" id="quizList"></div>
+        <button type="button" class="btn-add" onclick="ajouterQuestion()">+ Ajouter une question</button>
+
+        <!-- ==================== QUESTIONS OUVERTES ==================== -->
+        <div style="margin: 12px 0 4px 0; font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px;">Questions ouvertes</div>
+        <div class="open-questions-list" id="openQuestionsList"></div>
+        <button type="button" class="btn-add" onclick="ajouterQuestionOuverte()">+ Ajouter une question ouverte</button>
+
+        <!-- ==================== À RETENIR ==================== -->
+        <div style="margin: 12px 0 4px 0; font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px;">À retenir</div>
+        <div class="retenir-champs">
+          <input type="text" id="retenir1" placeholder="Mot 1">
+          <input type="text" id="retenir2" placeholder="Mot 2">
+          <input type="text" id="retenir3" placeholder="Mot 3">
+        </div>
+
+        <!-- ==================== INFOS ==================== -->
+        <div style="margin: 12px 0 4px 0; font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px;">Infos</div>
+        <div class="infos-list" id="infosList"></div>
+        <button type="button" class="btn-add" onclick="ajouterInfo()">+ Ajouter une info</button>
+
+        <!-- ==================== BOUTONS ==================== -->
+        <div class="btn-groupe">
+          <button type="button" onclick="exporterTexte()" class="btn" style="color:#6b7a8a;">📤 Exporter</button>
+          <button type="button" onclick="importerTexte()" class="btn" style="color:#6b7a8a;">📥 Importer</button>
+          <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
+          <span style="flex:1;"></span>
+          <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
+          <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
+          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
+        </div>
+
+        <div id="messageTexte" class="message"></div>
       </form>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       COMPOSEUR PLEIN ÉCRAN
+       ============================================================ -->
+  <div id="composeurOverlay" class="composer-overlay">
+    <div class="composer-content">
+      <button class="composer-close" onclick="fermerComposeur()">✕</button>
+      <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
+      <div class="composer-actions">
+        <button onclick="validerComposeur()">✓ Valider</button>
+        <button onclick="fermerComposeur()">Annuler</button>
+      </div>
     </div>
   </div>
 
@@ -196,10 +319,18 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
+    // ============================================================
+    // ADMIN - GESTION DES POSTS
+    // ============================================================
+
     var tousLesPosts = [];
     var ongletActuel = 'tous';
     var modeEdition = false;
+    var estBrouillon = false;
 
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) { window.location.href = '/medit/index.html'; return; }
@@ -309,58 +440,327 @@
       afficherAdmin();
     }
 
-    function ouvrirModalAjout() {
+    // ============================================================
+    // MODAL TEXTE
+    // ============================================================
+    var slidesData = [];
+    var quizData = [];
+    var openQuestionsData = [];
+    var infosData = [];
+
+    function ouvrirModalTexte() {
       modeEdition = false;
-      document.getElementById('modalTitre').textContent = 'Ajouter un texte';
-      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+      estBrouillon = false;
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Ajouter';
       document.getElementById('editId').value = '';
+      document.getElementById('btnBrouillon').classList.remove('active');
+      document.getElementById('btnBrouillon').textContent = 'Brouillon';
+
+      // Réinitialiser les données
+      slidesData = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+
+      // Date auto
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('inputDate').value = y + '-' + m + '-' + d;
       document.getElementById('inputTitre').value = '';
-      document.getElementById('inputNiveau').value = '';
-      document.getElementById('inputCategorie').value = '';
-      document.getElementById('inputContenu').value = '';
-      document.getElementById('inputQuestion').value = '';
-      document.getElementById('inputStatut').value = 'brouillon';
-      document.getElementById('messageAjout').style.display = 'none';
-      document.getElementById('modalAjoutPost').classList.add('visible');
+      document.getElementById('inputNiveau').value = '1';
+      document.getElementById('inputCategorie').value = 'Foi';
+      document.getElementById('retenir1').value = '';
+      document.getElementById('retenir2').value = '';
+      document.getElementById('retenir3').value = '';
+      document.getElementById('messageTexte').style.display = 'none';
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
       document.getElementById('inputTitre').focus();
     }
 
-    function modifierPost(postId) {
-      var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) { alert('Post introuvable'); return; }
-
-      modeEdition = true;
-      document.getElementById('modalTitre').textContent = 'Modifier le texte';
-      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
-      document.getElementById('editId').value = postId;
-      document.getElementById('inputTitre').value = post.titre || '';
-      document.getElementById('inputNiveau').value = post.niveau || '';
-      document.getElementById('inputCategorie').value = post.categorie || '';
-      document.getElementById('inputContenu').value = post.contenu || '';
-      document.getElementById('inputQuestion').value = post.question_ouverte || '';
-      document.getElementById('inputStatut').value = post.statut || 'brouillon';
-      document.getElementById('messageAjout').style.display = 'none';
-      document.getElementById('modalAjoutPost').classList.add('visible');
-      document.getElementById('inputTitre').focus();
+    function fermerModalTexte() {
+      document.getElementById('modalTexte').classList.remove('visible');
     }
 
-    function fermerModalAjout() {
-      document.getElementById('modalAjoutPost').classList.remove('visible');
+    // ============================================================
+    // COMPOSEUR PLEIN ÉCRAN
+    // ============================================================
+    var composeurIndex = -1;
+
+    function ouvrirComposeur(index) {
+      composeurIndex = (index !== undefined) ? index : -1;
+      var textarea = document.getElementById('composeurTextarea');
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        textarea.value = slidesData[composeurIndex];
+      } else {
+        textarea.value = '';
+      }
+      document.getElementById('composeurOverlay').classList.add('visible');
+      textarea.focus();
     }
 
-    function enregistrerPost() {
+    function fermerComposeur() {
+      document.getElementById('composeurOverlay').classList.remove('visible');
+    }
+
+    function validerComposeur() {
+      var texte = document.getElementById('composeurTextarea').value.trim();
+      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = texte;
+      } else {
+        slidesData.push(texte);
+      }
+      fermerComposeur();
+      afficherSlides();
+    }
+
+    // ============================================================
+    // AFFICHER SLIDES
+    // ============================================================
+    function afficherSlides() {
+      var container = document.getElementById('slidesList');
+      if (slidesData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune slide</div>';
+        return;
+      }
+      var html = '';
+      slidesData.forEach(function(slide, index) {
+        var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
+        html += `
+          <div class="slide-item" onclick="ouvrirComposeur(${index})">
+            ${preview}
+            <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    function supprimerSlide(index) {
+      slidesData.splice(index, 1);
+      afficherSlides();
+    }
+
+    // ============================================================
+    // QUIZ
+    // ============================================================
+    function ajouterQuestion() {
+      quizData.push({
+        question: '',
+        reponses: [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ]
+      });
+      afficherQuiz();
+    }
+
+    function supprimerQuestion(index) {
+      quizData.splice(index, 1);
+      afficherQuiz();
+    }
+
+    function ajouterReponse(quizIndex) {
+      quizData[quizIndex].reponses.push({ texte: '', correct: false });
+      afficherQuiz();
+    }
+
+    function supprimerReponse(quizIndex, repIndex) {
+      quizData[quizIndex].reponses.splice(repIndex, 1);
+      if (quizData[quizIndex].reponses.length === 0) {
+        quizData[quizIndex].reponses.push({ texte: '', correct: true });
+      }
+      afficherQuiz();
+    }
+
+    function setVraiFaux(quizIndex, repIndex, estVrai) {
+      quizData[quizIndex].reponses[repIndex].correct = estVrai;
+      afficherQuiz();
+    }
+
+    function afficherQuiz() {
+      var container = document.getElementById('quizList');
+      if (quizData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucun quiz</div>';
+        return;
+      }
+      var html = '';
+      quizData.forEach(function(q, qi) {
+        html += `
+          <div class="quiz-item">
+            <input type="text" class="q-text" placeholder="Question QCM..." value="${q.question}" 
+                   onchange="quizData[${qi}].question = this.value">
+            <div class="quiz-reponses">
+        `;
+        q.reponses.forEach(function(r, ri) {
+          var lettre = String.fromCharCode(65 + ri);
+          html += `
+            <input type="text" placeholder="Réponse ${lettre}" value="${r.texte}" 
+                   style="flex:1;min-width:60px;" 
+                   onchange="quizData[${qi}].reponses[${ri}].texte = this.value">
+            <div class="vf-group">
+              <button class="vf-btn ${r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, true)">V</button>
+              <button class="vf-btn ${!r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, false)">F</button>
+            </div>
+            <button class="btn-del-quiz" onclick="supprimerReponse(${qi}, ${ri})">✕</button>
+          `;
+        });
+        html += `
+            </div>
+            <button class="btn-add" onclick="ajouterReponse(${qi})" style="font-size:11px;padding:2px 10px;">+ Réponse</button>
+            <button class="btn-del-quiz" onclick="supprimerQuestion(${qi})" style="float:right;">✕ Supprimer</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // QUESTIONS OUVERTES
+    // ============================================================
+    function ajouterQuestionOuverte() {
+      openQuestionsData.push('');
+      afficherOpenQuestions();
+    }
+
+    function supprimerQuestionOuverte(index) {
+      openQuestionsData.splice(index, 1);
+      afficherOpenQuestions();
+    }
+
+    function afficherOpenQuestions() {
+      var container = document.getElementById('openQuestionsList');
+      if (openQuestionsData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune question ouverte</div>';
+        return;
+      }
+      var html = '';
+      openQuestionsData.forEach(function(q, qi) {
+        html += `
+          <div class="open-question-item">
+            <input type="text" placeholder="Question ouverte..." value="${q}" 
+                   onchange="openQuestionsData[${qi}] = this.value">
+            <button class="btn-del-open" onclick="supprimerQuestionOuverte(${qi})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // INFOS
+    // ============================================================
+    function ajouterInfo() {
+      infosData.push('');
+      afficherInfos();
+    }
+
+    function supprimerInfo(index) {
+      infosData.splice(index, 1);
+      afficherInfos();
+    }
+
+    function afficherInfos() {
+      var container = document.getElementById('infosList');
+      if (infosData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune info</div>';
+        return;
+      }
+      var html = '';
+      infosData.forEach(function(info, ii) {
+        html += `
+          <div class="info-item">
+            <input type="text" placeholder="Info..." value="${info}" 
+                   onchange="infosData[${ii}] = this.value">
+            <button class="btn-del-info" onclick="supprimerInfo(${ii})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // BROUILLON
+    // ============================================================
+    function toggleBrouillon() {
+      estBrouillon = !estBrouillon;
+      var btn = document.getElementById('btnBrouillon');
+      btn.classList.toggle('active');
+      btn.textContent = estBrouillon ? '✓ Brouillon' : 'Brouillon';
+    }
+
+    // ============================================================
+    // ENREGISTRER TEXTE
+    // ============================================================
+    function enregistrerTexte() {
       var id = document.getElementById('editId').value;
       var titre = document.getElementById('inputTitre').value.trim();
-      var niveau = document.getElementById('inputNiveau').value.trim();
-      var categorie = document.getElementById('inputCategorie').value.trim();
-      var contenu = document.getElementById('inputContenu').value.trim();
-      var question = document.getElementById('inputQuestion').value.trim();
-      var statut = document.getElementById('inputStatut').value;
-      var msg = document.getElementById('messageAjout');
+      var niveau = document.getElementById('inputNiveau').value;
+      var categorie = document.getElementById('inputCategorie').value;
+      var date = document.getElementById('inputDate').value;
+      var statut = estBrouillon ? 'brouillon' : 'publie';
+      var msg = document.getElementById('messageTexte');
 
-      if (!titre) { msg.textContent = 'Veuillez saisir un titre'; msg.style.display = 'block'; msg.className = 'message error'; return; }
-      if (!niveau) { msg.textContent = 'Veuillez saisir un niveau'; msg.style.display = 'block'; msg.className = 'message error'; return; }
-      if (!contenu) { msg.textContent = 'Veuillez saisir le contenu'; msg.style.display = 'block'; msg.className = 'message error'; return; }
+      // Récupérer les 3 mots à retenir
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+
+      if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
+      if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
+
+      // Construction du contenu final (format colonnes séparées par |)
+      var contenuFinal = '';
+
+      // Slides
+      slidesData.forEach(function(slide, index) {
+        if (index === 0) {
+          contenuFinal += '-s- ' + slide;
+        } else {
+          contenuFinal += ' | -s- ' + slide;
+        }
+      });
+
+      // Quiz
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          var chaine = '-q- ' + q.question;
+          q.reponses.forEach(function(r) {
+            chaine += ' | ' + (r.correct ? '-v- ' : '-f- ') + r.texte;
+          });
+          contenuFinal += ' | ' + chaine;
+        }
+      });
+
+      // Questions ouvertes
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          contenuFinal += ' | -qs- ' + q;
+        }
+      });
+
+      // Retenir
+      if (retenir) {
+        contenuFinal += ' | -r- ' + retenir;
+      }
+
+      // Infos
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          contenuFinal += ' | -i- ' + info;
+        }
+      });
 
       var btn = document.getElementById('btnEnregistrer');
       btn.textContent = 'Enregistrement...';
@@ -368,44 +768,370 @@
       msg.style.display = 'none';
 
       if (modeEdition && id) {
-        DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenu, question, statut)
+        DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenuFinal, '', statut)
           .then(function() {
-            msg.textContent = '✅ Post mis à jour avec succès !';
-            msg.style.display = 'block';
-            msg.className = 'message success';
+            afficherMsgTexte('✅ Post mis à jour !', 'success');
             btn.textContent = 'Mettre à jour';
             btn.disabled = false;
-            fermerModalAjout();
+            fermerModalTexte();
             chargerAdmin();
           })
           .catch(function(err) {
-            msg.textContent = '❌ Erreur : ' + err.message;
-            msg.style.display = 'block';
-            msg.className = 'message error';
+            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
             btn.textContent = 'Mettre à jour';
             btn.disabled = false;
           });
       } else {
-        DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
+        DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenuFinal, '')
           .then(function() {
-            msg.textContent = '✅ Post créé avec succès !';
-            msg.style.display = 'block';
-            msg.className = 'message success';
-            btn.textContent = 'Enregistrer';
+            afficherMsgTexte('✅ Post ajouté !', 'success');
+            btn.textContent = 'Ajouter';
             btn.disabled = false;
-            fermerModalAjout();
+            fermerModalTexte();
             chargerAdmin();
           })
           .catch(function(err) {
-            msg.textContent = '❌ Erreur : ' + err.message;
-            msg.style.display = 'block';
-            msg.className = 'message error';
-            btn.textContent = 'Enregistrer';
+            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            btn.textContent = 'Ajouter';
             btn.disabled = false;
           });
       }
     }
 
+    function afficherMsgTexte(texte, type) {
+      var msg = document.getElementById('messageTexte');
+      msg.textContent = texte;
+      msg.className = 'message ' + type;
+      msg.style.display = 'block';
+    }
+
+    // ============================================================
+    // MODIFIER UN POST
+    // ============================================================
+    function modifierPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      modeEdition = true;
+      estBrouillon = post.statut === 'brouillon';
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('editId').value = postId;
+
+      // Date
+      if (post.date) {
+        var d = new Date(post.date);
+        if (!isNaN(d.getTime())) {
+          var y = d.getFullYear();
+          var m = String(d.getMonth() + 1).padStart(2, '0');
+          var dd = String(d.getDate()).padStart(2, '0');
+          document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
+        }
+      }
+
+      document.getElementById('inputTitre').value = post.titre || '';
+      document.getElementById('inputNiveau').value = post.niveau || 1;
+      document.getElementById('inputCategorie').value = post.categorie || 'Foi';
+
+      // Brouillon
+      var btnBrouillon = document.getElementById('btnBrouillon');
+      if (estBrouillon) {
+        btnBrouillon.classList.add('active');
+        btnBrouillon.textContent = '✓ Brouillon';
+      } else {
+        btnBrouillon.classList.remove('active');
+        btnBrouillon.textContent = 'Brouillon';
+      }
+
+      // Parser le contenu
+      slidesData = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+
+      if (post.contenu) {
+        // Essayer de parser le contenu avec les indicateurs
+        var lignes = post.contenu.split('\n');
+        var currentQuiz = null;
+        var currentSlide = null;
+
+        for (var i = 0; i < lignes.length; i++) {
+          var ligne = lignes[i].trim();
+          if (!ligne) continue;
+
+          if (ligne.startsWith('-s-')) {
+            slidesData.push(ligne.replace('-s-', '').trim());
+          } else if (ligne.startsWith('-q-')) {
+            var qText = ligne.replace('-q-', '').trim();
+            var reponses = [];
+            // Chercher les réponses dans les lignes suivantes
+            for (var j = i + 1; j < lignes.length; j++) {
+              var nextLine = lignes[j].trim();
+              if (nextLine.startsWith('-v-')) {
+                reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+                i = j;
+              } else if (nextLine.startsWith('-f-')) {
+                reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+                i = j;
+              } else {
+                break;
+              }
+            }
+            if (reponses.length === 0) {
+              reponses.push({ texte: '', correct: true });
+              reponses.push({ texte: '', correct: false });
+            }
+            quizData.push({ question: qText, reponses: reponses });
+          } else if (ligne.startsWith('-qs-')) {
+            openQuestionsData.push(ligne.replace('-qs-', '').trim());
+          } else if (ligne.startsWith('-r-')) {
+            var retenirText = ligne.replace('-r-', '').trim();
+            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+            document.getElementById('retenir1').value = mots[0] || '';
+            document.getElementById('retenir2').value = mots[1] || '';
+            document.getElementById('retenir3').value = mots[2] || '';
+          } else if (ligne.startsWith('-i-')) {
+            infosData.push(ligne.replace('-i-', '').trim());
+          }
+        }
+      }
+
+      // Si pas de slides, ajouter une slide vide
+      if (slidesData.length === 0) {
+        slidesData.push('');
+      }
+
+      // Si pas de quiz, ajouter un quiz vide
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+
+      // Si pas de questions ouvertes, ajouter une vide
+      if (openQuestionsData.length === 0) {
+        openQuestionsData.push('');
+      }
+
+      // Si pas d'infos, ajouter une vide
+      if (infosData.length === 0) {
+        infosData.push('');
+      }
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('messageTexte').style.display = 'none';
+      document.getElementById('inputTitre').focus();
+    }
+
+    // ============================================================
+    // EXPORTER UN POST
+    // ============================================================
+    function exporterPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      var contenu = '';
+      contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+
+      if (post.contenu) {
+        contenu += post.contenu;
+      } else {
+        contenu += '-s- ' + (post.titre || 'Sans titre') + '\n\n';
+      }
+
+      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (post.titre || 'post') + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    // EXPORTER DEPUIS LE MODAL (le texte en cours d'édition)
+    // ============================================================
+    function exporterTexte() {
+      var titre = document.getElementById('inputTitre').value.trim() || 'texte';
+      var niveau = document.getElementById('inputNiveau').value;
+      var categorie = document.getElementById('inputCategorie').value;
+
+      var contenu = '';
+      contenu += 'Nvx: ' + niveau + '\n';
+      contenu += 'Cat: ' + categorie + '\n\n';
+
+      // Slides
+      slidesData.forEach(function(slide) {
+        contenu += '-s- ' + slide + '\n\n';
+      });
+
+      // Quiz
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          contenu += '-q- ' + q.question + '\n';
+          q.reponses.forEach(function(r) {
+            contenu += (r.correct ? '-v- ' : '-f- ') + r.texte + '\n';
+          });
+          contenu += '\n';
+        }
+      });
+
+      // Questions ouvertes
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          contenu += '-qs- ' + q + '\n\n';
+        }
+      });
+
+      // Retenir
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+      if (retenir) {
+        contenu += '-r- ' + retenir + '\n\n';
+      }
+
+      // Infos
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          contenu += '-i- ' + info + '\n';
+        }
+      });
+
+      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = titre + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    // IMPORTER UN FICHIER .TXT
+    // ============================================================
+    function importerTexte() {
+      document.getElementById('fileInput').click();
+    }
+
+    function importerFichier(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var contenu = e.target.result;
+        parserContenu(contenu);
+        document.getElementById('fileInput').value = '';
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    function parserContenu(contenu) {
+      // Réinitialiser les données
+      slidesData = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      document.getElementById('retenir1').value = '';
+      document.getElementById('retenir2').value = '';
+      document.getElementById('retenir3').value = '';
+
+      var lignes = contenu.split('\n');
+      var currentQuiz = null;
+
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i].trim();
+        if (!ligne) continue;
+
+        // Métadonnées
+        if (ligne.startsWith('Nvx:')) {
+          var niveau = ligne.replace('Nvx:', '').trim();
+          document.getElementById('inputNiveau').value = niveau || '1';
+          continue;
+        }
+        if (ligne.startsWith('Cat:')) {
+          var cat = ligne.replace('Cat:', '').trim();
+          document.getElementById('inputCategorie').value = cat || 'Foi';
+          continue;
+        }
+
+        if (ligne.startsWith('-s-')) {
+          slidesData.push(ligne.replace('-s-', '').trim());
+        } else if (ligne.startsWith('-q-')) {
+          var qText = ligne.replace('-q-', '').trim();
+          var reponses = [];
+          // Chercher les réponses dans les lignes suivantes
+          for (var j = i + 1; j < lignes.length; j++) {
+            var nextLine = lignes[j].trim();
+            if (nextLine.startsWith('-v-')) {
+              reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+              i = j;
+            } else if (nextLine.startsWith('-f-')) {
+              reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+              i = j;
+            } else {
+              break;
+            }
+          }
+          if (reponses.length === 0) {
+            reponses.push({ texte: '', correct: true });
+            reponses.push({ texte: '', correct: false });
+          }
+          quizData.push({ question: qText, reponses: reponses });
+        } else if (ligne.startsWith('-qs-')) {
+          openQuestionsData.push(ligne.replace('-qs-', '').trim());
+        } else if (ligne.startsWith('-r-')) {
+          var retenirText = ligne.replace('-r-', '').trim();
+          var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+          document.getElementById('retenir1').value = mots[0] || '';
+          document.getElementById('retenir2').value = mots[1] || '';
+          document.getElementById('retenir3').value = mots[2] || '';
+        } else if (ligne.startsWith('-i-')) {
+          infosData.push(ligne.replace('-i-', '').trim());
+        }
+      }
+
+      // Si pas de slides, ajouter une slide vide
+      if (slidesData.length === 0) {
+        slidesData.push('');
+      }
+
+      // Si pas de quiz, ajouter un quiz vide
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+
+      // Si pas de questions ouvertes, ajouter une vide
+      if (openQuestionsData.length === 0) {
+        openQuestionsData.push('');
+      }
+
+      // Si pas d'infos, ajouter une vide
+      if (infosData.length === 0) {
+        infosData.push('');
+      }
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('messageTexte').style.display = 'none';
+    }
+
+    // ============================================================
+    // SUPPRIMER UN POST
+    // ============================================================
     function supprimerPost(postId) {
       if (!confirm('Supprimer ce texte définitivement ?')) return;
 
@@ -426,35 +1152,8 @@
     }
 
     // ============================================================
-    // EXPORTER UN POST EN .TXT
+    // INIT
     // ============================================================
-    function exporterPost(postId) {
-      var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) { alert('Post introuvable'); return; }
-
-      var contenu = '';
-      contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
-      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
-
-      if (post.contenu) {
-        // Garder le contenu tel quel (déjà formaté avec -s-, -q-, -v-, -f-, -qs-, -r-, -i-)
-        contenu += post.contenu;
-      } else {
-        contenu += '-s- ' + (post.titre || 'Sans titre') + '\n\n';
-        contenu += '-s- ' + (post.contenu || 'Contenu vide') + '\n\n';
-      }
-
-      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
-      var url = URL.createObjectURL(blob);
-      var a = document.createElement('a');
-      a.href = url;
-      a.download = (post.titre || 'post') + '.txt';
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-    }
-
     function demarrer() {
       chargerAdmin();
     }
