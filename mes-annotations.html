@@ -3,23 +3,22 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2d6a4f" />
-  <title>Mes lectures - Qiraat</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <meta name="theme-color" content="#f3f0e9" />
+  <title>Mes annotations - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✏️</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <style>
-    /* ============================================================
-       STRUCTURE UNIQUEMENT - les couleurs sont dans lecture-mode.css
-       ============================================================ */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; }
-    a { text-decoration: none; color: inherit; }
+    .page-annotations {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+      flex: 1;
+      width: 100%;
+    }
 
-    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1; width: 100%; }
-
-    .page h1 {
+    .page-annotations h1 {
       font-size: 30px;
       font-weight: 300;
       color: #2c2c2c;
@@ -28,79 +27,334 @@
       margin-bottom: 4px;
     }
 
-    .page .sous-titre-page {
+    .page-annotations .sous-titre-page {
       font-size: 15px;
       color: #6b7a8a;
       margin-bottom: 24px;
       font-style: italic;
     }
 
-    .stats-ligne {
+    .stats-annotations {
       display: flex;
       flex-wrap: wrap;
-      align-items: center;
-      gap: 8px 20px;
+      gap: 12px 24px;
+      padding: 14px 20px;
       border-radius: 4px;
-      padding: 14px 24px;
       border: 1px solid #d1ccc4;
       margin-bottom: 24px;
       background: #f3f0e9;
     }
-    .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b7a8a; }
-    .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; font-family: 'Georgia', 'Times New Roman', serif; color: #2c2c2c; }
-    .stats-ligne .sep { font-size: 18px; color: #d1ccc4; }
 
-    .tabs-container { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; padding: 4px 0; }
-    .tab-btn { padding: 10px 28px; background: transparent; border: none; border-bottom: 2px solid transparent; font-size: 15px; font-weight: 500; cursor: pointer; letter-spacing: 0.3px; font-family: 'Segoe UI', sans-serif; border-radius: 0; }
-    .tab-btn .compteur-tab { display: inline-block; font-size: 11px; font-weight: 600; padding: 0 10px; border-radius: 30px; margin-left: 6px; line-height: 20px; }
+    .stats-annotations .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      font-size: 13px;
+      color: #6b7a8a;
+    }
 
-    .sous-tabs-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 4px 0; }
-    .sous-tab-btn { padding: 6px 18px; background: transparent; border-radius: 4px; font-size: 13px; font-weight: 400; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
-    .sous-tab-btn .compteur-sous-tab { display: inline-block; font-size: 10px; font-weight: 600; padding: 0 8px; border-radius: 30px; margin-left: 4px; line-height: 18px; }
+    .stats-annotations .stat-item .nombre {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2c2c2c;
+      font-family: 'Georgia', serif;
+    }
 
-    .sous-tab-content { display: none; }
-    .sous-tab-content.active { display: block; }
+    .stats-annotations .sep {
+      color: #d1ccc4;
+      font-size: 20px;
+    }
 
-    .grille { display: flex; flex-direction: column; gap: 10px; }
-    .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; cursor: pointer; border: 1px solid #d1ccc4; background: #f3f0e9; }
-    .carte-post .infos { display: flex; flex-direction: column; gap: 4px; }
-    .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; letter-spacing: 0.2px; line-height: 1.3; color: #2c2c2c; }
-    .carte-post .meta { font-size: 12px; letter-spacing: 0.2px; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; color: #6b7a8a; }
-    .carte-post .meta .niveau-badge { padding: 1px 10px; border-radius: 30px; font-size: 11px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
-    .carte-post .meta .badge-icone { font-size: 12px; display: inline-block; padding: 1px 10px; border-radius: 4px; font-weight: 500; background: #e8e5e0; color: #6b7a8a; }
-    .carte-post .meta .badge-icone.clickable { cursor: pointer; }
-    .carte-post .meta .mots { font-size: 11px; color: #b8b0a8; }
+    .grille-annotations {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
 
-    .carte-post .retenir-cadre { padding: 10px 16px; border-radius: 4px; margin-top: 6px; font-size: 13px; font-style: italic; line-height: 1.5; display: none; background: #e8e5e0; }
-    .carte-post .retenir-cadre.visible { display: block; }
-    .carte-post .retenir-cadre strong { font-style: normal; font-weight: 600; display: block; margin-bottom: 2px; font-size: 12px; letter-spacing: 0.5px; text-transform: uppercase; color: #6b7a8a; }
+    .carte-annotation {
+      border-radius: 4px;
+      padding: 16px 22px;
+      border: 1px solid #d1ccc4;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f3f0e9;
+    }
 
-    .carte-post .statut { text-align: center; min-width: 80px; }
-    .carte-post .statut .date-validation { font-size: 11px; margin-top: 4px; display: none; letter-spacing: 0.2px; color: #6b7a8a; }
-    .carte-post .statut .date-validation.visible { display: block; }
-    .carte-post .statut .date-label { font-size: 11px; display: none; letter-spacing: 0.2px; color: #6b7a8a; }
-    .carte-post .statut .date-label.visible { display: inline; }
+    .carte-annotation:hover {
+      background: #e8e5e0;
+    }
 
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
-    .modal-contenu { border-radius: 4px; max-width: 600px; width: 90%; max-height: 80vh; overflow-y: auto; padding: 32px 36px; font-family: 'Georgia', serif; line-height: 1.7; background: #f3f0e9; border: 1px solid #d1ccc4; }
-    .modal-contenu h3 { font-size: 20px; font-weight: 600; font-family: 'Georgia', serif; margin-bottom: 4px; color: #2c2c2c; }
-    .modal-contenu .modal-sous-titre { font-size: 13px; margin-bottom: 16px; padding-bottom: 12px; font-family: 'Segoe UI', sans-serif; color: #6b7a8a; border-bottom: 1px solid #d1ccc4; }
-    .modal-contenu .modal-annotation { padding: 12px 16px; margin-bottom: 12px; border-radius: 4px; font-size: 14px; background: #e8e5e0; }
-    .modal-contenu .modal-annotation strong { font-weight: 600; display: block; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; color: #6b7a8a; }
-    .modal-contenu .modal-close { margin-top: 20px; padding: 8px 28px; border-radius: 4px; font-size: 13px; cursor: pointer; font-family: 'Segoe UI', sans-serif; background: transparent; color: #6b7a8a; border: 1px solid #d1ccc4; }
-    .modal-contenu .modal-close:hover { background: #e8e5e0; }
-    .modal-contenu .aucune-annotation { font-style: italic; font-size: 14px; padding: 16px 0; font-family: 'Segoe UI', sans-serif; color: #6b7a8a; }
+    .carte-annotation .infos {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
 
-    .loader { text-align: center; padding: 60px 20px; font-size: 16px; color: #6b7a8a; }
-    .loader .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #d1ccc4; border-top-color: #6b7a8a; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
-    @keyframes spin { to { transform: rotate(360deg); } }
+    .carte-annotation .titre {
+      font-size: 17px;
+      font-weight: 500;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.2px;
+      line-height: 1.3;
+      color: #2c2c2c;
+    }
 
-    .vide { text-align: center; padding: 60px 20px; border-radius: 4px; border: 1px solid #d1ccc4; background: #f3f0e9; }
-    .vide .icone { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
-    .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Georgia', serif; letter-spacing: 0.5px; margin-bottom: 4px; color: #2c2c2c; }
-    .vide p { font-size: 15px; color: #6b7a8a; }
+    .carte-annotation .meta {
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      color: #6b7a8a;
+    }
 
-    .devise { text-align: center; padding: 28px 0 8px; font-size: 14px; font-style: italic; letter-spacing: 0.5px; margin-top: 32px; font-family: 'Georgia', serif; color: #6b7a8a; }
+    .carte-annotation .meta .niveau-badge {
+      padding: 1px 10px;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-block;
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-annotation .meta .badge-info {
+      font-size: 12px;
+      display: inline-block;
+      padding: 1px 10px;
+      border-radius: 4px;
+      font-weight: 500;
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-annotation .meta .badge-info.revise {
+      background: #d1ccc4;
+      color: #2c2c2c;
+    }
+
+    .carte-annotation .statut-droit {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      min-width: 80px;
+    }
+
+    .carte-annotation .statut-droit .date {
+      font-size: 11px;
+      color: #6b7a8a;
+    }
+
+    .carte-annotation .statut-droit .statut-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 12px;
+      border-radius: 30px;
+      display: inline-block;
+    }
+
+    .carte-annotation .statut-droit .statut-badge.a-reviser {
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-annotation .statut-droit .statut-badge.revise {
+      background: #d1ccc4;
+      color: #2c2c2c;
+    }
+
+    /* Popup */
+    .modal-annotation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.4);
+      z-index: 9999;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .modal-annotation .modal-contenu {
+      background: #f3f0e9;
+      border-radius: 4px;
+      max-width: 700px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 32px 36px;
+      border: 1px solid #d1ccc4;
+    }
+
+    .modal-annotation .modal-contenu h3 {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'Georgia', serif;
+      color: #2c2c2c;
+      margin-bottom: 2px;
+    }
+
+    .modal-annotation .modal-contenu .modal-sous-titre {
+      font-size: 13px;
+      color: #6b7a8a;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid #d1ccc4;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .modal-annotation .modal-contenu .block-slide {
+      margin-bottom: 16px;
+      padding: 12px 16px;
+      border-radius: 4px;
+      background: #e8e5e0;
+    }
+
+    .modal-annotation .modal-contenu .block-slide .slide-num {
+      font-size: 12px;
+      font-weight: 600;
+      color: #6b7a8a;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .modal-annotation .modal-contenu .block-slide .slide-contenu {
+      font-size: 13px;
+      color: #6b7a8a;
+      line-height: 1.6;
+      font-style: italic;
+      padding: 6px 10px;
+      border-left: 2px solid #d1ccc4;
+      margin-bottom: 8px;
+    }
+
+    .modal-annotation .modal-contenu .block-slide .slide-notes {
+      font-size: 15px;
+      color: #2c2c2c;
+      line-height: 1.7;
+      padding: 8px 12px;
+      background: #faf8f5;
+      border-radius: 4px;
+      border-left: 2px solid #2c2c2c;
+    }
+
+    .modal-annotation .modal-contenu .block-slide .slide-notes::before {
+      content: '✏️ ';
+      font-size: 14px;
+    }
+
+    .modal-annotation .modal-contenu .aucune-annotation {
+      font-style: italic;
+      font-size: 14px;
+      padding: 16px 0;
+      color: #6b7a8a;
+      font-family: 'Segoe UI', sans-serif;
+    }
+
+    .modal-annotation .modal-contenu .actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+      padding-top: 16px;
+      border-top: 1px solid #d1ccc4;
+    }
+
+    .modal-annotation .modal-contenu .actions button {
+      padding: 8px 24px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.2s ease;
+    }
+
+    .modal-annotation .modal-contenu .actions .btn-reviser {
+      background: transparent;
+      color: #2c2c2c;
+      border: 1px solid #d1ccc4;
+    }
+
+    .modal-annotation .modal-contenu .actions .btn-reviser:hover {
+      background: #e8e5e0;
+    }
+
+    .modal-annotation .modal-contenu .actions .btn-reviser.revise {
+      background: #d1ccc4;
+      border-color: #2c2c2c;
+    }
+
+    .modal-annotation .modal-contenu .actions .btn-fermer {
+      background: transparent;
+      color: #6b7a8a;
+      border: 1px solid #d1ccc4;
+    }
+
+    .modal-annotation .modal-contenu .actions .btn-fermer:hover {
+      background: #e8e5e0;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 16px;
+      color: #6b7a8a;
+    }
+
+    .loader .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid #d1ccc4;
+      border-top-color: #6b7a8a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide {
+      text-align: center;
+      padding: 60px 20px;
+      border-radius: 4px;
+      border: 1px solid #d1ccc4;
+      background: #f3f0e9;
+    }
+
+    .vide .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .vide h2 {
+      font-size: 20px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+      color: #2c2c2c;
+      margin-bottom: 4px;
+    }
+
+    .vide p {
+      font-size: 15px;
+      color: #6b7a8a;
+    }
 
     .btn-retour {
       display: inline-flex;
@@ -125,122 +379,76 @@
       color: #2c2c2c;
     }
 
-    @media (max-width: 768px) {
-      .carte-post { grid-template-columns: 1fr; gap: 8px; padding: 14px 16px; }
-      .carte-post .statut { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; justify-content: flex-start; }
-      .tabs-container { justify-content: center; }
-      .tab-btn { font-size: 14px; padding: 8px 18px; }
-      .sous-tabs-container { justify-content: center; }
-      .sous-tab-btn { font-size: 12px; padding: 5px 14px; }
-      .stats-ligne { justify-content: center; padding: 12px 16px; }
-      .modal-contenu { padding: 24px 20px; }
-      .page { padding: 16px 12px; }
-      .page h1 { font-size: 24px; }
-    }
-
-    @media (max-width: 480px) {
-      .carte-post .statut { flex-direction: column; align-items: stretch; gap: 4px; }
-      .carte-post .statut .date-validation { text-align: left; }
-      .tab-btn { font-size: 13px; padding: 6px 14px; }
-      .stats-ligne .stat-item .nombre { font-size: 18px; }
-      .sous-tab-btn { font-size: 11px; padding: 4px 12px; }
-      .modal-contenu { padding: 20px 16px; }
-      .modal-contenu h3 { font-size: 17px; }
+    @media (max-width: 640px) {
+      .page-annotations { padding: 16px 12px; }
+      .page-annotations h1 { font-size: 24px; }
+      .carte-annotation { grid-template-columns: 1fr; gap: 8px; padding: 14px 16px; }
+      .carte-annotation .statut-droit { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+      .modal-annotation .modal-contenu { padding: 20px 16px; }
+      .modal-annotation .modal-contenu .block-slide { padding: 10px 12px; }
+      .modal-annotation .modal-contenu .block-slide .slide-contenu { font-size: 12px; }
+      .modal-annotation .modal-contenu .block-slide .slide-notes { font-size: 14px; }
+      .stats-annotations { padding: 12px 16px; }
+      .stats-annotations .stat-item .nombre { font-size: 18px; }
     }
   </style>
 </head>
 <body>
 
-  <!-- ========== HEADER ========== -->
+  <!-- HEADER -->
   <div id="header-container"></div>
-
   <script>
-    // Chargement simplifié du header
     fetch('/medit/header.html')
-      .then(function(response) { 
-        if (!response.ok) {
-          throw new Error('Header non trouvé');
-        }
-        return response.text(); 
-      })
+      .then(function(response) { return response.text(); })
       .then(function(data) {
         document.getElementById('header-container').innerHTML = data;
       })
       .catch(function(error) {
         console.error('Erreur chargement header:', error);
-        document.getElementById('header-container').innerHTML = `
-          <header class="site-header">
-            <div class="header-inner">
-              <div class="header-left">
-                <div class="header-logo">
-                  <a href="/medit/index.html">
-                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
-                    <strong>Qiraat</strong> <i>lecture</i>
-                  </a>
-                </div>
-              </div>
-              <nav class="header-nav" id="headerNav">
-                <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-              </nav>
-            </div>
-          </header>
-        `;
       });
-
-    // ============================================================
-    // MODE SOMBRE
-    // ============================================================
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
-      localStorage.setItem('theme', mode);
-    }
-
-    (function() {
-      var theme = localStorage.getItem('theme');
-      if (theme === 'sombre') {
-        document.body.classList.add('dark-mode');
-      }
-    })();
-
-    function ouvrirConnexion() {
-      window.location.href = '/medit/index.html';
-    }
-
-    function ouvrirInscription() {
-      window.location.href = '/medit/index.html';
-    }
   </script>
 
-  <div class="page">
+  <!-- PAGE -->
+  <div class="page-annotations">
 
-    <h1>Mes lectures</h1>
-    <p class="sous-titre-page">Retrouvez ici toutes les méditations à lire et celles que vous avez déjà validées.</p>
+    <h1>Mes annotations</h1>
+    <p class="sous-titre-page">Retrouvez toutes vos notes sur les slides.</p>
 
-    <div class="stats-ligne" id="statsLigne">
+    <div class="stats-annotations" id="statsAnnotations">
       <div class="stat-item">
-        <span>Textes disponibles :</span>
-        <span class="nombre" id="totalPosts">0</span>
+        <span class="nombre" id="totalAnnotes">0</span>
+        <span>textes annotés</span>
+      </div>
+      <span class="sep">|</span>
+      <div class="stat-item">
+        <span class="nombre" id="totalSlides">0</span>
+        <span>slides annotées</span>
+      </div>
+      <span class="sep">|</span>
+      <div class="stat-item">
+        <span class="nombre" id="totalMots">0</span>
+        <span>mots dans les notes</span>
+      </div>
+      <span class="sep">|</span>
+      <div class="stat-item">
+        <span class="nombre" id="totalRevise">0</span>
+        <span>révisés</span>
       </div>
     </div>
-
-    <div class="tabs-container" id="tabsContainer"></div>
 
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Vos lectures vont s'afficher ici dans un instant...</p>
+        <p>Vos annotations vont s'afficher ici...</p>
       </div>
     </div>
 
-    <div class="devise">
-      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
-    </div>
+    <a href="/medit/mes-textes.html" class="btn-retour">← Retour</a>
 
   </div>
 
+  <!-- FOOTER -->
   <div id="footer-container"></div>
-
   <script>
     fetch('/medit/footer.html')
       .then(function(response) { return response.text(); })
@@ -249,116 +457,61 @@
       })
       .catch(function(error) {
         console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = `
-          <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-          </footer>
-        `;
       });
   </script>
 
   <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
 
   <script>
     // ============================================================
-    // mes-textes.html - Logique principale
+    // DONNÉES
     // ============================================================
+    var annotationsData = [];
+    var postsMap = {};
+    var idEtudiant = '';
 
-    var toutesLesReponses = {};
-    var postsData = [];
-    var niveauEtudiant = 0;
-    var ongletActuel = 'a-lire';
-
-    function deconnecter() {
-      if (confirm('Se déconnecter ?')) {
-        localStorage.removeItem('etudiant_id');
-        localStorage.removeItem('etudiant_niveau');
-        localStorage.removeItem('etudiant_nom');
-        window.location.href = '/medit/index.html';
-      }
-    }
-
-    function ouvrirAnnotations(articleId, titre) {
-      var reponse = toutesLesReponses[articleId] || null;
-      var annotations = reponse ? reponse.annotations : '';
-
-      var modal = document.createElement('div');
-      modal.className = 'modal-overlay';
-      modal.id = 'modalAnnotations';
-      modal.onclick = function(e) {
-        if (e.target === this) fermerAnnotations();
-      };
-
-      var html = '<div class="modal-contenu">';
-      html += '<h3>' + titre + '</h3>';
-      html += '<div class="modal-sous-titre">Annotations</div>';
-
-      if (annotations && annotations.trim() !== '') {
-        var parts = annotations.split('|');
-        for (var i = 0; i < parts.length; i++) {
-          var kv = parts[i].split(':');
-          if (kv.length === 2) {
-            var slideNum = kv[0].replace('slide', '');
-            var texte = kv[1];
-            html += '<div class="modal-annotation">';
-            html += '<strong>Slide ' + slideNum + '</strong>';
-            html += texte;
-            html += '</div>';
-          }
-        }
-      } else {
-        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
-      }
-
-      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
-      html += '</div>';
-
-      modal.innerHTML = html;
-      document.body.appendChild(modal);
-    }
-
-    function fermerAnnotations() {
-      var modal = document.getElementById('modalAnnotations');
-      if (modal) modal.remove();
-    }
-
-    function chargerTableauDeBord() {
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerAnnotations() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
         window.location.href = '/medit/index.html';
         return;
       }
+      idEtudiant = id;
 
       DataManager.charger()
         .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          postsData = data.posts || [];
+          var reponses = data.reponses || [];
+          var posts = data.posts || [];
 
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.articleId] = r;
-            });
-          }
+          posts.forEach(function(p) {
+            postsMap[p.id] = p;
+          });
 
-          document.getElementById('totalPosts').textContent = postsData.length;
+          annotationsData = reponses.filter(function(r) {
+            return r.annotations && r.annotations.trim() !== '';
+          });
 
-          if (postsData.length === 0) {
-            afficherVide();
-          } else {
-            afficherAvecOnglets(postsData);
-          }
+          afficherAnnotations();
         })
         .catch(function() {
           var cache = DataManager.getCacheForce(id);
           if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            postsData = cache.posts || [];
-            document.getElementById('totalPosts').textContent = postsData.length;
-            afficherAvecOnglets(postsData);
+            var reponses = cache.reponses || [];
+            var posts = cache.posts || [];
+
+            posts.forEach(function(p) {
+              postsMap[p.id] = p;
+            });
+
+            annotationsData = reponses.filter(function(r) {
+              return r.annotations && r.annotations.trim() !== '';
+            });
+
+            afficherAnnotations();
           } else {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('contenu').innerHTML = `
@@ -366,7 +519,7 @@
                 <span class="icone">⚠️</span>
                 <h2>Erreur de chargement</h2>
                 <p>Vérifiez votre connexion.</p>
-                <button onclick="DataManager.rafraichir(); location.reload();" 
+                <button onclick="location.reload()" 
                         style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:4px;cursor:pointer;">
                   Réessayer
                 </button>
@@ -376,314 +529,261 @@
         });
     }
 
-    function estPostLu(post) {
-      var reponse = toutesLesReponses[post.id];
-      if (!reponse) return false;
-      var bonnes = reponse.bonnes || 0;
-      var total = reponse.total || 0;
-      if (total === 1 && bonnes === 1) return true;
-      if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
-      return false;
-    }
-
-    function afficherAvecOnglets(posts) {
+    // ============================================================
+    // AFFICHER
+    // ============================================================
+    function afficherAnnotations() {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
 
-      var total = posts.length;
-      var valides = 0;
-      var aFaire = 0;
-
-      posts.forEach(function(post) {
-        if (estPostLu(post)) {
-          valides++;
-        } else {
-          aFaire++;
-        }
-      });
-
-      var categories = {};
-      posts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(post);
-      });
-      var categoriesTriees = Object.keys(categories).sort();
-
-      var tabsHtml = `
-        <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
-          À lire
-          <span class="compteur-tab">${aFaire}</span>
-        </button>
-        <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
-          Lus
-          <span class="compteur-tab">${valides}</span>
-        </button>
-      `;
-      document.getElementById('tabsContainer').innerHTML = tabsHtml;
-
-      contenu.innerHTML = `
-        <div id="contenu-onglet">
-          <div class="loader" style="display:none;"><div class="spinner"></div></div>
-        </div>
-      `;
-
-      afficherOnglet('a-lire', categoriesTriees, categories);
-    }
-
-    function afficherOnglet(onglet, categoriesTriees, categories) {
-      var container = document.getElementById('contenu-onglet');
-      if (!container) return;
-
-      var html = '';
-      html += `<div class="sous-tabs-container" id="sous-tabs">`;
-
-      var totalPosts = 0;
-      categoriesTriees.forEach(function(cat) {
-        categories[cat].forEach(function(post) {
-          if (onglet === 'a-lire' && !estPostLu(post)) totalPosts++;
-          if (onglet === 'lus' && estPostLu(post)) totalPosts++;
-        });
-      });
-      html += `
-        <button class="sous-tab-btn active" data-sous-tab="toutes" onclick="switchCategorie('toutes')">
-          Toutes
-          <span class="compteur-sous-tab">${totalPosts}</span>
-        </button>
-      `;
-
-      categoriesTriees.forEach(function(cat) {
-        var count = 0;
-        categories[cat].forEach(function(post) {
-          if (onglet === 'a-lire' && !estPostLu(post)) count++;
-          if (onglet === 'lus' && estPostLu(post)) count++;
-        });
-        if (count > 0) {
-          html += `
-            <button class="sous-tab-btn" data-sous-tab="${cat}" onclick="switchCategorie('${cat}')">
-              ${cat}
-              <span class="compteur-sous-tab">${count}</span>
-            </button>
-          `;
-        }
-      });
-
-      html += `</div>`;
-      html += `<div id="sous-contenu"></div>`;
-
-      container.innerHTML = html;
-
-      var postsFiltres = filtrerPosts(onglet, 'toutes');
-      afficherPosts(postsFiltres);
-    }
-
-    function switchOnglet(onglet) {
-      ongletActuel = onglet;
-
-      document.querySelectorAll('.tab-btn').forEach(function(el) {
-        el.classList.remove('active');
-        if (el.dataset.tab === onglet) {
-          el.classList.add('active');
-        }
-      });
-
-      var categories = {};
-      postsData.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(post);
-      });
-      var categoriesTriees = Object.keys(categories).sort();
-
-      afficherOnglet(onglet, categoriesTriees, categories);
-    }
-
-    function switchCategorie(categorie) {
-      var container = document.getElementById('sous-tabs');
-      if (container) {
-        container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
-          el.classList.remove('active');
-          var cat = el.dataset.sousTab;
-          if (cat === categorie) {
-            el.classList.add('active');
-          }
-        });
-      }
-
-      var postsFiltres = filtrerPosts(ongletActuel, categorie);
-      afficherPosts(postsFiltres);
-    }
-
-    function filtrerPosts(onglet, categorie) {
-      var resultats = [];
-
-      postsData.forEach(function(post) {
-        var estLu = estPostLu(post);
-        if (onglet === 'a-lire' && estLu) return;
-        if (onglet === 'lus' && !estLu) return;
-
-        var catPost = post.categorie || 'Sans catégorie';
-        if (categorie !== 'toutes' && catPost !== categorie) return;
-
-        resultats.push(post);
-      });
-
-      return resultats;
-    }
-
-    function afficherPosts(posts) {
-      var container = document.getElementById('sous-contenu');
-      if (!container) return;
-
-      if (posts.length === 0) {
-        container.innerHTML = `
-          <div class="vide" style="padding:30px 20px;">
-            <span class="icone" style="font-size:32px;">📭</span>
-            <h2 style="font-size:18px;">Aucun texte</h2>
-            <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+      if (annotationsData.length === 0) {
+        contenu.innerHTML = `
+          <div class="vide">
+            <span class="icone">✏️</span>
+            <h2>Aucune annotation</h2>
+            <p>Vous n'avez pas encore annoté de slides.</p>
+            <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Commencez une méditation et prenez des notes.</p>
           </div>
         `;
         return;
       }
 
-      var html = '<div class="grille">';
+      // Statistiques
+      var totalSlides = 0;
+      var totalMots = 0;
+      var totalRevise = 0;
 
-      posts.forEach(function(post) {
-        var reponse = toutesLesReponses[post.id] || null;
-        var dateValidation = '';
-        var retenir = '';
-        var estLu = false;
-        var estValide = false;
+      annotationsData.forEach(function(item) {
+        var slides = item.annotations.split('|');
+        totalSlides += slides.length;
 
-        if (reponse) {
-          var bonnes = reponse.bonnes || 0;
-          var total = reponse.total || 0;
-          dateValidation = reponse.date || '';
-          retenir = reponse.retenir || '';
-
-          if (total === 1 && bonnes === 1) {
-            estLu = true;
-            estValide = true;
-          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-            estValide = true;
+        slides.forEach(function(s) {
+          var parts = s.split(':');
+          if (parts.length === 2) {
+            var texte = parts[1] || '';
+            var mots = texte.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+            totalMots += mots;
           }
+        });
+
+        if (item.revise === true || item.revise === 'true' || item.revise === 1 || item.revise === '1') {
+          totalRevise++;
         }
+      });
 
-        var hasQuiz = post.hasQuiz || false;
-        var hasQuestion = post.hasQuestion || false;
-        var mots = post.mots || 0;
+      document.getElementById('totalAnnotes').textContent = annotationsData.length;
+      document.getElementById('totalSlides').textContent = totalSlides;
+      document.getElementById('totalMots').textContent = totalMots;
+      document.getElementById('totalRevise').textContent = totalRevise;
 
-        var nbQuestions = 0;
-        if (hasQuiz) nbQuestions++;
-        if (hasQuestion) nbQuestions++;
+      // Grille
+      var html = '<div class="grille-annotations">';
 
-        var metaHtml = '';
+      annotationsData.sort(function(a, b) {
+        var da = a.date ? new Date(a.date) : new Date(0);
+        var db = b.date ? new Date(b.date) : new Date(0);
+        return db - da;
+      });
 
-        if (ongletActuel === 'a-lire') {
-          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
-        } else {
-          var resultatHtml = '';
-          var questionHtml = '';
-          var annoteHtml = '';
+      annotationsData.forEach(function(item) {
+        var post = postsMap[item.articleId] || null;
+        var titre = item.titre || (post ? post.titre : 'Sans titre');
+        var niveau = post ? post.niveau : 0;
 
-          if (reponse) {
-            var bonnes = reponse.bonnes || 0;
-            var total = reponse.total || 0;
-            if (total > 0) {
-              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
-            }
+        var slides = item.annotations.split('|');
+        var nbSlides = slides.length;
 
-            var reponseOuverte = reponse.reponseOuverte || '';
-            if (reponseOuverte && reponseOuverte.trim() !== '') {
-              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
-            } else if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-
-            var annotations = reponse.annotations || '';
-            if (annotations && annotations.trim() !== '') {
-              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
-            } else {
-              annoteHtml = '<span class="badge-icone">Non annoté</span>';
-            }
-          } else {
-            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
-            if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-            annoteHtml = '<span class="badge-icone">Non annoté</span>';
+        var motsTotal = 0;
+        slides.forEach(function(s) {
+          var parts = s.split(':');
+          if (parts.length === 2) {
+            var texte = parts[1] || '';
+            var mots = texte.split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+            motsTotal += mots;
           }
+        });
 
-          metaHtml = resultatHtml + questionHtml + annoteHtml;
-        }
+        var date = item.date ? new Date(item.date) : null;
+        var dateStr = date && !isNaN(date.getTime()) ? 
+          date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
 
-        var dateHtml = '';
-        var dateLabelHtml = '';
-
-        if (estLu && dateValidation) {
-          var d = new Date(dateValidation);
-          if (!isNaN(d.getTime())) {
-            var dateStr = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-            var heureStr = d.toLocaleTimeString('fr-FR', {
-              hour: '2-digit', minute: '2-digit'
-            });
-            dateLabelHtml = '<span class="date-label visible">Lu le</span>';
-            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-          }
-        }
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre visible">
-              <strong>À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
-        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+        var estRevise = (item.revise === true || item.revise === 'true' || item.revise === 1 || item.revise === '1');
+        var statutClasse = estRevise ? 'revise' : 'a-reviser';
+        var statutTexte = estRevise ? '✅ Révisé' : '📝 À réviser';
 
         html += `
-          <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
+          <div class="carte-annotation" onclick="ouvrirAnnotation('${item.articleId}')">
             <div class="infos">
-              <div class="titre">${post.titre}</div>
+              <div class="titre">${titre}</div>
               <div class="meta">
-                <span class="niveau-badge">Niveau ${post.niveau}</span>
-                ${metaHtml}
-                ${motsHtml}
-                ${retenirHtml}
+                <span class="niveau-badge">Niveau ${niveau}</span>
+                <span class="badge-info">${nbSlides} slide${nbSlides > 1 ? 's' : ''}</span>
+                <span class="badge-info">${motsTotal} mots</span>
+                <span class="badge-info ${estRevise ? 'revise' : ''}">${statutTexte}</span>
               </div>
             </div>
-            <div class="statut">
-              ${dateLabelHtml}
-              ${dateHtml}
+            <div class="statut-droit">
+              <span class="date">${dateStr}</span>
+              <span class="statut-badge ${statutClasse}">${statutTexte}</span>
             </div>
           </div>
         `;
       });
 
       html += '</div>';
-      container.innerHTML = html;
+      contenu.innerHTML = html;
     }
 
-    function afficherVide() {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('contenu').innerHTML = `
-        <div class="vide">
-          <span class="icone">📭</span>
-          <h2>Aucune méditation disponible</h2>
-          <p>De nouvelles méditations seront ajoutées prochainement.</p>
-          <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+    // ============================================================
+    // OUVRIR ANNOTATION (popup)
+    // ============================================================
+    function ouvrirAnnotation(articleId) {
+      var item = annotationsData.find(function(r) { return r.articleId === articleId; });
+      if (!item) return;
+
+      var post = postsMap[articleId] || null;
+      var titre = item.titre || (post ? post.titre : 'Sans titre');
+      var niveau = post ? post.niveau : 0;
+
+      // Récupérer le contenu du post
+      var contenuPost = post ? post.contenu || '' : '';
+
+      // Séparer les slides du contenu
+      var slidesContenu = [];
+      if (contenuPost) {
+        var parts = contenuPost.split(/--- Slide \d+ ---/);
+        parts.forEach(function(p, idx) {
+          if (idx > 0 && p.trim()) {
+            slidesContenu.push(p.trim());
+          }
+        });
+        if (slidesContenu.length === 0 && contenuPost.trim()) {
+          slidesContenu.push(contenuPost.trim());
+        }
+      }
+
+      // Récupérer les annotations
+      var annotations = item.annotations || '';
+      var notesMap = {};
+      if (annotations) {
+        var annParts = annotations.split('|');
+        annParts.forEach(function(a) {
+          var kv = a.split(':');
+          if (kv.length === 2) {
+            var num = kv[0].replace('slide', '');
+            notesMap[num] = kv[1] || '';
+          }
+        });
+      }
+
+      // Construire la popup
+      var modal = document.createElement('div');
+      modal.className = 'modal-annotation';
+      modal.id = 'modalAnnotation';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotation();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Niveau ' + niveau + ' · ' + Object.keys(notesMap).length + ' annotation(s)</div>';
+
+      var notesKeys = Object.keys(notesMap).sort(function(a, b) { return parseInt(a) - parseInt(b); });
+
+      if (notesKeys.length === 0) {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
+      } else {
+        notesKeys.forEach(function(slideNum) {
+          var num = parseInt(slideNum);
+          var contenuSlide = slidesContenu[num - 1] || '';
+
+          html += '<div class="block-slide">';
+          html += '<div class="slide-num">Slide ' + num + '</div>';
+
+          if (contenuSlide) {
+            html += '<div class="slide-contenu">' + contenuSlide + '</div>';
+          }
+
+          html += '<div class="slide-notes">' + notesMap[slideNum] + '</div>';
+          html += '</div>';
+        });
+      }
+
+      var estRevise = (item.revise === true || item.revise === 'true' || item.revise === 1 || item.revise === '1');
+      var btnTexte = estRevise ? '✅ Marquer comme à réviser' : '📝 Marquer comme révisé';
+      var btnClasse = estRevise ? 'revise' : '';
+
+      html += `
+        <div class="actions">
+          <button class="btn-reviser ${btnClasse}" onclick="marquerRevise('${articleId}', this)">${btnTexte}</button>
+          <button class="btn-fermer" onclick="fermerAnnotation()">Fermer</button>
         </div>
       `;
-      document.getElementById('tabsContainer').innerHTML = '';
+
+      html += '</div>';
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
     }
 
+    // ============================================================
+    // FERMER POPUP
+    // ============================================================
+    function fermerAnnotation() {
+      var modal = document.getElementById('modalAnnotation');
+      if (modal) modal.remove();
+    }
+
+    // ============================================================
+    // MARQUER COMME RÉVISÉ
+    // ============================================================
+    function marquerRevise(articleId, btn) {
+      var item = annotationsData.find(function(r) { return r.articleId === articleId; });
+      if (!item) return;
+
+      var estRevise = !(item.revise === true || item.revise === 'true' || item.revise === 1 || item.revise === '1');
+      var nouvelleValeur = estRevise ? '1' : '0';
+
+      // Mettre à jour localement
+      item.revise = estRevise;
+
+      // Sauvegarder dans la feuille
+      var data = {
+        action: 'markRevised',
+        nom: idEtudiant,
+        articleId: articleId,
+        revise: nouvelleValeur
+      };
+
+      var url = CONFIG.URL_SCRIPT + '?action=markRevised' +
+        '&nom=' + encodeURIComponent(idEtudiant) +
+        '&articleId=' + encodeURIComponent(articleId) +
+        '&revise=' + encodeURIComponent(nouvelleValeur);
+
+      fetch(url)
+        .then(function(response) { return response.json(); })
+        .then(function(result) {
+          if (result.success) {
+            // Mettre à jour le bouton
+            var estMaintenantRevise = (nouvelleValeur === '1');
+            btn.textContent = estMaintenantRevise ? '✅ Marquer comme à réviser' : '📝 Marquer comme révisé';
+            btn.className = 'btn-reviser' + (estMaintenantRevise ? ' revise' : '');
+
+            // Recharger la liste
+            afficherAnnotations();
+          } else {
+            alert('Erreur: ' + (result.message || 'Impossible de sauvegarder'));
+          }
+        })
+        .catch(function() {
+          alert('Erreur de connexion. Veuillez réessayer.');
+        });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
     function demarrer() {
-      chargerTableauDeBord();
+      chargerAnnotations();
     }
 
     if (document.readyState === 'loading') {
