@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f3f0e9" />
+  <title>Mes quiz - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❓</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <style>
+    .page-quiz {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 24px 20px 40px;
+      flex: 1;
+      width: 100%;
+    }
+
+    .page-quiz h1 {
+      font-size: 30px;
+      font-weight: 300;
+      color: #2c2c2c;
+      font-family: 'Georgia', 'Times New Roman', serif;
+      letter-spacing: 0.8px;
+      margin-bottom: 4px;
+    }
+
+    .page-quiz .sous-titre-page {
+      font-size: 15px;
+      color: #6b7a8a;
+      margin-bottom: 24px;
+      font-style: italic;
+    }
+
+    .stats-quiz {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+      padding: 14px 20px;
+      border-radius: 4px;
+      border: 1px solid #d1ccc4;
+      margin-bottom: 24px;
+      background: #f3f0e9;
+    }
+
+    .stats-quiz .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 4px;
+      font-size: 13px;
+      color: #6b7a8a;
+    }
+
+    .stats-quiz .stat-item .nombre {
+      font-size: 22px;
+      font-weight: 600;
+      color: #2c2c2c;
+      font-family: 'Georgia', serif;
+    }
+
+    .stats-quiz .sep {
+      color: #d1ccc4;
+      font-size: 20px;
+    }
+
+    .grille-quiz {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .carte-quiz {
+      border-radius: 4px;
+      padding: 16px 22px;
+      border: 1px solid #d1ccc4;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 16px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      background: #f3f0e9;
+    }
+
+    .carte-quiz:hover {
+      background: #e8e5e0;
+    }
+
+    .carte-quiz .infos {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .carte-quiz .titre {
+      font-size: 17px;
+      font-weight: 500;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.2px;
+      line-height: 1.3;
+      color: #2c2c2c;
+    }
+
+    .carte-quiz .meta {
+      font-size: 12px;
+      letter-spacing: 0.2px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px;
+      color: #6b7a8a;
+    }
+
+    .carte-quiz .meta .niveau-badge {
+      padding: 1px 10px;
+      border-radius: 30px;
+      font-size: 11px;
+      font-weight: 500;
+      display: inline-block;
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-quiz .meta .badge-info {
+      font-size: 12px;
+      display: inline-block;
+      padding: 1px 10px;
+      border-radius: 4px;
+      font-weight: 500;
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-quiz .meta .badge-info.valide {
+      background: #d1ccc4;
+      color: #2c2c2c;
+    }
+
+    .carte-quiz .meta .badge-info.echec {
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .carte-quiz .statut-droit {
+      text-align: right;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 4px;
+      min-width: 80px;
+    }
+
+    .carte-quiz .statut-droit .date {
+      font-size: 11px;
+      color: #6b7a8a;
+    }
+
+    .carte-quiz .statut-droit .statut-badge {
+      font-size: 11px;
+      font-weight: 500;
+      padding: 2px 12px;
+      border-radius: 30px;
+      display: inline-block;
+    }
+
+    .carte-quiz .statut-droit .statut-badge.valide {
+      background: #d1ccc4;
+      color: #2c2c2c;
+    }
+
+    .carte-quiz .statut-droit .statut-badge.echec {
+      background: #e8e5e0;
+      color: #6b7a8a;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 60px 20px;
+      font-size: 16px;
+      color: #6b7a8a;
+    }
+
+    .loader .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid #d1ccc4;
+      border-top-color: #6b7a8a;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide {
+      text-align: center;
+      padding: 60px 20px;
+      border-radius: 4px;
+      border: 1px solid #d1ccc4;
+      background: #f3f0e9;
+    }
+
+    .vide .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+      opacity: 0.4;
+    }
+
+    .vide h2 {
+      font-size: 20px;
+      font-weight: 400;
+      font-family: 'Georgia', serif;
+      letter-spacing: 0.5px;
+      color: #2c2c2c;
+      margin-bottom: 4px;
+    }
+
+    .vide p {
+      font-size: 15px;
+      color: #6b7a8a;
+    }
+
+    .btn-retour {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 24px;
+      background: transparent;
+      color: #6b7a8a;
+      border: 1px solid #d1ccc4;
+      border-radius: 30px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-decoration: none;
+      letter-spacing: 0.3px;
+      margin-top: 20px;
+    }
+
+    .btn-retour:hover {
+      background: #e8e5e0;
+      color: #2c2c2c;
+    }
+
+    @media (max-width: 640px) {
+      .page-quiz { padding: 16px 12px; }
+      .page-quiz h1 { font-size: 24px; }
+      .carte-quiz { grid-template-columns: 1fr; gap: 8px; padding: 14px 16px; }
+      .carte-quiz .statut-droit { align-items: flex-start; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+      .stats-quiz { padding: 12px 16px; }
+      .stats-quiz .stat-item .nombre { font-size: 18px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <div id="header-container"></div>
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+      });
+  </script>
+
+  <!-- PAGE -->
+  <div class="page-quiz">
+
+    <h1>Mes quiz</h1>
+    <p class="sous-titre-page">Retrouvez tous vos résultats aux quiz.</p>
+
+    <div class="stats-quiz" id="statsQuiz">
+      <div class="stat-item">
+        <span class="nombre" id="totalQuiz">0</span>
+        <span>quiz passés</span>
+      </div>
+      <span class="sep">|</span>
+      <div class="stat-item">
+        <span class="nombre" id="totalValides">0</span>
+        <span>validés</span>
+      </div>
+      <span class="sep">|</span>
+      <div class="stat-item">
+        <span class="nombre" id="moyenne">0%</span>
+        <span>moyenne</span>
+      </div>
+    </div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Vos quiz vont s'afficher ici...</p>
+      </div>
+    </div>
+
+    <a href="/medit/mes-textes.html" class="btn-retour">← Retour</a>
+
+  </div>
+
+  <!-- FOOTER -->
+  <div id="footer-container"></div>
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // DONNÉES
+    // ============================================================
+    var quizData = [];
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerQuiz() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      DataManager.charger()
+        .then(function(data) {
+          var reponses = data.reponses || [];
+          // Ne garder que les réponses avec un quiz (total > 0)
+          quizData = reponses.filter(function(r) {
+            return r.total && parseInt(r.total) > 0;
+          });
+          afficherQuiz();
+        })
+        .catch(function() {
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            var reponses = cache.reponses || [];
+            quizData = reponses.filter(function(r) {
+              return r.total && parseInt(r.total) > 0;
+            });
+            afficherQuiz();
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('contenu').innerHTML = `
+              <div class="vide">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+                <button onclick="location.reload()" 
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:4px;cursor:pointer;">
+                  Réessayer
+                </button>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHER
+    // ============================================================
+    function afficherQuiz() {
+      var contenu = document.getElementById('contenu');
+      document.getElementById('loader').style.display = 'none';
+
+      if (quizData.length === 0) {
+        contenu.innerHTML = `
+          <div class="vide">
+            <span class="icone">❓</span>
+            <h2>Aucun quiz</h2>
+            <p>Vous n'avez pas encore passé de quiz.</p>
+            <p style="font-size:13px;color:#b8b0a8;margin-top:4px;">Commencez une méditation avec quiz.</p>
+          </div>
+        `;
+        return;
+      }
+
+      // Statistiques
+      var total = quizData.length;
+      var valides = 0;
+      var totalScore = 0;
+
+      quizData.forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var totalQ = parseInt(item.total) || 0;
+        if (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2)) {
+          valides++;
+        }
+        if (totalQ > 0) {
+          totalScore += (bonnes / totalQ) * 100;
+        }
+      });
+
+      var moyenne = total > 0 ? Math.round(totalScore / total) : 0;
+
+      document.getElementById('totalQuiz').textContent = total;
+      document.getElementById('totalValides').textContent = valides;
+      document.getElementById('moyenne').textContent = moyenne + '%';
+
+      // Grille
+      var html = '<div class="grille-quiz">';
+
+      quizData.sort(function(a, b) {
+        var da = a.date ? new Date(a.date) : new Date(0);
+        var db = b.date ? new Date(b.date) : new Date(0);
+        return db - da;
+      });
+
+      quizData.forEach(function(item) {
+        var bonnes = parseInt(item.bonnes) || 0;
+        var totalQ = parseInt(item.total) || 0;
+        var valide = (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2));
+        var statutClasse = valide ? 'valide' : 'echec';
+        var statutTexte = valide ? '✅ Validé' : '❌ Non validé';
+        var score = totalQ > 0 ? Math.round((bonnes / totalQ) * 100) : 0;
+
+        var date = item.date ? new Date(item.date) : null;
+        var dateStr = date && !isNaN(date.getTime()) ? 
+          date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '';
+        var heureStr = date && !isNaN(date.getTime()) ? 
+          date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' }) : '';
+
+        var temps = item.temps || '';
+
+        html += `
+          <div class="carte-quiz" onclick="window.location.href='/medit/article.html?id=${item.articleId}'">
+            <div class="infos">
+              <div class="titre">${item.titre || 'Sans titre'}</div>
+              <div class="meta">
+                <span class="badge-info">${bonnes}/${totalQ}</span>
+                <span class="badge-info">${score}%</span>
+                ${temps ? '<span class="badge-info">⏱️ ' + temps + '</span>' : ''}
+                <span class="badge-info ${statutClasse}">${statutTexte}</span>
+              </div>
+            </div>
+            <div class="statut-droit">
+              <span class="date">${dateStr} ${heureStr}</span>
+              <span class="statut-badge ${statutClasse}">${statutTexte}</span>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      contenu.innerHTML = html;
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      chargerQuiz();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
