@@ -64,21 +64,37 @@
       color: #6b7a8a;
     }
 
-    .btn-partager-bas {
-      padding: 8px 20px;
-      background: transparent;
-      color: #6b7a8a;
-      border: 1px solid #d1ccc4;
-      border-radius: 30px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
+    /* Pagination centrée */
+    .dots-container-outside {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 24px;
+      padding: 8px 0;
     }
 
-    .btn-partager-bas:hover {
-      background: #e8e5e0;
-      color: #2c2c2c;
+    .dots-container-outside .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: #d1ccc4;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dots-container-outside .dot.active {
+      background: #2c2c2c;
+      transform: scale(1.2);
+    }
+
+    .dots-container-outside .dot.done {
+      background: #b8b0a8;
+    }
+
+    .dots-container-outside .dot:hover {
+      transform: scale(1.1);
     }
 
     @media (max-width: 640px) {
@@ -87,10 +103,6 @@
         gap: 8px;
       }
       .btn-terminer {
-        width: 100%;
-        text-align: center;
-      }
-      .btn-partager-bas {
         width: 100%;
         text-align: center;
       }
@@ -103,7 +115,6 @@
   <div id="header-container"></div>
 
   <script>
-    // Chargement du header
     fetch('/medit/header.html')
       .then(function(response) { return response.text(); })
       .then(function(data) {
@@ -120,7 +131,7 @@
     <div class="blog-article" id="contenu-principal">
 
       <!-- ========== RETOUR ========== -->
-      <a href="/medit/mes-textes.html" class="btn-retour" aria-label="Retour">←</a>
+      <a href="/medit/mes-textes.html" class="btn-retour" aria-label="Retour">✕</a>
 
       <!-- ========== CONTENU SCROLLABLE ========== -->
       <div class="article-content">
@@ -183,13 +194,12 @@
             </div>
           </div>
 
-          <!-- ========== ACTION BAS : MARQUER LU + PARTAGER ========== -->
-          <div class="action-bas" id="actionBas">
+          <!-- ========== ACTION BAS : MARQUER LU (caché par défaut) ========== -->
+          <div class="action-bas" id="actionBas" style="display:none;">
             <button class="btn-terminer" id="btnTerminer" onclick="marquerLu()">
               ✓ Marquer comme lu
             </button>
             <span class="message-lu" id="messageLu"></span>
-            <button class="btn-partager-bas" onclick="partager()">🔗 Partager</button>
           </div>
 
         </div>
@@ -202,7 +212,7 @@
 
     </div>
 
-    <!-- ========== POINTS (DOTS) ========== -->
+    <!-- ========== POINTS (DOTS) - CENTRÉS ========== -->
     <div id="dotsContainerOutside" class="dots-container-outside"></div>
 
   </div>
@@ -211,7 +221,7 @@
   <div class="annotate-popup" id="annotatePopup">
     <div class="annotate-header">
       <span>📝 Note sur la slide <span id="annotateSlideNum">1</span></span>
-      <button class="annotate-close" id="annotateClose">✓</button>
+      <button class="annotate-close" id="annotateClose">✕</button>
     </div>
     <textarea id="annotateTextarea" placeholder="Écris ta réflexion, une question, ce que tu retiens..." rows="4"></textarea>
     <div class="annotate-footer">
@@ -233,38 +243,6 @@
         console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = '';
       });
-  </script>
-
-  <script>
-    // ============================================================
-    // PARTAGE NATIF
-    // ============================================================
-    function partager() {
-      var url = window.location.href;
-      var titre = document.querySelector('h1')?.textContent || 'Méditation';
-
-      if (navigator.share) {
-        navigator.share({
-          title: titre,
-          text: '📖 ' + titre + ' — sur Qiraat',
-          url: url
-        }).catch(function() {});
-      } else {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(url).then(function() {
-            alert('🔗 Lien copié !');
-          }).catch(function() {});
-        } else {
-          var input = document.createElement('input');
-          input.value = url;
-          document.body.appendChild(input);
-          input.select();
-          document.execCommand('copy');
-          document.body.removeChild(input);
-          alert('🔗 Lien copié !');
-        }
-      }
-    }
   </script>
 
   <script>
@@ -322,30 +300,48 @@
       var articleId = new URLSearchParams(window.location.search).get('id');
       if (!articleId) return;
 
-      // Attendre que DataManager soit chargé
-      setTimeout(function() {
-        var reponses = DataManager.getReponses();
-        for (var i = 0; i < reponses.length; i++) {
-          if (reponses[i].articleId === articleId) {
-            var total = parseInt(reponses[i].total) || 0;
-            var bonnes = parseInt(reponses[i].bonnes) || 0;
-            
-            // Si déjà validé (quiz ou lecture)
-            if (total === 1 && bonnes === 1) {
-              var btn = document.getElementById('btnTerminer');
-              if (btn) {
-                btn.textContent = '✅ Lu ✓';
-                btn.classList.add('lu');
-                btn.disabled = true;
-              }
-              document.getElementById('messageLu').textContent = '✅ Déjà enregistré dans "Lus"';
-              return true;
+      var reponses = DataManager.getReponses();
+      for (var i = 0; i < reponses.length; i++) {
+        if (reponses[i].articleId === articleId) {
+          var total = parseInt(reponses[i].total) || 0;
+          var bonnes = parseInt(reponses[i].bonnes) || 0;
+          
+          if (total === 1 && bonnes === 1) {
+            var btn = document.getElementById('btnTerminer');
+            if (btn) {
+              btn.textContent = '✅ Lu ✓';
+              btn.classList.add('lu');
+              btn.disabled = true;
             }
+            document.getElementById('messageLu').textContent = '✅ Déjà enregistré dans "Lus"';
+            return true;
           }
         }
-        return false;
-      }, 500);
+      }
+      return false;
     }
+
+    // ============================================================
+    // AFFICHER LE BOUTON UNIQUEMENT SUR LA DERNIÈRE SLIDE
+    // ============================================================
+    function gererAffichageBouton(slideActuelle, totalSlides, aQuiz, aQuestion) {
+      var actionBas = document.getElementById('actionBas');
+      
+      // Conditions : dernière slide ET pas de quiz ET pas de question
+      if (slideActuelle === totalSlides && !aQuiz && !aQuestion) {
+        actionBas.style.display = 'flex';
+        // Vérifier si déjà lu
+        verifierDejaLu();
+      } else {
+        actionBas.style.display = 'none';
+      }
+    }
+
+    // ============================================================
+    // EXPOSER LA FONCTION POUR article.js
+    // ============================================================
+    window.gererAffichageBouton = gererAffichageBouton;
+    window.verifierDejaLu = verifierDejaLu;
   </script>
 
   <script src="/medit/config.js"></script>
@@ -353,26 +349,6 @@
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/article.js"></script>
   <script src="/medit/lecture-mode.js"></script>
-
-  <script>
-    // ============================================================
-    // INIT : CHARGER + VÉRIFIER SI DÉJÀ LU
-    // ============================================================
-    // On attend que article.js ait fini de charger l'article
-    document.addEventListener('DOMContentLoaded', function() {
-      // Vérifier après le chargement de l'article
-      var observer = new MutationObserver(function() {
-        if (document.getElementById('article-charge').style.display !== 'none') {
-          verifierDejaLu();
-          observer.disconnect();
-        }
-      });
-      observer.observe(document.getElementById('article-charge'), {
-        attributes: true,
-        attributeFilter: ['style']
-      });
-    });
-  </script>
 
 </body>
 </html>
