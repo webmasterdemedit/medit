@@ -136,6 +136,22 @@
       });
   </script>
 
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // PLACEHOLDER - attend que ajouter.html soit chargé
+    // ============================================================
+    window.ouvrirModalTexte = function() {
+      if (typeof ouvrirModalTexteInterne === 'function') {
+        ouvrirModalTexteInterne();
+      } else {
+        alert('Le formulaire est en cours de chargement, veuillez réessayer dans un instant...');
+      }
+    };
+  </script>
+
   <!-- Charger le modal ajouter.html -->
   <div id="modal-container"></div>
   <script>
@@ -143,15 +159,12 @@
       .then(function(response) { return response.text(); })
       .then(function(data) {
         document.getElementById('modal-container').innerHTML = data;
-        // Les fonctions sont maintenant définies
+        console.log('✅ Modal chargé');
       })
       .catch(function(error) {
         console.error('Erreur chargement modal:', error);
       });
   </script>
-
-  <script src="/medit/config.js"></script>
-  <script src="/medit/data-manager.js"></script>
 
   <script>
     // ============================================================
@@ -280,132 +293,10 @@
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
       if (!post) { alert('Post introuvable'); return; }
 
-      // Ouvrir le modal en mode édition
-      if (typeof ouvrirModalTexte === 'function') {
-        // Définir les variables globales pour le modal
-        window.modeEdition = true;
-        window.estBrouillon = post.statut === 'brouillon';
-        window.slidesData = [];
-        window.slidesIdee = [];
-        window.quizData = [];
-        window.openQuestionsData = [];
-        window.infosData = [];
-        window.retenirOpen = false;
-
-        document.getElementById('modalTitre').textContent = 'Texte';
-        document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
-        document.getElementById('editId').value = postId;
-
-        if (post.date) {
-          var d = new Date(post.date);
-          if (!isNaN(d.getTime())) {
-            var y = d.getFullYear();
-            var m = String(d.getMonth() + 1).padStart(2, '0');
-            var dd = String(d.getDate()).padStart(2, '0');
-            document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
-          }
-        }
-
-        document.getElementById('inputTitre').value = post.titre || '';
-
-        var selectNiveau = document.getElementById('inputNiveau');
-        for (var i = 0; i < selectNiveau.options.length; i++) {
-          if (selectNiveau.options[i].value == post.niveau) {
-            selectNiveau.selectedIndex = i;
-            break;
-          }
-        }
-
-        var selectCategorie = document.getElementById('inputCategorie');
-        for (var i = 0; i < selectCategorie.options.length; i++) {
-          if (selectCategorie.options[i].value === post.categorie) {
-            selectCategorie.selectedIndex = i;
-            break;
-          }
-        }
-
-        var btnBrouillon = document.getElementById('btnBrouillon');
-        if (window.estBrouillon) {
-          btnBrouillon.classList.add('active');
-          btnBrouillon.textContent = '✓ Brouillon';
-        } else {
-          btnBrouillon.classList.remove('active');
-          btnBrouillon.textContent = 'Brouillon';
-        }
-
-        window.slidesData = [];
-        window.slidesIdee = [];
-        window.quizData = [];
-        window.openQuestionsData = [];
-        window.infosData = [];
-        window.retenirOpen = false;
-        document.getElementById('retenirChamps').classList.remove('open');
-
-        if (post.contenu) {
-          var lignes = post.contenu.split('\n');
-          for (var i = 0; i < lignes.length; i++) {
-            var ligne = lignes[i].trim();
-            if (!ligne) continue;
-
-            if (ligne.startsWith('-s-')) {
-              window.slidesData.push(ligne.replace('-s-', '').trim());
-              window.slidesIdee.push(false);
-            } else if (ligne.startsWith('-q-')) {
-              var qText = ligne.replace('-q-', '').trim();
-              var reponses = [];
-              for (var j = i + 1; j < lignes.length; j++) {
-                var nextLine = lignes[j].trim();
-                if (nextLine.startsWith('-v-')) {
-                  reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
-                  i = j;
-                } else if (nextLine.startsWith('-f-')) {
-                  reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
-                  i = j;
-                } else {
-                  break;
-                }
-              }
-              if (reponses.length === 0) {
-                reponses.push({ texte: '', correct: true });
-                reponses.push({ texte: '', correct: false });
-              }
-              window.quizData.push({ question: qText, reponses: reponses });
-            } else if (ligne.startsWith('-qs-')) {
-              window.openQuestionsData.push(ligne.replace('-qs-', '').trim());
-            } else if (ligne.startsWith('-r-')) {
-              var retenirText = ligne.replace('-r-', '').trim();
-              var mots = retenirText.split(',').map(function(m) { return m.trim(); });
-              document.getElementById('retenir1').value = mots[0] || '';
-              document.getElementById('retenir2').value = mots[1] || '';
-              document.getElementById('retenir3').value = mots[2] || '';
-              window.retenirOpen = true;
-              document.getElementById('retenirChamps').classList.add('open');
-            } else if (ligne.startsWith('-i-')) {
-              window.infosData.push(ligne.replace('-i-', '').trim());
-            }
-          }
-        }
-
-        if (window.slidesData.length === 0) { window.slidesData.push(''); window.slidesIdee.push(false); }
-        if (window.quizData.length === 0) {
-          window.quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-        }
-        if (window.openQuestionsData.length === 0) window.openQuestionsData.push('');
-        if (window.infosData.length === 0) window.infosData.push('');
-
-        // Appeler les fonctions d'affichage du modal
-        if (typeof afficherSlides === 'function') afficherSlides();
-        if (typeof afficherQuiz === 'function') afficherQuiz();
-        if (typeof afficherOpenQuestions === 'function') afficherOpenQuestions();
-        if (typeof afficherInfos === 'function') afficherInfos();
-
-        document.getElementById('modalTexte').classList.add('visible');
-        document.getElementById('messageTexte').style.display = 'none';
-        document.getElementById('inputTitre').focus();
-
-        if (typeof startChrono === 'function') startChrono();
+      if (typeof ouvrirModalTexteInterne === 'function') {
+        ouvrirModalTexteInterne(post);
       } else {
-        alert('Modal non chargé.');
+        alert('Le formulaire n\'est pas encore chargé. Veuillez réessayer.');
       }
     }
 
@@ -447,10 +338,10 @@
       var reader = new FileReader();
       reader.onload = function(e) {
         var contenu = e.target.result;
-        if (typeof parserContenu === 'function') {
-          parserContenu(contenu);
+        if (typeof parserContenuInterne === 'function') {
+          parserContenuInterne(contenu);
         } else {
-          alert('Le modal n\'est pas encore chargé. Veuillez réessayer.');
+          alert('Le formulaire n\'est pas encore chargé.');
         }
         document.getElementById('fileInput').value = '';
       };
@@ -478,11 +369,6 @@
           btn.disabled = false;
         });
     }
-
-    // ============================================================
-    // EXPOSER chargerAdmin pour le modal
-    // ============================================================
-    window.chargerAdmin = chargerAdmin;
 
     // ============================================================
     // INIT
