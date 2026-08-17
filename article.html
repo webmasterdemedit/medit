@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#f3f0e9" />
-  <title>Méditation islamique</title>
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -12,125 +12,19 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/article.css" />
-  <link rel="stylesheet" href="/medit/font/qcf4.css" />
-  <link rel="stylesheet" href="/medit/lecture-mode.css" />
-  <style>
-    .qcf4-text {
-      font-family: 'QCF4_Hafs_02', sans-serif;
-      font-size: 30px;
-      line-height: 1.8;
-      direction: rtl;
-    }
-
-    .action-bas {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 16px 0 8px;
-      border-top: 1px solid #d1ccc4;
-      margin-top: 20px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .btn-terminer {
-      padding: 10px 32px;
-      background: transparent;
-      color: #2c2c2c;
-      border: 1px solid #d1ccc4;
-      border-radius: 30px;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .btn-terminer:hover {
-      background: #e8e5e0;
-    }
-
-    .btn-terminer:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-terminer.lu {
-      background: #d1ccc4;
-    }
-
-    .message-lu {
-      font-size: 13px;
-      color: #6b7a8a;
-    }
-
-    /* Pagination centrée */
-    .dots-container-outside {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      margin-top: 24px;
-      padding: 8px 0;
-    }
-
-    .dots-container-outside .dot {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: #d1ccc4;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .dots-container-outside .dot.active {
-      background: #2c2c2c;
-      transform: scale(1.2);
-    }
-
-    .dots-container-outside .dot.done {
-      background: #b8b0a8;
-    }
-
-    .dots-container-outside .dot:hover {
-      transform: scale(1.1);
-    }
-
-    @media (max-width: 640px) {
-      .action-bas {
-        flex-direction: column;
-        gap: 8px;
-      }
-      .btn-terminer {
-        width: 100%;
-        text-align: center;
-      }
-    }
-  </style>
+   <link rel="stylesheet" href="/medit/font/qcf4.css" />
 </head>
 <body>
 
-  <!-- ========== HEADER ========== -->
+  <!-- ========== HEADER - CACHÉ ========== -->
   <div id="header-container"></div>
-
-  <script>
-    fetch('/medit/header.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('header-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement header:', error);
-      });
-  </script>
 
   <!-- ========== PAGE ARTICLE ========== -->
   <div class="page-article">
 
     <div class="blog-article" id="contenu-principal">
 
-      <!-- ========== RETOUR ========== -->
+      <!-- ========== CROIX RETOUR ========== -->
       <a href="/medit/mes-textes.html" class="btn-retour" aria-label="Retour">✕</a>
 
       <!-- ========== CONTENU SCROLLABLE ========== -->
@@ -143,7 +37,7 @@
 
         <div class="erreur-article" id="erreur" style="display:none;">
           <h2>Méditation introuvable</h2>
-          <p>Cette méditation n'existe pas ou a été déplacée.</p>
+          <p>ce texte n'existe pas ou a été déplacée.</p>
           <a href="/medit/mes-textes.html" style="margin-top:12px;display:inline-block;padding:10px 24px;background:#2d6a4f;color:#fff;border-radius:30px;font-weight:500;font-family:'Lora','Georgia',serif;">Voir toutes</a>
         </div>
 
@@ -151,24 +45,26 @@
 
           <span class="post-label" id="postLabel">Méditation</span>
           
-          <!-- ========== TITRE ========== -->
-          <h1 id="article-titre">Titre</h1>
+          <!-- ========== TITRE AVEC BOUTON DE PARTAGE ========== -->
+          <h1 id="article-titre">
+            Titre
+            <button class="btn-share-title" onclick="partager()" aria-label="Partager">↗</button>
+          </h1>
 
           <!-- ========== CONTENU DES SLIDES ========== -->
           <div class="paragraphe-container">
             <div class="paragraphe-wrapper" id="slideWrapper"></div>
           </div>
 
-          <!-- ========== COMPTEUR + STYLO ========== -->
+          <!-- ========== COMPTEUR + STYLO + MESSAGE (juste au-dessus du footer) ========== -->
           <div class="compteur-bloc">
             <span class="compteur" id="compteur">1 / 1</span>
             <button class="btn-annotate" id="btnAnnotate" title="Annoter cette slide">
-              <span id="annotateIcon">✎𓂃</span>
+              <span id="annotateIcon">✏</span>
             </button>
             <span class="lock-message" id="lockMessage"></span>
           </div>
 
-          <!-- ========== QUIZ ========== -->
           <div class="paragraphe-item" id="slideQuiz" style="display: none;">
             <div class="quiz-container" id="quizContent">
               <h3>Quiz</h3>
@@ -181,7 +77,7 @@
 
             <div id="openQuestion">
               <h3>Question ouverte</h3>
-              <h4 id="questionOuverteTexte">Qu'est-ce que cette méditation vous a inspiré ?</h4>
+              <h4 id="questionOuverteTexte">Qu'est-ce que ce texte vous a inspiré ?</h4>
               <p>
                 <label>Votre réponse :<br />
                   <textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3"></textarea>
@@ -194,44 +90,64 @@
             </div>
           </div>
 
-          <!-- ========== ACTION BAS : MARQUER LU (caché par défaut) ========== -->
-          <div class="action-bas" id="actionBas" style="display:none;">
-            <button class="btn-terminer" id="btnTerminer" onclick="marquerLu()">
-              ✓ Marquer comme lu
-            </button>
-            <span class="message-lu" id="messageLu"></span>
-          </div>
-
         </div>
       </div>
 
-      <!-- ========== PIED DE CARTE ========== -->
+      <!-- ========== PIED DE CARTE - TOUJOURS EN BAS ========== -->
       <div class="post-footer">
         <span class="post-meta">qiraat.fr · Sir Khan · <span id="postDate"></span></span>
       </div>
 
-    </div>
+    </div> <!-- Fermeture de .blog-article -->
 
-    <!-- ========== POINTS (DOTS) - CENTRÉS ========== -->
+    <!-- ========== POINTS (DOTS) - HORS DE LA CARTE ========== -->
     <div id="dotsContainerOutside" class="dots-container-outside"></div>
 
-  </div>
+  </div> <!-- Fermeture de .page-article -->
 
   <!-- Popup d'annotation -->
   <div class="annotate-popup" id="annotatePopup">
     <div class="annotate-header">
-      <span>📝 Note sur la slide <span id="annotateSlideNum">1</span></span>
-      <button class="annotate-close" id="annotateClose">✕</button>
+      <span>✐ Note sur la slide <span id="annotateSlideNum">1</span></span>
+      <button class="annotate-close" id="annotateClose">✓</button>
     </div>
     <textarea id="annotateTextarea" placeholder="Écris ta réflexion, une question, ce que tu retiens..." rows="4"></textarea>
     <div class="annotate-footer">
-      <span class="annotate-auto-save">💾 Sauvegarde automatique</span>
+      <span class="annotate-auto-save">Sauvegarde automatique</span>
       <span class="annotate-status" id="annotateStatus"></span>
     </div>
   </div>
 
-  <!-- ========== FOOTER ========== -->
+  <!-- ========== FOOTER - CACHÉ ========== -->
   <div id="footer-container"></div>
+
+  <script>
+    // ============================================================
+    // CHARGEMENT DU HEADER (VIDE)
+    // ============================================================
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = '';
+      });
+
+    function mettreAJourHeader() {
+      // Header caché, rien à faire
+    }
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    }
+  </script>
 
   <script>
     fetch('/medit/footer.html')
@@ -247,108 +163,41 @@
 
   <script>
     // ============================================================
-    // MARQUER COMME LU (sans QCM ni question)
+    // PARTAGE NATIF
     // ============================================================
-    function marquerLu() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        alert('Veuillez vous connecter');
-        return;
-      }
+    function partager() {
+      var url = window.location.href;
+      var titre = document.querySelector('h1')?.textContent || 'Méditation';
 
-      var articleId = new URLSearchParams(window.location.search).get('id');
-      var titre = document.getElementById('article-titre')?.textContent || 'Lecture';
-
-      var btn = document.getElementById('btnTerminer');
-      var msg = document.getElementById('messageLu');
-
-      btn.disabled = true;
-      btn.textContent = '...';
-      msg.textContent = '';
-
-      var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
-        '&nom=' + encodeURIComponent(id) +
-        '&articleId=' + encodeURIComponent(articleId) +
-        '&titre=' + encodeURIComponent(titre);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            btn.textContent = '✅ Lu ✓';
-            btn.classList.add('lu');
-            btn.disabled = true;
-            msg.textContent = '✅ Enregistré dans "Lus"';
-            DataManager.invalider();
-          } else {
-            btn.textContent = '✓ Marquer comme lu';
-            btn.disabled = false;
-            msg.textContent = '❌ Erreur: ' + (data.message || '');
-          }
-        })
-        .catch(function() {
-          btn.textContent = '✓ Marquer comme lu';
-          btn.disabled = false;
-          msg.textContent = '❌ Erreur de connexion';
-        });
-    }
-
-    // ============================================================
-    // VÉRIFIER SI DÉJÀ LU
-    // ============================================================
-    function verifierDejaLu() {
-      var articleId = new URLSearchParams(window.location.search).get('id');
-      if (!articleId) return;
-
-      var reponses = DataManager.getReponses();
-      for (var i = 0; i < reponses.length; i++) {
-        if (reponses[i].articleId === articleId) {
-          var total = parseInt(reponses[i].total) || 0;
-          var bonnes = parseInt(reponses[i].bonnes) || 0;
-          
-          if (total === 1 && bonnes === 1) {
-            var btn = document.getElementById('btnTerminer');
-            if (btn) {
-              btn.textContent = '✅ Lu ✓';
-              btn.classList.add('lu');
-              btn.disabled = true;
-            }
-            document.getElementById('messageLu').textContent = '✅ Déjà enregistré dans "Lus"';
-            return true;
-          }
+      if (navigator.share) {
+        navigator.share({
+          title: titre,
+          text: '📖 ' + titre + ' — sur Qiraat',
+          url: url
+        }).catch(function() {});
+      } else {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(url).then(function() {
+            alert('🔗 Lien copié !');
+          }).catch(function() {});
+        } else {
+          var input = document.createElement('input');
+          input.value = url;
+          document.body.appendChild(input);
+          input.select();
+          document.execCommand('copy');
+          document.body.removeChild(input);
+          alert('Lien copié !');
         }
       }
-      return false;
     }
-
-    // ============================================================
-    // AFFICHER LE BOUTON UNIQUEMENT SUR LA DERNIÈRE SLIDE
-    // ============================================================
-    function gererAffichageBouton(slideActuelle, totalSlides, aQuiz, aQuestion) {
-      var actionBas = document.getElementById('actionBas');
-      
-      // Conditions : dernière slide ET pas de quiz ET pas de question
-      if (slideActuelle === totalSlides && !aQuiz && !aQuestion) {
-        actionBas.style.display = 'flex';
-        // Vérifier si déjà lu
-        verifierDejaLu();
-      } else {
-        actionBas.style.display = 'none';
-      }
-    }
-
-    // ============================================================
-    // EXPOSER LA FONCTION POUR article.js
-    // ============================================================
-    window.gererAffichageBouton = gererAffichageBouton;
-    window.verifierDejaLu = verifierDejaLu;
   </script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/article.js"></script>
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <script src="/medit/lecture-mode.js"></script>
-
 </body>
 </html>
