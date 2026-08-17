@@ -194,7 +194,7 @@
              BOUTONS
              ============================================================ -->
         <div class="btn-groupe">
-          <button type="button" onclick="enregistrerPost()" class="btn">Créer</button>
+          <button type="button" onclick="enregistrerPost()" class="btn" id="btnAjouter">Ajouter</button>
           <a href="/medit/mes-textes.html" class="btn btn-annuler">Annuler</a>
           <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
         </div>
@@ -381,7 +381,7 @@
         if (val) openQuestions.push(val);
       });
 
-      // Récupérer les quiz
+      // Récupérer les quiz (format compact pour une colonne)
       var quizParts = [];
       document.querySelectorAll('.quiz-question').forEach(function(qEl) {
         var qText = qEl.querySelector('.q-text').value.trim();
@@ -405,54 +405,59 @@
         var vraies = reponses.filter(function(r) { return r.correct; });
         if (vraies.length === 0) { reponses[0].correct = true; }
 
-        quizParts.push({ question: qText, reponses: reponses });
+        // Construire la chaîne pour une colonne unique
+        var chaine = '-q- ' + qText;
+        reponses.forEach(function(r) {
+          chaine += ' | ' + (r.correct ? '-v- ' : '-f- ') + r.texte;
+        });
+        quizParts.push(chaine);
       });
 
-      // Construction du contenu final (format indicateurs)
+      // Construction du contenu final (format colonnes séparées)
       var contenuFinal = '';
 
-      // Ajouter l'extrait s'il y a des slides
-      if (slides.length > 0) {
-        contenuFinal += '-s- ' + slides[0] + '\n\n';
-        for (var i = 1; i < slides.length; i++) {
-          contenuFinal += '-s- ' + slides[i] + '\n\n';
+      // Ajouter les slides (une par colonne)
+      slides.forEach(function(slide, index) {
+        if (index === 0) {
+          contenuFinal += '-s- ' + slide;
+        } else {
+          contenuFinal += ' | -s- ' + slide;
         }
-      }
-
-      // Ajouter les quiz (format QCM avec | pour séparer les réponses)
-      quizParts.forEach(function(q) {
-        var reponsesStr = '';
-        q.reponses.forEach(function(r) {
-          reponsesStr += ' | ' + (r.correct ? '-v- ' : '-f- ') + r.texte;
-        });
-        contenuFinal += '-q- ' + q.question + reponsesStr + '\n\n';
       });
 
-      // Ajouter les questions ouvertes
-      openQuestions.forEach(function(q) {
-        contenuFinal += '-qs- ' + q + '\n\n';
+      // Ajouter les quiz (un par colonne)
+      quizParts.forEach(function(q) {
+        if (contenuFinal) contenuFinal += ' | ';
+        contenuFinal += q;
+      });
+
+      // Ajouter les questions ouvertes (une par colonne)
+      openQuestions.forEach(function(q, index) {
+        if (contenuFinal) contenuFinal += ' | ';
+        contenuFinal += '-qs- ' + q;
       });
 
       // Ajouter À retenir
       if (retenir) {
-        contenuFinal += '-r- ' + retenir + '\n\n';
+        if (contenuFinal) contenuFinal += ' | ';
+        contenuFinal += '-r- ' + retenir;
       }
 
-      // Ajouter les infos
+      // Ajouter les infos (une par colonne)
       if (infos) {
         var infosLines = infos.split('\n');
         infosLines.forEach(function(line) {
           if (line.trim()) {
-            contenuFinal += '-i- ' + line.trim() + '\n';
+            if (contenuFinal) contenuFinal += ' | ';
+            contenuFinal += '-i- ' + line.trim();
           }
         });
-        contenuFinal += '\n';
       }
 
       if (!titre) { afficherMsg('Veuillez saisir un titre', 'error'); return; }
       if (slides.length === 0) { afficherMsg('Veuillez ajouter au moins une slide', 'error'); return; }
 
-      var btn = document.querySelector('.btn-groupe .btn:first-child');
+      var btn = document.getElementById('btnAjouter');
       btn.textContent = 'Enregistrement...';
       btn.disabled = true;
       msg.className = 'message';
@@ -460,8 +465,8 @@
 
       DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenuFinal, '')
         .then(function() {
-          afficherMsg('✅ Post créé avec succès !', 'success');
-          btn.textContent = 'Créer';
+          afficherMsg('✅ Post ajouté avec succès !', 'success');
+          btn.textContent = 'Ajouter';
           btn.disabled = false;
           document.getElementById('formAjoutPost').reset();
           document.getElementById('inputInfos').value = '';
@@ -487,7 +492,7 @@
         })
         .catch(function(err) {
           afficherMsg('❌ Erreur : ' + err.message, 'error');
-          btn.textContent = 'Créer';
+          btn.textContent = 'Ajouter';
           btn.disabled = false;
         });
     }
