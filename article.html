@@ -12,11 +12,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Amiri+Quran&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
   <link rel="stylesheet" href="/medit/article.css" />
-  <link rel="stylesheet" href="/medit/font/qcf4.css" />
+   <link rel="stylesheet" href="/medit/font/qcf4.css" />
 </head>
 <body>
 
-  <!-- ========== HEADER ========== -->
+  <!-- ========== HEADER - CACHÉ ========== -->
   <div id="header-container"></div>
 
   <!-- ========== PAGE ARTICLE ========== -->
@@ -56,7 +56,7 @@
             <div class="paragraphe-wrapper" id="slideWrapper"></div>
           </div>
 
-          <!-- ========== COMPTEUR + STYLO + MESSAGE ========== -->
+          <!-- ========== COMPTEUR + STYLO + MESSAGE (juste au-dessus du footer) ========== -->
           <div class="compteur-bloc">
             <span class="compteur" id="compteur">1 / 1</span>
             <button class="btn-annotate" id="btnAnnotate" title="Annoter cette slide">
@@ -93,17 +93,17 @@
         </div>
       </div>
 
-      <!-- ========== PIED DE CARTE ========== -->
+      <!-- ========== PIED DE CARTE - TOUJOURS EN BAS ========== -->
       <div class="post-footer">
         <span class="post-meta">qiraat.fr · Sir Khan · <span id="postDate"></span></span>
       </div>
 
-    </div>
+    </div> <!-- Fermeture de .blog-article -->
 
-    <!-- ========== POINTS (DOTS) ========== -->
+    <!-- ========== POINTS (DOTS) - HORS DE LA CARTE ========== -->
     <div id="dotsContainerOutside" class="dots-container-outside"></div>
 
-  </div>
+  </div> <!-- Fermeture de .page-article -->
 
   <!-- Popup d'annotation -->
   <div class="annotate-popup" id="annotatePopup">
@@ -118,24 +118,12 @@
     </div>
   </div>
 
-  <!-- ========== FOOTER ========== -->
+  <!-- ========== FOOTER - CACHÉ ========== -->
   <div id="footer-container"></div>
 
-  <!-- ========== CHARGEMENT DES SCRIPTS DANS LE BON ORDRE ========== -->
-  
-  <!-- 1. CONFIG D'ABORD -->
-  <script src="/medit/config.js"></script>
-  
-  <!-- 2. ENSUITE LES AUTRES SCRIPTS -->
-  <script src="/medit/auth.js"></script>
-  <script src="/medit/data-manager.js"></script>
-  <script src="/medit/article.js"></script>
-  <script src="/medit/lecture-mode.js"></script>
-  
-  <!-- 3. ENFIN LE CODE PERSONNALISÉ -->
   <script>
     // ============================================================
-    // CHARGEMENT DU HEADER
+    // CHARGEMENT DU HEADER (VIDE)
     // ============================================================
     fetch('/medit/header.html')
       .then(function(response) { return response.text(); })
@@ -159,7 +147,21 @@
         window.location.href = '/medit/index.html';
       }
     }
+  </script>
 
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = '';
+      });
+  </script>
+
+  <script>
     // ============================================================
     // PARTAGE NATIF
     // ============================================================
@@ -189,93 +191,13 @@
         }
       }
     }
-
-    // ============================================================
-    // VALIDER LA RÉPONSE OUVERTE - AVEC DEBUG
-    // ============================================================
-    function validerReponse() {
-      console.log('=== validerReponse() appelée ===');
-      
-      // Debug: afficher ce qui est dans CONFIG
-      console.log('CONFIG:', typeof CONFIG);
-      console.log('CONFIG.scriptUrl:', CONFIG ? CONFIG.scriptUrl : 'undefined');
-      
-      var reponse = document.getElementById('reponse-mailto').value;
-      var messageDiv = document.getElementById('form-message-mailto');
-      
-      if (!reponse || reponse.trim() === '') {
-        messageDiv.innerHTML = '<span style="color:#d9534f;">Veuillez écrire une réponse avant d\'enregistrer.</span>';
-        return;
-      }
-
-      var nom = localStorage.getItem('etudiant_id');
-      var articleId = getArticleIdFromUrl();
-
-      console.log('nom:', nom);
-      console.log('articleId:', articleId);
-
-      if (!nom || !articleId) {
-        messageDiv.innerHTML = '<span style="color:#d9534f;">Erreur : utilisateur ou article non identifié.</span>';
-        return;
-      }
-
-      // Vérifier CONFIG
-      if (typeof CONFIG === 'undefined' || !CONFIG.scriptUrl) {
-        console.error('CONFIG non trouvé ou scriptUrl manquant');
-        messageDiv.innerHTML = '<span style="color:#d9534f;">Erreur : configuration non trouvée. Vérifie que config.js est chargé.</span>';
-        return;
-      }
-
-      var params = new URLSearchParams();
-      params.append('action', 'saveReponseOuverte');
-      params.append('nom', nom);
-      params.append('articleId', articleId);
-      params.append('reponseOuverte', reponse);
-
-      var url = CONFIG.scriptUrl + '?' + params.toString();
-      console.log('URL appelée:', url);
-
-      fetch(url)
-        .then(function(response) { 
-          console.log('Réponse reçue, status:', response.status);
-          return response.json(); 
-        })
-        .then(function(data) {
-          console.log('Données reçues:', data);
-          if (data.success) {
-            messageDiv.innerHTML = '<span style="color:#2d6a4f;">✅ Réponse enregistrée avec succès !</span>';
-            document.getElementById('reponse-mailto').disabled = true;
-          } else {
-            messageDiv.innerHTML = '<span style="color:#d9534f;">❌ Erreur : ' + (data.message || 'inconnue') + '</span>';
-          }
-        })
-        .catch(function(error) {
-          console.error('Erreur fetch:', error);
-          messageDiv.innerHTML = '<span style="color:#d9534f;">❌ Erreur réseau : ' + error.message + '</span>';
-        });
-    }
-
-    function getArticleIdFromUrl() {
-      var params = new URLSearchParams(window.location.search);
-      var id = params.get('id') || params.get('postId') || null;
-      console.log('ID extrait de l\'URL:', id);
-      return id;
-    }
-
-    // ============================================================
-    // CHARGEMENT DU FOOTER
-    // ============================================================
-    fetch('/medit/footer.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('footer-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = '';
-      });
   </script>
 
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script src="/medit/article.js"></script>
   <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <script src="/medit/lecture-mode.js"></script>
 </body>
 </html>
