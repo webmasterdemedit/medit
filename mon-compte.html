@@ -82,7 +82,6 @@
       margin-bottom: 24px;
     }
 
-    /* Profil */
     .champ-compte {
       display: flex;
       justify-content: space-between;
@@ -156,12 +155,11 @@
       margin-top: 4px;
     }
 
-    /* Activité - Stats */
     .stats-activite {
       display: grid;
       grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
       gap: 12px;
-      margin-bottom: 20px;
+      margin-bottom: 12px;
     }
 
     .stat-card {
@@ -193,67 +191,6 @@
       margin-top: 2px;
     }
 
-    .activite-recente {
-      border-top: 1px solid #d1ccc4;
-      padding-top: 16px;
-    }
-
-    .activite-recente .titre-section {
-      font-size: 14px;
-      color: #6b7a8a;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      margin-bottom: 10px;
-    }
-
-    .activite-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 0;
-      font-size: 14px;
-      border-bottom: 1px solid #e8e5e0;
-    }
-
-    .activite-item:last-child {
-      border-bottom: none;
-    }
-
-    .activite-item .date {
-      color: #6b7a8a;
-      font-size: 12px;
-      min-width: 80px;
-    }
-
-    .activite-item .titre {
-      color: #2c2c2c;
-      flex: 1;
-      margin: 0 12px;
-    }
-
-    .activite-item .statut {
-      font-size: 12px;
-      font-weight: 500;
-      padding: 2px 10px;
-      border-radius: 30px;
-    }
-
-    .activite-item .statut.valide {
-      color: #2c2c2c;
-      background: #d1ccc4;
-    }
-
-    .activite-item .statut.echec {
-      color: #6b7a8a;
-      background: #e8e5e0;
-    }
-
-    .activite-item .statut.info {
-      color: #6b7a8a;
-      background: #e8e5e0;
-    }
-
-    /* Historique */
     .groupe-date {
       margin-bottom: 16px;
     }
@@ -306,8 +243,9 @@
       font-size: 12px;
       color: #6b7a8a;
       display: flex;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
+      flex-wrap: wrap;
     }
 
     .histo-item .detail .badge {
@@ -358,6 +296,24 @@
     }
 
     .btn-retour-compte:hover {
+      background: #e8e5e0;
+      color: #2c2c2c;
+    }
+
+    .btn-rafraichir {
+      padding: 6px 16px;
+      background: transparent;
+      color: #6b7a8a;
+      border: 1px solid #d1ccc4;
+      border-radius: 30px;
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Segoe UI', sans-serif;
+      margin-top: 12px;
+    }
+
+    .btn-rafraichir:hover {
       background: #e8e5e0;
       color: #2c2c2c;
     }
@@ -423,7 +379,6 @@
       .stat-card .nombre { font-size: 22px; }
       .histo-item { flex-wrap: wrap; gap: 4px; }
       .histo-item .detail { flex-wrap: wrap; }
-      .activite-item { flex-wrap: wrap; gap: 4px; }
     }
   </style>
 </head>
@@ -487,6 +442,11 @@
 
     <a href="/medit/mes-textes.html" class="btn-retour-compte">← Retour</a>
 
+    <!-- Rafraîchir en bas à droite discret -->
+    <div style="text-align:right;margin-top:8px;">
+      <button class="btn-rafraichir" onclick="rafraichir()">⟳ Rafraîchir</button>
+    </div>
+
   </div>
 
   <!-- FOOTER -->
@@ -549,7 +509,6 @@
           niveauEtudiant = data.niveau || 0;
           toutesLesReponses = data.reponses || [];
           descriptionNiveau = data.description || 'Aucune description.';
-
           afficherProfil();
           afficherActivite();
           afficherHistorique();
@@ -592,10 +551,6 @@
           <span class="label">Textes disponibles</span>
           <span class="valeur">${DataManager.posts ? DataManager.posts.length : '—'}</span>
         </div>
-        <div class="champ-compte">
-          <span class="label">Tentatives</span>
-          <span class="valeur">${toutesLesReponses.length}</span>
-        </div>
         <div class="niveau-section">
           <div class="niveau-titre">Votre niveau actuel</div>
           <div class="niveau-valeur">
@@ -604,19 +559,13 @@
           </div>
           <div class="description-niveau">${descriptionNiveau}</div>
         </div>
-        <div style="margin-top:20px;text-align:center;border-top:1px solid #d1ccc4;padding-top:16px;">
-          <button onclick="rafraichir()" style="padding:10px 28px;background:transparent;color:#2c2c2c;border:1px solid #d1ccc4;border-radius:30px;font-size:14px;cursor:pointer;">
-            Rafraîchir
-          </button>
-          <p style="font-size:12px;color:#6b7a8a;margin-top:6px;">Synchronise vos données avec le serveur</p>
-        </div>
       `;
 
       document.getElementById('contenu-profil').innerHTML = html;
     }
 
     // ============================================================
-    // AFFICHER ACTIVITÉ (stats globales)
+    // AFFICHER ACTIVITÉ (stats globales uniquement)
     // ============================================================
     function afficherActivite() {
       var total = toutesLesReponses.length;
@@ -685,47 +634,6 @@
         </div>
       `;
 
-      // Dernières activités (5 dernières)
-      var recentes = toutesLesReponses.slice(-5).reverse();
-      if (recentes.length > 0) {
-        html += `<div class="activite-recente">`;
-        html += `<div class="titre-section">Dernières activités</div>`;
-
-        recentes.forEach(function(item) {
-          var bonnes = parseInt(item.bonnes) || 0;
-          var totalQ = parseInt(item.total) || 0;
-          var valide = (totalQ > 0 && bonnes >= Math.ceil(totalQ / 2));
-          var statutClass = valide ? 'valide' : 'echec';
-          var statutTexte = valide ? '✅ Validé' : '❌ Non validé';
-
-          var date = item.date ? new Date(item.date) : null;
-          var dateStr = date && !isNaN(date.getTime()) ? 
-            date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short' }) : '';
-
-          var infos = [];
-          if (item.annotations && item.annotations.trim() !== '') infos.push('✏️');
-          if (item.reponseOuverte && item.reponseOuverte.trim() !== '') infos.push('📝');
-
-          html += `
-            <div class="activite-item">
-              <span class="date">${dateStr}</span>
-              <span class="titre">${item.titre || 'Sans titre'}</span>
-              <span class="statut ${statutClass}">${statutTexte} ${infos.join(' ')}</span>
-            </div>
-          `;
-        });
-
-        html += `</div>`;
-      } else {
-        html += `
-          <div class="vide-histo" style="padding:20px;">
-            <span class="icone" style="font-size:32px;">◈</span>
-            <h2 style="font-size:18px;">Aucune activité</h2>
-            <p style="font-size:14px;">Commencez une méditation pour voir vos progrès.</p>
-          </div>
-        `;
-      }
-
       document.getElementById('contenu-activite').innerHTML = html;
     }
 
@@ -763,7 +671,6 @@
 
       dates.forEach(function(dateKey) {
         var items = grouped[dateKey];
-        // Trier par heure
         items.sort(function(a, b) {
           var da = a.date ? new Date(a.date) : new Date(0);
           var db = b.date ? new Date(b.date) : new Date(0);
@@ -817,13 +724,13 @@
     }
 
     // ============================================================
-    // RAFRAÎCHIR
+    // RAFRAÎCHIR (discret en bas à droite)
     // ============================================================
     function rafraichir() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) return;
 
-      var btn = document.querySelector('#contenu-profil button');
+      var btn = document.querySelector('.btn-rafraichir');
       if (!btn) return;
 
       var originalText = btn.textContent;
@@ -846,16 +753,16 @@
           btn.disabled = false;
           btn.style.opacity = '1';
           setTimeout(function() {
-            btn.textContent = 'Rafraîchir';
+            btn.textContent = '⟳ Rafraîchir';
             btn.style.background = 'transparent';
           }, 1500);
         })
         .catch(function() {
-          btn.textContent = 'Erreur';
+          btn.textContent = '✗';
           btn.disabled = false;
           btn.style.opacity = '1';
           setTimeout(function() {
-            btn.textContent = 'Rafraîchir';
+            btn.textContent = '⟳ Rafraîchir';
           }, 1500);
         });
     }
