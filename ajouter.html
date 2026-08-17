@@ -29,6 +29,8 @@
   .slide-item .slide-texte { flex: 1; cursor: pointer; }
   .slide-item .btn-del-slide { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 14px; }
   .slide-item .btn-del-slide:hover { color: #2c2c2c; }
+
+  /* SLIDE IDÉE (italique + gris) */
   .slide-item.idee .slide-texte { font-style: italic; color: #b8b0a8; }
 
   .btn-composer { padding: 6px 16px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 4px 0; }
@@ -78,13 +80,14 @@
   .btn-groupe .btn-annuler { color: #6b7a8a; text-decoration: none; }
   .btn-groupe .btn-brouillon { color: #6b7a8a; }
   .btn-groupe .btn-brouillon.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+  .btn-groupe .btn-importer { color: #6b7a8a; }
   .btn-groupe .chrono { font-size: 13px; color: #6b7a8a; font-family: 'Courier New', monospace; margin-left: auto; }
 
   .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; display: none; }
   .message.success { display: block; color: #2c2c2c; background: #e8e5e0; }
   .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
 
-  /* COMPOSEUR PLEIN ÉCRAN */
+  /* COMPOSEUR PLEIN ÉCRAN - fond blanc */
   .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
   .composer-overlay.visible { display: flex; }
   .composer-content { background: #ffffff; border: none; border-radius: 0; max-width: 100%; width: 100%; height: 100%; padding: 40px 60px; position: relative; font-family: 'Georgia', serif; }
@@ -126,7 +129,8 @@
       <!-- SLIDES -->
       <div class="section-title">Slides</div>
       <div class="slides-list" id="slidesList"></div>
-      <button type="button" class="btn-add" onclick="ajouterSlide()" style="margin-left:0;">+ slide</button>
+      <button type="button" class="btn-composer" onclick="ouvrirComposeurInterne()">✎ Composer</button>
+      <button type="button" class="btn-add" onclick="ajouterSlide()" style="margin-left:8px;">+ slide</button>
       <button type="button" class="btn-add" onclick="ajouterIdee()" style="margin-left:4px;">💡 Idée</button>
 
       <!-- QUIZ -->
@@ -139,7 +143,7 @@
       <div class="open-questions-list" id="openQuestionsList"></div>
       <button type="button" class="btn-add" onclick="ajouterQuestionOuverte()">+ question ouverte</button>
 
-      <!-- RETENIR -->
+      <!-- RETENIR - fermé par défaut -->
       <div class="section-title">À retenir</div>
       <div class="retenir-container">
         <button type="button" class="btn-add" onclick="toggleRetenir()">+ mémo</button>
@@ -156,6 +160,8 @@
       <button type="button" class="btn-add" onclick="ajouterInfo()">+ info</button>
 
       <div class="btn-groupe">
+        <button type="button" onclick="importerTexteInterne()" class="btn btn-importer">Importer</button>
+        <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichierInterne(event)">
         <span style="flex:1;"></span>
         <span class="chrono" id="chronoDisplay">00:00</span>
         <button type="button" onclick="enregistrerTexteInterne()" class="btn" id="btnEnregistrer">Ajouter</button>
@@ -545,7 +551,7 @@
   }
 
   // ============================================================
-  // ENREGISTRER (interne)
+  // ENREGISTRER
   // ============================================================
   function enregistrerTexteInterne() {
     var id = document.getElementById('editId').value;
@@ -791,6 +797,26 @@
     stopChronoInterne();
     var modal = document.getElementById('modalTexte');
     if (modal) modal.classList.remove('visible');
+  }
+
+  // ============================================================
+  // IMPORTER
+  // ============================================================
+  function importerTexteInterne() {
+    document.getElementById('fileInput').click();
+  }
+
+  function importerFichierInterne(event) {
+    var file = event.target.files[0];
+    if (!file) return;
+
+    var reader = new FileReader();
+    reader.onload = function(e) {
+      var contenu = e.target.result;
+      parserContenuInterne(contenu);
+      document.getElementById('fileInput').value = '';
+    };
+    reader.readAsText(file, 'UTF-8');
   }
 
   function parserContenuInterne(contenu) {
