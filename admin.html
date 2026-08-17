@@ -289,6 +289,7 @@
             </div>
             <div class="actions">
               <button onclick="modifierPost('${post.id}')">✎ Modifier</button>
+              <button onclick="exporterPost('${post.id}')">📤 Exporter</button>
               <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">✕</button>
             </div>
           </div>
@@ -367,7 +368,6 @@
       msg.style.display = 'none';
 
       if (modeEdition && id) {
-        // MODIFICATION
         DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenu, question, statut)
           .then(function() {
             msg.textContent = '✅ Post mis à jour avec succès !';
@@ -386,7 +386,6 @@
             btn.disabled = false;
           });
       } else {
-        // AJOUT
         DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenu, question)
           .then(function() {
             msg.textContent = '✅ Post créé avec succès !';
@@ -424,6 +423,36 @@
           btn.textContent = '✕';
           btn.disabled = false;
         });
+    }
+
+    // ============================================================
+    // EXPORTER UN POST EN .TXT
+    // ============================================================
+    function exporterPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      var contenu = '';
+      contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+
+      if (post.contenu) {
+        // Garder le contenu tel quel (déjà formaté avec -s-, -q-, -v-, -f-, -qs-, -r-, -i-)
+        contenu += post.contenu;
+      } else {
+        contenu += '-s- ' + (post.titre || 'Sans titre') + '\n\n';
+        contenu += '-s- ' + (post.contenu || 'Contenu vide') + '\n\n';
+      }
+
+      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (post.titre || 'post') + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function demarrer() {
