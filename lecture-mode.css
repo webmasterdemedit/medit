@@ -309,7 +309,33 @@ body.dark-mode .btn-footer:hover {
   background: #2a2a2a !important;
   color: #e8e5e0 !important;
 }
-/* À AJOUTER dans lecture-mode.css */
+
+/* ============================================================
+   EFFET GRAIN E-INK (texture papier permanente)
+   ============================================================ */
+
+/* Texture de grain permanent (très subtil, imite le papier d'une liseuse) */
+body::before {
+  content: "";
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  pointer-events: none;
+  z-index: 9999;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='1' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+  background-repeat: repeat;
+  background-size: 256px 256px;
+  opacity: 0.15;
+  mix-blend-mode: multiply;
+}
+
+/* ============================================================
+   EFFET "PAPIER QUI TOURNE" (au changement de page)
+   ============================================================ */
+
+/* Animation ultra-subtile qui imite le tournage d'une page */
 @keyframes einkPageTurn {
   0% { opacity: 1; transform: perspective(400px) rotateY(0deg); }
   10% { opacity: 0.98; transform: perspective(400px) rotateY(2deg); }
@@ -319,6 +345,7 @@ body.dark-mode .btn-footer:hover {
   100% { opacity: 1; transform: perspective(400px) rotateY(0deg); }
 }
 
+/* Classe activée par JavaScript (ou manuellement) */
 body.eink-refresh {
   animation: einkPageTurn 350ms ease-in-out !important;
 }
