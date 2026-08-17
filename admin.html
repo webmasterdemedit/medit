@@ -156,14 +156,30 @@
   <div id="modal-container"></div>
   <script>
     fetch('/medit/ajouter.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('modal-container').innerHTML = data;
-        console.log('✅ Modal chargé');
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement modal:', error);
-      });
+  .then(function(response) { return response.text(); })
+  .then(function(data) {
+    // 1. Insérer le HTML
+    document.getElementById('modal-container').innerHTML = data;
+
+    // 2. Récupérer et exécuter les scripts
+    var scripts = document.querySelectorAll('#modal-container script');
+    scripts.forEach(function(script) {
+      var newScript = document.createElement('script');
+      // Copier le contenu
+      newScript.textContent = script.textContent;
+      // Copier les attributs (src, etc.)
+      for (var i = 0; i < script.attributes.length; i++) {
+        newScript.setAttribute(script.attributes[i].name, script.attributes[i].value);
+      }
+      // Remplacer l'ancien script par le nouveau
+      script.parentNode.replaceChild(newScript, script);
+    });
+
+    console.log('✅ Modal chargé et scripts exécutés');
+  })
+  .catch(function(error) {
+    console.error('Erreur chargement modal:', error);
+  });
   </script>
 
   <script>
