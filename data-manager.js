@@ -207,7 +207,6 @@ var DataManager = {
         var elements = contenu.split(' | ');
         
         // Préparer les paramètres pour chaque colonne
-        // F = elements[0] (slide1), G = elements[1] (slide2), etc.
         var params = {
             titre: titre,
             niveau: niveau,
