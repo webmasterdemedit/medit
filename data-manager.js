@@ -3,10 +3,8 @@
 // ============================================================
 
 var DataManager = {
-    // === CONFIGURATION ===
-    DUREE_CACHE: 60, // 1 heure
+    DUREE_CACHE: 60,
 
-    // === CHARGER LES DONNÉES ===
     charger: function(force) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -46,13 +44,11 @@ var DataManager = {
             });
     },
 
-    // === LIRE LE CACHE ===
     getCache: function(id) {
         try {
             var cache = localStorage.getItem('cache_complet_' + id);
             if (!cache) return null;
             cache = JSON.parse(cache);
-
             var age = (Date.now() - cache.timestamp) / 60000;
             if (age > this.DUREE_CACHE) {
                 console.log('⏰ Cache expiré (', Math.round(age), 'min)');
@@ -64,7 +60,6 @@ var DataManager = {
         }
     },
 
-    // === LIRE LE CACHE MÊME EXPIRÉ ===
     getCacheForce: function(id) {
         try {
             var cache = localStorage.getItem('cache_complet_' + id);
@@ -76,7 +71,6 @@ var DataManager = {
         }
     },
 
-    // === SAUVEGARDER LE CACHE ===
     setCache: function(id, data) {
         try {
             localStorage.setItem('cache_complet_' + id, JSON.stringify({
@@ -88,12 +82,10 @@ var DataManager = {
         }
     },
 
-    // === FORCER LE RAFRAÎCHISSEMENT ===
     rafraichir: function() {
         return this.charger(true);
     },
 
-    // === VIDER LE CACHE ===
     invalider: function() {
         var id = localStorage.getItem('etudiant_id');
         if (id) {
@@ -102,7 +94,6 @@ var DataManager = {
         }
     },
 
-    // === VÉRIFIER SI LE CACHE EXISTE ===
     aUnCache: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return false;
@@ -110,11 +101,9 @@ var DataManager = {
         return cache !== null;
     },
 
-    // === RÉCUPÉRER UN ARTICLE SPÉCIFIQUE ===
     getArticle: function(articleId) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return null;
-
         var cache = this.getCacheForce(id);
         if (cache && cache.articlesComplets) {
             return cache.articlesComplets[articleId] || null;
@@ -122,11 +111,9 @@ var DataManager = {
         return null;
     },
 
-    // === RÉCUPÉRER LES POSTS DU NIVEAU ===
     getPosts: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-
         var cache = this.getCacheForce(id);
         if (cache && cache.posts) {
             return cache.posts;
@@ -134,11 +121,9 @@ var DataManager = {
         return [];
     },
 
-    // === RÉCUPÉRER LES RÉPONSES ===
     getReponses: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-
         var cache = this.getCacheForce(id);
         if (cache && cache.reponses) {
             return cache.reponses;
@@ -146,11 +131,9 @@ var DataManager = {
         return [];
     },
 
-    // === RÉCUPÉRER LE NIVEAU ===
     getNiveau: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return 0;
-
         var cache = this.getCacheForce(id);
         if (cache && cache.niveau !== undefined) {
             return cache.niveau;
@@ -158,11 +141,9 @@ var DataManager = {
         return 0;
     },
 
-    // === RÉCUPÉRER LA DESCRIPTION DU NIVEAU ===
     getDescriptionNiveau: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-
         var cache = this.getCacheForce(id);
         if (cache && cache.description) {
             return cache.description;
@@ -170,7 +151,6 @@ var DataManager = {
         return '';
     },
 
-    // === RÉCUPÉRER LES ANNOTATIONS D'UN ARTICLE ===
     getAnnotations: function(articleId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
@@ -181,7 +161,6 @@ var DataManager = {
         return '';
     },
 
-    // === RÉCUPÉRER LE STATUT RÉVISÉ D'UN ARTICLE ===
     getReviseStatus: function(articleId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
@@ -192,7 +171,10 @@ var DataManager = {
         return false;
     },
 
-    // === MARQUER COMME RÉVISÉ (appel serveur) ===
+    // ============================================================
+    // TOUTES LES ACTIONS UTILISENT CONFIG.SCRIPT_URL
+    // ============================================================
+
     marquerRevise: function(articleId, revise) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -208,7 +190,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // Invalider le cache pour forcer le rechargement
                     DataManager.invalider();
                     return data;
                 } else {
@@ -217,7 +198,6 @@ var DataManager = {
             });
     },
 
-    // === AJOUTER UN POST (admin) ===
     ajouterPost: function(titre, niveau, categorie, contenu, question) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -243,7 +223,6 @@ var DataManager = {
             });
     },
 
-    // === MODIFIER UN POST (admin) ===
     modifierPost: function(id, titre, niveau, categorie, contenu, question, statut) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
@@ -271,7 +250,6 @@ var DataManager = {
             });
     },
 
-    // === SUPPRIMER UN POST (admin) ===
     supprimerPost: function(id) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
@@ -292,7 +270,6 @@ var DataManager = {
             });
     },
 
-    // === SAUVEGARDER UNE ANNOTATION ===
     sauvegarderAnnotation: function(articleId, slide, annotation) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -317,7 +294,6 @@ var DataManager = {
             });
     },
 
-    // === SAUVEGARDER UNE RÉPONSE OUVERTE ===
     sauvegarderReponseOuverte: function(articleId, reponse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -341,7 +317,6 @@ var DataManager = {
             });
     },
 
-    // === SAUVEGARDER UN QUIZ ===
     sauvegarderQuiz: function(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -369,7 +344,6 @@ var DataManager = {
             });
     },
 
-    // === SAUVEGARDER UNE LECTURE ===
     sauvegarderLecture: function(articleId, titre) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -395,7 +369,7 @@ var DataManager = {
 };
 
 // ============================================================
-// FONCTIONS UTILITAIRES POUR LES PAGES
+// FONCTIONS UTILITAIRES
 // ============================================================
 
 function chargerDonnees(force) {
