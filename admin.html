@@ -253,7 +253,7 @@
     </div>
 
     <div class="search-bar">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon">⌕</span>
       <input type="text" id="searchInput" placeholder="Rechercher un texte par titre..." oninput="appliquerRecherche()">
     </div>
 
@@ -280,7 +280,7 @@
   <div id="modalCategories" class="modal-overlay">
     <div class="modal-contenu">
       <button class="modal-close" onclick="fermerModalCategories()">✕</button>
-      <h3>🏷️ Gérer les catégories</h3>
+      <h3>╭ Gérer les catégories</h3>
       <div id="listeCategories"></div>
       <div class="ajout-cat">
         <input type="text" id="newCatInput" placeholder="Nouvelle catégorie...">
@@ -337,7 +337,7 @@
           <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
           <span style="flex:1;"></span>
           <span class="chrono" id="chronoDisplay">00:00</span>
-          <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegardé</span>
+          <span class="auto-save-indicator" id="autoSaveIndicator"> ➜] Sauvegardé</span>
           <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
           <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
           <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
@@ -355,7 +355,7 @@
       <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
       <div class="composer-actions">
         <button onclick="validerComposeur()">✓ Valider</button>
-        <button onclick="validerComposeurIdee()">💡 Idée</button>
+        <button onclick="validerComposeurIdee()">💭 Idée</button>
         <button onclick="fermerComposeur()">Annuler</button>
       </div>
     </div>
@@ -456,7 +456,7 @@
 
     function sauvegarderAuto() {
       var indicator = document.getElementById('autoSaveIndicator');
-      indicator.textContent = '💾 Sauvegarde...';
+      indicator.textContent = '➜] Sauvegarde...';
       indicator.className = 'auto-save-indicator visible saving';
       
       var data = {
@@ -478,7 +478,7 @@
       
       try {
         localStorage.setItem('admin_auto_save', JSON.stringify(data));
-        indicator.textContent = '💾 Sauvegardé';
+        indicator.textContent = '➜] Sauvegardé';
         indicator.className = 'auto-save-indicator visible saved';
         setTimeout(function() {
           indicator.className = 'auto-save-indicator visible';
@@ -500,7 +500,7 @@
           return;
         }
         
-        if (confirm('💾 Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
+        if (confirm('➜] Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
           slidesData = data.slidesData || [''];
           slidesIdee = data.slidesIdee || [false];
           quizData = data.quizData || [{ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] }];
@@ -950,14 +950,14 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success) {
-            console.log('✅ Ordres sauvegardés pour la catégorie "' + categorie + '"');
+            console.log('➜] Ordres sauvegardés pour la catégorie "' + categorie + '"');
             mettreAJourBadgesOrdre();
           } else {
-            console.error('❌ Erreur sauvegarde ordres:', data.message);
+            console.error('⚠︎ Erreur sauvegarde ordres:', data.message);
           }
         })
         .catch(function(e) {
-          console.error('❌ Erreur:', e);
+          console.error('⚠︎ Erreur:', e);
         });
     }
 
@@ -1095,12 +1095,12 @@
             input.value = '';
             afficherListeCategories();
             remplirSelectCategories();
-            alert('✅ Catégorie ajoutée avec succès !');
+            alert('✓ Catégorie ajoutée avec succès !');
           } else {
-            alert('❌ Erreur : ' + data.message);
+            alert('⚠︎ Erreur : ' + data.message);
           }
         })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
     function supprimerCategorie(cat) {
@@ -1124,12 +1124,12 @@
               afficherListeCategories();
             }
             remplirSelectCategories();
-            alert('✅ Catégorie supprimée avec succès !');
+            alert('✓ Catégorie supprimée avec succès !');
           } else {
-            alert('❌ Erreur : ' + data.message);
+            alert('⚠︎ Erreur : ' + data.message);
           }
         })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
     function renommerCategorie(oldCat) {
@@ -1160,12 +1160,12 @@
               afficherListeCategories();
             }
             remplirSelectCategories();
-            alert('✅ Catégorie renommée avec succès !');
+            alert('✓ Catégorie renommée avec succès !');
           } else {
-            alert('❌ Erreur : ' + data.message);
+            alert('⚠︎ Erreur : ' + data.message);
           }
         })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
     // ============================================================
@@ -1210,7 +1210,7 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      alert('✅ Exportation de ' + tousLesPosts.length + ' articles terminée !');
+      alert('✓ Exportation de ' + tousLesPosts.length + ' articles terminée !');
     }
 
     // ============================================================
@@ -1659,7 +1659,7 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post mis à jour ! (v' + version + ')', 'success');
+              afficherMsgTexte('✓ Post mis à jour ! (v' + version + ')', 'success');
               btn.textContent = 'Mettre à jour';
               btn.disabled = false;
               fermerModalTexte();
@@ -1669,7 +1669,7 @@
             }
           })
           .catch(function(err) {
-            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            afficherMsgTexte('⚠︎ Erreur : ' + err.message, 'error');
             btn.textContent = 'Mettre à jour';
             btn.disabled = false;
           });
@@ -1691,7 +1691,7 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post ajouté !', 'success');
+              afficherMsgTexte('✓ Post ajouté !', 'success');
               btn.textContent = 'Ajouter';
               btn.disabled = false;
               fermerModalTexte();
@@ -1701,7 +1701,7 @@
             }
           })
           .catch(function(err) {
-            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            afficherMsgTexte('⚠︎ Erreur : ' + err.message, 'error');
             btn.textContent = 'Ajouter';
             btn.disabled = false;
           });
@@ -1984,11 +1984,11 @@
 
       DataManager.supprimerPost(postId)
         .then(function() {
-          alert('✅ Post supprimé avec succès !');
+          alert('✓ Post supprimé avec succès !');
           chargerAdmin();
         })
         .catch(function(err) {
-          alert('❌ Erreur : ' + err.message);
+          alert('⚠︎ Erreur : ' + err.message);
           btn.textContent = '✕';
           btn.disabled = false;
         });
