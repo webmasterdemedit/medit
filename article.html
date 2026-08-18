@@ -3,13 +3,15 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1a1a1a" />
+  <meta name="theme-color" content="#121212" />
   <title>Lecture</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
   <style>
     /* ============================================================
-       LISEUSE - STYLE SOMBRE ET ÉPURÉ
+       LISEUSE - STYLE ÉPURÉ (réutilise lecture-mode.css)
        ============================================================ */
     * {
       margin: 0;
@@ -20,16 +22,22 @@
     html, body {
       height: 100%;
       overflow: hidden;
+      background: #121212 !important;
     }
 
     body {
       font-family: 'Merriweather', 'Georgia', serif;
-      background: #121212;
-      color: #e8e0d8;
+      color: #e8e0d8 !important;
       display: flex;
       flex-direction: column;
       height: 100vh;
       overflow: hidden;
+      background: #121212 !important;
+    }
+
+    /* Supprimer l'effet de grain en mode liseuse sombre */
+    body::before {
+      display: none !important;
     }
 
     /* ===== HEADER LISEUSE ===== */
@@ -37,11 +45,11 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 32px;
+      padding: 14px 32px;
       background: #1a1a1a;
       border-bottom: 1px solid #2a2a2a;
       flex-shrink: 0;
-      min-height: 72px;
+      min-height: 64px;
       z-index: 10;
     }
 
@@ -49,6 +57,7 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
+      min-width: 0;
     }
 
     .lecture-header .meta-left .cat-niveau {
@@ -66,25 +75,29 @@
 
     .lecture-header .meta-left .titre {
       font-family: 'Merriweather', serif;
-      font-size: 20px;
+      font-size: 18px;
       font-weight: 400;
       color: #e8e0d8;
       line-height: 1.3;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .lecture-header .actions {
       display: flex;
       align-items: center;
       gap: 12px;
+      flex-shrink: 0;
     }
 
     .lecture-header .actions .btn-close {
       background: none;
       border: none;
       color: #6b6b6b;
-      font-size: 28px;
+      font-size: 26px;
       cursor: pointer;
-      padding: 8px 8px 4px 8px;
+      padding: 4px 8px;
       line-height: 1;
       transition: color 0.2s;
       font-family: 'Inter', sans-serif;
@@ -116,6 +129,12 @@
       display: inline-block;
       background: #3a1e1e;
       color: #c87a7a;
+    }
+
+    .lecture-header .actions .badge-statut.en-attente {
+      display: inline-block;
+      background: #2a2a1e;
+      color: #c8b87a;
     }
 
     /* ===== CONTENU PRINCIPAL ===== */
@@ -161,7 +180,7 @@
     }
 
     .page-item {
-      min-height: calc(100vh - 160px);
+      min-height: calc(100vh - 180px);
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -169,8 +188,8 @@
       max-width: 780px;
       margin: 0 auto;
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
+      transform: translateY(16px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
       scroll-margin-top: 20px;
     }
 
@@ -185,7 +204,7 @@
       font-weight: 500;
       color: #3a3a3a;
       letter-spacing: 0.5px;
-      margin-bottom: 16px;
+      margin-bottom: 20px;
       text-transform: uppercase;
     }
 
@@ -319,4 +338,1203 @@
 
     .page-item.open-question .open-question-text {
       font-weight: 400;
-      font-size:
+      font-size: 20px;
+      color: #e8e0d8;
+      margin-bottom: 16px;
+    }
+
+    .page-item.open-question textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 14px 18px;
+      border-radius: 8px;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      color: #e0d8d0;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      line-height: 1.6;
+      resize: vertical;
+      transition: border-color 0.2s;
+    }
+
+    .page-item.open-question textarea:focus {
+      outline: none;
+      border-color: #4a6a5a;
+    }
+
+    .page-item.open-question textarea::placeholder {
+      color: #4a4a4a;
+    }
+
+    .page-item.open-question .btn-envoyer-reponse {
+      margin-top: 12px;
+      padding: 10px 28px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid #4a6a5a;
+      color: #8ac8a0;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: flex-start;
+    }
+
+    .page-item.open-question .btn-envoyer-reponse:hover {
+      background: #1a2a1e;
+      border-color: #5a8a6a;
+    }
+
+    .page-item.open-question .btn-envoyer-reponse:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .page-item.open-question .reponse-confirmation {
+      margin-top: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #7ab893;
+      display: none;
+    }
+
+    .page-item.open-question .reponse-confirmation.visible {
+      display: block;
+    }
+
+    /* ===== RÉTENIR ===== */
+    .page-item.retenir .page-content {
+      font-size: 18px;
+      text-align: center;
+    }
+
+    .page-item.retenir .retenir-mots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 16px;
+      margin: 24px 0;
+    }
+
+    .page-item.retenir .retenir-mot {
+      font-family: 'Merriweather', serif;
+      font-size: 28px;
+      font-weight: 400;
+      color: #e8e0d8;
+      padding: 12px 24px;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      background: #1a1a1a;
+    }
+
+    .page-item.retenir .retenir-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #6b6b6b;
+      margin-bottom: 8px;
+    }
+
+    /* ===== RÉSULTAT FINAL ===== */
+    .page-item.resultat .page-content {
+      text-align: center;
+    }
+
+    .page-item.resultat .resultat-icone {
+      font-size: 64px;
+      margin-bottom: 20px;
+    }
+
+    .page-item.resultat .resultat-titre {
+      font-size: 24px;
+      font-weight: 400;
+      color: #e8e0d8;
+      margin-bottom: 8px;
+    }
+
+    .page-item.resultat .resultat-sous-titre {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: #6b6b6b;
+    }
+
+    .page-item.resultat .resultat-score {
+      font-family: 'Inter', sans-serif;
+      font-size: 48px;
+      font-weight: 300;
+      color: #e8e0d8;
+      margin: 16px 0;
+    }
+
+    .page-item.resultat .resultat-detail {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: #6b6b6b;
+    }
+
+    .page-item.resultat .resultat-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 24px;
+      flex-wrap: wrap;
+    }
+
+    .page-item.resultat .resultat-actions button {
+      padding: 10px 28px;
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      color: #c8c0b8;
+    }
+
+    .page-item.resultat .resultat-actions button:hover {
+      background: #2a2a2a;
+    }
+
+    .page-item.resultat .resultat-actions .btn-fermer {
+      border-color: #4a6a5a;
+      color: #8ac8a0;
+    }
+
+    .page-item.resultat .resultat-actions .btn-fermer:hover {
+      background: #1a2a1e;
+    }
+
+    /* ===== LOADER ===== */
+    .lecture-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #6b6b6b;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+    }
+
+    .lecture-loader .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid #2a2a2a;
+      border-top-color: #6b6b6b;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-bottom: 16px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .lecture-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      color: #6b6b6b;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .lecture-error .icone {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .lecture-error h2 {
+      font-family: 'Merriweather', serif;
+      font-size: 22px;
+      font-weight: 400;
+      color: #e8e0d8;
+      margin-bottom: 8px;
+    }
+
+    .lecture-error p {
+      font-size: 14px;
+      color: #6b6b6b;
+    }
+
+    .lecture-error .btn-retour {
+      margin-top: 20px;
+      padding: 10px 28px;
+      border-radius: 8px;
+      background: transparent;
+      border: 1px solid #2a2a2a;
+      color: #c8c0b8;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .lecture-error .btn-retour:hover {
+      background: #2a2a2a;
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .lecture-header {
+        padding: 10px 16px;
+        min-height: 56px;
+      }
+
+      .lecture-header .meta-left .titre {
+        font-size: 15px;
+      }
+
+      .lecture-header .meta-left .cat-niveau {
+        font-size: 10px;
+      }
+
+      .lecture-header .actions .btn-close {
+        font-size: 22px;
+      }
+
+      .pages-wrapper {
+        padding: 12px 16px 12px 16px;
+      }
+
+      .page-item {
+        padding: 20px 12px;
+        min-height: calc(100vh - 160px);
+      }
+
+      .page-item .page-content {
+        font-size: 17px;
+        line-height: 1.8;
+      }
+
+      .page-item.slide .page-content {
+        font-size: 18px;
+        line-height: 1.9;
+      }
+
+      .page-item .page-num {
+        font-size: 10px;
+        margin-bottom: 14px;
+      }
+
+      .page-item.quiz .quiz-question {
+        font-size: 17px;
+      }
+
+      .page-item.quiz .quiz-reponse {
+        font-size: 14px;
+        padding: 10px 14px;
+      }
+
+      .page-item.retenir .retenir-mot {
+        font-size: 22px;
+        padding: 10px 18px;
+      }
+
+      .page-item.open-question textarea {
+        min-height: 100px;
+        font-size: 14px;
+      }
+
+      .page-item.resultat .resultat-score {
+        font-size: 36px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .lecture-header {
+        padding: 8px 12px;
+        min-height: 50px;
+      }
+
+      .lecture-header .meta-left .titre {
+        font-size: 13px;
+      }
+
+      .lecture-header .meta-left .cat-niveau {
+        font-size: 9px;
+      }
+
+      .lecture-header .actions .badge-statut {
+        font-size: 10px;
+        padding: 3px 10px;
+      }
+
+      .pages-wrapper {
+        padding: 8px 10px 8px 10px;
+      }
+
+      .page-item {
+        padding: 16px 8px;
+        min-height: calc(100vh - 140px);
+      }
+
+      .page-item .page-content {
+        font-size: 15px;
+        line-height: 1.7;
+      }
+
+      .page-item.slide .page-content {
+        font-size: 16px;
+        line-height: 1.8;
+      }
+
+      .page-item.quiz .quiz-question {
+        font-size: 15px;
+      }
+
+      .page-item.quiz .quiz-reponse {
+        font-size: 13px;
+        padding: 8px 12px;
+        gap: 10px;
+      }
+
+      .page-item.quiz .quiz-reponse .lettre {
+        font-size: 12px;
+        min-width: 20px;
+      }
+
+      .page-item.retenir .retenir-mot {
+        font-size: 18px;
+        padding: 8px 14px;
+      }
+
+      .page-item.resultat .resultat-score {
+        font-size: 28px;
+      }
+
+      .page-item.resultat .resultat-actions button {
+        padding: 8px 20px;
+        font-size: 13px;
+      }
+
+      .page-item.open-question .btn-envoyer-reponse {
+        padding: 8px 20px;
+        font-size: 13px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- ===== HEADER LISEUSE ===== -->
+  <header class="lecture-header">
+    <div class="meta-left">
+      <div class="cat-niveau" id="metaCatNiveau">
+        <span id="metaCategorie">—</span>
+        <span>·</span>
+        <span id="metaNiveau">Niveau —</span>
+      </div>
+      <div class="titre" id="metaTitre">Chargement...</div>
+    </div>
+    <div class="actions">
+      <span class="badge-statut" id="badgeStatut"></span>
+      <button class="btn-close" id="btnFermer" title="Fermer">✕</button>
+    </div>
+  </header>
+
+  <!-- ===== CORPS ===== -->
+  <div class="lecture-body">
+    <div class="lecture-container" id="lectureContainer">
+      <div class="lecture-loader" id="lectureLoader">
+        <div class="spinner"></div>
+        <span>Chargement du texte...</span>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // CONFIGURATION
+    // ============================================================
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
+
+    // ============================================================
+    // ÉTAT
+    // ============================================================
+    var etat = {
+      postId: null,
+      post: null,
+      pages: [],
+      pageActuelle: 0,
+      reponsesQuiz: {}, // index question -> { reponseIndex, correct }
+      scoresQuiz: {}, // index question -> { bonnes, total }
+      reponsesOuvertes: {}, // index question -> texte
+      quizValide: false,
+      totalBonnes: 0,
+      totalQuestions: 0,
+      statutFinal: null, // 'valide', 'non-valide'
+      reponseEnvoyee: false,
+    };
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+
+      if (!id) {
+        afficherErreur('Aucun identifiant de texte spécifié.');
+        return;
+      }
+
+      etat.postId = id;
+      chargerPost(id);
+    });
+
+    // ============================================================
+    // CHARGER LE POST
+    // ============================================================
+    function chargerPost(id) {
+      var url = SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id);
+
+      fetch(url)
+        .then(function(response) {
+          if (!response.ok) {
+            throw new Error('Erreur réseau');
+          }
+          return response.json();
+        })
+        .then(function(data) {
+          if (!data.success || !data.post) {
+            throw new Error(data.message || 'Texte introuvable');
+          }
+
+          etat.post = data.post;
+          preparerPages(etat.post);
+          afficherLiseuse();
+        })
+        .catch(function(error) {
+          console.error('Erreur:', error);
+          afficherErreur('Impossible de charger le texte. ' + error.message);
+        });
+    }
+
+    // ============================================================
+    // PRÉPARER LES PAGES
+    // ============================================================
+    function preparerPages(post) {
+      var pages = [];
+      var contenu = post.contenu || '';
+
+      // Parser le contenu structuré
+      var elements = parserContenu(contenu);
+
+      // 1. Slides
+      var slides = elements.slides || [];
+      slides.forEach(function(slide, index) {
+        pages.push({
+          type: 'slide',
+          titre: 'Slide ' + (index + 1),
+          contenu: slide,
+          estIdee: elements.slidesIdee && elements.slidesIdee[index] || false
+        });
+      });
+
+      // 2. Quiz
+      var quizs = elements.quizs || [];
+      quizs.forEach(function(quiz, index) {
+        pages.push({
+          type: 'quiz',
+          titre: 'Quiz ' + (index + 1),
+          question: quiz.question,
+          reponses: quiz.reponses,
+          index: index
+        });
+      });
+
+      // 3. Questions ouvertes
+      var openQuestions = elements.openQuestions || [];
+      openQuestions.forEach(function(q, index) {
+        pages.push({
+          type: 'open-question',
+          titre: 'Question ouverte ' + (index + 1),
+          question: q,
+          index: index
+        });
+      });
+
+      // 4. Retenir (si présent)
+      if (elements.retenir && elements.retenir.length > 0) {
+        pages.push({
+          type: 'retenir',
+          titre: 'À retenir',
+          mots: elements.retenir
+        });
+      }
+
+      // 5. Résultat final (toujours)
+      pages.push({
+        type: 'resultat',
+        titre: 'Résultat'
+      });
+
+      etat.pages = pages;
+    }
+
+    // ============================================================
+    // PARSER LE CONTENU STRUCTURÉ
+    // ============================================================
+    function parserContenu(contenu) {
+      var result = {
+        slides: [],
+        slidesIdee: [],
+        quizs: [],
+        openQuestions: [],
+        retenir: []
+      };
+
+      if (!contenu) return result;
+
+      var elements = contenu.split(' | ');
+
+      for (var i = 0; i < elements.length; i++) {
+        var ligne = elements[i].trim();
+        if (!ligne) continue;
+
+        if (ligne.startsWith('-s-')) {
+          result.slides.push(ligne.replace('-s-', '').trim());
+          result.slidesIdee.push(false);
+        } else if (ligne.startsWith('-q-')) {
+          var qText = ligne.replace('-q-', '').trim();
+          var reponses = [];
+          for (var j = i + 1; j < elements.length; j++) {
+            var nextLine = elements[j].trim();
+            if (nextLine.startsWith('-v-')) {
+              reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+              i = j;
+            } else if (nextLine.startsWith('-f-')) {
+              reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+              i = j;
+            } else {
+              break;
+            }
+          }
+          if (reponses.length === 0) {
+            reponses.push({ texte: '', correct: true });
+            reponses.push({ texte: '', correct: false });
+          }
+          result.quizs.push({ question: qText, reponses: reponses });
+        } else if (ligne.startsWith('-qs-')) {
+          result.openQuestions.push(ligne.replace('-qs-', '').trim());
+        } else if (ligne.startsWith('-r-')) {
+          var retenirText = ligne.replace('-r-', '').trim();
+          var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+          result.retenir = mots;
+        }
+        // Ignorer -i- (infos) et autres
+      }
+
+      return result;
+    }
+
+    // ============================================================
+    // AFFICHER LA LISEUSE
+    // ============================================================
+    function afficherLiseuse() {
+      var container = document.getElementById('lectureContainer');
+      var loader = document.getElementById('lectureLoader');
+
+      // Mettre à jour le header
+      var post = etat.post;
+      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
+      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
+      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+
+      // Construire les pages
+      var html = '<div class="pages-wrapper" id="pagesWrapper">';
+
+      etat.pages.forEach(function(page, index) {
+        var typeClass = page.type;
+        var visibleClass = index === 0 ? ' visible' : '';
+
+        html += '<div class="page-item ' + typeClass + visibleClass + '" data-index="' + index + '" id="page-' + index + '">';
+        html += '<div class="page-num">' + (index + 1) + ' / ' + etat.pages.length + '</div>';
+        html += '<div class="page-content">';
+
+        // Rendu selon le type
+        switch (page.type) {
+          case 'slide':
+            html += renderSlide(page);
+            break;
+          case 'quiz':
+            html += renderQuiz(page, index);
+            break;
+          case 'open-question':
+            html += renderOpenQuestion(page, index);
+            break;
+          case 'retenir':
+            html += renderRetenir(page);
+            break;
+          case 'resultat':
+            html += renderResultat();
+            break;
+        }
+
+        html += '</div>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+
+      // Observer les pages pour l'animation d'entrée
+      observerPages();
+
+      // Initialiser les quiz
+      initQuizs();
+
+      // Initialiser les questions ouvertes
+      initOpenQuestions();
+
+      // Fermeture
+      document.getElementById('btnFermer').addEventListener('click', function() {
+        window.location.href = '/medit/mes-textes.html';
+      });
+
+      // Récupérer le statut existant
+      recupererStatutExistant();
+    }
+
+    // ============================================================
+    // RENDER: SLIDE
+    // ============================================================
+    function renderSlide(page) {
+      var content = page.contenu || '';
+      var isIdee = page.estIdee || false;
+
+      // Remplacer les retours à la ligne par des paragraphes
+      var paragraphs = content.split('\n').filter(function(p) { return p.trim() !== ''; });
+      var html = paragraphs.map(function(p) {
+        return '<p>' + p.trim() + '</p>';
+      }).join('');
+
+      if (isIdee) {
+        html = '<div class="slide-idee">' + html + '</div>';
+      }
+
+      return html;
+    }
+
+    // ============================================================
+    // RENDER: QUIZ
+    // ============================================================
+    function renderQuiz(page, index) {
+      var html = '';
+      html += '<div class="quiz-question">' + (page.question || 'Question') + '</div>';
+      html += '<div class="quiz-reponses" data-quiz-index="' + index + '">';
+
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      page.reponses.forEach(function(rep, ri) {
+        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(' + index + ', ' + ri + ')">';
+        html += '<span class="lettre">' + lettres[ri] + '</span>';
+        html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
+        html += '<span class="result-icon"></span>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      html += '<div class="quiz-feedback" id="quizFeedback-' + index + '">';
+      html += '<div class="bonne-reponse" id="quizBonneReponse-' + index + '"></div>';
+      html += '<div class="score" id="quizScore-' + index + '"></div>';
+      html += '</div>';
+
+      return html;
+    }
+
+    // ============================================================
+    // RENDER: QUESTION OUVERTE
+    // ============================================================
+    function renderOpenQuestion(page, index) {
+      var html = '';
+      html += '<div class="open-question-text">' + (page.question || 'Question ouverte') + '</div>';
+      html += '<textarea id="openReponse-' + index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(' + index + ')">Envoyer la réponse</button>';
+      html += '<div class="reponse-confirmation" id="openConfirmation-' + index + '">✓ Réponse enregistrée</div>';
+      return html;
+    }
+
+    // ============================================================
+    // RENDER: RETENIR
+    // ============================================================
+    function renderRetenir(page) {
+      var html = '';
+      html += '<div class="retenir-label">📌 À retenir</div>';
+      html += '<div class="retenir-mots">';
+
+      page.mots.forEach(function(mot) {
+        if (mot.trim()) {
+          html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+        }
+      });
+
+      html += '</div>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:#6b6b6b;margin-top:8px;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+      return html;
+    }
+
+    // ============================================================
+    // RENDER: RÉSULTAT
+    // ============================================================
+    function renderResultat() {
+      var statut = etat.statutFinal || 'en-attente';
+      var bonnes = etat.totalBonnes || 0;
+      var total = etat.totalQuestions || 0;
+      var pourcentage = total > 0 ? Math.round((bonnes / total) * 100) : 0;
+
+      var icone, titre, sousTitre, classeStatut;
+
+      if (statut === 'valide') {
+        icone = '✅';
+        titre = 'Félicitations !';
+        sousTitre = 'Vous avez validé ce texte avec succès.';
+        classeStatut = 'valide';
+      } else if (statut === 'non-valide') {
+        icone = '📖';
+        titre = 'À relire';
+        sousTitre = 'Prenez le temps de relire ce texte pour mieux le comprendre.';
+        classeStatut = 'non-valide';
+      } else {
+        icone = '⏳';
+        titre = 'En attente';
+        sousTitre = 'Répondez aux quiz pour valider ce texte.';
+        classeStatut = 'en-attente';
+      }
+
+      var html = '';
+      html += '<div class="resultat-icone">' + icone + '</div>';
+      html += '<div class="resultat-titre">' + titre + '</div>';
+      html += '<div class="resultat-sous-titre">' + sousTitre + '</div>';
+
+      if (total > 0) {
+        html += '<div class="resultat-score">' + bonnes + '/' + total + '</div>';
+        html += '<div class="resultat-detail">' + pourcentage + '% de bonnes réponses</div>';
+      } else {
+        html += '<div class="resultat-score">—</div>';
+        html += '<div class="resultat-detail">Aucun quiz à évaluer</div>';
+      }
+
+      html += '<div class="resultat-actions">';
+      html += '<button class="btn-fermer" onclick="fermerLiseuse()">Terminer la lecture</button>';
+      html += '</div>';
+
+      // Mettre à jour le badge
+      var badge = document.getElementById('badgeStatut');
+      badge.textContent = statut === 'valide' ? '✅ Validé' : statut === 'non-valide' ? '📖 À relire' : '⏳ En cours';
+      badge.className = 'badge-statut ' + classeStatut;
+
+      return html;
+    }
+
+    // ============================================================
+    // OBSERVER LES PAGES (animation d'entrée)
+    // ============================================================
+    function observerPages() {
+      var wrapper = document.getElementById('pagesWrapper');
+      if (!wrapper) return;
+
+      var observer = new IntersectionObserver(function(entries) {
+        entries.forEach(function(entry) {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+          }
+        });
+      }, {
+        threshold: 0.1,
+        rootMargin: '0px 0px -50px 0px'
+      });
+
+      var pages = wrapper.querySelectorAll('.page-item');
+      pages.forEach(function(page) {
+        observer.observe(page);
+      });
+    }
+
+    // ============================================================
+    // QUIZ - SÉLECTIONNER UNE RÉPONSE
+    // ============================================================
+    function selectionnerReponse(quizIndex, reponseIndex) {
+      var page = etat.pages.find(function(p) {
+        return p.type === 'quiz' && p.index === quizIndex;
+      });
+
+      if (!page) return;
+
+      // Vérifier si déjà répondu
+      if (etat.reponsesQuiz[quizIndex]) return;
+
+      var reponses = document.querySelectorAll('#page-' + getPageIndex(quizIndex) + ' .quiz-reponse');
+      var reponse = page.reponses[reponseIndex];
+
+      // Marquer la sélection
+      reponses.forEach(function(el, idx) {
+        el.classList.remove('selectionnee');
+        if (idx === reponseIndex) {
+          el.classList.add('selectionnee');
+        }
+      });
+
+      // Enregistrer la réponse
+      etat.reponsesQuiz[quizIndex] = {
+        reponseIndex: reponseIndex,
+        correct: reponse.correct
+      };
+
+      // Afficher le feedback
+      afficherFeedbackQuiz(quizIndex);
+    }
+
+    // ============================================================
+    // QUIZ - AFFICHER LE FEEDBACK
+    // ============================================================
+    function afficherFeedbackQuiz(quizIndex) {
+      var page = etat.pages.find(function(p) {
+        return p.type === 'quiz' && p.index === quizIndex;
+      });
+
+      if (!page) return;
+
+      var reponseData = etat.reponsesQuiz[quizIndex];
+      if (!reponseData) return;
+
+      var reponses = document.querySelectorAll('#page-' + getPageIndex(quizIndex) + ' .quiz-reponse');
+      var feedback = document.getElementById('quizFeedback-' + quizIndex);
+      var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
+      var score = document.getElementById('quizScore-' + quizIndex);
+
+      // Marquer les réponses
+      reponses.forEach(function(el, idx) {
+        el.classList.remove('correcte', 'incorrecte');
+        var icon = el.querySelector('.result-icon');
+
+        if (idx === reponseData.reponseIndex) {
+          if (reponseData.correct) {
+            el.classList.add('correcte');
+            icon.textContent = '✓';
+          } else {
+            el.classList.add('incorrecte');
+            icon.textContent = '✗';
+          }
+        } else if (page.reponses[idx] && page.reponses[idx].correct) {
+          el.classList.add('correcte');
+          icon.textContent = '✓';
+        } else {
+          icon.textContent = '';
+        }
+      });
+
+      // Feedback
+      if (reponseData.correct) {
+        bonneReponse.textContent = '✅ Bonne réponse !';
+      } else {
+        var bonne = page.reponses.find(function(r) { return r.correct; });
+        bonneReponse.textContent = '❌ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
+      }
+
+      feedback.classList.add('visible');
+
+      // Mettre à jour les scores
+      if (!etat.scoresQuiz[quizIndex]) {
+        etat.scoresQuiz[quizIndex] = { bonnes: 0, total: 1 };
+      }
+      etat.scoresQuiz[quizIndex].bonnes = reponseData.correct ? 1 : 0;
+
+      // Vérifier si tous les quiz sont répondus
+      verifierQuizComplets();
+    }
+
+    // ============================================================
+    // QUIZ - VÉRIFIER SI TOUS SONT RÉPONDUS
+    // ============================================================
+    function verifierQuizComplets() {
+      var quizPages = etat.pages.filter(function(p) { return p.type === 'quiz'; });
+      var tousRepondus = quizPages.every(function(q) {
+        return etat.reponsesQuiz[q.index] !== undefined;
+      });
+
+      if (!tousRepondus) return;
+
+      // Calculer le score total
+      var totalBonnes = 0;
+      var totalQuestions = 0;
+
+      quizPages.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          totalQuestions++;
+          if (rep.correct) totalBonnes++;
+        }
+      });
+
+      etat.totalBonnes = totalBonnes;
+      etat.totalQuestions = totalQuestions;
+
+      // Déterminer le statut
+      var seuil = Math.ceil(totalQuestions / 2);
+      var valide = totalQuestions > 0 && totalBonnes >= seuil;
+
+      etat.statutFinal = valide ? 'valide' : 'non-valide';
+      if (totalQuestions === 0) {
+        etat.statutFinal = 'en-attente';
+      }
+
+      // Mettre à jour la page résultat
+      mettreAJourResultat();
+
+      // Sauvegarder le quiz
+      sauvegarderQuiz();
+    }
+
+    // ============================================================
+    // METTRE À JOUR LE RÉSULTAT
+    // ============================================================
+    function mettreAJourResultat() {
+      var pageResultat = document.querySelector('.page-item.resultat');
+      if (!pageResultat) return;
+
+      var content = pageResultat.querySelector('.page-content');
+      if (!content) return;
+
+      var statut = etat.statutFinal || 'en-attente';
+      var bonnes = etat.totalBonnes || 0;
+      var total = etat.totalQuestions || 0;
+      var pourcentage = total > 0 ? Math.round((bonnes / total) * 100) : 0;
+
+      var icone, titre, sousTitre, classeStatut;
+
+      if (statut === 'valide') {
+        icone = '✅';
+        titre = 'Félicitations !';
+        sousTitre = 'Vous avez validé ce texte avec succès.';
+        classeStatut = 'valide';
+      } else if (statut === 'non-valide') {
+        icone = '📖';
+        titre = 'À relire';
+        sousTitre = 'Prenez le temps de relire ce texte pour mieux le comprendre.';
+        classeStatut = 'non-valide';
+      } else {
+        icone = '⏳';
+        titre = 'En attente';
+        sousTitre = 'Répondez aux quiz pour valider ce texte.';
+        classeStatut = 'en-attente';
+      }
+
+      var html = '';
+      html += '<div class="resultat-icone">' + icone + '</div>';
+      html += '<div class="resultat-titre">' + titre + '</div>';
+      html += '<div class="resultat-sous-titre">' + sousTitre + '</div>';
+
+      if (total > 0) {
+        html += '<div class="resultat-score">' + bonnes + '/' + total + '</div>';
+        html += '<div class="resultat-detail">' + pourcentage + '% de bonnes réponses</div>';
+      } else {
+        html += '<div class="resultat-score">—</div>';
+        html += '<div class="resultat-detail">Aucun quiz à évaluer</div>';
+      }
+
+      html += '<div class="resultat-actions">';
+      html += '<button class="btn-fermer" onclick="fermerLiseuse()">Terminer la lecture</button>';
+      html += '</div>';
+
+      content.innerHTML = html;
+
+      // Mettre à jour le badge
+      var badge = document.getElementById('badgeStatut');
+      badge.textContent = statut === 'valide' ? '✅ Validé' : statut === 'non-valide' ? '📖 À relire' : '⏳ En cours';
+      badge.className = 'badge-statut ' + classeStatut;
+    }
+
+    // ============================================================
+    // SAUVEGARDER LE QUIZ
+    // ============================================================
+    function sauvegarderQuiz() {
+      if (!etat.postId) return;
+
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var titre = etat.post.titre || 'Quiz';
+      var bonnes = etat.totalBonnes || 0;
+      var total = etat.totalQuestions || 0;
+
+      // Construire la chaîne des réponses pour le quiz
+      var choixQcm = '';
+      var quizPages = etat.pages.filter(function(p) { return p.type === 'quiz'; });
+      quizPages.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          if (choixQcm) choixQcm += '|';
+          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
+        }
+      });
+
+      var url = SCRIPT_URL + '?action=saveQuiz' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&titre=' + encodeURIComponent(titre) +
+        '&choixQcm=' + encodeURIComponent(choixQcm) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            console.log('Quiz sauvegardé');
+          }
+        })
+        .catch(function(e) {
+          console.error('Erreur sauvegarde quiz:', e);
+        });
+    }
+
+    // ============================================================
+    // ENVOYER UNE RÉPONSE OUVERTE
+    // ============================================================
+    function envoyerReponseOuverte(index) {
+      var textarea = document.getElementById('openReponse-' + index);
+      if (!textarea) return;
+
+      var reponse = textarea.value.trim();
+      if (!reponse) {
+        alert('Veuillez écrire une réponse.');
+        return;
+      }
+
+      var btn = textarea.parentElement.querySelector('.btn-envoyer-reponse');
+      btn.disabled = true;
+      btn.textContent = 'Envoi...';
+
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+
+      var url = SCRIPT_URL + '?action=saveReponseOuverte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&reponseOuverte=' + encodeURIComponent(reponse);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var confirmation = document.getElementById('openConfirmation-' + index);
+          if (data.success) {
+            confirmation.classList.add('visible');
+            textarea.disabled = true;
+            btn.textContent = '✓ Envoyé';
+            etat.reponseEnvoyee = true;
+          } else {
+            alert('Erreur : ' + (data.message || 'Impossible d\'envoyer la réponse.'));
+            btn.disabled = false;
+            btn.textContent = 'Envoyer la réponse';
+          }
+        })
+        .catch(function(e) {
+          alert('Erreur réseau. Veuillez réessayer.');
+          btn.disabled = false;
+          btn.textContent = 'Envoyer la réponse';
+        });
+    }
+
+    // ============================================================
+    // INITIALISER LES QUIZ
+    // ============================================================
+    function initQuizs() {
+      // Rien à faire, les événements sont liés via onclick
+    }
+
+    // ============================================================
+    // INITIALISER LES QUESTIONS OUVERTES
+    // ============================================================
+    function initOpenQuestions() {
+      // Rien à faire, les événements sont liés via onclick
+    }
+
+    // ============================================================
+    // RÉCUPÉRER LE STATUT EXISTANT
+    // ============================================================
+    function recupererStatutExistant() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+
+      var url = SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) {
+              return r.articleId === etat.postId;
+            });
+
+            if (reponse) {
+              // Si déjà validé, mettre à jour le statut
+              if (reponse.bonnes > 0 && reponse.total > 0) {
+                var seuil = Math.ceil(reponse.total / 2);
+                if (reponse.bonnes >= seuil) {
+                  etat.statutFinal = 'valide';
+                  etat.totalBonnes = reponse.bonnes;
+                  etat.totalQuestions = reponse.total;
+                  mettreAJourResultat();
+                }
+              }
+            }
+          }
+        })
+        .catch(function(e) {
+          console.error('Erreur récupération statut:', e);
+        });
+    }
+
+    // ============================================================
+    // FERMER LA LISEUSE
+    // ============================================================
+    function fermerLiseuse() {
+      window.location.href = '/medit/mes-textes.html';
+    }
+
+    // ============================================================
+    // UTILITAIRE - TROUVER L'INDEX D'UNE PAGE
+    // ============================================================
+    function getPageIndex(quizIndex) {
+      var pages = document.querySelectorAll('.page-item');
+      for (var i = 0; i < pages.length; i++) {
+        var page = etat.pages[i];
+        if (page && page.type === 'quiz' && page.index === quizIndex) {
+          return i;
+        }
+      }
+      return 0;
+    }
+
+    // ============================================================
+    // AFFICHER UNE ERREUR
+    // ============================================================
+    function afficherErreur(message) {
+      var container = document.getElementById('lectureContainer');
+      container.innerHTML = `
+        <div class="lecture-error">
+          <div class="icone">📖</div>
+          <h2>Texte introuvable</h2>
+          <p>${message || 'Le texte que vous recherchez n\'existe pas ou a été supprimé.'}</p>
+          <a href="/medit/mes-textes.html" class="btn-retour">← Retour à mes textes</a>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // EXPOSER LES FONCTIONS GLOBALEMENT
+    // ============================================================
+    window.selectionnerReponse = selectionnerReponse;
+    window.envoyerReponseOuverte = envoyerReponseOuverte;
+    window.fermerLiseuse = fermerLiseuse;
+  </script>
+
+</body>
+</html>
