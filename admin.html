@@ -783,21 +783,20 @@
         }
 
         var apercuHtml = '';
-        if (post.contenu) {
-          var slides = post.contenu.split(' | -s- ');
-          var apercu = slides.slice(0, 3).join(' | ');
-          if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
-          if (slides.length > 3) apercu += ' ...';
-          if (apercu.trim()) {
-            apercuHtml = `
-              <div class="apercu-rapide" id="apercu_${post.id}">
+if (post.contenu) {
+    var slides = post.contenu.split(' | -s- ');
+    var apercu = slides.slice(0, 3).join(' | ');
+    if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
+    if (slides.length > 3) apercu += ' ...';
+    if (apercu.trim()) {
+        apercuHtml = `
+            <div class="apercu-rapide visible" id="apercu_${post.id}">
                 <strong>📖 Aperçu</strong>
                 ${apercu}
-              </div>
-            `;
-          }
-        }
-
+            </div>
+        `;
+    }
+}
         html += `
           <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" 
                onmouseenter="afficherApercu('${post.id}')" onmouseleave="cacherApercu('${post.id}')">
@@ -817,7 +816,6 @@
               ${apercuHtml}
             </div>
             <div class="actions">
-              <button class="btn-apercu" onclick="event.stopPropagation(); toggleApercu('${post.id}')">👁️ Aperçu</button>
               <button onclick="event.stopPropagation(); modifierPost('${post.id}')">✎ Modifier</button>
               <button class="btn-dupliquer" onclick="event.stopPropagation(); dupliquerPost('${post.id}')">📋 Dupliquer</button>
               <button onclick="event.stopPropagation(); exporterPost('${post.id}')">📥 Exporter</button>
