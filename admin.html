@@ -437,33 +437,39 @@
     // ============================================================
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
-      if (!id) { window.location.href = '/medit/index.html'; return; }
+      if (!id) { 
+        window.location.href = '/medit/index.html'; 
+        return; 
+      }
+
+      // === VÉRIFICATION ADMIN ===
+      // Seul l'utilisateur "admin" peut accéder à cette page
+      if (id !== 'admin') {
+        window.location.href = '/medit/mes-textes.html';
+        return;
+      }
+      // ==========================
 
       chargerNiveauxEtCategories();
 
+      // Utiliser DataManager.charger() qui détecte automatiquement l'admin
       DataManager.charger()
         .then(function(data) {
           tousLesPosts = data.posts || [];
           tousLesPosts.forEach(function(p) { if (!p.statut) p.statut = 'publie'; });
           afficherAdmin();
         })
-        .catch(function() {
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            tousLesPosts = cache.posts || [];
-            tousLesPosts.forEach(function(p) { if (!p.statut) p.statut = 'publie'; });
-            afficherAdmin();
-          } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide">
-                <span class="icone">⚠️</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion.</p>
-                <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:30px;cursor:pointer;">Réessayer</button>
-              </div>
-            `;
-          }
+        .catch(function(error) {
+          console.error('Erreur:', error);
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide">
+              <span class="icone">⚠️</span>
+              <h2>Erreur de chargement</h2>
+              <p>${error.message || 'Vérifiez votre connexion.'}</p>
+              <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:30px;cursor:pointer;">Réessayer</button>
+            </div>
+          `;
         });
     }
 
