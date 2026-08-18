@@ -1462,7 +1462,7 @@
     // ============================================================
     // ENREGISTRER
     // ============================================================
-    function enregistrerTexte() {
+       function enregistrerTexte() {
       var id = document.getElementById('editId').value;
       var titre = document.getElementById('inputTitre').value.trim();
       var niveau = document.getElementById('inputNiveau').value;
@@ -1478,49 +1478,67 @@
       if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
       if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
 
-      var contenuFinal = '';
+      // ============================================================
+      // CONSTRUIRE UN TABLEAU DE COLONNES (chaque élément dans sa colonne)
+      // ============================================================
+      var colonnes = [];
 
+      // 1. Slides (chaque slide dans sa propre colonne)
       var slidesReelles = slidesData.filter(function(s, i) { return !slidesIdee[i]; });
-      slidesReelles.forEach(function(slide, index) {
-        if (index === 0) {
-          contenuFinal += '-s- ' + slide;
-        } else {
-          contenuFinal += ' | -s- ' + slide;
-        }
+      slidesReelles.forEach(function(slide) {
+        colonnes.push('-s- ' + slide);
       });
 
+      // 2. Quiz
       quizData.forEach(function(q) {
         if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
-          var chaine = '-q- ' + q.question;
+          colonnes.push('-q- ' + q.question);
           q.reponses.forEach(function(r) {
-            chaine += ' | ' + (r.correct ? '-v- ' : '-f- ') + r.texte;
+            colonnes.push((r.correct ? '-v- ' : '-f- ') + r.texte);
           });
-          contenuFinal += ' | ' + chaine;
         }
       });
 
+      // 3. Questions ouvertes
       openQuestionsData.forEach(function(q) {
         if (q.trim()) {
-          contenuFinal += ' | -qs- ' + q;
+          colonnes.push('-qs- ' + q);
         }
       });
 
+      // 4. Retenir
       if (retenir) {
-        contenuFinal += ' | -r- ' + retenir;
+        colonnes.push('-r- ' + retenir);
       }
 
+      // 5. Infos
       infosData.forEach(function(info) {
         if (info.trim()) {
-          contenuFinal += ' | -i- ' + info;
+          colonnes.push('-i- ' + info);
         }
       });
+      // ============================================================
 
       var btn = document.getElementById('btnEnregistrer');
       btn.textContent = 'Enregistrement...';
       btn.disabled = true;
       msg.style.display = 'none';
 
+      // Construire l'URL avec col1, col2, col3... pour chaque élément
+      var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+        '&titre=' + encodeURIComponent(titre) +
+        '&niveau=' + encodeURIComponent(niveau) +
+        '&categorie=' + encodeURIComponent(categorie) +
+        '&statut=' + encodeURIComponent(statut);
+
+      // Ajouter chaque colonne
+      for (var i = 0; i < colonnes.length; i++) {
+        url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+      }
+
       if (modeEdition && id) {
+        // Pour la modification, on utilise la méthode existante
+        var contenuFinal = colonnes.join(' | ');
         DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenuFinal, '', statut)
           .then(function() {
             afficherMsgTexte('✅ Post mis à jour !', 'success');
@@ -1535,13 +1553,18 @@
             btn.disabled = false;
           });
       } else {
-        DataManager.ajouterPost(titre, parseInt(niveau), categorie, contenuFinal, '')
-          .then(function() {
-            afficherMsgTexte('✅ Post ajouté !', 'success');
-            btn.textContent = 'Ajouter';
-            btn.disabled = false;
-            fermerModalTexte();
-            chargerAdmin();
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✅ Post ajouté !', 'success');
+              btn.textContent = 'Ajouter';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la création');
+            }
           })
           .catch(function(err) {
             afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
@@ -1550,7 +1573,6 @@
           });
       }
     }
-
     function afficherMsgTexte(texte, type) {
       var msg = document.getElementById('messageTexte');
       msg.textContent = texte;
