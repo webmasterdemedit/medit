@@ -12,23 +12,23 @@
   <link rel="stylesheet" href="/medit/article.css" />
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: 'Segoe UI', sans-serif; min-height: 100vh; letter-spacing: 0.2px; display: flex; flex-direction: column; background: #f3f0e9; overflow-y: auto; }
+    html, body { height: 100%; }
+    body { font-family: 'Segoe UI', sans-serif; letter-spacing: 0.2px; display: flex; flex-direction: column; background: #f3f0e9; overflow-y: auto; }
     a { text-decoration: none; color: inherit; }
 
-    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1; width: 100%; overflow-y: auto; }
+    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1 0 auto; width: 100%; overflow-y: auto; }
 
-    .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #d1ccc4; }
+    .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #d1ccc4; flex-wrap: wrap; gap: 10px; }
     .header-admin h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; }
-    .header-admin .btn-ajout { padding: 8px 20px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
+    .header-admin .btn-ajout { padding: 8px 20px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; white-space: nowrap; }
     .header-admin .btn-ajout:hover { background: #e8e5e0; }
 
     .stats-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-radius: 4px; padding: 14px 24px; margin-bottom: 24px; border: 1px solid #d1ccc4; background: #f3f0e9; }
     .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b7a8a; }
     .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; color: #2c2c2c; font-family: 'Georgia', serif; }
     .stats-ligne .sep { color: #d1ccc4; font-size: 18px; }
-        /* ============================================================
-       FILTRES CATÉGORIES - style identique à mes-textes
-       ============================================================ */
+
+    /* FILTRES CATÉGORIES - style identique à mes-textes */
     .filtres-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 4px 0; }
     .filtre-cat-btn { padding: 6px 18px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; color: #6b7a8a; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
     .filtre-cat-btn:hover { background: #e8e5e0; color: #2c2c2c; }
@@ -42,9 +42,6 @@
     .tab-btn.active { color: #2c2c2c; border-bottom-color: #2c2c2c; font-weight: 600; }
     .tab-btn .compteur-tab { display: inline-block; background: #e8e5e0; color: #6b7a8a; font-size: 11px; font-weight: 600; padding: 0 10px; border-radius: 30px; margin-left: 6px; line-height: 20px; }
     .tab-btn.active .compteur-tab { background: #e8e5e0; color: #2c2c2c; }
-
-    .tab-content { display: none; }
-    .tab-content.active { display: block; }
 
     .grille { display: flex; flex-direction: column; gap: 10px; }
     .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; }
@@ -96,7 +93,7 @@
     .slide-item .btn-del-slide { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 14px; }
     .slide-item .btn-del-slide:hover { color: #2c2c2c; }
 
-    /* SLIDE IDÉE (italique + gris) */
+    /* SLIDE IDÉE */
     .slide-item.idee .slide-texte { font-style: italic; color: #b8b0a8; }
 
     .btn-composer { padding: 6px 16px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 4px 0; }
@@ -126,7 +123,7 @@
     .open-question-item .btn-del-open { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; position: absolute; top: 4px; right: 0; }
     .open-question-item .btn-del-open:hover { color: #2c2c2c; }
 
-    /* RETENIR - fermé par défaut */
+    /* RETENIR */
     .retenir-container { margin: 8px 0; }
     .retenir-champs { display: none; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
     .retenir-champs.open { display: flex; }
@@ -157,7 +154,7 @@
     .message.success { display: block; color: #2c2c2c; background: #e8e5e0; }
     .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
 
-    /* COMPOSEUR PLEIN ÉCRAN - fond blanc */
+    /* COMPOSEUR */
     .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
     .composer-overlay.visible { display: flex; }
     .composer-content { background: #ffffff; border: none; border-radius: 0; max-width: 100%; width: 100%; height: 100%; padding: 40px 60px; position: relative; font-family: 'Georgia', serif; }
@@ -215,7 +212,7 @@
       <div class="stat-item"><span>Brouillons :</span><span class="nombre" id="brouillonsPosts">0</span></div>
     </div>
 
-            <!-- FILTRES PAR CATÉGORIE -->
+    <!-- FILTRES PAR CATÉGORIE -->
     <div class="filtres-container" id="filtresCategories">
       <button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie('toutes')">Toutes <span class="compteur-cat" id="catToutes">0</span></button>
     </div>
@@ -256,7 +253,6 @@
         <div class="slides-list" id="slidesList"></div>
         <button type="button" class="btn-composer" onclick="ouvrirComposeur()">✎ Composer</button>
         <button type="button" class="btn-add" onclick="ajouterSlide()" style="margin-left:8px;">+ slide</button>
-    
 
         <!-- QUIZ -->
         <div class="section-title">Quiz</div>
@@ -268,7 +264,7 @@
         <div class="open-questions-list" id="openQuestionsList"></div>
         <button type="button" class="btn-add" onclick="ajouterQuestionOuverte()">+ question ouverte</button>
 
-        <!-- RETENIR - fermé par défaut -->
+        <!-- RETENIR -->
         <div class="section-title">À retenir</div>
         <div class="retenir-container">
           <button type="button" class="btn-add" onclick="toggleRetenir()">+ mémo</button>
@@ -457,21 +453,29 @@
         return; 
       }
 
-      // === VÉRIFICATION ADMIN ===
-      // Seul l'utilisateur "admin" peut accéder à cette page
       if (id !== 'admin') {
         window.location.href = '/medit/mes-textes.html';
         return;
       }
-      // ==========================
 
       chargerNiveauxEtCategories();
 
-      // Utiliser DataManager.charger() qui détecte automatiquement l'admin
       DataManager.charger()
         .then(function(data) {
           tousLesPosts = data.posts || [];
-          tousLesPosts.forEach(function(p) { if (!p.statut) p.statut = 'publie'; });
+          
+          // Nettoyer les statuts
+          tousLesPosts.forEach(function(p) {
+            if (!p.statut) {
+              p.statut = 'publie';
+            } else {
+              p.statut = p.statut.trim().toLowerCase();
+            }
+            if (p.statut !== 'publie' && p.statut !== 'brouillon') {
+              p.statut = 'publie';
+            }
+          });
+          
           afficherAdmin();
         })
         .catch(function(error) {
@@ -488,7 +492,10 @@
         });
     }
 
-        function afficherAdmin() {
+    // ============================================================
+    // AFFICHER ADMIN
+    // ============================================================
+    function afficherAdmin() {
       document.getElementById('loader').style.display = 'none';
 
       var total = tousLesPosts.length;
@@ -502,29 +509,30 @@
       document.getElementById('compteurPublies').textContent = publies;
       document.getElementById('compteurBrouillons').textContent = brouillons;
 
-      // === GÉNÉRER LES FILTRES DE CATÉGORIES ===
       genererFiltresCategories();
-      // =========================================
 
-      // Filtrer par statut (Tous / Publiés / Brouillons)
+      // Filtrer par statut
       var postsFiltres = [];
       if (ongletActuel === 'tous') {
         postsFiltres = tousLesPosts.slice();
       } else if (ongletActuel === 'publies') {
         postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'publie'; });
-      } else {
+      } else if (ongletActuel === 'brouillons') {
         postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
       }
 
-      // === FILTRER PAR CATÉGORIE ===
+      // Filtrer par catégorie
       if (categorieActuelle !== 'toutes') {
         postsFiltres = postsFiltres.filter(function(p) { return p.categorie === categorieActuelle; });
       }
-      // ==============================
 
       afficherPosts(postsFiltres);
     }
-            function afficherPosts(posts) {
+
+    // ============================================================
+    // AFFICHER POSTS
+    // ============================================================
+    function afficherPosts(posts) {
       var container = document.getElementById('contenu');
 
       if (posts.length === 0) {
@@ -567,39 +575,58 @@
       html += '</div>';
       container.innerHTML = html;
     }
+
+    // ============================================================
+    // SWITCH TAB
+    // ============================================================
     function switchTab(tab) {
       ongletActuel = tab;
+      
       document.querySelectorAll('.tab-btn').forEach(function(el) {
         el.classList.remove('active');
-        if (el.dataset.tab === tab) el.classList.add('active');
+        if (el.dataset.tab === tab) {
+          el.classList.add('active');
+        }
       });
+      
       afficherAdmin();
     }
-        // ============================================================
+
+    // ============================================================
     // FILTRER PAR CATÉGORIE
     // ============================================================
     function filtrerParCategorie(cat) {
       categorieActuelle = cat;
+      
       document.querySelectorAll('.filtre-cat-btn').forEach(function(el) {
         el.classList.remove('active');
-        if (el.dataset.cat === cat) el.classList.add('active');
-      });
-      afficherAdmin();
-    }
-
-    function genererFiltresCategories() {
-      var cats = {};
-      tousLesPosts.forEach(function(post) {
-        if (post.categorie) {
-          cats[post.categorie] = (cats[post.categorie] || 0) + 1;
+        if (el.dataset.cat === cat) {
+          el.classList.add('active');
         }
       });
       
-      var container = document.getElementById('filtresCategories');
-      var html = '<button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie(\'toutes\')">Toutes <span class="compteur-cat" id="catToutes">' + tousLesPosts.length + '</span></button>';
+      afficherAdmin();
+    }
+
+    // ============================================================
+    // GÉNÉRER FILTRES CATÉGORIES
+    // ============================================================
+    function genererFiltresCategories() {
+      var cats = {};
       
-      var keys = Object.keys(cats).sort();
-      keys.forEach(function(cat) {
+      tousLesPosts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!cats[cat]) cats[cat] = 0;
+        cats[cat]++;
+      });
+      
+      var container = document.getElementById('filtresCategories');
+      var total = tousLesPosts.length;
+      
+      var html = '<button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie(\'toutes\')">Toutes <span class="compteur-cat">' + total + '</span></button>';
+      
+      var categoriesTriees = Object.keys(cats).sort();
+      categoriesTriees.forEach(function(cat) {
         var count = cats[cat];
         var activeClass = (categorieActuelle === cat) ? ' active' : '';
         html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span></button>';
@@ -664,7 +691,7 @@
     }
 
     // ============================================================
-    // SLIDES - DRAG & DROP
+    // SLIDES
     // ============================================================
     var dragIndex = null;
 
@@ -706,18 +733,9 @@
       });
     }
 
-    // ============================================================
-    // SLIDES
-    // ============================================================
     function ajouterSlide() {
       slidesData.push('');
       slidesIdee.push(false);
-      afficherSlides();
-    }
-
-    function ajouterIdee() {
-      slidesData.push('');
-      slidesIdee.push(true);
       afficherSlides();
     }
 
@@ -804,84 +822,7 @@
     }
 
     // ============================================================
-    // RACCOURCIS CLAVIER
-    // ============================================================
-    document.addEventListener('keydown', function(e) {
-      if (e.ctrlKey && e.key === 'Backspace') {
-        var active = document.activeElement;
-        if (active) {
-          var slideItem = active.closest('.slide-item');
-          if (slideItem) {
-            var index = Array.from(slideItem.parentElement.children).indexOf(slideItem);
-            if (index >= 0 && slidesData.length > 1) {
-              supprimerSlide(index);
-              e.preventDefault();
-              return;
-            }
-          }
-          var quizItem = active.closest('.quiz-item');
-          if (quizItem) {
-            var index = Array.from(quizItem.parentElement.children).indexOf(quizItem);
-            if (index >= 0 && quizData.length > 1) {
-              supprimerQuestion(index);
-              e.preventDefault();
-              return;
-            }
-          }
-          var openItem = active.closest('.open-question-item');
-          if (openItem) {
-            var index = Array.from(openItem.parentElement.children).indexOf(openItem);
-            if (index >= 0 && openQuestionsData.length > 1) {
-              supprimerQuestionOuverte(index);
-              e.preventDefault();
-              return;
-            }
-          }
-          var infoItem = active.closest('.info-item');
-          if (infoItem) {
-            var index = Array.from(infoItem.parentElement.children).indexOf(infoItem);
-            if (index >= 0 && infosData.length > 1) {
-              supprimerInfo(index);
-              e.preventDefault();
-              return;
-            }
-          }
-        }
-      }
-
-      if (e.ctrlKey && e.key === '=') {
-        var active = document.activeElement;
-        if (active) {
-          var slidesList = active.closest('#slidesList');
-          if (slidesList) { ajouterSlide(); e.preventDefault(); return; }
-          var quizList = active.closest('#quizList');
-          if (quizList) { ajouterQuestion(); e.preventDefault(); return; }
-          var openList = active.closest('#openQuestionsList');
-          if (openList) { ajouterQuestionOuverte(); e.preventDefault(); return; }
-          var infosList = active.closest('#infosList');
-          if (infosList) { ajouterInfo(); e.preventDefault(); return; }
-        }
-      }
-
-      if (e.key === 'Tab') {
-        var active = document.activeElement;
-        if (active) {
-          var vfBtn = active.closest('.vf-btn');
-          if (vfBtn) {
-            e.preventDefault();
-            var inputs = Array.from(document.querySelectorAll('#formTexte input:not([type="hidden"]), #formTexte textarea, #formTexte select'));
-            var idx = inputs.indexOf(active);
-            if (idx >= 0 && idx < inputs.length - 1) {
-              inputs[idx + 1].focus();
-            }
-            return;
-          }
-        }
-      }
-    });
-
-    // ============================================================
-    // RETENIR - TOGGLE
+    // RETENIR
     // ============================================================
     function toggleRetenir() {
       retenirOpen = !retenirOpen;
@@ -1054,7 +995,6 @@
       var titre = document.getElementById('inputTitre').value.trim();
       var niveau = document.getElementById('inputNiveau').value;
       var categorie = document.getElementById('inputCategorie').value;
-      var date = document.getElementById('inputDate').value;
       var statut = estBrouillon ? 'brouillon' : 'publie';
       var msg = document.getElementById('messageTexte');
 
@@ -1068,7 +1008,6 @@
 
       var contenuFinal = '';
 
-      // Slides : on prend seulement les slides qui ne sont pas des idées
       var slidesReelles = slidesData.filter(function(s, i) { return !slidesIdee[i]; });
       slidesReelles.forEach(function(slide, index) {
         if (index === 0) {
