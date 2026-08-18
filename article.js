@@ -143,19 +143,16 @@ function afficherSlide(index) {
     var wrapper = document.getElementById('slideWrapper');
     var slideText = slides[index] || 'Slide vide';
     
-    // Créer le contenu de la slide
+    // Nettoyer le texte des retours à la ligne et caractères spéciaux
+    slideText = slideText.replace(/\n/g, '<br>');
+    slideText = slideText.replace(/"/g, '&quot;');
+    
     wrapper.innerHTML = '<div class="paragraphe-item"><div class="slide-content">' + slideText + '</div></div>';
     
-    // Mettre à jour le compteur
     document.getElementById('compteur').textContent = (index + 1) + ' / ' + slides.length;
-    
-    // Mettre à jour les points (dots)
     mettreAJourDots();
-    
-    // Vérifier les annotations
     verifierAnnotation(index);
     
-    // Afficher le quiz si on est sur la dernière slide
     var slideQuiz = document.getElementById('slideQuiz');
     if (index === slides.length - 1 && (quizData.length > 0 || questionOuverte)) {
         slideQuiz.style.display = 'block';
