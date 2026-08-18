@@ -496,39 +496,41 @@
     // AFFICHER ADMIN
     // ============================================================
     function afficherAdmin() {
-      document.getElementById('loader').style.display = 'none';
+  var loader = document.getElementById('loader');
+  if (loader) {
+    loader.style.display = 'none';
+  }
 
-      var total = tousLesPosts.length;
-      var publies = tousLesPosts.filter(function(p) { return p.statut === 'publie'; }).length;
-      var brouillons = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; }).length;
+  var total = tousLesPosts.length;
+  var publies = tousLesPosts.filter(function(p) { return p.statut === 'publie'; }).length;
+  var brouillons = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; }).length;
 
-      document.getElementById('totalPosts').textContent = total;
-      document.getElementById('publiesPosts').textContent = publies;
-      document.getElementById('brouillonsPosts').textContent = brouillons;
-      document.getElementById('compteurTous').textContent = total;
-      document.getElementById('compteurPublies').textContent = publies;
-      document.getElementById('compteurBrouillons').textContent = brouillons;
+  document.getElementById('totalPosts').textContent = total;
+  document.getElementById('publiesPosts').textContent = publies;
+  document.getElementById('brouillonsPosts').textContent = brouillons;
+  document.getElementById('compteurTous').textContent = total;
+  document.getElementById('compteurPublies').textContent = publies;
+  document.getElementById('compteurBrouillons').textContent = brouillons;
 
-      genererFiltresCategories();
+  genererFiltresCategories();
 
-      // Filtrer par statut
-      var postsFiltres = [];
-      if (ongletActuel === 'tous') {
-        postsFiltres = tousLesPosts.slice();
-      } else if (ongletActuel === 'publies') {
-        postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'publie'; });
-      } else if (ongletActuel === 'brouillons') {
-        postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
-      }
+  // Filtrer par statut
+  var postsFiltres = [];
+  if (ongletActuel === 'tous') {
+    postsFiltres = tousLesPosts.slice();
+  } else if (ongletActuel === 'publies') {
+    postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'publie'; });
+  } else if (ongletActuel === 'brouillons') {
+    postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
+  }
 
-      // Filtrer par catégorie
-      if (categorieActuelle !== 'toutes') {
-        postsFiltres = postsFiltres.filter(function(p) { return p.categorie === categorieActuelle; });
-      }
+  // Filtrer par catégorie
+  if (categorieActuelle !== 'toutes') {
+    postsFiltres = postsFiltres.filter(function(p) { return p.categorie === categorieActuelle; });
+  }
 
-      afficherPosts(postsFiltres);
-    }
-
+  afficherPosts(postsFiltres);
+}
     // ============================================================
     // AFFICHER POSTS
     // ============================================================
