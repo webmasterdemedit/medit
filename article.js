@@ -45,87 +45,131 @@ function parserContenu(post) {
     return parserAncienFormat(post.contenu);
   }
 
-  var quiz = null;
+  var quizEnCours = null;
 
   for (var i = 0; i < colonnes.length; i++) {
     var c = (colonnes[i] || '').trim();
     if (!c) continue;
 
+    // --- SLIDE ---
     if (c.startsWith('-s-')) {
-      if (quiz) { result.quiz.push(quiz); quiz = null; }
-      result.slides.push(c.substring(3).trim());
+      // Si un quiz était en cours, on le finalise
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
+      var texte = c.substring(3).trim();
+      if (texte) result.slides.push(texte);
     }
+
+    // --- QUESTION QCM ---
     else if (c.startsWith('-q-')) {
-      if (quiz) { result.quiz.push(quiz); quiz = null; }
-      quiz = { question: c.substring(3).trim(), reponses: [] };
+      // Si un quiz était en cours, on le finalise
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
+      var question = c.substring(3).trim();
+      if (question) {
+        quizEnCours = {
+          question: question,
+          bonnes: [],
+          mauvaises: []
+        };
+      }
     }
-    else if (c.startsWith('-v-') && quiz) {
-      quiz.reponses.push({ texte: c.substring(3).trim(), correct: true });
+
+    // --- BONNE RÉPONSE ---
+    else if (c.startsWith('-v-') && quizEnCours) {
+      var bonne = c.substring(3).trim();
+      if (bonne) quizEnCours.bonnes.push(bonne);
     }
-    else if (c.startsWith('-f-') && quiz) {
-      quiz.reponses.push({ texte: c.substring(3).trim(), correct: false });
+
+    // --- MAUVAISE RÉPONSE ---
+    else if (c.startsWith('-f-') && quizEnCours) {
+      var mauvaise = c.substring(3).trim();
+      if (mauvaise) quizEnCours.mauvaises.push(mauvaise);
     }
+
+    // --- QUESTION OUVERTE ---
     else if (c.startsWith('-qs-')) {
-      if (quiz) { result.quiz.push(quiz); quiz = null; }
-      result.questionsOuvertes.push(c.substring(4).trim());
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
+      var qs = c.substring(4).trim();
+      if (qs) result.questionsOuvertes.push(qs);
     }
+
+    // --- À RETENIR ---
     else if (c.startsWith('-r-')) {
-      if (quiz) { result.quiz.push(quiz); quiz = null; }
-      var mots = c.substring(3).trim().split(',').map(function(m) { return m.trim(); });
-      result.retenir = result.retenir.concat(mots.filter(function(m) { return m.length > 0; }));
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
+      var retenir = c.substring(3).trim();
+      if (retenir) {
+        var mots = retenir.split(',').map(function(m) { return m.trim(); });
+        result.retenir = result.retenir.concat(mots.filter(function(m) { return m.length > 0; }));
+      }
     }
+
+    // --- INFO ---
     else if (c.startsWith('-i-')) {
-      if (quiz) { result.quiz.push(quiz); quiz = null; }
-      result.infos.push(c.substring(3).trim());
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
+      var info = c.substring(3).trim();
+      if (info) result.infos.push(info);
     }
   }
 
-  if (quiz) result.quiz.push(quiz);
-  
-  // Nettoyer les quiz
-  result.quiz = result.quiz.filter(function(q) {
-    if (q.reponses.length < 2) {
-      if (q.reponses.length === 0) {
-        q.reponses = [{ texte: 'Vrai', correct: true }, { texte: 'Faux', correct: false }];
-      } else {
-        var aVrai = q.reponses.some(function(r) { return r.correct; });
-        q.reponses.push({ texte: aVrai ? 'Autre' : 'Vrai', correct: !aVrai });
-      }
-    }
-    var aVrai = q.reponses.some(function(r) { return r.correct; });
-    if (!aVrai) q.reponses[0].correct = true;
-    return q.question && q.question.length > 0;
-  });
+  // Finaliser le dernier quiz s'il existe
+  if (quizEnCours) {
+    result.quiz.push(quizEnCours);
+  }
 
   return result;
 }
 
-// Fallback ancien format
+// Fallback ancien format (q:, r:, question:, mémo:)
 function parserAncienFormat(contenu) {
   var result = { slides: [], quiz: [], questionsOuvertes: [], retenir: [], infos: [] };
   if (!contenu) return result;
   
   var blocs = contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
-  var quiz = null;
+  var quizEnCours = null;
 
   blocs.forEach(function(bloc) {
     var b = bloc.trim();
 
     if (b.startsWith('q:')) {
-      if (quiz) result.quiz.push(quiz);
+      if (quizEnCours) {
+        result.quiz.push(quizEnCours);
+        quizEnCours = null;
+      }
       var lignes = b.split('\n').filter(function(l) { return l.trim(); });
-      quiz = { question: lignes[0].substring(2).trim(), reponses: [] };
+      quizEnCours = {
+        question: lignes[0].substring(2).trim(),
+        bonnes: [],
+        mauvaises: []
+      };
       for (var i = 1; i < lignes.length; i++) {
         var l = lignes[i].trim();
         if (l.startsWith('r:')) {
-          quiz.reponses.push({ texte: l.substring(2).trim(), correct: quiz.reponses.length === 0 });
+          var rep = l.substring(2).trim();
+          if (rep) {
+            if (quizEnCours.bonnes.length === 0) {
+              quizEnCours.bonnes.push(rep);
+            } else {
+              quizEnCours.mauvaises.push(rep);
+            }
+          }
         }
       }
-      if (quiz.reponses.length < 2) quiz.reponses.push({ texte: 'Autre', correct: false });
-      var aVrai = quiz.reponses.some(function(r) { return r.correct; });
-      if (!aVrai) quiz.reponses[0].correct = true;
-      result.quiz.push(quiz);
-      quiz = null;
+      result.quiz.push(quizEnCours);
+      quizEnCours = null;
     }
     else if (b.startsWith('question:')) {
       var qs = b.substring(9).trim();
@@ -143,7 +187,7 @@ function parserAncienFormat(contenu) {
     }
   });
 
-  if (quiz) result.quiz.push(quiz);
+  if (quizEnCours) result.quiz.push(quizEnCours);
   return result;
 }
 
@@ -314,7 +358,7 @@ function afficherArticle(post) {
   });
 
   data.quiz.forEach(function(q) {
-    slides.push({ type: 'quiz', data: { questions: [q] } });
+    slides.push({ type: 'quiz', data: { quiz: q } });
   });
 
   data.questionsOuvertes.forEach(function(q) {
@@ -434,30 +478,39 @@ function genererSlideTexte(data) {
 }
 
 function genererSlideQuiz(data) {
+  var q = data.quiz;
   var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
-  data.questions.forEach(function(q, idx) {
-    var qId = 'q' + (idx + 1);
-    html += '<div class="quiz-question" data-question="' + qId + '" data-index="' + idx + '">';
-    html += '<p><strong>' + (idx + 1) + '. ' + q.question + '</strong></p>';
-    
-    // Mélanger les réponses pour plus d'équité
-    var options = q.reponses.map(function(r, i) { return { texte: r.texte, correct: r.correct, index: i }; });
-    // Mélange aléatoire
-    for (var i = options.length - 1; i > 0; i--) {
-      var j = Math.floor(Math.random() * (i + 1));
-      var temp = options[i];
-      options[i] = options[j];
-      options[j] = temp;
-    }
-    
-    options.forEach(function(opt) {
-      var isCorrect = opt.correct ? 'data-correct="true"' : '';
-      html += '<label><input type="radio" name="' + qId + '" value="' + opt.texte + '" ' + isCorrect + '>' + opt.texte + '</label>';
-    });
-    html += '<div class="quiz-feedback" id="feedback_' + qId + '"></div>';
-    html += '</div>';
+  
+  // Construire toutes les réponses (bonnes + mauvaises)
+  var toutesReponses = [];
+  q.bonnes.forEach(function(b) {
+    toutesReponses.push({ texte: b, correct: true });
   });
-  html += '<div id="quiz-result"><p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">' + data.questions.length + '</span></p><p id="quiz-message"></p></div>';
+  q.mauvaises.forEach(function(m) {
+    toutesReponses.push({ texte: m, correct: false });
+  });
+
+  // Mélanger aléatoirement
+  for (var i = toutesReponses.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var temp = toutesReponses[i];
+    toutesReponses[i] = toutesReponses[j];
+    toutesReponses[j] = temp;
+  }
+
+  var qId = 'q1';
+  html += '<div class="quiz-question" data-question="' + qId + '" data-index="0">';
+  html += '<p><strong>' + q.question + '</strong></p>';
+  
+  toutesReponses.forEach(function(opt) {
+    var isCorrect = opt.correct ? 'data-correct="true"' : '';
+    html += '<label><input type="radio" name="' + qId + '" value="' + opt.texte + '" ' + isCorrect + '>' + opt.texte + '</label>';
+  });
+  
+  html += '<div class="quiz-feedback" id="feedback_' + qId + '"></div>';
+  html += '</div>';
+  
+  html += '<div id="quiz-result"><p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">1</span></p><p id="quiz-message"></p></div>';
   html += '</div>';
   return html;
 }
