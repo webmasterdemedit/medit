@@ -862,4 +862,465 @@ function miseAJourCacheLecture(nom, articleId) {
   
   var reponseExistante = false;
   if (cache.reponses) {
-    for (var i = 0
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === articleId) {
+        cache.reponses[i].bonnes = 1;
+        cache.reponses[i].total = 1;
+        cache.reponses[i].date = new Date().toISOString();
+        cache.reponses[i].reponseOuverte = 'Lu';
+        cache.reponses[i].dateEnvoi = new Date().toISOString();
+        reponseExistante = true;
+        break;
+      }
+    }
+  }
+  
+  if (!reponseExistante) {
+    if (!cache.reponses) cache.reponses = [];
+    cache.reponses.push({
+      articleId: articleId,
+      titre: postTitre || 'Méditation',
+      bonnes: 1,
+      total: 1,
+      date: new Date().toISOString(),
+      temps: '',
+      reponseOuverte: 'Lu',
+      dateEnvoi: new Date().toISOString(),
+      dureeTotale: ''
+    });
+  }
+  
+  if (cache.historique) {
+    var histoExistante = false;
+    for (var j = 0; j < cache.historique.length; j++) {
+      if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
+        cache.historique[j].bonnes = 1;
+        cache.historique[j].total = 1;
+        cache.historique[j].date = new Date().toISOString();
+        cache.historique[j].valide = true;
+        cache.historique[j].reponseOuverte = 'Lu';
+        cache.historique[j].dateEnvoi = new Date().toISOString();
+        histoExistante = true;
+        break;
+      }
+    }
+    if (!histoExistante) {
+      cache.historique.push({
+        date: new Date().toISOString(),
+        titre: postTitre || 'Méditation',
+        bonnes: 1,
+        total: 1,
+        valide: true,
+        temps: '',
+        reponseOuverte: 'Lu',
+        dateEnvoi: new Date().toISOString(),
+        dureeTotale: ''
+      });
+    }
+  }
+  
+  DataManager.setCache(nom, cache);
+  console.log('✅ Cache local mis à jour pour "J\'ai lu"');
+}
+
+// ============================================================
+// BOUTON "J'AI LU"
+// ============================================================
+function marquerCommeLu() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    afficherNotification('⚠️ Veuillez vous reconnecter.');
+    return;
+  }
+
+  var cache = DataManager.getCacheForce(nom);
+  if (cache && cache.reponses) {
+    for (var i = 0; i < cache.reponses.length; i++) {
+      if (cache.reponses[i].articleId === postId) {
+        if (cache.reponses[i].bonnes === 1 && cache.reponses[i].total === 1) {
+          afficherNotification('📖 Déjà marqué comme lu.');
+          return;
+        }
+      }
+    }
+  }
+
+  var url = CONFIG.SCRIPT_URL + '?action=saveLecture&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&titre=' + encodeURIComponent(postTitre);
+
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        afficherNotification('📖 Lecture enregistrée !');
+        miseAJourCacheLecture(nom, postId);
+        quizValide = true;
+        reponseValidee = true;
+        updateSlides();
+        setTimeout(function() { window.location.href = '/medit/mes-textes.html'; }, 1500);
+      } else {
+        afficherNotification('⚠️ Erreur : ' + (data.message || ''));
+      }
+    })
+    .catch(function() {
+      afficherNotification('⚠️ Erreur réseau.');
+    });
+}
+
+// ============================================================
+// QUIZ
+// ============================================================
+function verifierQuizAuto() {
+  if (quizVerrouille) return;
+
+  var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+  var total = questions.length;
+  var correct = 0;
+  var toutesRepondues = true;
+  var choixQcm = [];
+
+  questions.forEach(function(q) {
+    var qId = q.getAttribute('data-question');
+    var radios = q.querySelectorAll('input[type="radio"]');
+    var feedback = document.getElementById('feedback_' + qId);
+    var labels = q.querySelectorAll('label');
+    var selected = null;
+    var reponseChoisie = '';
+
+    labels.forEach(function(l) { l.classList.remove('correct', 'incorrect'); });
+
+    radios.forEach(function(r) {
+      if (r.checked) {
+        selected = r;
+        reponseChoisie = r.value;
+      }
+    });
+
+    choixQcm.push(reponseChoisie);
+
+    if (selected) {
+      var isCorrect = selected.getAttribute('data-correct') === 'true';
+      if (isCorrect) {
+        correct++;
+        feedback.className = 'quiz-feedback correct';
+        feedback.textContent = '✓ Bonne réponse.';
+        labels.forEach(function(l) {
+          var r = l.querySelector('input[type="radio"]');
+          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
+        });
+      } else {
+        feedback.className = 'quiz-feedback incorrect';
+        feedback.textContent = '✗ Réessayez, relisez le texte.';
+        selected.closest('label').classList.add('incorrect');
+        labels.forEach(function(l) {
+          var r = l.querySelector('input[type="radio"]');
+          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
+        });
+      }
+    } else {
+      toutesRepondues = false;
+      feedback.className = 'quiz-feedback incorrect';
+      feedback.textContent = 'Sélectionnez une réponse.';
+    }
+  });
+
+  var resultDiv = document.getElementById('quiz-result');
+  resultDiv.style.display = 'block';
+  document.getElementById('quiz-score').textContent = correct;
+  document.getElementById('quiz-total').textContent = total;
+
+  var msg = document.getElementById('quiz-message');
+  if (!toutesRepondues) {
+    msg.textContent = 'Répondez à toutes les questions.';
+    msg.style.color = '#b8956a';
+    return;
+  }
+
+  quizVerrouille = true;
+  questions.forEach(function(q) {
+    q.classList.add('verrouille');
+    var radios = q.querySelectorAll('input[type="radio"]');
+    radios.forEach(function(r) { r.disabled = true; });
+  });
+
+  quizData.choixQcm = choixQcm;
+  quizData.bonnes = correct;
+  quizData.total = total;
+
+  if (correct === total) {
+    msg.textContent = 'Parfait !';
+    msg.style.color = '#2d6a4f';
+    quizValide = true;
+    sauvegarderQuiz();
+    updateSlides();
+    setTimeout(function() {
+      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+    }, 1200);
+  } else if (correct >= Math.ceil(total / 2)) {
+    msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
+    msg.style.color = '#b8956a';
+    quizValide = true;
+    sauvegarderQuiz();
+    updateSlides();
+    setTimeout(function() {
+      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+    }, 1200);
+  } else {
+    msg.textContent = 'Prenez le temps de relire la méditation.';
+    msg.style.color = '#c62828';
+  }
+}
+
+// ============================================================
+// ÉCOUTE DES RADIOS
+// ============================================================
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
+    var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+    var toutesRepondues = true;
+    questions.forEach(function(q) {
+      var radios = q.querySelectorAll('input[type="radio"]');
+      var repondu = false;
+      radios.forEach(function(r) { if (r.checked) repondu = true; });
+      if (!repondu) toutesRepondues = false;
+    });
+    if (toutesRepondues && questions.length > 0) {
+      setTimeout(verifierQuizAuto, 400);
+    }
+  }
+});
+
+// ============================================================
+// SWIPE TACTILE
+// ============================================================
+var touchStartX = 0;
+var touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  var diff = touchStartX - touchEndX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) {
+      slideSuivant();
+    } else {
+      slidePrecedent();
+    }
+  }
+}, { passive: true });
+
+// ============================================================
+// CLAVIER
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slidePrecedent(); }
+});
+
+// ============================================================
+// SYSTÈME D'ANNOTATION
+// ============================================================
+var annotationText = '';
+var annotationPopupOpen = false;
+var annotationSlideIndex = -1;
+
+function initAnnotationSystem() {
+  var popup = document.getElementById('annotatePopup');
+  if (!popup) return;
+
+  var btn = document.getElementById('btnAnnotate');
+  var close = document.getElementById('annotateClose');
+  var textarea = document.getElementById('annotateTextarea');
+
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      toggleAnnotationPopup();
+    });
+  }
+
+  if (close) {
+    close.addEventListener('click', function() {
+      closeAnnotationPopup();
+    });
+  }
+
+  document.addEventListener('click', function(e) {
+    if (annotationPopupOpen && 
+        !e.target.closest('.annotate-popup') && 
+        !e.target.closest('.btn-annotate')) {
+      closeAnnotationPopup();
+    }
+  });
+
+  if (textarea) {
+    textarea.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
+        e.preventDefault();
+        closeAnnotationPopup();
+      }
+      if (e.key === 'Escape') {
+        closeAnnotationPopup();
+      }
+    });
+  }
+
+  updateAnnotationButtonColor();
+}
+
+function toggleAnnotationPopup() {
+  if (annotationPopupOpen) {
+    closeAnnotationPopup();
+  } else {
+    openAnnotationPopup();
+  }
+}
+
+function openAnnotationPopup() {
+  var popup = document.getElementById('annotatePopup');
+  var textarea = document.getElementById('annotateTextarea');
+  var slideNum = document.getElementById('annotateSlideNum');
+
+  if (!popup) return;
+
+  if (slideNum) {
+    slideNum.textContent = slideIndex + 1;
+  }
+
+  if (textarea) {
+    var nom = localStorage.getItem('etudiant_id');
+    var cache = DataManager.getCacheForce(nom);
+    if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
+      annotationText = cache.annotations[postId][slideIndex];
+    } else {
+      annotationText = '';
+    }
+    textarea.value = annotationText;
+    textarea.focus();
+    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
+  }
+
+  annotationPopupOpen = true;
+  annotationSlideIndex = slideIndex;
+  popup.classList.add('open');
+}
+
+function closeAnnotationPopup() {
+  var popup = document.getElementById('annotatePopup');
+  var textarea = document.getElementById('annotateTextarea');
+
+  if (textarea) {
+    sauvegarderAnnotation(textarea.value);
+  }
+
+  annotationPopupOpen = false;
+  if (popup) popup.classList.remove('open');
+}
+
+function sauvegarderAnnotation(texte) {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) return;
+
+  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
+    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
+    return;
+  }
+
+  var btn = document.getElementById('btnAnnotate');
+  if (btn) {
+    if (texte && texte.trim().length > 0) {
+      btn.classList.add('has-note');
+    } else {
+      btn.classList.remove('has-note');
+    }
+  }
+
+  var cache = DataManager.getCacheForce(nom);
+  if (!cache) cache = {};
+  if (!cache.annotations) cache.annotations = {};
+  if (!cache.annotations[postId]) cache.annotations[postId] = {};
+  
+  cache.annotations[postId][slideIndex] = texte;
+  DataManager.setCache(nom, cache);
+
+  var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&slide=' + encodeURIComponent(slideIndex) +
+    '&annotation=' + encodeURIComponent(texte);
+
+  fetch(url).catch(function() {});
+}
+
+function chargerAnnotation() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    annotationText = '';
+    return;
+  }
+
+  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
+    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
+    return;
+  }
+
+  var cache = DataManager.getCacheForce(nom);
+  if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
+    annotationText = cache.annotations[postId][slideIndex];
+  } else {
+    annotationText = '';
+  }
+
+  var btn = document.getElementById('btnAnnotate');
+  if (btn) {
+    if (annotationText && annotationText.trim().length > 0) {
+      btn.classList.add('has-note');
+    } else {
+      btn.classList.remove('has-note');
+    }
+  }
+
+  if (annotationPopupOpen) {
+    var textarea = document.getElementById('annotateTextarea');
+    if (textarea) {
+      textarea.value = annotationText;
+    }
+  }
+}
+
+function updateAnnotationButtonColor() {
+  var btn = document.getElementById('btnAnnotate');
+  if (!btn) return;
+  
+  var isSpecial = document.querySelector('.blog-article.special') !== null;
+  
+  if (isSpecial) {
+    btn.classList.add('special');
+    btn.classList.remove('default');
+  } else {
+    btn.classList.add('default');
+    btn.classList.remove('special');
+  }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+function demarrer() {
+  var id = localStorage.getItem('etudiant_id');
+  if (!id) {
+    window.location.href = '/medit/index.html';
+    return;
+  }
+    
+  chargerArticle();
+}
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', demarrer);
+} else {
+  demarrer();
+}
