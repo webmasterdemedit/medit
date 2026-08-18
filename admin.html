@@ -2087,6 +2087,99 @@
       msg.className = 'message ' + type;
       msg.style.display = 'block';
     }
+    // ============================================================
+// COMPOSEUR - NAVIGATION INTERNE
+// ============================================================
+
+// Variable pour suivre la slide en cours dans le composeur
+var composeurSlideCourant = 0;
+
+function ouvrirComposeur(index) {
+  composeurIndex = (index !== undefined) ? index : slideIndex;
+  composeurSlideCourant = composeurIndex;
+  var textarea = document.getElementById('composeurTextarea');
+  chargerSlideComposeur();
+  document.getElementById('composeurOverlay').classList.add('visible');
+  textarea.focus();
+  mettreAJourCompteurComposeur();
+}
+
+function chargerSlideComposeur() {
+  var textarea = document.getElementById('composeurTextarea');
+  if (composeurSlideCourant >= 0 && composeurSlideCourant < slidesData.length) {
+    textarea.value = slidesData[composeurSlideCourant];
+  } else {
+    textarea.value = '';
+  }
+  mettreAJourCompteurComposeur();
+}
+
+function composeurSlideSuivante() {
+  if (composeurSlideCourant < slidesData.length - 1) {
+    // Sauvegarder la slide actuelle avant de changer
+    var textarea = document.getElementById('composeurTextarea');
+    if (composeurSlideCourant >= 0 && composeurSlideCourant < slidesData.length) {
+      slidesData[composeurSlideCourant] = textarea.value;
+    }
+    composeurSlideCourant++;
+    textarea.value = slidesData[composeurSlideCourant] || '';
+    mettreAJourCompteurComposeur();
+    textarea.focus();
+  }
+}
+
+function composeurSlidePrecedente() {
+  if (composeurSlideCourant > 0) {
+    var textarea = document.getElementById('composeurTextarea');
+    if (composeurSlideCourant >= 0 && composeurSlideCourant < slidesData.length) {
+      slidesData[composeurSlideCourant] = textarea.value;
+    }
+    composeurSlideCourant--;
+    textarea.value = slidesData[composeurSlideCourant] || '';
+    mettreAJourCompteurComposeur();
+    textarea.focus();
+  }
+}
+
+function mettreAJourCompteurComposeur() {
+  var counter = document.getElementById('composeurCounter');
+  if (counter) {
+    counter.textContent = (composeurSlideCourant + 1) + ' / ' + slidesData.length;
+  }
+}
+
+// Modifier validerComposeur pour utiliser composeurSlideCourant
+function validerComposeur() {
+  var texte = document.getElementById('composeurTextarea').value.trim();
+  if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+  if (composeurSlideCourant >= 0 && composeurSlideCourant < slidesData.length) {
+    slidesData[composeurSlideCourant] = texte;
+    slidesIdee[composeurSlideCourant] = false;
+  } else {
+    slidesData.push(texte);
+    slidesIdee.push(false);
+    slideIndex = slidesData.length - 1;
+  }
+  fermerComposeur();
+  afficherSlides();
+}
+
+function validerComposeurIdee() {
+  var texte = document.getElementById('composeurTextarea').value.trim();
+  if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+  if (composeurSlideCourant >= 0 && composeurSlideCourant < slidesData.length) {
+    slidesData[composeurSlideCourant] = texte;
+    slidesIdee[composeurSlideCourant] = true;
+  } else {
+    slidesData.push(texte);
+    slidesIdee.push(true);
+    slideIndex = slidesData.length - 1;
+  }
+  fermerComposeur();
+  afficherSlides();
+}
 
     // ============================================================
     // MODIFIER POST
