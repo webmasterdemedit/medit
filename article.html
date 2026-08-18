@@ -9,7 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
     /* ============================================================
-       LISEUSE - STYLE SLIDES
+       LISEUSE - VERSION FINALE
        ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: #121212; }
@@ -38,6 +38,7 @@
       position: relative;
       overflow: hidden;
       background: #121212;
+      cursor: pointer;
     }
 
     .slide-wrapper {
@@ -51,25 +52,13 @@
       justify-content: center;
       padding: 40px 60px;
       opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
+      transition: opacity 0.6s ease;
       pointer-events: none;
     }
 
     .slide-wrapper.active {
       opacity: 1;
-      transform: translateY(0);
       pointer-events: auto;
-    }
-
-    .slide-wrapper.exit-up {
-      opacity: 0;
-      transform: translateY(-20px);
-    }
-
-    .slide-wrapper.exit-down {
-      opacity: 0;
-      transform: translateY(20px);
     }
 
     .slide-content {
@@ -81,6 +70,7 @@
       color: #e0d8d0;
       font-weight: 300;
       letter-spacing: 0.3px;
+      position: relative;
     }
 
     .slide-content p { margin-bottom: 1.2em; }
@@ -111,13 +101,15 @@
     .slide-content .quiz-reponse.incorrecte { border-color: #8a4a4a; background: #2a1a1a; color: #c88a8a; }
     .slide-content .quiz-reponse .result-icon { margin-left: auto; font-size: 18px; }
     .slide-content .quiz-feedback {
-      margin-top: 16px; padding: 14px 20px; border-radius: 8px;
-      font-family: 'Inter', sans-serif; font-size: 14px;
-      background: #1a1a1a; border: 1px solid #2a2a2a;
-      opacity: 0; transition: opacity 0.4s ease;
+      margin-top: 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      opacity: 0;
+      transition: opacity 0.4s ease;
     }
     .slide-content .quiz-feedback.visible { opacity: 1; }
     .slide-content .quiz-feedback .bonne-reponse { color: #8ac8a0; }
+    .slide-content .quiz-feedback .mauvaise-reponse { color: #c87a7a; }
 
     /* ===== BOUTON CONTINUER ===== */
     .btn-continuer {
@@ -131,10 +123,9 @@
       font-size: 14px;
       cursor: pointer;
       margin-top: 16px;
-      transition: all 0.2s;
+      transition: all 0.3s ease;
       opacity: 0;
       transform: translateY(8px);
-      transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s;
     }
     .btn-continuer.visible {
       opacity: 1;
@@ -169,6 +160,75 @@
     }
     .slide-content .reponse-confirmation.visible { display: block; }
 
+    /* ===== ANNOTATION ===== */
+    .annotation-container {
+      position: fixed;
+      bottom: 80px;
+      right: 32px;
+      z-index: 20;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 6px;
+    }
+    .annotation-toggle {
+      background: transparent;
+      border: none;
+      color: #4a4a4a;
+      font-size: 22px;
+      cursor: pointer;
+      transition: color 0.3s ease;
+      padding: 8px;
+      border-radius: 50%;
+      width: 44px;
+      height: 44px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid #2a2a2a;
+      background: #1a1a1a;
+    }
+    .annotation-toggle:hover { color: #8ac8a0; border-color: #4a6a5a; }
+    .annotation-toggle.has-note { color: #8ac8a0; border-color: #4a6a5a; }
+    .annotation-toggle .dot-save {
+      display: none;
+      width: 8px;
+      height: 8px;
+      background: #4a6a5a;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 4px;
+      right: 4px;
+    }
+    .annotation-toggle .dot-save.saved { display: block; background: #4a8a5a; }
+    .annotation-toggle .dot-save.saving { display: block; background: #c8b87a; animation: pulse-dot 0.8s ease-in-out infinite; }
+    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+    .annotation-box {
+      display: none;
+      background: #1a1a1a;
+      border: 1px solid #2a2a2a;
+      border-radius: 8px;
+      padding: 12px 16px;
+      width: 300px;
+      max-width: 80vw;
+      margin-bottom: 4px;
+    }
+    .annotation-box.open { display: block; }
+    .annotation-box textarea {
+      width: 100%;
+      min-height: 80px;
+      background: transparent;
+      border: none;
+      color: #e0d8d0;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.6;
+      resize: vertical;
+      outline: none;
+    }
+    .annotation-box textarea::placeholder { color: #4a4a4a; }
+
     /* ===== RETENIR ===== */
     .slide-content.retenir-content { font-size: 18px; text-align: center; }
     .slide-content .retenir-mots { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 24px 0; }
@@ -193,24 +253,23 @@
       z-index: 5;
     }
 
-    /* ===== ZONES DE CLIC ===== */
-    .click-zone {
-      position: absolute;
-      top: 0;
-      height: 100%;
-      z-index: 2;
+    /* ===== BOUTON FERMER DERNIER SLIDE ===== */
+    .btn-fermer-slide {
+      display: inline-block;
+      background: transparent;
+      color: #c8c0b8;
+      border: 1px solid #2a2a2a;
+      border-radius: 30px;
+      padding: 8px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
       cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.2s;
     }
-    .click-zone.prev {
-      left: 0;
-      width: 20%;
-    }
-    .click-zone.next {
-      right: 0;
-      width: 80%;
-    }
-    .click-zone.next.quiz-zone {
-      pointer-events: none;
+    .btn-fermer-slide:hover {
+      background: #1e1e1e;
+      color: #e8e0d8;
     }
 
     /* ===== LOADER ===== */
@@ -244,9 +303,9 @@
       .slide-content .quiz-question { font-size: 17px; }
       .slide-content .quiz-reponse { font-size: 14px; padding: 10px 14px; }
       .slide-content .retenir-mot { font-size: 22px; padding: 10px 18px; }
-      .click-zone.prev { width: 15%; }
-      .click-zone.next { width: 85%; }
       .pagination { bottom: 24px; font-size: 12px; padding: 4px 14px; }
+      .annotation-container { bottom: 70px; right: 16px; }
+      .annotation-box { width: 240px; }
     }
     @media (max-width: 480px) {
       .lecture-header { padding: 8px 12px; min-height: 50px; }
@@ -258,9 +317,10 @@
       .slide-content .quiz-reponse .lettre { font-size: 12px; min-width: 20px; }
       .slide-content .retenir-mot { font-size: 18px; padding: 8px 14px; }
       .slide-content textarea { min-height: 100px; font-size: 14px; }
-      .click-zone.prev { width: 12%; }
-      .click-zone.next { width: 88%; }
       .pagination { bottom: 16px; font-size: 11px; padding: 4px 12px; }
+      .annotation-container { bottom: 60px; right: 12px; }
+      .annotation-box { width: 200px; }
+      .annotation-toggle { width: 38px; height: 38px; font-size: 18px; }
     }
   </style>
 </head>
@@ -288,6 +348,17 @@
     </div>
   </div>
 
+  <!-- ===== ANNOTATION ===== -->
+  <div class="annotation-container" id="annotationContainer">
+    <div class="annotation-box" id="annotationBox">
+      <textarea id="annotationTextarea" placeholder="Écrire une note sur cette slide..."></textarea>
+    </div>
+    <button class="annotation-toggle" id="annotationToggle" title="Notes">
+      <span>✎</span>
+      <span class="dot-save" id="annotationDot"></span>
+    </button>
+  </div>
+
   <script>
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
 
@@ -301,7 +372,9 @@
       totalQuestions: 0,
       statutFinal: null,
       enTransition: false,
-      reponsesOuvertes: {}
+      annotations: {},
+      annotationOpen: false,
+      annotationSaving: false
     };
 
     // ============================================================
@@ -326,16 +399,20 @@
           etat.post = data.post;
           preparerSlides(etat.post);
           afficherSlides();
+          chargerAnnotations();
         })
         .catch(function(error) { afficherErreur(error.message); });
     }
 
     // ============================================================
-    // PARSER
+    // PARSER - NETTOYAGE DES | INCLUS
     // ============================================================
     function parserContenu(texte) {
       var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
       if (!texte) return result;
+
+      // Nettoyer les | superflus
+      texte = texte.replace(/\s*\|\s*$/gm, '');
 
       var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
       var indices = [];
@@ -483,7 +560,7 @@
           html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
           var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
           slide.reponses.forEach(function(rep, ri) {
-            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(' + slide.index + ', ' + ri + ')">';
+            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
             html += '<span class="lettre">' + lettres[ri] + '</span>';
             html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
             html += '<span class="result-icon"></span>';
@@ -499,7 +576,7 @@
         if (slide.type === 'open') {
           html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
           html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(' + slide.index + ')">Envoyer la réponse</button>';
+          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
           html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
         }
 
@@ -511,6 +588,7 @@
           });
           html += '</div>';
           html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:#6b6b6b;margin-top:8px;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+          html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
         }
 
         html += '</div>';
@@ -520,13 +598,34 @@
       // Pagination
       html += '<div class="pagination" id="pagination">1 / ' + etat.slides.length + '</div>';
 
-      // Zones de clic
-      html += '<div class="click-zone prev" onclick="slidePrecedente()"></div>';
-      html += '<div class="click-zone next" id="clickZoneNext" onclick="slideSuivante()"></div>';
-
       container.innerHTML = html;
 
-      // Gestion du scroll
+      // ===== GESTION DU CLIC SUR LE CONTAINER =====
+      container.addEventListener('click', function(e) {
+        // Ignorer si on clique sur un élément interactif
+        var target = e.target;
+        if (target.closest('.quiz-reponse') ||
+            target.closest('.btn-continuer') ||
+            target.closest('.btn-envoyer-reponse') ||
+            target.closest('textarea') ||
+            target.closest('.btn-fermer-slide') ||
+            target.closest('.annotation-container')) {
+          return;
+        }
+
+        // Bord gauche = précédent (20% de l'écran)
+        var rect = container.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var width = rect.width;
+
+        if (x < width * 0.2) {
+          slidePrecedente();
+        } else {
+          slideSuivante();
+        }
+      });
+
+      // ===== GESTION DU SCROLL =====
       var scrollTimeout = null;
       container.addEventListener('wheel', function(e) {
         e.preventDefault();
@@ -540,7 +639,7 @@
         }
       }, { passive: false });
 
-      // Gestion du clavier
+      // ===== GESTION DU CLAVIER =====
       document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
@@ -552,18 +651,33 @@
       });
 
       document.getElementById('btnFermer').addEventListener('click', function() {
-        window.location.href = '/medit/mes-textes.html';
+        fermerLiseuse();
       });
 
-      // Désactiver la zone next sur les quiz tant qu'on a pas répondu
-      var firstQuiz = etat.slides.findIndex(function(s) { return s.type === 'quiz'; });
-      if (firstQuiz !== -1) {
-        var clickZone = document.getElementById('clickZoneNext');
-        clickZone.classList.add('quiz-zone');
-      }
+      // ===== ANNOTATION =====
+      document.getElementById('annotationToggle').addEventListener('click', function(e) {
+        e.stopPropagation();
+        toggleAnnotation();
+      });
+
+      // Sauvegarde auto des annotations
+      var annotationTextarea = document.getElementById('annotationTextarea');
+      var saveTimeout = null;
+      annotationTextarea.addEventListener('input', function() {
+        clearTimeout(saveTimeout);
+        saveTimeout = setTimeout(function() {
+          sauvegarderAnnotation();
+        }, 800);
+      });
+
+      // Empêcher la propagation du clic sur la zone annotation
+      document.querySelector('.annotation-container').addEventListener('click', function(e) {
+        e.stopPropagation();
+      });
 
       recupererStatutExistant();
       mettreAJourPagination();
+      mettreAJourAnnotation();
     }
 
     // ============================================================
@@ -573,7 +687,6 @@
       if (etat.enTransition) return;
       if (etat.currentIndex >= etat.slides.length - 1) return;
 
-      // Vérifier si on est sur un quiz et qu'il n'est pas répondu
       var slide = etat.slides[etat.currentIndex];
       if (slide.type === 'quiz') {
         var reponse = etat.reponsesQuiz[slide.index];
@@ -586,25 +699,16 @@
       var current = document.getElementById('slide-' + etat.currentIndex);
       var next = document.getElementById('slide-' + (etat.currentIndex + 1));
 
-      if (current) {
-        current.classList.remove('active');
-        current.classList.add('exit-up');
-      }
-
-      if (next) {
-        next.classList.add('active');
-      }
+      if (current) current.classList.remove('active');
+      if (next) next.classList.add('active');
 
       etat.currentIndex++;
       mettreAJourPagination();
+      mettreAJourAnnotation();
 
       setTimeout(function() {
-        if (current) {
-          current.classList.remove('exit-up');
-        }
         etat.enTransition = false;
-        mettreAJourZoneClic();
-      }, 500);
+      }, 600);
     }
 
     function slidePrecedente() {
@@ -615,25 +719,16 @@
       var current = document.getElementById('slide-' + etat.currentIndex);
       var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
 
-      if (current) {
-        current.classList.remove('active');
-        current.classList.add('exit-down');
-      }
-
-      if (prev) {
-        prev.classList.add('active');
-      }
+      if (current) current.classList.remove('active');
+      if (prev) prev.classList.add('active');
 
       etat.currentIndex--;
       mettreAJourPagination();
+      mettreAJourAnnotation();
 
       setTimeout(function() {
-        if (current) {
-          current.classList.remove('exit-down');
-        }
         etat.enTransition = false;
-        mettreAJourZoneClic();
-      }, 500);
+      }, 600);
     }
 
     function mettreAJourPagination() {
@@ -643,31 +738,12 @@
       }
     }
 
-    function mettreAJourZoneClic() {
-      var slide = etat.slides[etat.currentIndex];
-      var clickZone = document.getElementById('clickZoneNext');
-
-      if (slide.type === 'quiz') {
-        var reponse = etat.reponsesQuiz[slide.index];
-        if (!reponse) {
-          clickZone.classList.add('quiz-zone');
-          return;
-        }
-        var btn = document.getElementById('btnContinuer-' + slide.index);
-        if (btn && btn.classList.contains('visible')) {
-          clickZone.classList.remove('quiz-zone');
-        } else {
-          clickZone.classList.add('quiz-zone');
-        }
-      } else {
-        clickZone.classList.remove('quiz-zone');
-      }
-    }
-
     // ============================================================
     // QUIZ
     // ============================================================
-    function selectionnerReponse(quizIndex, reponseIndex) {
+    function selectionnerReponse(event, quizIndex, reponseIndex) {
+      event.stopPropagation();
+
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
       if (!slide) return;
       if (etat.reponsesQuiz[quizIndex]) return;
@@ -685,7 +761,6 @@
 
       etat.reponsesQuiz[quizIndex] = { reponseIndex: reponseIndex, correct: reponse.correct };
 
-      // Feedback avec un léger délai pour pas être trop soudain
       setTimeout(function() {
         afficherFeedbackQuiz(quizIndex);
       }, 300);
@@ -722,17 +797,17 @@
 
       if (reponseData.correct) {
         bonneReponse.textContent = '✅ Bonne réponse !';
+        bonneReponse.className = 'bonne-reponse';
       } else {
         var bonne = slide.reponses.find(function(r) { return r.correct; });
         bonneReponse.textContent = '❌ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
+        bonneReponse.className = 'mauvaise-reponse';
       }
 
       feedback.classList.add('visible');
 
-      // Afficher le bouton continuer
       setTimeout(function() {
         btnContinuer.classList.add('visible');
-        mettreAJourZoneClic();
       }, 400);
 
       verifierQuizComplets();
@@ -799,7 +874,9 @@
     // ============================================================
     // QUESTION OUVERTE
     // ============================================================
-    function envoyerReponseOuverte(index) {
+    function envoyerReponseOuverte(event, index) {
+      if (event) event.stopPropagation();
+
       var textarea = document.getElementById('openReponse-' + index);
       if (!textarea) return;
       var reponse = textarea.value.trim();
@@ -837,6 +914,92 @@
     }
 
     // ============================================================
+    // ANNOTATIONS
+    // ============================================================
+    function toggleAnnotation() {
+      etat.annotationOpen = !etat.annotationOpen;
+      var box = document.getElementById('annotationBox');
+      if (etat.annotationOpen) {
+        box.classList.add('open');
+        document.getElementById('annotationTextarea').focus();
+        chargerAnnotationSlide();
+      } else {
+        box.classList.remove('open');
+        sauvegarderAnnotation();
+      }
+    }
+
+    function chargerAnnotationSlide() {
+      var key = etat.postId + '_' + etat.currentIndex;
+      var annotation = etat.annotations[key] || '';
+      document.getElementById('annotationTextarea').value = annotation;
+    }
+
+    function mettreAJourAnnotation() {
+      var dot = document.getElementById('annotationDot');
+      var key = etat.postId + '_' + etat.currentIndex;
+      if (etat.annotations[key] && etat.annotations[key].trim() !== '') {
+        dot.className = 'dot-save saved';
+      } else {
+        dot.className = 'dot-save';
+      }
+    }
+
+    function sauvegarderAnnotation() {
+      var textarea = document.getElementById('annotationTextarea');
+      var note = textarea.value.trim();
+      var key = etat.postId + '_' + etat.currentIndex;
+
+      if (note === '' && !etat.annotations[key]) return;
+
+      etat.annotations[key] = note;
+
+      var dot = document.getElementById('annotationDot');
+      dot.className = 'dot-save saving';
+
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&slideIndex=' + encodeURIComponent(etat.currentIndex) +
+        '&annotation=' + encodeURIComponent(note);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            dot.className = 'dot-save saved';
+            console.log('✅ Annotation sauvegardée');
+          } else {
+            dot.className = 'dot-save';
+            console.error('Erreur sauvegarde annotation');
+          }
+        })
+        .catch(function(e) {
+          dot.className = 'dot-save';
+          console.error('Erreur:', e);
+        });
+    }
+
+    function chargerAnnotations() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getAnnotations&nom=' + encodeURIComponent(nom) + '&articleId=' + encodeURIComponent(etat.postId);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.annotations) {
+            data.annotations.forEach(function(a) {
+              var key = etat.postId + '_' + a.slideIndex;
+              etat.annotations[key] = a.annotation || '';
+            });
+            mettreAJourAnnotation();
+          }
+        })
+        .catch(function(e) { console.error('Erreur chargement annotations:', e); });
+    }
+
+    // ============================================================
     // UTILITAIRES
     // ============================================================
     function recupererStatutExistant() {
@@ -860,6 +1023,10 @@
         .catch(function(e) { console.error('Erreur récupération statut:', e); });
     }
 
+    function fermerLiseuse() {
+      window.location.href = '/medit/mes-textes.html';
+    }
+
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
         <div class="lecture-error">
@@ -875,6 +1042,7 @@
     window.envoyerReponseOuverte = envoyerReponseOuverte;
     window.slideSuivante = slideSuivante;
     window.slidePrecedente = slidePrecedente;
+    window.fermerLiseuse = fermerLiseuse;
   </script>
 
 </body>
