@@ -1655,15 +1655,32 @@
         url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
       }
 
-      if (modeEdition && id) {
-        var contenuFinal = colonnes.join(' | ');
-        DataManager.modifierPost(id, titre, parseInt(niveau), categorie, contenuFinal, '', statut)
-          .then(function() {
-            afficherMsgTexte('✅ Post mis à jour !', 'success');
-            btn.textContent = 'Mettre à jour';
-            btn.disabled = false;
-            fermerModalTexte();
-            chargerAdmin();
+            if (modeEdition && id) {
+        // === Pour la modification, on envoie aussi chaque élément dans sa colonne ===
+        var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+          '&id=' + encodeURIComponent(id) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent(statut);
+
+        // Ajouter chaque colonne (comme pour l'ajout)
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✅ Post mis à jour !', 'success');
+              btn.textContent = 'Mettre à jour';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la modification');
+            }
           })
           .catch(function(err) {
             afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
