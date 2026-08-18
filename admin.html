@@ -3,320 +3,2010 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#1a1a1a" />
-  <title>Lecture</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Administration</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/style.css" />
+  <link rel="stylesheet" href="/medit/lecture-mode.css" />
+  <link rel="stylesheet" href="/medit/article.css" />
   <style>
-    /* ============================================================
-       LISEUSE - STYLE SOMBRE ET ÉPURÉ
-       ============================================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { height: 100%; }
+    body { font-family: 'Segoe UI', sans-serif; letter-spacing: 0.2px; display: flex; flex-direction: column; background: #f3f0e9; overflow-y: auto; }
+    a { text-decoration: none; color: inherit; }
+
+    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1 0 auto; width: 100%; overflow-y: auto; }
+
+    .header-admin { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #d1ccc4; flex-wrap: wrap; gap: 10px; }
+    .header-admin h1 { font-size: 28px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .header-admin .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+    .header-admin .btn-ajout { padding: 8px 20px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; white-space: nowrap; }
+    .header-admin .btn-ajout:hover { background: #e8e5e0; }
+    .header-admin .btn-export-all { padding: 8px 18px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; white-space: nowrap; }
+    .header-admin .btn-export-all:hover { background: #e8e5e0; color: #2c2c2c; }
+    .header-admin .btn-categories { padding: 8px 18px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; white-space: nowrap; }
+    .header-admin .btn-categories:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    .stats-ligne { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 20px; border-radius: 4px; padding: 14px 24px; margin-bottom: 24px; border: 1px solid #d1ccc4; background: #f3f0e9; }
+    .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b7a8a; }
+    .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; color: #2c2c2c; font-family: 'Georgia', serif; }
+    .stats-ligne .sep { color: #d1ccc4; font-size: 18px; }
+
+    .search-bar { display: flex; gap: 10px; align-items: center; margin-bottom: 16px; padding: 8px 16px; border: 1px solid #d1ccc4; border-radius: 30px; background: #faf8f5; }
+    .search-bar input { flex: 1; border: none; background: transparent; font-size: 14px; font-family: 'Segoe UI', sans-serif; color: #2c2c2c; outline: none; padding: 6px 0; }
+    .search-bar input::placeholder { color: #b8b0a8; }
+    .search-bar .search-icon { color: #b8b0a8; font-size: 16px; }
+
+    .filtres-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 4px 0; }
+    .filtre-cat-btn { padding: 6px 18px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; color: #6b7a8a; cursor: pointer; font-family: 'Segoe UI', sans-serif; }
+    .filtre-cat-btn:hover { background: #e8e5e0; color: #2c2c2c; }
+    .filtre-cat-btn.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+    .filtre-cat-btn .compteur-cat { display: inline-block; font-size: 11px; font-weight: 600; margin-left: 4px; }
+    .filtre-cat-btn.active .compteur-cat { color: #f3f0e9; }
+    .filtre-cat-btn .btn-del-cat { background: transparent; border: none; color: inherit; cursor: pointer; font-size: 11px; margin-left: 4px; opacity: 0.6; }
+    .filtre-cat-btn .btn-del-cat:hover { opacity: 1; }
+
+    .tabs-container { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 24px; padding: 4px 0; border-bottom: 1px solid #d1ccc4; }
+    .tab-btn { padding: 10px 28px; background: transparent; border: none; border-bottom: 2px solid transparent; font-size: 15px; font-weight: 500; color: #6b7a8a; cursor: pointer; font-family: 'Segoe UI', sans-serif; border-radius: 0; }
+    .tab-btn:hover { color: #2c2c2c; background: #e8e5e0; }
+    .tab-btn.active { color: #2c2c2c; border-bottom-color: #2c2c2c; font-weight: 600; }
+    .tab-btn .compteur-tab { display: inline-block; background: #e8e5e0; color: #6b7a8a; font-size: 11px; font-weight: 600; padding: 0 10px; border-radius: 30px; margin-left: 6px; line-height: 20px; }
+    .tab-btn.active .compteur-tab { background: #e8e5e0; color: #2c2c2c; }
+
+    .grille { display: flex; flex-direction: column; gap: 10px; }
+
+    .carte-post { border-radius: 4px; padding: 16px 22px; display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 16px; border: 1px solid #d1ccc4; background: #f3f0e9; cursor: pointer; transition: border-color 0.2s; }
+    .carte-post:hover { border-color: #b8b0a8; }
+    .carte-post .infos { display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
+    .carte-post .titre { font-size: 17px; font-weight: 500; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .carte-post .meta { font-size: 12px; color: #6b7a8a; display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+    .carte-post .meta .badge { padding: 1px 10px; border-radius: 30px; font-size: 11px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
+    .carte-post .meta .badge.publie { background: #e8e5e0; color: #2c2c2c; }
+    .carte-post .meta .badge.brouillon { background: #e8e5e0; color: #6b7a8a; }
+    .carte-post .meta .stat-lecture { font-size: 11px; color: #6b7a8a; }
+    .carte-post .meta .stat-lecture .ok { color: #2d6a4f; }
+    .carte-post .meta .stat-lecture .ko { color: #b8b0a8; }
+    .carte-post .meta .info-badge { padding: 1px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
+
+    .carte-post .apercu-rapide { padding: 10px 14px; margin-top: 6px; border-radius: 4px; font-size: 13px; font-style: italic; line-height: 1.6; background: #e8e5e0; color: #2c2c2c; pointer-events: none; }
+
+    .carte-post .actions { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: auto; }
+    .carte-post .actions button { padding: 6px 14px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .carte-post .actions button:hover { background: #e8e5e0; color: #2c2c2c; }
+    .carte-post .actions .btn-supprimer:hover { background: #f5f0eb; color: #6b7a8a; }
+
+    .carte-post.dragging { opacity: 0.4; }
+    .carte-post.drag-over { border: 2px dashed #2c2c2c; background: #e8e5e0; }
+    .carte-post .drag-handle { cursor: grab; color: #b8b0a8; font-size: 16px; margin-right: 8px; user-select: none; }
+    .carte-post .drag-handle:hover { color: #2c2c2c; }
+    .carte-post .ordre-badge { display: inline-block; background: #e8e5e0; color: #6b7a8a; font-size: 11px; font-weight: 600; padding: 0 10px; border-radius: 30px; line-height: 20px; }
+
+    .loader { text-align: center; padding: 60px 20px; color: #b8b0a8; }
+    .loader .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #d1ccc4; border-top-color: #2c2c2c; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 12px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .vide { text-align: center; padding: 60px 20px; border: 1px solid #d1ccc4; border-radius: 4px; background: #f3f0e9; }
+    .vide .icone { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
+    .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 4px; }
+    .vide p { color: #b8b0a8; font-size: 15px; }
+
+    .auto-save-indicator { font-size: 12px; color: #6b7a8a; font-style: italic; display: none; }
+    .auto-save-indicator.visible { display: inline; }
+    .auto-save-indicator.saved { color: #2d6a4f; }
+    .auto-save-indicator.saving { color: #6b7a8a; }
+
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); }
+    .modal-overlay.visible { display: flex; }
+    .modal-contenu { background: #f3f0e9; border: 1px solid #d1ccc4; border-radius: 4px; max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto; padding: 28px 32px; font-family: 'Segoe UI', sans-serif; position: relative; }
+    .modal-contenu .modal-close { position: absolute; top: 10px; right: 14px; background: transparent; border: none; font-size: 22px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .modal-contenu .modal-close:hover { color: #2c2c2c; }
+    .modal-contenu h3 { font-size: 24px; font-weight: 400; font-family: 'Georgia', serif; color: #2c2c2c; margin-bottom: 16px; }
+    .modal-contenu .cat-item { display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #e8e5e0; }
+    .modal-contenu .cat-item:last-child { border-bottom: none; }
+    .modal-contenu .cat-item .cat-name { font-size: 14px; color: #2c2c2c; }
+    .modal-contenu .cat-item .cat-actions { display: flex; gap: 6px; }
+    .modal-contenu .cat-item .cat-actions button { padding: 2px 10px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 11px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .modal-contenu .cat-item .cat-actions button:hover { background: #e8e5e0; color: #2c2c2c; }
+    .modal-contenu .ajout-cat { display: flex; gap: 8px; margin-top: 12px; }
+    .modal-contenu .ajout-cat input { flex: 1; padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; }
+    .modal-contenu .ajout-cat button { padding: 6px 16px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
+    .modal-contenu .ajout-cat button:hover { background: #e8e5e0; }
+
+    .modal-contenu.ajout-post { max-width: 800px; }
+    .row-compact { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-bottom: 16px; }
+    .row-compact input, .row-compact select { padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; font-family: 'Segoe UI', sans-serif; background: #faf8f5; color: #2c2c2c; }
+    .row-compact input[type="date"] { width: auto; }
+    .row-compact input[type="text"] { flex: 1; min-width: 120px; }
+    .row-compact select { width: auto; }
+
+    .section-title { font-size: 13px; color: #6b7a8a; letter-spacing: 0.5px; margin: 12px 0 4px 0; }
+    .slides-list { margin: 8px 0; min-height: 30px; }
+    .slide-item { padding: 6px 0; border-bottom: 1px solid #e8e5e0; color: #2c2c2c; font-family: 'Georgia', serif; font-size: 15px; line-height: 1.5; cursor: grab; display: flex; align-items: center; justify-content: space-between; }
+    .slide-item:last-child { border-bottom: none; }
+    .slide-item.dragging { opacity: 0.4; }
+    .slide-item.drag-over { border-bottom: 2px solid #2c2c2c; }
+    .slide-item .slide-handle { color: #b8b0a8; font-size: 16px; margin-right: 8px; cursor: grab; }
+    .slide-item .slide-placeholder { color: #b8b0a8; font-style: italic; }
+    .slide-item .slide-texte { flex: 1; cursor: pointer; }
+    .slide-item .btn-del-slide { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 14px; }
+    .slide-item .btn-del-slide:hover { color: #2c2c2c; }
+    .slide-item.idee .slide-texte { font-style: italic; color: #b8b0a8; }
+
+    .btn-composer { padding: 6px 16px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 13px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 4px 0; }
+    .btn-composer:hover { background: #e8e5e0; color: #2c2c2c; }
+    .btn-add { padding: 4px 14px; background: transparent; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; margin: 2px 0; }
+    .btn-add:hover { background: #e8e5e0; color: #2c2c2c; }
+
+    .quiz-list { margin: 8px 0; }
+    .quiz-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; font-size: 14px; color: #2c2c2c; position: relative; }
+    .quiz-item:last-child { border-bottom: none; }
+    .quiz-item .q-text { width: 100%; padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .quiz-item .q-text:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .quiz-item .quiz-reponses { display: flex; flex-wrap: wrap; gap: 4px 12px; padding: 2px 0; align-items: center; }
+    .quiz-item .quiz-reponses input { flex: 1; min-width: 60px; padding: 2px 6px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 13px; background: #faf8f5; color: #2c2c2c; }
+    .quiz-item .vf-group { display: flex; gap: 2px; }
+    .quiz-item .vf-btn { padding: 2px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 11px; font-weight: 500; cursor: pointer; background: #faf8f5; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
+    .quiz-item .vf-btn.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+    .quiz-item .vf-btn:hover { background: #e8e5e0; }
+    .quiz-item .btn-del-quiz { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; position: absolute; top: 4px; right: 0; }
+    .quiz-item .btn-del-quiz:hover { color: #2c2c2c; }
+
+    .open-questions-list { margin: 8px 0; }
+    .open-question-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; position: relative; }
+    .open-question-item:last-child { border-bottom: none; }
+    .open-question-item input { width: calc(100% - 30px); padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .open-question-item input:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .open-question-item .btn-del-open { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; position: absolute; top: 4px; right: 0; }
+    .open-question-item .btn-del-open:hover { color: #2c2c2c; }
+
+    .retenir-container { margin: 8px 0; }
+    .retenir-champs { display: none; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+    .retenir-champs.open { display: flex; }
+    .retenir-champs input { flex: 1; min-width: 60px; padding: 6px 10px; border: 1px solid #d1ccc4; border-radius: 4px; font-size: 14px; background: #faf8f5; color: #2c2c2c; }
+
+    .infos-list { margin: 8px 0; }
+    .info-item { padding: 4px 0; border-bottom: 1px solid #e8e5e0; position: relative; }
+    .info-item:last-child { border-bottom: none; }
+    .info-item input { width: calc(100% - 30px); padding: 4px 0; border: none; background: transparent; font-size: 14px; font-family: 'Georgia', serif; color: #2c2c2c; }
+    .info-item input:focus { outline: none; background: rgba(0,0,0,0.02); }
+    .info-item .btn-del-info { background: transparent; border: none; color: #6b7a8a; cursor: pointer; font-size: 13px; position: absolute; top: 4px; right: 0; }
+    .info-item .btn-del-info:hover { color: #2c2c2c; }
+
+    .btn-groupe { display: flex; align-items: center; gap: 12px; margin-top: 16px; flex-wrap: wrap; border-top: 1px solid #d1ccc4; padding-top: 16px; }
+    .btn-groupe .btn { padding: 8px 24px; border-radius: 30px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: 'Segoe UI', sans-serif; border: 1px solid #d1ccc4; background: transparent; color: #2c2c2c; }
+    .btn-groupe .btn:hover { background: #e8e5e0; }
+    .btn-groupe .btn-annuler { color: #6b7a8a; text-decoration: none; }
+    .btn-groupe .btn-brouillon { color: #6b7a8a; }
+    .btn-groupe .btn-brouillon.active { background: #2c2c2c; color: #f3f0e9; border-color: #2c2c2c; }
+    .btn-groupe .btn-importer { color: #6b7a8a; }
+    .btn-groupe .chrono { font-size: 13px; color: #6b7a8a; font-family: 'Courier New', monospace; margin-left: auto; }
+    .btn-groupe .auto-save-indicator { font-size: 12px; color: #6b7a8a; }
+
+    .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; display: none; }
+    .message.success { display: block; color: #2c2c2c; background: #e8e5e0; }
+    .message.error { display: block; color: #6b7a8a; background: #f5f0eb; }
+
+    .composer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 99999; display: none; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); }
+    .composer-overlay.visible { display: flex; }
+    .composer-content { background: #ffffff; border: none; border-radius: 0; max-width: 100%; width: 100%; height: 100%; padding: 40px 60px; position: relative; font-family: 'Georgia', serif; }
+    .composer-content .composer-close { position: absolute; top: 16px; right: 24px; background: transparent; border: none; font-size: 28px; color: #6b7a8a; cursor: pointer; line-height: 1; }
+    .composer-content .composer-close:hover { color: #2c2c2c; }
+    .composer-content textarea { width: 100%; height: calc(100% - 80px); border: none; background: transparent; font-size: 30px; font-family: 'Georgia', serif; color: #2c2c2c; resize: none; padding: 20px 0; line-height: 1.8; outline: none; }
+    .composer-content textarea::placeholder { color: #d1ccc4; font-style: italic; }
+    .composer-content .composer-actions { display: flex; gap: 12px; margin-top: 16px; justify-content: flex-end; padding-top: 16px; }
+    .composer-content .composer-actions button { padding: 8px 28px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 14px; cursor: pointer; background: transparent; color: #2c2c2c; font-family: 'Segoe UI', sans-serif; }
+    .composer-content .composer-actions button:hover { background: #e8e5e0; }
+
+    @media (max-width: 640px) {
+      .carte-post { grid-template-columns: 1fr; gap: 8px; }
+      .carte-post .actions { justify-content: flex-start; }
+      .modal-contenu.ajout-post { padding: 16px; }
+      .row-compact { flex-direction: column; align-items: stretch; }
+      .row-compact input[type="date"] { width: 100%; }
+      .btn-groupe { flex-direction: column; align-items: stretch; }
+      .btn-groupe .btn { text-align: center; }
+      .composer-content { padding: 20px; }
+      .composer-content textarea { font-size: 20px; height: calc(100% - 100px); }
+      .header-admin { flex-direction: column; align-items: stretch; }
+      .header-admin .header-actions { justify-content: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="header-container"></div>
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        if (typeof mettreAJourHeader === 'function') {
+          mettreAJourHeader();
+        }
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+      });
+  </script>
+
+  <!-- PAGE ADMIN -->
+  <div class="page">
+
+    <div class="header-admin">
+      <h1>⚙ Administration</h1>
+      <div class="header-actions">
+        <button class="btn-export-all" onclick="exporterTout()">📥 Exporter tout</button>
+        <button class="btn-categories" onclick="ouvrirModalCategories()">🏷️ Catégories</button>
+        <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
+      </div>
+    </div>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item"><span>Total :</span><span class="nombre" id="totalPosts">0</span></div>
+      <span class="sep">|</span>
+      <div class="stat-item"><span>Publiés :</span><span class="nombre" id="publiesPosts">0</span></div>
+      <span class="sep">|</span>
+      <div class="stat-item"><span>Brouillons :</span><span class="nombre" id="brouillonsPosts">0</span></div>
+      <span class="sep">|</span>
+      <div class="stat-item"><span>Lectures :</span><span class="nombre" id="totalLectures">0</span></div>
+    </div>
+
+    <div class="search-bar">
+      <span class="search-icon">⌕</span>
+      <input type="text" id="searchInput" placeholder="Rechercher un texte par titre..." oninput="appliquerRecherche()">
+    </div>
+
+    <div class="filtres-container" id="filtresCategories">
+      <button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie('toutes')">Toutes <span class="compteur-cat" id="catToutes">0</span></button>
+    </div>
+
+    <div class="tabs-container" id="tabsContainer">
+      <button class="tab-btn active" data-tab="tous" onclick="switchTab('tous')">Tous <span class="compteur-tab" id="compteurTous">0</span></button>
+      <button class="tab-btn" data-tab="publies" onclick="switchTab('publies')">Publiés <span class="compteur-tab" id="compteurPublies">0</span></button>
+      <button class="tab-btn" data-tab="brouillons" onclick="switchTab('brouillons')">Brouillons <span class="compteur-tab" id="compteurBrouillons">0</span></button>
+    </div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des textes...</p>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- MODAL CATÉGORIES -->
+  <div id="modalCategories" class="modal-overlay">
+    <div class="modal-contenu">
+      <button class="modal-close" onclick="fermerModalCategories()">✕</button>
+      <h3>╭ Gérer les catégories</h3>
+      <div id="listeCategories"></div>
+      <div class="ajout-cat">
+        <input type="text" id="newCatInput" placeholder="Nouvelle catégorie...">
+        <button onclick="ajouterCategorie()">+ Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL TEXTE -->
+  <div id="modalTexte" class="modal-overlay">
+    <div class="modal-contenu ajout-post">
+      <button class="modal-close" onclick="fermerModalTexte()">✕</button>
+      <h3 id="modalTitre">Texte</h3>
+
+      <form id="formTexte" onsubmit="return false;">
+        <input type="hidden" id="editId" value="">
+
+        <div class="row-compact">
+          <input type="date" id="inputDate">
+          <input type="text" id="inputTitre" placeholder="Titre">
+          <select id="inputNiveau"></select>
+          <select id="inputCategorie"></select>
+        </div>
+
+        <div class="section-title">Slides</div>
+        <div class="slides-list" id="slidesList"></div>
+        <button type="button" class="btn-composer" onclick="ouvrirComposeur()">✎ Composer</button>
+        <button type="button" class="btn-add" onclick="ajouterSlide()" style="margin-left:8px;">+ slide</button>
+
+        <div class="section-title">Quiz</div>
+        <div class="quiz-list" id="quizList"></div>
+        <button type="button" class="btn-add" onclick="ajouterQuestion()">+ question</button>
+
+        <div class="section-title">Questions ouvertes</div>
+        <div class="open-questions-list" id="openQuestionsList"></div>
+        <button type="button" class="btn-add" onclick="ajouterQuestionOuverte()">+ question ouverte</button>
+
+        <div class="section-title">À retenir</div>
+        <div class="retenir-container">
+          <button type="button" class="btn-add" onclick="toggleRetenir()">+ mémo</button>
+          <div class="retenir-champs" id="retenirChamps">
+            <input type="text" id="retenir1" placeholder="Mot 1">
+            <input type="text" id="retenir2" placeholder="Mot 2">
+            <input type="text" id="retenir3" placeholder="Mot 3">
+          </div>
+        </div>
+
+        <div class="section-title">Infos</div>
+        <div class="infos-list" id="infosList"></div>
+        <button type="button" class="btn-add" onclick="ajouterInfo()">+ info</button>
+
+        <div class="btn-groupe">
+          <button type="button" onclick="importerTexte()" class="btn btn-importer">Importer</button>
+          <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
+          <span style="flex:1;"></span>
+          <span class="chrono" id="chronoDisplay">00:00</span>
+          <span class="auto-save-indicator" id="autoSaveIndicator"> ➜] Sauvegardé</span>
+          <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
+          <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
+          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
+        </div>
+
+        <div id="messageTexte" class="message"></div>
+      </form>
+    </div>
+  </div>
+
+  <!-- COMPOSEUR -->
+  <div id="composeurOverlay" class="composer-overlay">
+    <div class="composer-content" id="composerContent">
+      <button class="composer-close" onclick="fermerComposeur()">✕</button>
+      <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
+      <div class="composer-actions">
+        <button onclick="validerComposeur()">✓ Valider</button>
+        <button onclick="validerComposeurIdee()">💭 Idée</button>
+        <button onclick="fermerComposeur()">Annuler</button>
+      </div>
+    </div>
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // ADMIN
+    // ============================================================
+
+    var tousLesPosts = [];
+    var toutesLesReponses = [];
+    var ongletActuel = 'tous';
+    var categorieActuelle = 'toutes';
+    var rechercheActuelle = '';
+    var modeEdition = false;
+    var estBrouillon = false;
+    var chronoInterval = null;
+    var chronoSeconds = 0;
+    var autoSaveInterval = null;
+    var autoSaveEnabled = true;
+
+    var niveauxData = [];
+    var categoriesData = [];
+
+    var slidesData = [];
+    var slidesIdee = [];
+    var quizData = [];
+    var openQuestionsData = [];
+    var infosData = [];
+
+    var composeurIndex = -1;
+    var retenirOpen = false;
+
+    var dragIndexPost = null;
+    var dragCategorieActuelle = '';
+
+    // ============================================================
+    // CHRONO
+    // ============================================================
+    function startChrono() {
+      chronoSeconds = 0;
+      updateChronoDisplay();
+      if (chronoInterval) clearInterval(chronoInterval);
+      chronoInterval = setInterval(function() {
+        chronoSeconds++;
+        updateChronoDisplay();
+      }, 1000);
     }
 
-    html, body {
-      height: 100%;
-      overflow: hidden;
+    function stopChrono() {
+      if (chronoInterval) {
+        clearInterval(chronoInterval);
+        chronoInterval = null;
+      }
     }
 
-    body {
-      font-family: 'Merriweather', 'Georgia', serif;
-      background: #121212;
-      color: #e8e0d8;
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
+    function updateChronoDisplay() {
+      var mins = String(Math.floor(chronoSeconds / 60)).padStart(2, '0');
+      var secs = String(chronoSeconds % 60).padStart(2, '0');
+      document.getElementById('chronoDisplay').textContent = mins + ':' + secs;
     }
 
-    /* ===== HEADER LISEUSE ===== */
-    .lecture-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 32px;
-      background: #1a1a1a;
-      border-bottom: 1px solid #2a2a2a;
-      flex-shrink: 0;
-      min-height: 72px;
-      z-index: 10;
+    // ============================================================
+    // SAUVEGARDE AUTOMATIQUE
+    // ============================================================
+    function demarrerAutoSave() {
+      if (autoSaveInterval) clearInterval(autoSaveInterval);
+      autoSaveInterval = setInterval(function() {
+        if (document.getElementById('modalTexte').classList.contains('visible')) {
+          sauvegarderAuto();
+        }
+      }, 30000);
     }
 
-    .lecture-header .meta-left {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
+    function arreterAutoSave() {
+      if (autoSaveInterval) {
+        clearInterval(autoSaveInterval);
+        autoSaveInterval = null;
+      }
     }
 
-    .lecture-header .meta-left .cat-niveau {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-      color: #6b6b6b;
+    function sauvegarderAuto() {
+      var indicator = document.getElementById('autoSaveIndicator');
+      indicator.textContent = '➜] Sauvegarde...';
+      indicator.className = 'auto-save-indicator visible saving';
+      
+      var data = {
+        slidesData: slidesData,
+        slidesIdee: slidesIdee,
+        quizData: quizData,
+        openQuestionsData: openQuestionsData,
+        infosData: infosData,
+        retenirOpen: retenirOpen,
+        retenir1: document.getElementById('retenir1').value,
+        retenir2: document.getElementById('retenir2').value,
+        retenir3: document.getElementById('retenir3').value,
+        titre: document.getElementById('inputTitre').value,
+        date: document.getElementById('inputDate').value,
+        niveau: document.getElementById('inputNiveau').value,
+        categorie: document.getElementById('inputCategorie').value,
+        timestamp: Date.now()
+      };
+      
+      try {
+        localStorage.setItem('admin_auto_save', JSON.stringify(data));
+        indicator.textContent = '➜] Sauvegardé';
+        indicator.className = 'auto-save-indicator visible saved';
+        setTimeout(function() {
+          indicator.className = 'auto-save-indicator visible';
+        }, 2000);
+      } catch(e) {
+        indicator.textContent = '⚠️ Erreur';
+        indicator.className = 'auto-save-indicator visible';
+      }
     }
 
-    .lecture-header .meta-left .cat-niveau span {
-      margin: 0 6px;
+    function chargerAutoSave() {
+      try {
+        var saved = localStorage.getItem('admin_auto_save');
+        if (!saved) return;
+        var data = JSON.parse(saved);
+        var age = (Date.now() - data.timestamp) / 60000;
+        if (age > 60) {
+          localStorage.removeItem('admin_auto_save');
+          return;
+        }
+        
+        if (confirm('➜] Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
+          slidesData = data.slidesData || [''];
+          slidesIdee = data.slidesIdee || [false];
+          quizData = data.quizData || [{ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] }];
+          openQuestionsData = data.openQuestionsData || [''];
+          infosData = data.infosData || [''];
+          retenirOpen = data.retenirOpen || false;
+          
+          document.getElementById('inputTitre').value = data.titre || '';
+          document.getElementById('inputDate').value = data.date || '';
+          if (data.niveau) {
+            var sn = document.getElementById('inputNiveau');
+            for (var i = 0; i < sn.options.length; i++) {
+              if (sn.options[i].value == data.niveau) { sn.selectedIndex = i; break; }
+            }
+          }
+          if (data.categorie) {
+            var sc = document.getElementById('inputCategorie');
+            for (var i = 0; i < sc.options.length; i++) {
+              if (sc.options[i].value === data.categorie) { sc.selectedIndex = i; break; }
+            }
+          }
+          document.getElementById('retenir1').value = data.retenir1 || '';
+          document.getElementById('retenir2').value = data.retenir2 || '';
+          document.getElementById('retenir3').value = data.retenir3 || '';
+          
+          if (retenirOpen) {
+            document.getElementById('retenirChamps').classList.add('open');
+          }
+          
+          afficherSlides();
+          afficherQuiz();
+          afficherOpenQuestions();
+          afficherInfos();
+          
+          localStorage.removeItem('admin_auto_save');
+          document.getElementById('autoSaveIndicator').textContent = '💾 Restauré';
+          document.getElementById('autoSaveIndicator').className = 'auto-save-indicator visible saved';
+          setTimeout(function() {
+            document.getElementById('autoSaveIndicator').className = 'auto-save-indicator';
+          }, 3000);
+        }
+      } catch(e) {
+        console.error('Erreur restauration auto-save:', e);
+      }
     }
 
-    .lecture-header .meta-left .titre {
-      font-family: 'Merriweather', serif;
-      font-size: 20px;
-      font-weight: 400;
-      color: #e8e0d8;
-      line-height: 1.3;
+    // ============================================================
+    // CHARGER NIVEAUX ET CATÉGORIES
+    // ============================================================
+    function chargerNiveauxEtCategories() {
+      var urlNiveaux = CONFIG.SCRIPT_URL + '?action=getNiveaux';
+      fetch(urlNiveaux)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            niveauxData = data.niveaux || [];
+            remplirSelectNiveaux();
+          }
+        })
+        .catch(function(e) { console.error('Erreur niveaux:', e); });
+
+      var urlCategories = CONFIG.SCRIPT_URL + '?action=getLabels';
+      fetch(urlCategories)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            categoriesData = data.labels || [];
+            remplirSelectCategories();
+          }
+        })
+        .catch(function(e) { console.error('Erreur catégories:', e); });
     }
 
-    .lecture-header .actions {
-      display: flex;
-      align-items: center;
-      gap: 12px;
+    function remplirSelectNiveaux() {
+      var select = document.getElementById('inputNiveau');
+      select.innerHTML = '';
+      if (niveauxData.length === 0) {
+        for (var i = 1; i <= 12; i++) {
+          var opt = document.createElement('option');
+          opt.value = i;
+          opt.textContent = 'Nvx ' + i;
+          select.appendChild(opt);
+        }
+      } else {
+        niveauxData.forEach(function(n) {
+          var opt = document.createElement('option');
+          opt.value = n.valeur;
+          opt.textContent = 'Nvx ' + n.valeur + (n.description ? ' - ' + n.description : '');
+          select.appendChild(opt);
+        });
+      }
     }
 
-    .lecture-header .actions .btn-close {
-      background: none;
-      border: none;
-      color: #6b6b6b;
-      font-size: 28px;
-      cursor: pointer;
-      padding: 8px 8px 4px 8px;
-      line-height: 1;
-      transition: color 0.2s;
-      font-family: 'Inter', sans-serif;
+    function remplirSelectCategories() {
+      var select = document.getElementById('inputCategorie');
+      select.innerHTML = '';
+      if (categoriesData.length === 0) {
+        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Méditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
+        defaults.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      } else {
+        categoriesData.forEach(function(c) {
+          var opt = document.createElement('option');
+          opt.value = c;
+          opt.textContent = c;
+          select.appendChild(opt);
+        });
+      }
     }
 
-    .lecture-header .actions .btn-close:hover {
-      color: #e8e0d8;
+    // ============================================================
+    // CHARGEMENT ADMIN
+    // ============================================================
+    function chargerAdmin() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) { 
+        window.location.href = '/medit/index.html'; 
+        return; 
+      }
+
+      if (id !== 'admin') {
+        window.location.href = '/medit/mes-textes.html';
+        return;
+      }
+
+      chargerNiveauxEtCategories();
+
+      DataManager.charger()
+        .then(function(data) {
+          tousLesPosts = data.posts || [];
+          toutesLesReponses = data.reponses || [];
+          
+          tousLesPosts.forEach(function(p) {
+            if (!p.statut) {
+              p.statut = 'publie';
+            } else {
+              p.statut = p.statut.trim().toLowerCase();
+            }
+            if (p.statut !== 'publie' && p.statut !== 'brouillon') {
+              p.statut = 'publie';
+            }
+            if (!p.versions) p.versions = 1;
+            if (!p.dateModif) p.dateModif = p.date || '';
+          });
+          
+          afficherAdmin();
+          demarrerAutoSave();
+        })
+        .catch(function(error) {
+          console.error('Erreur:', error);
+          var loader = document.getElementById('loader');
+          if (loader) loader.style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide">
+              <span class="icone">⚠️</span>
+              <h2>Erreur de chargement</h2>
+              <p>${error.message || 'Vérifiez votre connexion.'}</p>
+              <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #d1ccc4;border-radius:30px;cursor:pointer;">Réessayer</button>
+            </div>
+          `;
+        });
     }
 
-    .lecture-header .actions .badge-statut {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      padding: 4px 14px;
-      border-radius: 20px;
-      background: #2a2a2a;
-      color: #6b6b6b;
-      letter-spacing: 0.3px;
-      display: none;
+    // ============================================================
+    // AFFICHER ADMIN
+    // ============================================================
+    function afficherAdmin() {
+      var loader = document.getElementById('loader');
+      if (loader) {
+        loader.style.display = 'none';
+      }
+
+      var total = tousLesPosts.length;
+      var publies = tousLesPosts.filter(function(p) { return p.statut === 'publie'; }).length;
+      var brouillons = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; }).length;
+      
+      var totalLectures = 0;
+      toutesLesReponses.forEach(function(r) {
+        if (r.bonnes > 0 || r.total > 0) totalLectures++;
+      });
+
+      document.getElementById('totalPosts').textContent = total;
+      document.getElementById('publiesPosts').textContent = publies;
+      document.getElementById('brouillonsPosts').textContent = brouillons;
+      document.getElementById('totalLectures').textContent = totalLectures;
+      document.getElementById('compteurTous').textContent = total;
+      document.getElementById('compteurPublies').textContent = publies;
+      document.getElementById('compteurBrouillons').textContent = brouillons;
+
+      genererFiltresCategories();
+
+      var postsFiltres = filtrerPosts();
+      afficherPosts(postsFiltres);
     }
 
-    .lecture-header .actions .badge-statut.valide {
-      display: inline-block;
-      background: #1e3a2a;
-      color: #7ab893;
+    // ============================================================
+    // FILTRER POSTS
+    // ============================================================
+    function filtrerPosts() {
+      var resultats = [];
+      
+      if (ongletActuel === 'tous') {
+        resultats = tousLesPosts.slice();
+      } else if (ongletActuel === 'publies') {
+        resultats = tousLesPosts.filter(function(p) { return p.statut === 'publie'; });
+      } else if (ongletActuel === 'brouillons') {
+        resultats = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
+      }
+      
+      if (categorieActuelle !== 'toutes') {
+        resultats = resultats.filter(function(p) { return p.categorie === categorieActuelle; });
+      }
+      
+      if (rechercheActuelle.trim() !== '') {
+        var search = rechercheActuelle.trim().toLowerCase();
+        resultats = resultats.filter(function(p) {
+          return (p.titre && p.titre.toLowerCase().includes(search)) ||
+                 (p.contenu && p.contenu.toLowerCase().includes(search));
+        });
+      }
+      
+      return resultats;
     }
 
-    .lecture-header .actions .badge-statut.non-valide {
-      display: inline-block;
-      background: #3a1e1e;
-      color: #c87a7a;
+    // ============================================================
+    // RECHERCHE
+    // ============================================================
+    function appliquerRecherche() {
+      rechercheActuelle = document.getElementById('searchInput').value;
+      afficherAdmin();
     }
 
-    /* ===== CONTENU PRINCIPAL ===== */
-    .lecture-body {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-      background: #161616;
+    // ============================================================
+    // AFFICHER POSTS
+    // ============================================================
+    function afficherPosts(posts) {
+      var container = document.getElementById('contenu');
+
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="vide">
+            <span class="icone">📭</span>
+            <h2>Aucun texte</h2>
+            <p>Aucun texte ne correspond à vos critères.</p>
+          </div>
+        `;
+        return;
+      }
+
+      posts.sort(function(a, b) {
+        return (a.ordre || 999) - (b.ordre || 999);
+      });
+
+      var html = '<div class="grille">';
+
+      posts.forEach(function(post, index) {
+        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
+        var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
+        
+        var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
+        
+        // Statistiques de lecture
+        var lectures = toutesLesReponses.filter(function(r) { return r.articleId === post.id; });
+        var nbLectures = lectures.length;
+        var nbQuiz = lectures.filter(function(r) { return r.bonnes > 0 || r.total > 0; }).length;
+        var nbReponses = lectures.filter(function(r) { return r.reponseOuverte && r.reponseOuverte.trim() !== ''; }).length;
+        
+        var statsHtml = '';
+        if (nbLectures > 0) {
+          statsHtml = '<span class="stat-lecture">📖 ' + nbLectures + ' lectures' +
+            (nbQuiz > 0 ? ' | 🧪 ' + nbQuiz + ' quiz' : '') +
+            (nbReponses > 0 ? ' | ✏️ ' + nbReponses + ' réponses' : '') +
+            '</span>';
+        }
+
+        // === INFOS ===
+        var nbSlides = post.contenu ? post.contenu.split(' -s- ').length : 0;
+        var hasQuiz = post.contenu && post.contenu.includes('-q-');
+        var hasQuestion = post.contenu && post.contenu.includes('-qs-');
+        var hasRetenir = post.contenu && post.contenu.includes('-r-');
+        var hasInfo = post.contenu && post.contenu.includes('-i-');
+        var mots = post.mots || 0;
+        
+        var infoBadges = '';
+        infoBadges += '<span class="info-badge">📄 ' + nbSlides + ' slides</span>';
+        if (hasQuiz) infoBadges += '<span class="info-badge">🧪 Quiz</span>';
+        if (hasQuestion) infoBadges += '<span class="info-badge">✏️ Q. ouverte</span>';
+        if (hasRetenir) infoBadges += '<span class="info-badge">📌 Mémo</span>';
+        if (hasInfo) infoBadges += '<span class="info-badge">ℹ️ Infos</span>';
+        if (mots > 0) infoBadges += '<span class="info-badge">📝 ' + mots + ' mots</span>';
+        
+        // Date création et modification
+        var dateCreation = post.date ? new Date(post.date) : null;
+        var dateModif = post.dateModif ? new Date(post.dateModif) : null;
+        var dateStr = '';
+        if (dateCreation) {
+          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        if (dateModif && dateModif.getTime() !== dateCreation?.getTime()) {
+          dateStr += ' | Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        var versionsStr = post.versions ? ' v' + post.versions : '';
+        // ========================================================
+
+        // === APERÇU TOUJOURS VISIBLE ===
+        var apercuHtml = '';
+        if (post.contenu) {
+          var slides = post.contenu.split(' | -s- ');
+          var apercu = slides.slice(0, 2).join(' | ');
+          if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
+          if (slides.length > 2) apercu += ' ...';
+          if (apercu.trim()) {
+            apercuHtml = `
+              <div class="apercu-rapide" id="apercu_${post.id}">
+                ${apercu}
+              </div>
+            `;
+          }
+        }
+        // ========================================================
+
+        html += `
+          <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" onclick="modifierPost('${post.id}')">
+            <div class="infos">
+              <div class="titre">
+                <span class="drag-handle" onclick="event.stopPropagation(); event.preventDefault();">⠿</span>
+                ${post.titre || 'Sans titre'}
+                ${ordreHtml}
+                <span style="font-size:11px;color:#b8b0a8;font-weight:400;margin-left:8px;">${dateStr}${versionsStr}</span>
+              </div>
+              <div class="meta">
+                <span>Niveau ${post.niveau || 0}</span>
+                <span>${post.categorie || 'Sans catégorie'}</span>
+                <span class="badge ${statutClass}">${statutLabel}</span>
+                ${infoBadges}
+                ${statsHtml}
+              </div>
+              ${apercuHtml}
+            </div>
+            <div class="actions">
+              <button onclick="event.stopPropagation(); modifierPost('${post.id}')">✎ Modifier</button>
+              <button onclick="event.stopPropagation(); exporterPost('${post.id}')">📥 Exporter</button>
+              <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+      
+      initDragDropPosts();
     }
 
-    .lecture-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
+    // ============================================================
+    // DRAG & DROP POUR RÉORGANISER LES ARTICLES
+    // ============================================================
+    function initDragDropPosts() {
+      var items = document.querySelectorAll('.carte-post[data-id]');
+      items.forEach(function(item) {
+        item.setAttribute('draggable', 'true');
+        
+        item.addEventListener('dragstart', function(e) {
+          dragIndexPost = parseInt(this.dataset.index);
+          dragCategorieActuelle = this.dataset.categorie;
+          this.classList.add('dragging');
+          e.dataTransfer.effectAllowed = 'move';
+        });
+        
+        item.addEventListener('dragend', function(e) {
+          this.classList.remove('dragging');
+          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+        });
+        
+        item.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          e.dataTransfer.dropEffect = 'move';
+          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+          if (this.dataset.categorie === dragCategorieActuelle) {
+            this.classList.add('drag-over');
+          }
+        });
+        
+        item.addEventListener('dragleave', function(e) {
+          this.classList.remove('drag-over');
+        });
+        
+        item.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.classList.remove('drag-over');
+          var targetIndex = parseInt(this.dataset.index);
+          
+          if (this.dataset.categorie !== dragCategorieActuelle) {
+            alert('Impossible de déplacer un article dans une autre catégorie.');
+            return;
+          }
+          
+          if (dragIndexPost !== null && dragIndexPost !== targetIndex) {
+            var postsCategorie = tousLesPosts.filter(function(p) {
+              return p.categorie === dragCategorieActuelle;
+            });
+            postsCategorie.sort(function(a, b) {
+              return (a.ordre || 999) - (b.ordre || 999);
+            });
+            
+            var draggedPost = postsCategorie[dragIndexPost];
+            var targetPost = postsCategorie[targetIndex];
+            var tempOrdre = draggedPost.ordre || (dragIndexPost + 1);
+            draggedPost.ordre = targetPost.ordre || (targetIndex + 1);
+            targetPost.ordre = tempOrdre;
+            
+            sauvegarderOrdresCategorie(dragCategorieActuelle);
+          }
+        });
+      });
     }
 
-    /* ===== PAGES ===== */
-    .pages-wrapper {
-      flex: 1;
-      overflow-y: auto;
-      overflow-x: hidden;
-      scroll-behavior: smooth;
-      padding: 20px 40px 20px 40px;
-      scrollbar-width: thin;
-      scrollbar-color: #2a2a2a transparent;
+    // ============================================================
+    // SAUVEGARDER L'ORDRE DES ARTICLES D'UNE CATÉGORIE
+    // ============================================================
+    function sauvegarderOrdresCategorie(categorie) {
+      var postsCategorie = tousLesPosts.filter(function(p) {
+        return p.categorie === categorie;
+      });
+      postsCategorie.sort(function(a, b) {
+        return (a.ordre || 999) - (b.ordre || 999);
+      });
+      
+      postsCategorie.forEach(function(p, index) {
+        p.ordre = index + 1;
+      });
+      
+      var url = CONFIG.SCRIPT_URL + '?action=updateOrdres';
+      postsCategorie.forEach(function(p) {
+        url += '&id[]=' + encodeURIComponent(p.id) + '&ordre[]=' + encodeURIComponent(p.ordre);
+      });
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            console.log('➜] Ordres sauvegardés pour la catégorie "' + categorie + '"');
+            mettreAJourBadgesOrdre();
+          } else {
+            console.error('⚠︎ Erreur sauvegarde ordres:', data.message);
+          }
+        })
+        .catch(function(e) {
+          console.error('⚠︎ Erreur:', e);
+        });
     }
 
-    .pages-wrapper::-webkit-scrollbar {
-      width: 4px;
+    // ============================================================
+    // METTRE À JOUR LES BADGES D'ORDRE
+    // ============================================================
+    function mettreAJourBadgesOrdre() {
+      document.querySelectorAll('.carte-post[data-id]').forEach(function(el) {
+        var id = el.dataset.id;
+        var post = tousLesPosts.find(function(p) { return p.id === id; });
+        if (post) {
+          var badge = el.querySelector('.ordre-badge');
+          if (badge) {
+            badge.textContent = '#' + (post.ordre || '');
+          }
+        }
+      });
     }
 
-    .pages-wrapper::-webkit-scrollbar-track {
-      background: transparent;
+    // ============================================================
+    // SWITCH TAB
+    // ============================================================
+    function switchTab(tab) {
+      ongletActuel = tab;
+      
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.tab === tab) {
+          el.classList.add('active');
+        }
+      });
+      
+      afficherAdmin();
     }
 
-    .pages-wrapper::-webkit-scrollbar-thumb {
-      background: #2a2a2a;
-      border-radius: 4px;
+    // ============================================================
+    // FILTRER PAR CATÉGORIE
+    // ============================================================
+    function filtrerParCategorie(cat) {
+      categorieActuelle = cat;
+      
+      document.querySelectorAll('.filtre-cat-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.cat === cat) {
+          el.classList.add('active');
+        }
+      });
+      
+      afficherAdmin();
     }
 
-    .page-item {
-      min-height: calc(100vh - 160px);
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
-      padding: 30px 20px;
-      max-width: 780px;
-      margin: 0 auto;
-      opacity: 0;
-      transform: translateY(20px);
-      transition: opacity 0.6s ease, transform 0.6s ease;
-      scroll-margin-top: 20px;
+    // ============================================================
+    // GÉNÉRER FILTRES CATÉGORIES
+    // ============================================================
+    function genererFiltresCategories() {
+      var cats = {};
+      
+      tousLesPosts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!cats[cat]) cats[cat] = 0;
+        cats[cat]++;
+      });
+      
+      var container = document.getElementById('filtresCategories');
+      var total = tousLesPosts.length;
+      
+      var html = '<button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie(\'toutes\')">Toutes <span class="compteur-cat">' + total + '</span></button>';
+      
+      var categoriesTriees = Object.keys(cats).sort();
+      categoriesTriees.forEach(function(cat) {
+        var count = cats[cat];
+        var activeClass = (categorieActuelle === cat) ? ' active' : '';
+        var isDefault = categoriesData.indexOf(cat) === -1 && cat !== 'Sans catégorie';
+        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span>' +
+          (isDefault ? ' <span class="btn-del-cat" onclick="event.stopPropagation(); supprimerCategorie(\'' + cat + '\')">✕</span>' : '') +
+          '</button>';
+      });
+      
+      container.innerHTML = html;
     }
 
-    .page-item.visible {
-      opacity: 1;
-      transform: translateY(0);
+    // ============================================================
+    // GESTION DES CATÉGORIES
+    // ============================================================
+    function ouvrirModalCategories() {
+      var modal = document.getElementById('modalCategories');
+      modal.classList.add('visible');
+      afficherListeCategories();
     }
 
-    .page-item .page-num {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      color: #3a3a3a;
-      letter-spacing: 0.5px;
-      margin-bottom: 16px;
-      text-transform: uppercase;
+    function fermerModalCategories() {
+      document.getElementById('modalCategories').classList.remove('visible');
     }
 
-    .page-item .page-content {
-      font-size: 19px;
-      line-height: 1.9;
-      color: #e0d8d0;
-      font-weight: 300;
-      letter-spacing: 0.3px;
+    function afficherListeCategories() {
+      var container = document.getElementById('listeCategories');
+      var html = '';
+      
+      var cats = {};
+      tousLesPosts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!cats[cat]) cats[cat] = 0;
+        cats[cat]++;
+      });
+      
+      var sorted = Object.keys(cats).sort();
+      sorted.forEach(function(cat) {
+        var isDefault = categoriesData.indexOf(cat) !== -1 || cat === 'Sans catégorie';
+        html += `
+          <div class="cat-item">
+            <span class="cat-name">${cat} (${cats[cat]} articles)</span>
+            <div class="cat-actions">
+              ${!isDefault ? '<button class="btn-del-cat-modal" onclick="supprimerCategorie(\'' + cat + '\')">✕ Supprimer</button>' : ''}
+              <button onclick="renommerCategorie(\'' + cat + '\')">✏️ Renommer</button>
+            </div>
+          </div>
+        `;
+      });
+      
+      container.innerHTML = html;
     }
 
-    .page-item .page-content p {
-      margin-bottom: 1.2em;
+    function ajouterCategorie() {
+      var input = document.getElementById('newCatInput');
+      var cat = input.value.trim();
+      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
+      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
+      
+      categoriesData.push(cat);
+      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            input.value = '';
+            afficherListeCategories();
+            remplirSelectCategories();
+            alert('✓ Catégorie ajoutée avec succès !');
+          } else {
+            alert('⚠︎ Erreur : ' + data.message);
+          }
+        })
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
-    .page-item .page-content p:last-child {
-      margin-bottom: 0;
+    function supprimerCategorie(cat) {
+      if (cat === 'Sans catégorie') { alert('Impossible de supprimer la catégorie "Sans catégorie".'); return; }
+      if (!confirm('Supprimer la catégorie "' + cat + '" ? Les articles seront reassignés à "Sans catégorie".')) return;
+      
+      tousLesPosts.forEach(function(p) {
+        if (p.categorie === cat) p.categorie = 'Sans catégorie';
+      });
+      
+      var index = categoriesData.indexOf(cat);
+      if (index !== -1) categoriesData.splice(index, 1);
+      
+      var url = CONFIG.SCRIPT_URL + '?action=deleteLabel&label=' + encodeURIComponent(cat);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            afficherAdmin();
+            if (document.getElementById('modalCategories').classList.contains('visible')) {
+              afficherListeCategories();
+            }
+            remplirSelectCategories();
+            alert('✓ Catégorie supprimée avec succès !');
+          } else {
+            alert('⚠︎ Erreur : ' + data.message);
+          }
+        })
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
-    /* ===== SLIDES ===== */
-    .page-item.slide .page-content {
-      font-size: 21px;
-      line-height: 2;
+    function renommerCategorie(oldCat) {
+      var newCat = prompt('Nouveau nom pour "' + oldCat + '" :');
+      if (!newCat || newCat.trim() === '') return;
+      newCat = newCat.trim();
+      if (categoriesData.indexOf(newCat) !== -1 && newCat !== oldCat) {
+        alert('Cette catégorie existe déjà.');
+        return;
+      }
+      
+      tousLesPosts.forEach(function(p) {
+        if (p.categorie === oldCat) p.categorie = newCat;
+      });
+      
+      var index = categoriesData.indexOf(oldCat);
+      if (index !== -1) {
+        categoriesData[index] = newCat;
+      }
+      
+      var url = CONFIG.SCRIPT_URL + '?action=renameLabel&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            afficherAdmin();
+            if (document.getElementById('modalCategories').classList.contains('visible')) {
+              afficherListeCategories();
+            }
+            remplirSelectCategories();
+            alert('✓ Catégorie renommée avec succès !');
+          } else {
+            alert('⚠︎ Erreur : ' + data.message);
+          }
+        })
+        .catch(function(e) { alert('⚠︎ Erreur : ' + e.message); });
     }
 
-    .page-item.slide .page-content .slide-idee {
-      font-style: italic;
-      color: #6b6b6b;
-      border-left: 3px solid #2a2a2a;
-      padding-left: 20px;
+    // ============================================================
+    // EXPORTER TOUT
+    // ============================================================
+    function exporterTout() {
+      if (tousLesPosts.length === 0) {
+        alert('Aucun article à exporter.');
+        return;
+      }
+      
+      var data = {
+        exportDate: new Date().toISOString(),
+        total: tousLesPosts.length,
+        posts: tousLesPosts.map(function(p) {
+          return {
+            id: p.id,
+            titre: p.titre,
+            niveau: p.niveau,
+            categorie: p.categorie,
+            date: p.date,
+            statut: p.statut,
+            contenu: p.contenu ? p.contenu.replace(/ \| /g, '\n') : '',
+            mots: p.mots,
+            hasQuiz: p.hasQuiz,
+            hasQuestion: p.hasQuestion,
+            ordre: p.ordre || 0,
+            versions: p.versions || 1,
+            dateModif: p.dateModif || p.date || ''
+          };
+        })
+      };
+      
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'export_tous_articles_' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✓ Exportation de ' + tousLesPosts.length + ' articles terminée !');
     }
 
-    /* ===== QUIZ ===== */
-    .page-item.quiz .page-content {
-      font-size: 18px;
+    // ============================================================
+    // MODAL TEXTE
+    // ============================================================
+    function ouvrirModalTexte() {
+      modeEdition = false;
+      estBrouillon = false;
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Ajouter';
+      document.getElementById('editId').value = '';
+      document.getElementById('btnBrouillon').classList.remove('active');
+      document.getElementById('btnBrouillon').textContent = 'Brouillon';
+
+      slidesData = [];
+      slidesIdee = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      retenirOpen = false;
+      document.getElementById('retenirChamps').classList.remove('open');
+
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('inputDate').value = y + '-' + m + '-' + d;
+      document.getElementById('inputTitre').value = '';
+      document.getElementById('retenir1').value = '';
+      document.getElementById('retenir2').value = '';
+      document.getElementById('retenir3').value = '';
+      document.getElementById('messageTexte').style.display = 'none';
+
+      var selectNiveau = document.getElementById('inputNiveau');
+      if (selectNiveau.options.length > 0) selectNiveau.selectedIndex = 0;
+      var selectCategorie = document.getElementById('inputCategorie');
+      if (selectCategorie.options.length > 0) selectCategorie.selectedIndex = 0;
+
+      slidesData.push('');
+      slidesIdee.push(false);
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('inputTitre').focus();
+
+      startChrono();
+      chargerAutoSave();
     }
 
-    .page-item.quiz .quiz-question {
-      font-weight: 400;
-      font-size: 20px;
-      margin-bottom: 20px;
-      color: #e8e0d8;
+    function fermerModalTexte() {
+      stopChrono();
+      arreterAutoSave();
+      document.getElementById('modalTexte').classList.remove('visible');
+      localStorage.removeItem('admin_auto_save');
     }
 
-    .page-item.quiz .quiz-reponses {
-      display: flex;
-      flex-direction: column;
-      gap: 8px;
-      margin-top: 4px;
+    // ============================================================
+    // SLIDES
+    // ============================================================
+    var dragIndex = null;
+
+    function initDragDrop() {
+      var items = document.querySelectorAll('.slide-item');
+      items.forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+          dragIndex = parseInt(this.dataset.index);
+          this.classList.add('dragging');
+        });
+        item.addEventListener('dragend', function(e) {
+          this.classList.remove('dragging');
+          document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+        });
+        item.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+          this.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', function(e) {
+          this.classList.remove('drag-over');
+        });
+        item.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.classList.remove('drag-over');
+          var targetIndex = parseInt(this.dataset.index);
+          if (dragIndex !== null && dragIndex !== targetIndex) {
+            var slideMoved = slidesData.splice(dragIndex, 1)[0];
+            slidesData.splice(targetIndex, 0, slideMoved);
+            var ideeMoved = slidesIdee.splice(dragIndex, 1)[0];
+            slidesIdee.splice(targetIndex, 0, ideeMoved);
+            afficherSlides();
+          }
+        });
+      });
     }
 
-    .page-item.quiz .quiz-reponse {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 12px 18px;
-      border-radius: 8px;
-      background: #1e1e1e;
-      border: 1px solid #2a2a2a;
-      cursor: pointer;
-      transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      font-weight: 400;
-      color: #c8c0b8;
+    function ajouterSlide() {
+      slidesData.push('');
+      slidesIdee.push(false);
+      afficherSlides();
     }
 
-    .page-item.quiz .quiz-reponse:hover {
-      background: #262626;
-      border-color: #3a3a3a;
+    function supprimerSlide(index) {
+      slidesData.splice(index, 1);
+      slidesIdee.splice(index, 1);
+      if (slidesData.length === 0) {
+        slidesData.push('');
+        slidesIdee.push(false);
+      }
+      afficherSlides();
     }
 
-    .page-item.quiz .quiz-reponse .lettre {
-      font-weight: 600;
-      color: #6b6b6b;
-      min-width: 24px;
-      font-size: 13px;
+    function afficherSlides() {
+      var container = document.getElementById('slidesList');
+      if (slidesData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune slide</div>';
+        return;
+      }
+      var html = '';
+      slidesData.forEach(function(slide, index) {
+        var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
+        var ideeClass = slidesIdee[index] ? 'idee' : '';
+        var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
+        html += `
+          <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
+            <span class="slide-handle">⠿</span>
+            <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
+            <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      initDragDrop();
     }
 
-    .page-item.quiz .quiz-reponse.selectionnee {
-      border-color: #4a6a5a;
-      background: #1e2a24;
+    // ============================================================
+    // COMPOSEUR
+    // ============================================================
+    function ouvrirComposeur(index) {
+      composeurIndex = (index !== undefined) ? index : -1;
+      var textarea = document.getElementById('composeurTextarea');
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        textarea.value = slidesData[composeurIndex];
+      } else {
+        textarea.value = '';
+      }
+      document.getElementById('composeurOverlay').classList.add('visible');
+      textarea.focus();
     }
 
-    .page-item.quiz .quiz-reponse.correcte {
-      border-color: #4a8a5a;
-      background: #1a2a1e;
-      color: #8ac8a0;
+    function fermerComposeur() {
+      document.getElementById('composeurOverlay').classList.remove('visible');
     }
 
-    .page-item.quiz .quiz-reponse.incorrecte {
-      border-color: #8a4a4a;
-      background: #2a1a1a;
-      color: #c88a8a;
+    function validerComposeur() {
+      var texte = document.getElementById('composeurTextarea').value.trim();
+      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = texte;
+        slidesIdee[composeurIndex] = false;
+      } else {
+        slidesData.push(texte);
+        slidesIdee.push(false);
+      }
+      fermerComposeur();
+      afficherSlides();
     }
 
-    .page-item.quiz .quiz-reponse .result-icon {
-      margin-left: auto;
-      font-size: 18px;
+    function validerComposeurIdee() {
+      var texte = document.getElementById('composeurTextarea').value.trim();
+      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = texte;
+        slidesIdee[composeurIndex] = true;
+      } else {
+        slidesData.push(texte);
+        slidesIdee.push(true);
+      }
+      fermerComposeur();
+      afficherSlides();
     }
 
-    .page-item.quiz .quiz-feedback {
-      margin-top: 16px;
-      padding: 14px 20px;
-      border-radius: 8px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      display: none;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
+    // ============================================================
+    // RETENIR
+    // ============================================================
+    function toggleRetenir() {
+      retenirOpen = !retenirOpen;
+      var container = document.getElementById('retenirChamps');
+      if (retenirOpen) {
+        container.classList.add('open');
+      } else {
+        container.classList.remove('open');
+      }
     }
 
-    .page-item.quiz .quiz-feedback.visible {
-      display: block;
+    // ============================================================
+    // QUIZ
+    // ============================================================
+    function ajouterQuestion() {
+      quizData.push({
+        question: '',
+        reponses: [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ]
+      });
+      afficherQuiz();
     }
 
-    .page-item.quiz .quiz-feedback .bonne-reponse {
-      color: #8ac8a0;
+    function supprimerQuestion(index) {
+      quizData.splice(index, 1);
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+      afficherQuiz();
     }
 
-    .page-item.quiz .quiz-feedback .score {
-      font-weight: 500;
-      color: #e8e0d8;
-      margin-top: 8px;
+    function ajouterReponse(quizIndex) {
+      quizData[quizIndex].reponses.push({ texte: '', correct: false });
+      afficherQuiz();
     }
 
-    /* ===== QUESTION OUVERTE ===== */
-    .page-item.open-question .page-content {
-      font-size: 18px;
+    function supprimerReponse(quizIndex, repIndex) {
+      quizData[quizIndex].reponses.splice(repIndex, 1);
+      if (quizData[quizIndex].reponses.length === 0) {
+        quizData[quizIndex].reponses.push({ texte: '', correct: true });
+      }
+      afficherQuiz();
     }
 
-    .page-item.open-question .open-question-text {
-      font-weight: 400;
-      font-size:
+    function setVraiFaux(quizIndex, repIndex, estVrai) {
+      quizData[quizIndex].reponses[repIndex].correct = estVrai;
+      afficherQuiz();
+    }
+
+    function afficherQuiz() {
+      var container = document.getElementById('quizList');
+      if (quizData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucun quiz</div>';
+        return;
+      }
+      var html = '';
+      quizData.forEach(function(q, qi) {
+        html += `
+          <div class="quiz-item">
+            <input type="text" class="q-text" placeholder="Question QCM..." value="${q.question}" 
+                   onchange="quizData[${qi}].question = this.value">
+            <div class="quiz-reponses">
+        `;
+        q.reponses.forEach(function(r, ri) {
+          var lettre = String.fromCharCode(65 + ri);
+          html += `
+            <input type="text" placeholder="Réponse ${lettre}" value="${r.texte}" 
+                   style="flex:1;min-width:60px;" 
+                   onchange="quizData[${qi}].reponses[${ri}].texte = this.value">
+            <div class="vf-group">
+              <button class="vf-btn ${r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, true)">V</button>
+              <button class="vf-btn ${!r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, false)">F</button>
+            </div>
+            <button class="btn-del-quiz" onclick="supprimerReponse(${qi}, ${ri})">✕</button>
+          `;
+        });
+        html += `
+            </div>
+            <button class="btn-add" onclick="ajouterReponse(${qi})" style="font-size:11px;padding:2px 10px;">+ réponse</button>
+            <button class="btn-del-quiz" onclick="supprimerQuestion(${qi})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // QUESTIONS OUVERTES
+    // ============================================================
+    function ajouterQuestionOuverte() {
+      openQuestionsData.push('');
+      afficherOpenQuestions();
+    }
+
+    function supprimerQuestionOuverte(index) {
+      openQuestionsData.splice(index, 1);
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      afficherOpenQuestions();
+    }
+
+    function afficherOpenQuestions() {
+      var container = document.getElementById('openQuestionsList');
+      if (openQuestionsData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune question ouverte</div>';
+        return;
+      }
+      var html = '';
+      openQuestionsData.forEach(function(q, qi) {
+        html += `
+          <div class="open-question-item">
+            <input type="text" placeholder="Question ouverte..." value="${q}" 
+                   onchange="openQuestionsData[${qi}] = this.value">
+            <button class="btn-del-open" onclick="supprimerQuestionOuverte(${qi})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // INFOS
+    // ============================================================
+    function ajouterInfo() {
+      infosData.push('');
+      afficherInfos();
+    }
+
+    function supprimerInfo(index) {
+      infosData.splice(index, 1);
+      if (infosData.length === 0) infosData.push('');
+      afficherInfos();
+    }
+
+    function afficherInfos() {
+      var container = document.getElementById('infosList');
+      if (infosData.length === 0) {
+        container.innerHTML = '<div style="color:#b8b0a8;font-style:italic;padding:4px 0;">Aucune info</div>';
+        return;
+      }
+      var html = '';
+      infosData.forEach(function(info, ii) {
+        html += `
+          <div class="info-item">
+            <input type="text" placeholder="Info..." value="${info}" 
+                   onchange="infosData[${ii}] = this.value">
+            <button class="btn-del-info" onclick="supprimerInfo(${ii})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // BROUILLON
+    // ============================================================
+    function toggleBrouillon() {
+      estBrouillon = !estBrouillon;
+      var btn = document.getElementById('btnBrouillon');
+      btn.classList.toggle('active');
+      btn.textContent = estBrouillon ? '✓ Brouillon' : 'Brouillon';
+    }
+
+    // ============================================================
+    // ENREGISTRER
+    // ============================================================
+    function enregistrerTexte() {
+      var id = document.getElementById('editId').value;
+      var titre = document.getElementById('inputTitre').value.trim();
+      var niveau = document.getElementById('inputNiveau').value;
+      var categorie = document.getElementById('inputCategorie').value;
+      var statut = estBrouillon ? 'brouillon' : 'publie';
+      var msg = document.getElementById('messageTexte');
+
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+
+      if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
+      if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
+
+      // ============================================================
+      // CONSTRUIRE UN TABLEAU DE COLONNES (chaque élément dans sa colonne)
+      // ============================================================
+      var colonnes = [];
+
+      // 1. Slides
+      var slidesReelles = slidesData.filter(function(s, i) { return !slidesIdee[i]; });
+      slidesReelles.forEach(function(slide) {
+        colonnes.push('-s- ' + slide);
+      });
+
+      // 2. Quiz
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          colonnes.push('-q- ' + q.question);
+          q.reponses.forEach(function(r) {
+            colonnes.push((r.correct ? '-v- ' : '-f- ') + r.texte);
+          });
+        }
+      });
+
+      // 3. Questions ouvertes
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          colonnes.push('-qs- ' + q);
+        }
+      });
+
+      // 4. Retenir
+      if (retenir) {
+        colonnes.push('-r- ' + retenir);
+      }
+
+      // 5. Infos
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          colonnes.push('-i- ' + info);
+        }
+      });
+
+      var btn = document.getElementById('btnEnregistrer');
+      btn.textContent = 'Enregistrement...';
+      btn.disabled = true;
+      msg.style.display = 'none';
+
+      var maintenant = new Date().toISOString();
+
+      if (modeEdition && id) {
+        // === MODIFICATION : envoi des colonnes dynamiques + incrément version ===
+        var version = 1;
+        var postExistant = tousLesPosts.find(function(p) { return p.id === id; });
+        if (postExistant) {
+          version = (postExistant.versions || 1) + 1;
+        }
+        
+        var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+          '&id=' + encodeURIComponent(id) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(version) +
+          '&dateModif=' + encodeURIComponent(maintenant);
+
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✓ Post mis à jour ! (v' + version + ')', 'success');
+              btn.textContent = 'Mettre à jour';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la modification');
+            }
+          })
+          .catch(function(err) {
+            afficherMsgTexte('⚠︎ Erreur : ' + err.message, 'error');
+            btn.textContent = 'Mettre à jour';
+            btn.disabled = false;
+          });
+      } else {
+        // === AJOUT : envoi des colonnes dynamiques ===
+        var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(1) +
+          '&dateModif=' + encodeURIComponent(maintenant);
+
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✓ Post ajouté !', 'success');
+              btn.textContent = 'Ajouter';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la création');
+            }
+          })
+          .catch(function(err) {
+            afficherMsgTexte('⚠︎ Erreur : ' + err.message, 'error');
+            btn.textContent = 'Ajouter';
+            btn.disabled = false;
+          });
+      }
+    }
+
+    function afficherMsgTexte(texte, type) {
+      var msg = document.getElementById('messageTexte');
+      msg.textContent = texte;
+      msg.className = 'message ' + type;
+      msg.style.display = 'block';
+    }
+
+    // ============================================================
+    // MODIFIER POST
+    // ============================================================
+    function modifierPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      modeEdition = true;
+      estBrouillon = post.statut === 'brouillon';
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('editId').value = postId;
+
+      if (post.date) {
+        var d = new Date(post.date);
+        if (!isNaN(d.getTime())) {
+          var y = d.getFullYear();
+          var m = String(d.getMonth() + 1).padStart(2, '0');
+          var dd = String(d.getDate()).padStart(2, '0');
+          document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
+        }
+      }
+
+      document.getElementById('inputTitre').value = post.titre || '';
+
+      var selectNiveau = document.getElementById('inputNiveau');
+      for (var i = 0; i < selectNiveau.options.length; i++) {
+        if (selectNiveau.options[i].value == post.niveau) {
+          selectNiveau.selectedIndex = i;
+          break;
+        }
+      }
+
+      var selectCategorie = document.getElementById('inputCategorie');
+      for (var i = 0; i < selectCategorie.options.length; i++) {
+        if (selectCategorie.options[i].value === post.categorie) {
+          selectCategorie.selectedIndex = i;
+          break;
+        }
+      }
+
+      var btnBrouillon = document.getElementById('btnBrouillon');
+      if (estBrouillon) {
+        btnBrouillon.classList.add('active');
+        btnBrouillon.textContent = '✓ Brouillon';
+      } else {
+        btnBrouillon.classList.remove('active');
+        btnBrouillon.textContent = 'Brouillon';
+      }
+
+      slidesData = [];
+      slidesIdee = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      retenirOpen = false;
+      document.getElementById('retenirChamps').classList.remove('open');
+
+      if (post.contenu) {
+        var colonnes = post.contenu.split(' | ');
+        
+        for (var i = 0; i < colonnes.length; i++) {
+          var ligne = colonnes[i].trim();
+          if (!ligne) continue;
+
+          if (ligne.startsWith('-s-')) {
+            slidesData.push(ligne.replace('-s-', '').trim());
+            slidesIdee.push(false);
+          } else if (ligne.startsWith('-q-')) {
+            var qText = ligne.replace('-q-', '').trim();
+            var reponses = [];
+            for (var j = i + 1; j < colonnes.length; j++) {
+              var nextLine = colonnes[j].trim();
+              if (nextLine.startsWith('-v-')) {
+                reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+                i = j;
+              } else if (nextLine.startsWith('-f-')) {
+                reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+                i = j;
+              } else {
+                break;
+              }
+            }
+            if (reponses.length === 0) {
+              reponses.push({ texte: '', correct: true });
+              reponses.push({ texte: '', correct: false });
+            }
+            quizData.push({ question: qText, reponses: reponses });
+          } else if (ligne.startsWith('-qs-')) {
+            openQuestionsData.push(ligne.replace('-qs-', '').trim());
+          } else if (ligne.startsWith('-r-')) {
+            var retenirText = ligne.replace('-r-', '').trim();
+            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+            document.getElementById('retenir1').value = mots[0] || '';
+            document.getElementById('retenir2').value = mots[1] || '';
+            document.getElementById('retenir3').value = mots[2] || '';
+            retenirOpen = true;
+            document.getElementById('retenirChamps').classList.add('open');
+          } else if (ligne.startsWith('-i-')) {
+            infosData.push(ligne.replace('-i-', '').trim());
+          }
+        }
+      }
+
+      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      if (infosData.length === 0) infosData.push('');
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('messageTexte').style.display = 'none';
+      document.getElementById('inputTitre').focus();
+
+      startChrono();
+    }
+
+    // ============================================================
+    // EXPORTER POST
+    // ============================================================
+    function exporterPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      var contenu = '';
+      contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+
+      if (post.contenu) {
+        contenu += post.contenu.replace(/ \| /g, '\n');
+      } else {
+        contenu += '-s- ' + (post.titre || 'Sans titre') + '\n\n';
+      }
+
+      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = (post.titre || 'post') + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+
+    // ============================================================
+    // IMPORTER
+    // ============================================================
+    function importerTexte() {
+      document.getElementById('fileInput').click();
+    }
+
+    function importerFichier(event) {
+      var file = event.target.files[0];
+      if (!file) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        var contenu = e.target.result;
+        parserContenu(contenu);
+        document.getElementById('fileInput').value = '';
+      };
+      reader.readAsText(file, 'UTF-8');
+    }
+
+    // ============================================================
+    // PARSER CONTENU (IMPORT) - Avec retours à la ligne
+    // ============================================================
+    function parserContenu(contenu) {
+      slidesData = [];
+      slidesIdee = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      retenirOpen = false;
+      document.getElementById('retenirChamps').classList.remove('open');
+      document.getElementById('retenir1').value = '';
+      document.getElementById('retenir2').value = '';
+      document.getElementById('retenir3').value = '';
+
+      // ============================================================
+      // DÉCOUPAGE : retour à la ligne OU " | "
+      // ============================================================
+      var colonnes;
+      if (contenu.includes('\n')) {
+        colonnes = contenu.split('\n').filter(function(l) { return l.trim() !== ''; });
+      } else {
+        colonnes = contenu.split(' | ');
+      }
+      // ============================================================
+
+      for (var i = 0; i < colonnes.length; i++) {
+        var ligne = colonnes[i].trim();
+        if (!ligne) continue;
+
+        // Ignorer les lignes qui commencent par Nvx: ou Cat: (déjà traitées par le parser d'import)
+        if (ligne.startsWith('Nvx:') || ligne.startsWith('Cat:')) continue;
+
+        if (ligne.startsWith('-s-')) {
+          slidesData.push(ligne.replace('-s-', '').trim());
+          slidesIdee.push(false);
+        } else if (ligne.startsWith('-q-')) {
+          var qText = ligne.replace('-q-', '').trim();
+          var reponses = [];
+          for (var j = i + 1; j < colonnes.length; j++) {
+            var nextLine = colonnes[j].trim();
+            if (nextLine.startsWith('-v-')) {
+              reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+              i = j;
+            } else if (nextLine.startsWith('-f-')) {
+              reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+              i = j;
+            } else {
+              break;
+            }
+          }
+          if (reponses.length === 0) {
+            reponses.push({ texte: '', correct: true });
+            reponses.push({ texte: '', correct: false });
+          }
+          quizData.push({ question: qText, reponses: reponses });
+        } else if (ligne.startsWith('-qs-')) {
+          openQuestionsData.push(ligne.replace('-qs-', '').trim());
+        } else if (ligne.startsWith('-r-')) {
+          var retenirText = ligne.replace('-r-', '').trim();
+          var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+          document.getElementById('retenir1').value = mots[0] || '';
+          document.getElementById('retenir2').value = mots[1] || '';
+          document.getElementById('retenir3').value = mots[2] || '';
+          retenirOpen = true;
+          document.getElementById('retenirChamps').classList.add('open');
+        } else if (ligne.startsWith('-i-')) {
+          infosData.push(ligne.replace('-i-', '').trim());
+        }
+      }
+
+      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      if (infosData.length === 0) infosData.push('');
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('messageTexte').style.display = 'none';
+    }
+
+    // ============================================================
+    // SUPPRIMER POST
+    // ============================================================
+    function supprimerPost(postId) {
+      if (!confirm('Supprimer ce texte définitivement ?')) return;
+
+      var btn = document.querySelector('.btn-supprimer');
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      DataManager.supprimerPost(postId)
+        .then(function() {
+          alert('✓ Post supprimé avec succès !');
+          chargerAdmin();
+        })
+        .catch(function(err) {
+          alert('⚠︎ Erreur : ' + err.message);
+          btn.textContent = '✕';
+          btn.disabled = false;
+        });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      chargerAdmin();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
