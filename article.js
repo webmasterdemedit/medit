@@ -1,6 +1,5 @@
 // ============================================================
-// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCM + ANNOTATION
-// NOUVEAU FORMAT : Séparateur | et marqueurs -s- -q- -v- -f- -qs- -r- -i-
+// article.js - VERSION COMPLÈTE AVEC DATAMANAGER + CACHE LOCAL + "J'ai lu" + QCF4 + ANNOTATION
 // ============================================================
 
 var slidesData = [];
@@ -125,68 +124,6 @@ function afficherNotification(message) {
 }
 
 // ============================================================
-// PARSER LE CONTENU (NOUVEAU FORMAT AVEC SÉPARATEUR |)
-// ============================================================
-function parserContenu(contenu) {
-  var slides = [];
-  var questionsQuiz = [];
-  var questionOuverte = '';
-  var retenir = '';
-  
-  if (!contenu) return { slides: [], questionsQuiz: [], questionOuverte: '', retenir: '' };
-  
-  // Séparer par | et filtrer les vides
-  var elements = contenu.split('|').filter(function(s) { return s.trim().length > 0; });
-  
-  var currentQuiz = null;
-  
-  for (var i = 0; i < elements.length; i++) {
-    var element = elements[i].trim();
-    
-    // Slide normale
-    if (element.startsWith('-s-')) {
-      slides.push({ type: 'text', data: { contenu: element.replace('-s-', '').trim() } });
-    }
-    // Quiz - Question
-    else if (element.startsWith('-q-')) {
-      var question = element.replace('-q-', '').trim();
-      currentQuiz = { question: question, options: [], bonneReponse: '' };
-      questionsQuiz.push(currentQuiz);
-    }
-    // Quiz - Bonne réponse
-    else if (element.startsWith('-v-')) {
-      var bonne = element.replace('-v-', '').trim();
-      if (currentQuiz) {
-        currentQuiz.bonneReponse = bonne;
-        currentQuiz.options.push(bonne);
-      }
-    }
-    // Quiz - Mauvaise réponse
-    else if (element.startsWith('-f-')) {
-      var mauvaise = element.replace('-f-', '').trim();
-      if (currentQuiz && mauvaise) {
-        currentQuiz.options.push(mauvaise);
-      }
-    }
-    // Question ouverte
-    else if (element.startsWith('-qs-')) {
-      questionOuverte = element.replace('-qs-', '').trim();
-    }
-    // À retenir
-    else if (element.startsWith('-r-')) {
-      retenir = element.replace('-r-', '').trim();
-    }
-    // Info
-    else if (element.startsWith('-i-')) {
-      // Les infos sont ignorées dans l'affichage article
-      // Elles peuvent être utilisées pour d'autres fonctionnalités
-    }
-  }
-  
-  return { slides: slides, questionsQuiz: questionsQuiz, questionOuverte: questionOuverte, retenir: retenir };
-}
-
-// ============================================================
 // AFFICHAGE
 // ============================================================
 function afficherArticle(post) {
@@ -229,31 +166,45 @@ function afficherArticle(post) {
 
   var slides = [];
   var questionsQuiz = [];
-  var questionOuverte = '';
-  var retenir = '';
 
-  // Parser le contenu avec le nouveau format
   if (post.contenu) {
-    var parsed = parserContenu(post.contenu);
-    slides = parsed.slides;
-    questionsQuiz = parsed.questionsQuiz;
-    questionOuverte = parsed.questionOuverte;
-    retenir = parsed.retenir;
+    var blocs = post.contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
+    blocs.forEach(function(bloc) {
+      slides.push({ type: 'text', data: { contenu: bloc } });
+    });
   }
 
-  // Ajouter le quiz comme un slide séparé
-  if (questionsQuiz.length > 0) {
-    slides.push({ type: 'quiz', data: { questions: questionsQuiz } });
+  if (post.quiz && post.quiz.trim() !== '') {
+    var quizBlocs = post.quiz.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
+    quizBlocs.forEach(function(bloc) {
+      var match = bloc.match(/^([^\n]*?)\s*RV\.\s*([^\n]*?)\s*RF\.\s*([^\n]*?)$/);
+      if (match) {
+        var question = match[1].trim();
+        var bonne = match[2].trim();
+        var mauvaise = match[3].trim();
+        if (question && bonne) {
+          var options = [bonne];
+          if (mauvaise) options.push(mauvaise);
+          else options.push('Je ne sais pas');
+          while (options.length < 3) {
+            var fake = ['Peut-être', 'Pas sûr', 'Autre chose'][Math.floor(Math.random() * 3)];
+            if (options.indexOf(fake) === -1) options.push(fake);
+          }
+          questionsQuiz.push({ question: question, options: options, bonneReponse: bonne });
+        }
+      }
+    });
+    if (questionsQuiz.length > 0) {
+      slides.push({ type: 'quiz', data: { questions: questionsQuiz } });
+    }
   }
 
-  // Ajouter la question ouverte comme un slide séparé
-  if (questionOuverte && questionOuverte.trim() !== '') {
-    slides.push({ type: 'question-ouverte', data: { question: questionOuverte } });
+  if (post.question_ouverte && post.question_ouverte.trim()) {
+    slides.push({ type: 'question-ouverte', data: { question: post.question_ouverte } });
   }
 
-  // Ajouter le mémo comme un slide séparé
-  if (retenir && retenir.trim() !== '') {
-    slides.push({ type: 'memo', data: { texte: retenir } });
+  if (post.retenir && post.retenir.trim()) {
+    slides.push({ type: 'memo', data: { texte: post.retenir } });
   }
 
   if (slides.length === 0) {
@@ -349,13 +300,13 @@ function genererSlideTexte(data) {
     return tableauHtml;
   }
   
-  // === TRAITEMENT NORMAL ===
-  var contenuBr = contenu.replace(/\n/g, '<br>');
-  // Appliquer la police arabe uniquement sur les mots arabes
-  var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
-  return '<div class="contenu-slide">' + contenuArabe + '</div>';
+ 
+// === TRAITEMENT NORMAL ===
+var contenuBr = contenu.replace(/\n/g, '<br>');
+// Appliquer la police arabe uniquement sur les mots arabes
+var contenuArabe = contenuBr.replace(/([\u0600-\u06FF\uF000-\uF8FF]+)/g, '<span class="arabic-word">$1</span>');
+return '<div class="contenu-slide">' + contenuArabe + '</div>';
 }
-
 function genererSlideQuiz(data) {
   var html = '<div class="quiz-container"><h3>📝 Quiz</h3>';
   data.questions.forEach(function(q, idx) {
@@ -498,8 +449,7 @@ function updateSlides() {
   if (annotationPopupOpen) {
     closeAnnotationPopup();
   }
-  
-  // ============================================================
+    // ============================================================
   // AJOUT : CLIC / TAP SUR LA ZONE POUR PASSER AU SLIDE SUIVANT
   // ============================================================
   var slideContainer = document.querySelector('.paragraphe-container');
@@ -513,6 +463,8 @@ function updateSlides() {
     };
   }
 }
+
+
 
 function ajouterBoutonAppris() {}
 
@@ -1172,6 +1124,7 @@ function sauvegarderAnnotation(texte) {
   var nom = localStorage.getItem('etudiant_id');
   if (!nom) return;
 
+  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
   if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
     console.log('⏳ DataManager pas encore chargé, annotation ignorée');
     return;
@@ -1209,6 +1162,7 @@ function chargerAnnotation() {
     return;
   }
 
+  // VÉRIFIER SI DATAMANAGER EST CHARGÉ
   if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
     console.log('⏳ DataManager pas encore chargé, annotation ignorée');
     return;
