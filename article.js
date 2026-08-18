@@ -26,9 +26,9 @@ var reponsesExistantes = null;
 
 
 // ============================================================
-// PARSEUR NOUVEAU FORMAT - COLONNES DYNAMIQUES
+// PARSEUR - NOUVEAU FORMAT COLONNES
 // ============================================================
-function parserColonnes(post) {
+function parserContenu(post) {
   var result = {
     slides: [],
     quiz: [],
@@ -37,230 +37,116 @@ function parserColonnes(post) {
     infos: []
   };
 
-  // Récupérer toutes les colonnes dynamiques
-  // On les trouve dans post.colonnes ou on les construit à partir des données
+  // Récupérer les colonnes
   var colonnes = post.colonnes || [];
   
-  // Si pas de colonnes, on utilise le contenu principal
+  // Fallback ancien format
   if (colonnes.length === 0 && post.contenu) {
-    // Fallback: parser l'ancien format
     return parserAncienFormat(post.contenu);
   }
 
-  var quizEnCours = null;
-  var attendReponse = false;
+  var quiz = null;
 
   for (var i = 0; i < colonnes.length; i++) {
-    var valeur = colonnes[i] || '';
-    var trimmed = valeur.trim();
+    var c = (colonnes[i] || '').trim();
+    if (!c) continue;
 
-    if (!trimmed) continue;
-
-    // --- SLIDE ---
-    if (trimmed.startsWith('-s-')) {
-      var texte = trimmed.substring(3).trim();
-      if (texte) {
-        result.slides.push(texte);
-      }
-      // Si on était en train de construire un quiz, on le finalise
-      if (quizEnCours && attendReponse) {
-        finaliserQuiz(quizEnCours, result);
-        quizEnCours = null;
-        attendReponse = false;
-      }
+    if (c.startsWith('-s-')) {
+      if (quiz) { result.quiz.push(quiz); quiz = null; }
+      result.slides.push(c.substring(3).trim());
     }
-
-    // --- QUESTION QCM ---
-    else if (trimmed.startsWith('-q-')) {
-      // Finaliser le quiz précédent s'il existe
-      if (quizEnCours && attendReponse) {
-        finaliserQuiz(quizEnCours, result);
-      }
-      var question = trimmed.substring(3).trim();
-      quizEnCours = {
-        question: question,
-        reponses: []
-      };
-      attendReponse = true;
+    else if (c.startsWith('-q-')) {
+      if (quiz) { result.quiz.push(quiz); quiz = null; }
+      quiz = { question: c.substring(3).trim(), reponses: [] };
     }
-
-    // --- BONNE RÉPONSE (VRAI) ---
-    else if (trimmed.startsWith('-v-') && quizEnCours && attendReponse) {
-      var bonne = trimmed.substring(3).trim();
-      if (bonne) {
-        quizEnCours.reponses.push({ texte: bonne, correct: true });
-      }
+    else if (c.startsWith('-v-') && quiz) {
+      quiz.reponses.push({ texte: c.substring(3).trim(), correct: true });
     }
-
-    // --- MAUVAISE RÉPONSE (FAUX) ---
-    else if (trimmed.startsWith('-f-') && quizEnCours && attendReponse) {
-      var mauvaise = trimmed.substring(3).trim();
-      if (mauvaise) {
-        quizEnCours.reponses.push({ texte: mauvaise, correct: false });
-      }
+    else if (c.startsWith('-f-') && quiz) {
+      quiz.reponses.push({ texte: c.substring(3).trim(), correct: false });
     }
-
-    // --- QUESTION OUVERTE ---
-    else if (trimmed.startsWith('-qs-')) {
-      // Finaliser le quiz précédent s'il existe
-      if (quizEnCours && attendReponse) {
-        finaliserQuiz(quizEnCours, result);
-        quizEnCours = null;
-        attendReponse = false;
-      }
-      var questionOuverte = trimmed.substring(4).trim();
-      if (questionOuverte) {
-        result.questionsOuvertes.push(questionOuverte);
-      }
+    else if (c.startsWith('-qs-')) {
+      if (quiz) { result.quiz.push(quiz); quiz = null; }
+      result.questionsOuvertes.push(c.substring(4).trim());
     }
-
-    // --- À RETENIR ---
-    else if (trimmed.startsWith('-r-')) {
-      // Finaliser le quiz précédent s'il existe
-      if (quizEnCours && attendReponse) {
-        finaliserQuiz(quizEnCours, result);
-        quizEnCours = null;
-        attendReponse = false;
-      }
-      var retenir = trimmed.substring(3).trim();
-      if (retenir) {
-        var mots = retenir.split(',').map(function(m) { return m.trim(); });
-        result.retenir = result.retenir.concat(mots.filter(function(m) { return m.length > 0; }));
-      }
+    else if (c.startsWith('-r-')) {
+      if (quiz) { result.quiz.push(quiz); quiz = null; }
+      var mots = c.substring(3).trim().split(',').map(function(m) { return m.trim(); });
+      result.retenir = result.retenir.concat(mots.filter(function(m) { return m.length > 0; }));
     }
-
-    // --- INFO ---
-    else if (trimmed.startsWith('-i-')) {
-      // Finaliser le quiz précédent s'il existe
-      if (quizEnCours && attendReponse) {
-        finaliserQuiz(quizEnCours, result);
-        quizEnCours = null;
-        attendReponse = false;
-      }
-      var info = trimmed.substring(3).trim();
-      if (info) {
-        result.infos.push(info);
-      }
-    }
-
-    // --- TEXTE BRUT (ancien format) ---
-    else if (!trimmed.startsWith('-')) {
-      // Si ce n'est pas une balise, c'est une slide en ancien format
-      if (!quizEnCours || !attendReponse) {
-        if (trimmed) {
-          result.slides.push(trimmed);
-        }
-      }
+    else if (c.startsWith('-i-')) {
+      if (quiz) { result.quiz.push(quiz); quiz = null; }
+      result.infos.push(c.substring(3).trim());
     }
   }
 
-  // Finaliser le dernier quiz s'il existe
-  if (quizEnCours && attendReponse) {
-    finaliserQuiz(quizEnCours, result);
-  }
+  if (quiz) result.quiz.push(quiz);
+  
+  // Nettoyer les quiz
+  result.quiz = result.quiz.filter(function(q) {
+    if (q.reponses.length < 2) {
+      if (q.reponses.length === 0) {
+        q.reponses = [{ texte: 'Vrai', correct: true }, { texte: 'Faux', correct: false }];
+      } else {
+        var aVrai = q.reponses.some(function(r) { return r.correct; });
+        q.reponses.push({ texte: aVrai ? 'Autre' : 'Vrai', correct: !aVrai });
+      }
+    }
+    var aVrai = q.reponses.some(function(r) { return r.correct; });
+    if (!aVrai) q.reponses[0].correct = true;
+    return q.question && q.question.length > 0;
+  });
 
   return result;
 }
 
-// Finaliser un quiz : s'assurer qu'il a au moins 2 réponses
-function finaliserQuiz(quiz, result) {
-  if (quiz.reponses.length < 2) {
-    // Ajouter des réponses par défaut si besoin
-    if (quiz.reponses.length === 0) {
-      quiz.reponses.push({ texte: 'Vrai', correct: true });
-      quiz.reponses.push({ texte: 'Faux', correct: false });
-    } else if (quiz.reponses.length === 1) {
-      // Si une seule réponse, on ajoute une fausse
-      var aUneVraie = quiz.reponses.some(function(r) { return r.correct; });
-      if (aUneVraie) {
-        quiz.reponses.push({ texte: 'Autre', correct: false });
-      } else {
-        quiz.reponses.push({ texte: 'Vrai', correct: true });
-      }
-    }
-  }
-  // S'assurer qu'il y a au moins une bonne réponse
-  var aUneVraie = quiz.reponses.some(function(r) { return r.correct; });
-  if (!aUneVraie && quiz.reponses.length > 0) {
-    quiz.reponses[0].correct = true;
-  }
-  result.quiz.push(quiz);
-}
-
-// ============================================================
-// FALLBACK: ANCIEN FORMAT (pour compatibilité)
-// ============================================================
+// Fallback ancien format
 function parserAncienFormat(contenu) {
-  var result = {
-    slides: [],
-    quiz: [],
-    questionsOuvertes: [],
-    retenir: [],
-    infos: []
-  };
-
+  var result = { slides: [], quiz: [], questionsOuvertes: [], retenir: [], infos: [] };
   if (!contenu) return result;
-
-  var blocs = contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
   
-  var quizEnCours = null;
+  var blocs = contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
+  var quiz = null;
 
   blocs.forEach(function(bloc) {
-    var trimmed = bloc.trim();
+    var b = bloc.trim();
 
-    // --- q: ... (quiz) ---
-    if (trimmed.startsWith('q:')) {
-      if (quizEnCours) {
-        finaliserQuiz(quizEnCours, result);
-      }
-      var lignes = trimmed.split('\n').filter(function(l) { return l.trim(); });
-      var question = lignes[0].substring(2).trim();
-      quizEnCours = { question: question, reponses: [] };
+    if (b.startsWith('q:')) {
+      if (quiz) result.quiz.push(quiz);
+      var lignes = b.split('\n').filter(function(l) { return l.trim(); });
+      quiz = { question: lignes[0].substring(2).trim(), reponses: [] };
       for (var i = 1; i < lignes.length; i++) {
-        var ligne = lignes[i].trim();
-        if (ligne.startsWith('r:')) {
-          var rep = ligne.substring(2).trim();
-          // Dans l'ancien format, on suppose que la première réponse est bonne
-          quizEnCours.reponses.push({ texte: rep, correct: quizEnCours.reponses.length === 0 });
+        var l = lignes[i].trim();
+        if (l.startsWith('r:')) {
+          quiz.reponses.push({ texte: l.substring(2).trim(), correct: quiz.reponses.length === 0 });
         }
       }
-      if (quizEnCours.reponses.length < 2) {
-        quizEnCours.reponses.push({ texte: 'Autre', correct: false });
-      }
-      finaliserQuiz(quizEnCours, result);
-      quizEnCours = null;
-      return;
+      if (quiz.reponses.length < 2) quiz.reponses.push({ texte: 'Autre', correct: false });
+      var aVrai = quiz.reponses.some(function(r) { return r.correct; });
+      if (!aVrai) quiz.reponses[0].correct = true;
+      result.quiz.push(quiz);
+      quiz = null;
     }
-
-    // --- question: ... ---
-    if (trimmed.startsWith('question:')) {
-      var qs = trimmed.substring(9).trim();
+    else if (b.startsWith('question:')) {
+      var qs = b.substring(9).trim();
       if (qs) result.questionsOuvertes.push(qs);
-      return;
     }
-
-    // --- mémo: ... ---
-    if (trimmed.startsWith('mémo:') || trimmed.startsWith('memo:')) {
-      var memo = trimmed.substring(trimmed.indexOf(':') + 1).trim();
+    else if (b.startsWith('mémo:') || b.startsWith('memo:')) {
+      var memo = b.substring(b.indexOf(':') + 1).trim();
       if (memo) {
         var mots = memo.split(',').map(function(m) { return m.trim(); });
         result.retenir = result.retenir.concat(mots.filter(function(m) { return m.length > 0; }));
       }
-      return;
     }
-
-    // --- Sinon, c'est une slide ---
-    if (trimmed) {
-      result.slides.push(trimmed);
+    else {
+      if (b) result.slides.push(b);
     }
   });
 
-  if (quizEnCours) {
-    finaliserQuiz(quizEnCours, result);
-  }
-
+  if (quiz) result.quiz.push(quiz);
   return result;
 }
+
 
 // ============================================================
 // CHARGEMENT AVEC DATAMANAGER
@@ -364,34 +250,24 @@ function afficherNotification(message) {
 // ============================================================
 function afficherArticle(post) {
   postTitre = post.titre || 'Sans titre';
-  
-  // === DÉTECTION DES COLONNES DYNAMIQUES ===
-  // Le post peut avoir des colonnes directement, ou on les reconstruit
+
+  // === PARSEUR NOUVEAU FORMAT ===
   var colonnes = [];
-  
-  // Si le post a une propriété colonnes, on l'utilise
-  if (post.colonnes && Array.isArray(post.colonnes)) {
+  if (post.colonnes && post.colonnes.length > 0) {
     colonnes = post.colonnes;
   } else {
-    // Sinon, on reconstruit à partir des propriétés connues
-    // (pour compatibilité avec l'ancien format)
+    // Compatibilité ancien format
     if (post.contenu) colonnes.push(post.contenu);
     if (post.quiz) colonnes.push(post.quiz);
     if (post.question_ouverte) colonnes.push(post.question_ouverte);
     if (post.retenir) colonnes.push(post.retenir);
   }
-  
-  // Parser les colonnes
-  var data = parserColonnes({ colonnes: colonnes });
-  
-  // Si pas de slides, essayer l'ancien format
+
+  var data = parserContenu({ colonnes: colonnes });
+
+  // Fallback si pas de slides
   if (data.slides.length === 0 && post.contenu) {
     data = parserAncienFormat(post.contenu);
-  }
-  
-  // Si toujours pas de slides, utiliser le titre
-  if (data.slides.length === 0) {
-    data.slides.push(postTitre);
   }
 
   hasQuiz = data.quiz.length > 0;
@@ -433,29 +309,22 @@ function afficherArticle(post) {
   // === CONSTRUCTION DES SLIDES ===
   var slides = [];
 
-  // Slides
-  data.slides.forEach(function(slide) {
-    slides.push({ type: 'text', data: { contenu: slide } });
+  data.slides.forEach(function(s) {
+    slides.push({ type: 'text', data: { contenu: s } });
   });
 
-  // Quiz
-  if (data.quiz.length > 0) {
-    data.quiz.forEach(function(q) {
-      slides.push({ type: 'quiz', data: { questions: [q] } });
-    });
-  }
+  data.quiz.forEach(function(q) {
+    slides.push({ type: 'quiz', data: { questions: [q] } });
+  });
 
-  // Questions ouvertes
   data.questionsOuvertes.forEach(function(q) {
     slides.push({ type: 'question-ouverte', data: { question: q } });
   });
 
-  // Mémo / À retenir
   if (data.retenir.length > 0) {
     slides.push({ type: 'memo', data: { texte: data.retenir.join(', ') } });
   }
 
-  // Infos
   if (data.infos.length > 0) {
     slides.push({ type: 'infos', data: { infos: data.infos } });
   }
@@ -629,6 +498,7 @@ function genererSlideInfos(data) {
 function genererDots() {
   var container = document.getElementById('dotsContainerOutside');
   if (!container) {
+    // Si le conteneur n'existe pas encore, le créer
     container = document.createElement('div');
     container.id = 'dotsContainerOutside';
     container.className = 'dots-container-outside';
@@ -992,465 +862,4 @@ function miseAJourCacheLecture(nom, articleId) {
   
   var reponseExistante = false;
   if (cache.reponses) {
-    for (var i = 0; i < cache.reponses.length; i++) {
-      if (cache.reponses[i].articleId === articleId) {
-        cache.reponses[i].bonnes = 1;
-        cache.reponses[i].total = 1;
-        cache.reponses[i].date = new Date().toISOString();
-        cache.reponses[i].reponseOuverte = 'Lu';
-        cache.reponses[i].dateEnvoi = new Date().toISOString();
-        reponseExistante = true;
-        break;
-      }
-    }
-  }
-  
-  if (!reponseExistante) {
-    if (!cache.reponses) cache.reponses = [];
-    cache.reponses.push({
-      articleId: articleId,
-      titre: postTitre || 'Méditation',
-      bonnes: 1,
-      total: 1,
-      date: new Date().toISOString(),
-      temps: '',
-      reponseOuverte: 'Lu',
-      dateEnvoi: new Date().toISOString(),
-      dureeTotale: ''
-    });
-  }
-  
-  if (cache.historique) {
-    var histoExistante = false;
-    for (var j = 0; j < cache.historique.length; j++) {
-      if (cache.historique[j].titre === postTitre || cache.historique[j].titre === 'Méditation') {
-        cache.historique[j].bonnes = 1;
-        cache.historique[j].total = 1;
-        cache.historique[j].date = new Date().toISOString();
-        cache.historique[j].valide = true;
-        cache.historique[j].reponseOuverte = 'Lu';
-        cache.historique[j].dateEnvoi = new Date().toISOString();
-        histoExistante = true;
-        break;
-      }
-    }
-    if (!histoExistante) {
-      cache.historique.push({
-        date: new Date().toISOString(),
-        titre: postTitre || 'Méditation',
-        bonnes: 1,
-        total: 1,
-        valide: true,
-        temps: '',
-        reponseOuverte: 'Lu',
-        dateEnvoi: new Date().toISOString(),
-        dureeTotale: ''
-      });
-    }
-  }
-  
-  DataManager.setCache(nom, cache);
-  console.log('✅ Cache local mis à jour pour "J\'ai lu"');
-}
-
-// ============================================================
-// BOUTON "J'AI LU"
-// ============================================================
-function marquerCommeLu() {
-  var nom = localStorage.getItem('etudiant_id');
-  if (!nom) {
-    afficherNotification('⚠️ Veuillez vous reconnecter.');
-    return;
-  }
-
-  var cache = DataManager.getCacheForce(nom);
-  if (cache && cache.reponses) {
-    for (var i = 0; i < cache.reponses.length; i++) {
-      if (cache.reponses[i].articleId === postId) {
-        if (cache.reponses[i].bonnes === 1 && cache.reponses[i].total === 1) {
-          afficherNotification('📖 Déjà marqué comme lu.');
-          return;
-        }
-      }
-    }
-  }
-
-  var url = CONFIG.SCRIPT_URL + '?action=saveLecture&nom=' + encodeURIComponent(nom) +
-    '&articleId=' + encodeURIComponent(postId) +
-    '&titre=' + encodeURIComponent(postTitre);
-
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success) {
-        afficherNotification('📖 Lecture enregistrée !');
-        miseAJourCacheLecture(nom, postId);
-        quizValide = true;
-        reponseValidee = true;
-        updateSlides();
-        setTimeout(function() { window.location.href = '/medit/mes-textes.html'; }, 1500);
-      } else {
-        afficherNotification('⚠️ Erreur : ' + (data.message || ''));
-      }
-    })
-    .catch(function() {
-      afficherNotification('⚠️ Erreur réseau.');
-    });
-}
-
-// ============================================================
-// QUIZ
-// ============================================================
-function verifierQuizAuto() {
-  if (quizVerrouille) return;
-
-  var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
-  var total = questions.length;
-  var correct = 0;
-  var toutesRepondues = true;
-  var choixQcm = [];
-
-  questions.forEach(function(q) {
-    var qId = q.getAttribute('data-question');
-    var radios = q.querySelectorAll('input[type="radio"]');
-    var feedback = document.getElementById('feedback_' + qId);
-    var labels = q.querySelectorAll('label');
-    var selected = null;
-    var reponseChoisie = '';
-
-    labels.forEach(function(l) { l.classList.remove('correct', 'incorrect'); });
-
-    radios.forEach(function(r) {
-      if (r.checked) {
-        selected = r;
-        reponseChoisie = r.value;
-      }
-    });
-
-    choixQcm.push(reponseChoisie);
-
-    if (selected) {
-      var isCorrect = selected.getAttribute('data-correct') === 'true';
-      if (isCorrect) {
-        correct++;
-        feedback.className = 'quiz-feedback correct';
-        feedback.textContent = '✓ Bonne réponse.';
-        labels.forEach(function(l) {
-          var r = l.querySelector('input[type="radio"]');
-          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
-        });
-      } else {
-        feedback.className = 'quiz-feedback incorrect';
-        feedback.textContent = '✗ Réessayez, relisez le texte.';
-        selected.closest('label').classList.add('incorrect');
-        labels.forEach(function(l) {
-          var r = l.querySelector('input[type="radio"]');
-          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
-        });
-      }
-    } else {
-      toutesRepondues = false;
-      feedback.className = 'quiz-feedback incorrect';
-      feedback.textContent = 'Sélectionnez une réponse.';
-    }
-  });
-
-  var resultDiv = document.getElementById('quiz-result');
-  resultDiv.style.display = 'block';
-  document.getElementById('quiz-score').textContent = correct;
-  document.getElementById('quiz-total').textContent = total;
-
-  var msg = document.getElementById('quiz-message');
-  if (!toutesRepondues) {
-    msg.textContent = 'Répondez à toutes les questions.';
-    msg.style.color = '#b8956a';
-    return;
-  }
-
-  quizVerrouille = true;
-  questions.forEach(function(q) {
-    q.classList.add('verrouille');
-    var radios = q.querySelectorAll('input[type="radio"]');
-    radios.forEach(function(r) { r.disabled = true; });
-  });
-
-  quizData.choixQcm = choixQcm;
-  quizData.bonnes = correct;
-  quizData.total = total;
-
-  if (correct === total) {
-    msg.textContent = 'Parfait !';
-    msg.style.color = '#2d6a4f';
-    quizValide = true;
-    sauvegarderQuiz();
-    updateSlides();
-    setTimeout(function() {
-      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
-    }, 1200);
-  } else if (correct >= Math.ceil(total / 2)) {
-    msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
-    msg.style.color = '#b8956a';
-    quizValide = true;
-    sauvegarderQuiz();
-    updateSlides();
-    setTimeout(function() {
-      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
-    }, 1200);
-  } else {
-    msg.textContent = 'Prenez le temps de relire la méditation.';
-    msg.style.color = '#c62828';
-  }
-}
-
-// ============================================================
-// ÉCOUTE DES RADIOS
-// ============================================================
-document.addEventListener('change', function(e) {
-  if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
-    var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
-    var toutesRepondues = true;
-    questions.forEach(function(q) {
-      var radios = q.querySelectorAll('input[type="radio"]');
-      var repondu = false;
-      radios.forEach(function(r) { if (r.checked) repondu = true; });
-      if (!repondu) toutesRepondues = false;
-    });
-    if (toutesRepondues && questions.length > 0) {
-      setTimeout(verifierQuizAuto, 400);
-    }
-  }
-});
-
-// ============================================================
-// SWIPE TACTILE
-// ============================================================
-var touchStartX = 0;
-var touchEndX = 0;
-
-document.addEventListener('touchstart', function(e) {
-  touchStartX = e.changedTouches[0].screenX;
-}, { passive: true });
-
-document.addEventListener('touchend', function(e) {
-  touchEndX = e.changedTouches[0].screenX;
-  var diff = touchStartX - touchEndX;
-  if (Math.abs(diff) > 50) {
-    if (diff > 0) {
-      slideSuivant();
-    } else {
-      slidePrecedent();
-    }
-  }
-}, { passive: true });
-
-// ============================================================
-// CLAVIER
-// ============================================================
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
-  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slidePrecedent(); }
-});
-
-// ============================================================
-// SYSTÈME D'ANNOTATION
-// ============================================================
-var annotationText = '';
-var annotationPopupOpen = false;
-var annotationSlideIndex = -1;
-
-function initAnnotationSystem() {
-  var popup = document.getElementById('annotatePopup');
-  if (!popup) return;
-
-  var btn = document.getElementById('btnAnnotate');
-  var close = document.getElementById('annotateClose');
-  var textarea = document.getElementById('annotateTextarea');
-
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      toggleAnnotationPopup();
-    });
-  }
-
-  if (close) {
-    close.addEventListener('click', function() {
-      closeAnnotationPopup();
-    });
-  }
-
-  document.addEventListener('click', function(e) {
-    if (annotationPopupOpen && 
-        !e.target.closest('.annotate-popup') && 
-        !e.target.closest('.btn-annotate')) {
-      closeAnnotationPopup();
-    }
-  });
-
-  if (textarea) {
-    textarea.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
-        e.preventDefault();
-        closeAnnotationPopup();
-      }
-      if (e.key === 'Escape') {
-        closeAnnotationPopup();
-      }
-    });
-  }
-
-  updateAnnotationButtonColor();
-}
-
-function toggleAnnotationPopup() {
-  if (annotationPopupOpen) {
-    closeAnnotationPopup();
-  } else {
-    openAnnotationPopup();
-  }
-}
-
-function openAnnotationPopup() {
-  var popup = document.getElementById('annotatePopup');
-  var textarea = document.getElementById('annotateTextarea');
-  var slideNum = document.getElementById('annotateSlideNum');
-
-  if (!popup) return;
-
-  if (slideNum) {
-    slideNum.textContent = slideIndex + 1;
-  }
-
-  if (textarea) {
-    var nom = localStorage.getItem('etudiant_id');
-    var cache = DataManager.getCacheForce(nom);
-    if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
-      annotationText = cache.annotations[postId][slideIndex];
-    } else {
-      annotationText = '';
-    }
-    textarea.value = annotationText;
-    textarea.focus();
-    textarea.setSelectionRange(textarea.value.length, textarea.value.length);
-  }
-
-  annotationPopupOpen = true;
-  annotationSlideIndex = slideIndex;
-  popup.classList.add('open');
-}
-
-function closeAnnotationPopup() {
-  var popup = document.getElementById('annotatePopup');
-  var textarea = document.getElementById('annotateTextarea');
-
-  if (textarea) {
-    sauvegarderAnnotation(textarea.value);
-  }
-
-  annotationPopupOpen = false;
-  if (popup) popup.classList.remove('open');
-}
-
-function sauvegarderAnnotation(texte) {
-  var nom = localStorage.getItem('etudiant_id');
-  if (!nom) return;
-
-  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
-    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
-    return;
-  }
-
-  var btn = document.getElementById('btnAnnotate');
-  if (btn) {
-    if (texte && texte.trim().length > 0) {
-      btn.classList.add('has-note');
-    } else {
-      btn.classList.remove('has-note');
-    }
-  }
-
-  var cache = DataManager.getCacheForce(nom);
-  if (!cache) cache = {};
-  if (!cache.annotations) cache.annotations = {};
-  if (!cache.annotations[postId]) cache.annotations[postId] = {};
-  
-  cache.annotations[postId][slideIndex] = texte;
-  DataManager.setCache(nom, cache);
-
-  var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation&nom=' + encodeURIComponent(nom) +
-    '&articleId=' + encodeURIComponent(postId) +
-    '&slide=' + encodeURIComponent(slideIndex) +
-    '&annotation=' + encodeURIComponent(texte);
-
-  fetch(url).catch(function() {});
-}
-
-function chargerAnnotation() {
-  var nom = localStorage.getItem('etudiant_id');
-  if (!nom) {
-    annotationText = '';
-    return;
-  }
-
-  if (typeof DataManager === 'undefined' || !DataManager.getCacheForce) {
-    console.log('⏳ DataManager pas encore chargé, annotation ignorée');
-    return;
-  }
-
-  var cache = DataManager.getCacheForce(nom);
-  if (cache && cache.annotations && cache.annotations[postId] && cache.annotations[postId][slideIndex] !== undefined) {
-    annotationText = cache.annotations[postId][slideIndex];
-  } else {
-    annotationText = '';
-  }
-
-  var btn = document.getElementById('btnAnnotate');
-  if (btn) {
-    if (annotationText && annotationText.trim().length > 0) {
-      btn.classList.add('has-note');
-    } else {
-      btn.classList.remove('has-note');
-    }
-  }
-
-  if (annotationPopupOpen) {
-    var textarea = document.getElementById('annotateTextarea');
-    if (textarea) {
-      textarea.value = annotationText;
-    }
-  }
-}
-
-function updateAnnotationButtonColor() {
-  var btn = document.getElementById('btnAnnotate');
-  if (!btn) return;
-  
-  var isSpecial = document.querySelector('.blog-article.special') !== null;
-  
-  if (isSpecial) {
-    btn.classList.add('special');
-    btn.classList.remove('default');
-  } else {
-    btn.classList.add('default');
-    btn.classList.remove('special');
-  }
-}
-
-// ============================================================
-// INIT
-// ============================================================
-function demarrer() {
-  var id = localStorage.getItem('etudiant_id');
-  if (!id) {
-    window.location.href = '/medit/index.html';
-    return;
-  }
-    
-  chargerArticle();
-}
-
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', demarrer);
-} else {
-  demarrer();
-}
+    for (var i = 0
