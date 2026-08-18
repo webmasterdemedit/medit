@@ -5,12 +5,17 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#121212" />
   <title>Lecture</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <style>
+    /* ============================================================
+       LISEUSE - STYLE SLIDES
+       ============================================================ */
     * { margin: 0; padding: 0; box-sizing: border-box; }
     html, body { height: 100%; overflow: hidden; background: #121212; }
     body { font-family: 'Merriweather', serif; color: #e8e0d8; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #121212; }
 
+    /* ===== HEADER ===== */
     .lecture-header {
       display: flex; justify-content: space-between; align-items: center;
       padding: 14px 32px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a;
@@ -27,103 +32,241 @@
     .lecture-header .actions .badge-statut.non-valide { display: inline-block; background: #3a1e1e; color: #c87a7a; }
     .lecture-header .actions .badge-statut.en-attente { display: inline-block; background: #2a2a1e; color: #c8b87a; }
 
-    .lecture-body { flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #161616; }
-    .pages-wrapper { flex: 1; overflow-y: auto; padding: 20px 40px; scroll-behavior: smooth; scrollbar-width: thin; scrollbar-color: #2a2a2a transparent; }
-    .pages-wrapper::-webkit-scrollbar { width: 4px; }
-    .pages-wrapper::-webkit-scrollbar-thumb { background: #2a2a2a; border-radius: 4px; }
-
-    .page-item {
-      min-height: calc(100vh - 180px);
-      display: flex; flex-direction: column; justify-content: center;
-      padding: 30px 20px; max-width: 780px; margin: 0 auto;
-      opacity: 0; transform: translateY(16px);
-      transition: opacity 0.5s ease, transform 0.5s ease;
-      scroll-margin-top: 20px;
+    /* ===== SLIDES CONTAINER ===== */
+    .slides-container {
+      flex: 1;
+      position: relative;
+      overflow: hidden;
+      background: #121212;
     }
-    .page-item.visible { opacity: 1; transform: translateY(0); }
-    .page-item .page-content { font-size: 19px; line-height: 1.9; color: #e0d8d0; font-weight: 300; letter-spacing: 0.3px; }
-    .page-item .page-content p { margin-bottom: 1.2em; }
-    .page-item .page-content p:last-child { margin-bottom: 0; }
 
-    .page-item.slide .page-content { font-size: 21px; line-height: 2; }
-    .page-item.slide .page-content .slide-idee { font-style: italic; color: #6b6b6b; border-left: 3px solid #2a2a2a; padding-left: 20px; }
-    .page-item.slide .slide-num { font-family: 'Inter', sans-serif; font-size: 12px; color: #3a3a3a; text-align: right; margin-top: 20px; letter-spacing: 0.5px; }
+    .slide-wrapper {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 60px;
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.5s ease, transform 0.5s ease;
+      pointer-events: none;
+    }
 
-    .page-item.quiz .page-content { font-size: 18px; }
-    .page-item.quiz .quiz-question { font-weight: 400; font-size: 20px; margin-bottom: 20px; color: #e8e0d8; }
-    .page-item.quiz .quiz-reponses { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-    .page-item.quiz .quiz-reponse {
+    .slide-wrapper.active {
+      opacity: 1;
+      transform: translateY(0);
+      pointer-events: auto;
+    }
+
+    .slide-wrapper.exit-up {
+      opacity: 0;
+      transform: translateY(-20px);
+    }
+
+    .slide-wrapper.exit-down {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+
+    .slide-content {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto;
+      font-size: 21px;
+      line-height: 2;
+      color: #e0d8d0;
+      font-weight: 300;
+      letter-spacing: 0.3px;
+    }
+
+    .slide-content p { margin-bottom: 1.2em; }
+    .slide-content p:last-child { margin-bottom: 0; }
+
+    /* ===== SLIDE IDÉE ===== */
+    .slide-content .slide-idee {
+      font-style: italic;
+      color: #6b6b6b;
+      border-left: 3px solid #2a2a2a;
+      padding-left: 20px;
+    }
+
+    /* ===== QUIZ ===== */
+    .slide-content.quiz-content { font-size: 18px; }
+    .slide-content .quiz-question { font-weight: 400; font-size: 20px; margin-bottom: 20px; color: #e8e0d8; }
+    .slide-content .quiz-reponses { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+    .slide-content .quiz-reponse {
       display: flex; align-items: center; gap: 14px; padding: 12px 18px;
       border-radius: 8px; background: #1e1e1e; border: 1px solid #2a2a2a;
       cursor: pointer; transition: all 0.2s ease;
       font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; color: #c8c0b8;
     }
-    .page-item.quiz .quiz-reponse:hover { background: #262626; border-color: #3a3a3a; }
-    .page-item.quiz .quiz-reponse .lettre { font-weight: 600; color: #6b6b6b; min-width: 24px; font-size: 13px; }
-    .page-item.quiz .quiz-reponse.selectionnee { border-color: #4a6a5a; background: #1e2a24; }
-    .page-item.quiz .quiz-reponse.correcte { border-color: #4a8a5a; background: #1a2a1e; color: #8ac8a0; }
-    .page-item.quiz .quiz-reponse.incorrecte { border-color: #8a4a4a; background: #2a1a1a; color: #c88a8a; }
-    .page-item.quiz .quiz-reponse .result-icon { margin-left: auto; font-size: 18px; }
-    .page-item.quiz .quiz-feedback { margin-top: 16px; padding: 14px 20px; border-radius: 8px; font-family: 'Inter', sans-serif; font-size: 14px; display: none; background: #1a1a1a; border: 1px solid #2a2a2a; }
-    .page-item.quiz .quiz-feedback.visible { display: block; }
-    .page-item.quiz .quiz-feedback .bonne-reponse { color: #8ac8a0; }
+    .slide-content .quiz-reponse:hover { background: #262626; border-color: #3a3a3a; }
+    .slide-content .quiz-reponse .lettre { font-weight: 600; color: #6b6b6b; min-width: 24px; font-size: 13px; }
+    .slide-content .quiz-reponse.selectionnee { border-color: #4a6a5a; background: #1e2a24; }
+    .slide-content .quiz-reponse.correcte { border-color: #4a8a5a; background: #1a2a1e; color: #8ac8a0; }
+    .slide-content .quiz-reponse.incorrecte { border-color: #8a4a4a; background: #2a1a1a; color: #c88a8a; }
+    .slide-content .quiz-reponse .result-icon { margin-left: auto; font-size: 18px; }
+    .slide-content .quiz-feedback {
+      margin-top: 16px; padding: 14px 20px; border-radius: 8px;
+      font-family: 'Inter', sans-serif; font-size: 14px;
+      background: #1a1a1a; border: 1px solid #2a2a2a;
+      opacity: 0; transition: opacity 0.4s ease;
+    }
+    .slide-content .quiz-feedback.visible { opacity: 1; }
+    .slide-content .quiz-feedback .bonne-reponse { color: #8ac8a0; }
 
-    .page-item.open-question .page-content { font-size: 18px; }
-    .page-item.open-question .open-question-text { font-weight: 400; font-size: 20px; color: #e8e0d8; margin-bottom: 16px; }
-    .page-item.open-question textarea { width: 100%; min-height: 120px; padding: 14px 18px; border-radius: 8px; background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0d8d0; font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6; resize: vertical; transition: border-color 0.2s; }
-    .page-item.open-question textarea:focus { outline: none; border-color: #4a6a5a; }
-    .page-item.open-question textarea::placeholder { color: #4a4a4a; }
-    .page-item.open-question .btn-envoyer-reponse { margin-top: 12px; padding: 10px 28px; border-radius: 8px; background: transparent; border: 1px solid #4a6a5a; color: #8ac8a0; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500; cursor: pointer; transition: all 0.2s; align-self: flex-start; }
-    .page-item.open-question .btn-envoyer-reponse:hover { background: #1a2a1e; border-color: #5a8a6a; }
-    .page-item.open-question .btn-envoyer-reponse:disabled { opacity: 0.4; cursor: not-allowed; }
-    .page-item.open-question .reponse-confirmation { margin-top: 12px; font-family: 'Inter', sans-serif; font-size: 14px; color: #7ab893; display: none; }
-    .page-item.open-question .reponse-confirmation.visible { display: block; }
+    /* ===== BOUTON CONTINUER ===== */
+    .btn-continuer {
+      display: inline-block;
+      background: transparent;
+      color: #8ac8a0;
+      border: 1px solid #4a6a5a;
+      border-radius: 30px;
+      padding: 8px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      margin-top: 16px;
+      transition: all 0.2s;
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity 0.4s ease, transform 0.4s ease, background 0.2s;
+    }
+    .btn-continuer.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+    .btn-continuer:hover {
+      background: #1a2a1e;
+    }
 
-    .page-item.retenir .page-content { font-size: 18px; text-align: center; }
-    .page-item.retenir .retenir-mots { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 24px 0; }
-    .page-item.retenir .retenir-mot { font-family: 'Merriweather', serif; font-size: 28px; font-weight: 400; color: #e8e0d8; padding: 12px 24px; border: 1px solid #2a2a2a; border-radius: 8px; background: #1a1a1a; }
-    .page-item.retenir .retenir-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: #6b6b6b; margin-bottom: 8px; }
+    /* ===== QUESTION OUVERTE ===== */
+    .slide-content.open-content { font-size: 18px; }
+    .slide-content .open-question-text { font-weight: 400; font-size: 20px; color: #e8e0d8; margin-bottom: 16px; }
+    .slide-content textarea {
+      width: 100%; min-height: 120px; padding: 14px 18px; border-radius: 8px;
+      background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0d8d0;
+      font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6;
+      resize: vertical; transition: border-color 0.2s;
+    }
+    .slide-content textarea:focus { outline: none; border-color: #4a6a5a; }
+    .slide-content textarea::placeholder { color: #4a4a4a; }
+    .slide-content .btn-envoyer-reponse {
+      margin-top: 12px; padding: 10px 28px; border-radius: 8px;
+      background: transparent; border: 1px solid #4a6a5a; color: #8ac8a0;
+      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
+      cursor: pointer; transition: all 0.2s; align-self: flex-start;
+    }
+    .slide-content .btn-envoyer-reponse:hover { background: #1a2a1e; border-color: #5a8a6a; }
+    .slide-content .btn-envoyer-reponse:disabled { opacity: 0.4; cursor: not-allowed; }
+    .slide-content .reponse-confirmation {
+      margin-top: 12px; font-family: 'Inter', sans-serif; font-size: 14px;
+      color: #7ab893; display: none;
+    }
+    .slide-content .reponse-confirmation.visible { display: block; }
 
-    .lecture-loader { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; font-size: 14px; }
-    .lecture-loader .spinner { width: 32px; height: 32px; border: 3px solid #2a2a2a; border-top-color: #6b6b6b; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+    /* ===== RETENIR ===== */
+    .slide-content.retenir-content { font-size: 18px; text-align: center; }
+    .slide-content .retenir-mots { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 24px 0; }
+    .slide-content .retenir-mot { font-family: 'Merriweather', serif; font-size: 28px; font-weight: 400; color: #e8e0d8; padding: 12px 24px; border: 1px solid #2a2a2a; border-radius: 8px; background: #1a1a1a; }
+    .slide-content .retenir-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: #6b6b6b; margin-bottom: 8px; }
+
+    /* ===== PAGINATION ===== */
+    .pagination {
+      position: absolute;
+      bottom: 40px;
+      left: 50%;
+      transform: translateX(-50%);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: #4a4a4a;
+      letter-spacing: 0.5px;
+      background: rgba(18, 18, 18, 0.8);
+      padding: 6px 16px;
+      border-radius: 20px;
+      border: 1px solid #2a2a2a;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    /* ===== ZONES DE CLIC ===== */
+    .click-zone {
+      position: absolute;
+      top: 0;
+      height: 100%;
+      z-index: 2;
+      cursor: pointer;
+    }
+    .click-zone.prev {
+      left: 0;
+      width: 20%;
+    }
+    .click-zone.next {
+      right: 0;
+      width: 80%;
+    }
+    .click-zone.next.quiz-zone {
+      pointer-events: none;
+    }
+
+    /* ===== LOADER ===== */
+    .lecture-loader {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; font-size: 14px;
+    }
+    .lecture-loader .spinner {
+      width: 32px; height: 32px; border: 3px solid #2a2a2a;
+      border-top-color: #6b6b6b; border-radius: 50%;
+      animation: spin 0.8s linear infinite; margin-bottom: 16px;
+    }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .lecture-error { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; text-align: center; padding: 40px; }
+    .lecture-error {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; text-align: center; padding: 40px;
+    }
     .lecture-error .icone { font-size: 48px; margin-bottom: 16px; }
     .lecture-error h2 { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 400; color: #e8e0d8; margin-bottom: 8px; }
     .lecture-error p { font-size: 14px; color: #6b6b6b; }
     .lecture-error .btn-retour { margin-top: 20px; padding: 10px 28px; border-radius: 8px; background: transparent; border: 1px solid #2a2a2a; color: #c8c0b8; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
     .lecture-error .btn-retour:hover { background: #2a2a2a; }
 
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 768px) {
       .lecture-header { padding: 10px 16px; min-height: 56px; }
       .lecture-header .meta-left .titre { font-size: 15px; }
-      .pages-wrapper { padding: 12px 16px; }
-      .page-item { padding: 20px 12px; min-height: calc(100vh - 160px); }
-      .page-item .page-content { font-size: 17px; line-height: 1.8; }
-      .page-item.slide .page-content { font-size: 18px; line-height: 1.9; }
-      .page-item.quiz .quiz-question { font-size: 17px; }
-      .page-item.quiz .quiz-reponse { font-size: 14px; padding: 10px 14px; }
-      .page-item.retenir .retenir-mot { font-size: 22px; padding: 10px 18px; }
-      .page-item.open-question textarea { min-height: 100px; font-size: 14px; }
+      .slide-wrapper { padding: 20px 24px; }
+      .slide-content { font-size: 18px; line-height: 1.9; }
+      .slide-content .quiz-question { font-size: 17px; }
+      .slide-content .quiz-reponse { font-size: 14px; padding: 10px 14px; }
+      .slide-content .retenir-mot { font-size: 22px; padding: 10px 18px; }
+      .click-zone.prev { width: 15%; }
+      .click-zone.next { width: 85%; }
+      .pagination { bottom: 24px; font-size: 12px; padding: 4px 14px; }
     }
     @media (max-width: 480px) {
       .lecture-header { padding: 8px 12px; min-height: 50px; }
       .lecture-header .meta-left .titre { font-size: 13px; }
-      .pages-wrapper { padding: 8px 10px; }
-      .page-item { padding: 16px 8px; min-height: calc(100vh - 140px); }
-      .page-item .page-content { font-size: 15px; line-height: 1.7; }
-      .page-item.slide .page-content { font-size: 16px; line-height: 1.8; }
-      .page-item.quiz .quiz-question { font-size: 15px; }
-      .page-item.quiz .quiz-reponse { font-size: 13px; padding: 8px 12px; gap: 10px; }
-      .page-item.quiz .quiz-reponse .lettre { font-size: 12px; min-width: 20px; }
-      .page-item.retenir .retenir-mot { font-size: 18px; padding: 8px 14px; }
-      .page-item.open-question .btn-envoyer-reponse { padding: 8px 20px; font-size: 13px; }
+      .slide-wrapper { padding: 16px 16px; }
+      .slide-content { font-size: 16px; line-height: 1.8; }
+      .slide-content .quiz-question { font-size: 15px; }
+      .slide-content .quiz-reponse { font-size: 13px; padding: 8px 12px; gap: 10px; }
+      .slide-content .quiz-reponse .lettre { font-size: 12px; min-width: 20px; }
+      .slide-content .retenir-mot { font-size: 18px; padding: 8px 14px; }
+      .slide-content textarea { min-height: 100px; font-size: 14px; }
+      .click-zone.prev { width: 12%; }
+      .click-zone.next { width: 88%; }
+      .pagination { bottom: 16px; font-size: 11px; padding: 4px 12px; }
     }
   </style>
 </head>
 <body>
 
+  <!-- ===== HEADER ===== -->
   <header class="lecture-header">
     <div class="meta-left">
       <div class="cat-niveau">
@@ -137,20 +280,33 @@
     </div>
   </header>
 
-  <div class="lecture-body">
-    <div class="pages-wrapper" id="pagesWrapper">
-      <div class="lecture-loader" id="lectureLoader">
-        <div class="spinner"></div>
-        <span>Chargement...</span>
-      </div>
+  <!-- ===== SLIDES ===== -->
+  <div class="slides-container" id="slidesContainer">
+    <div class="lecture-loader" id="lectureLoader">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
     </div>
   </div>
 
   <script>
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
 
-    var etat = { postId: null, post: null, pages: [], reponsesQuiz: {}, totalBonnes: 0, totalQuestions: 0, statutFinal: null };
+    var etat = {
+      postId: null,
+      post: null,
+      slides: [],
+      currentIndex: 0,
+      reponsesQuiz: {},
+      totalBonnes: 0,
+      totalQuestions: 0,
+      statutFinal: null,
+      enTransition: false,
+      reponsesOuvertes: {}
+    };
 
+    // ============================================================
+    // INIT
+    // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
@@ -159,30 +315,31 @@
       chargerPost(id);
     });
 
+    // ============================================================
+    // CHARGER
+    // ============================================================
     function chargerPost(id) {
       fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
         .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
         .then(function(data) {
           if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
           etat.post = data.post;
-          preparerPages(etat.post);
-          afficherLiseuse();
+          preparerSlides(etat.post);
+          afficherSlides();
         })
         .catch(function(error) { afficherErreur(error.message); });
     }
 
     // ============================================================
-    // PARSER SIMPLE : cherche UNIQUEMENT les indicateurs
+    // PARSER
     // ============================================================
     function parserContenu(texte) {
       var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
       if (!texte) return result;
 
-      // Liste des indicateurs à chercher
       var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
       var indices = [];
 
-      // Trouver toutes les positions des indicateurs
       for (var p = 0; p < patterns.length; p++) {
         var pos = texte.indexOf(patterns[p]);
         while (pos !== -1) {
@@ -191,10 +348,8 @@
         }
       }
 
-      // Trier par position
       indices.sort(function(a, b) { return a.pos - b.pos; });
 
-      // Découper le texte en éléments
       var elements = [];
       for (var i = 0; i < indices.length; i++) {
         var start = indices[i].pos;
@@ -203,32 +358,25 @@
         if (element) elements.push(element);
       }
 
-      // Parcourir les éléments
       var quizCourant = null;
 
       for (var i = 0; i < elements.length; i++) {
         var ligne = elements[i].trim();
         if (!ligne) continue;
 
-        // --- SLIDE ---
         if (ligne.startsWith('-s-')) {
-          var contenuSlide = ligne.replace('-s-', '').trim();
-          result.slides.push(contenuSlide || 'Slide vide');
+          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
           continue;
         }
 
-        // --- QUIZ : nouvelle question ---
         if (ligne.startsWith('-q-')) {
-          // Si on avait un quiz en cours, on le sauvegarde
           if (quizCourant && quizCourant.reponses.length > 0) {
             result.quizs.push(quizCourant);
           }
-          var qText = ligne.replace('-q-', '').trim() || 'Question';
-          quizCourant = { question: qText, reponses: [] };
+          quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
           continue;
         }
 
-        // --- RÉPONSE VRAIE ---
         if (ligne.startsWith('-v-')) {
           if (quizCourant) {
             quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
@@ -236,7 +384,6 @@
           continue;
         }
 
-        // --- RÉPONSE FAUSSE ---
         if (ligne.startsWith('-f-')) {
           if (quizCourant) {
             quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
@@ -244,13 +391,11 @@
           continue;
         }
 
-        // --- QUESTION OUVERTE ---
         if (ligne.startsWith('-qs-')) {
           result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
           continue;
         }
 
-        // --- RETENIR ---
         if (ligne.startsWith('-r-')) {
           var retenirText = ligne.replace('-r-', '').trim();
           if (retenirText) {
@@ -260,13 +405,11 @@
           continue;
         }
 
-        // --- INFO (ignoré) ---
         if (ligne.startsWith('-i-')) {
           continue;
         }
       }
 
-      // Sauvegarder le dernier quiz
       if (quizCourant && quizCourant.reponses.length > 0) {
         result.quizs.push(quizCourant);
       }
@@ -275,86 +418,95 @@
     }
 
     // ============================================================
-    // PRÉPARER LES PAGES
+    // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerPages(post) {
-      var pages = [];
+    function preparerSlides(post) {
+      var slides = [];
       var contenu = post.contenu || '';
       var parsed = parserContenu(contenu);
 
-      parsed.slides.forEach(function(slide, index) {
-        pages.push({ type: 'slide', contenu: slide, numero: index + 1 });
+      parsed.slides.forEach(function(s) {
+        slides.push({ type: 'slide', contenu: s.contenu });
       });
 
-      parsed.quizs.forEach(function(quiz, index) {
-        pages.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: index });
+      parsed.quizs.forEach(function(q) {
+        slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
       });
 
-      parsed.openQuestions.forEach(function(q, index) {
-        pages.push({ type: 'open-question', question: q, index: index });
+      parsed.openQuestions.forEach(function(q) {
+        slides.push({ type: 'open', question: q, index: slides.length });
       });
 
       if (parsed.retenir && parsed.retenir.length > 0) {
-        pages.push({ type: 'retenir', mots: parsed.retenir });
+        slides.push({ type: 'retenir', mots: parsed.retenir });
       }
 
-      etat.pages = pages;
+      etat.slides = slides;
     }
 
     // ============================================================
-    // AFFICHER
+    // AFFICHER LES SLIDES
     // ============================================================
-    function afficherLiseuse() {
-      var wrapper = document.getElementById('pagesWrapper');
+    function afficherSlides() {
+      var container = document.getElementById('slidesContainer');
       var post = etat.post;
 
       document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
       document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
       document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
 
+      if (etat.slides.length === 0) {
+        container.innerHTML = '<div class="lecture-error"><div class="icone">📖</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
+        return;
+      }
+
       var html = '';
 
-      etat.pages.forEach(function(page, index) {
-        var typeClass = page.type;
-        var visibleClass = index === 0 ? ' visible' : '';
-        html += '<div class="page-item ' + typeClass + visibleClass + '" data-index="' + index + '" id="page-' + index + '">';
-        html += '<div class="page-content">';
+      etat.slides.forEach(function(slide, index) {
+        var activeClass = index === 0 ? ' active' : '';
+        html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
+        html += '<div class="slide-content';
 
-        if (page.type === 'slide') {
-          var content = page.contenu || '';
-          var paragraphs = content.split('\n').filter(function(p) { return p.trim() !== ''; });
+        if (slide.type === 'quiz') html += ' quiz-content';
+        else if (slide.type === 'open') html += ' open-content';
+        else if (slide.type === 'retenir') html += ' retenir-content';
+
+        html += '">';
+
+        if (slide.type === 'slide') {
+          var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-          html += '<div class="slide-num">— ' + (index + 1) + ' —</div>';
         }
 
-        if (page.type === 'quiz') {
-          html += '<div class="quiz-question">' + (page.question || 'Question') + '</div>';
-          html += '<div class="quiz-reponses" data-quiz-index="' + page.index + '">';
+        if (slide.type === 'quiz') {
+          html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
+          html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
           var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
-          page.reponses.forEach(function(rep, ri) {
-            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(' + page.index + ', ' + ri + ')">';
+          slide.reponses.forEach(function(rep, ri) {
+            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(' + slide.index + ', ' + ri + ')">';
             html += '<span class="lettre">' + lettres[ri] + '</span>';
             html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
             html += '<span class="result-icon"></span>';
             html += '</div>';
           });
           html += '</div>';
-          html += '<div class="quiz-feedback" id="quizFeedback-' + page.index + '">';
-          html += '<div class="bonne-reponse" id="quizBonneReponse-' + page.index + '"></div>';
+          html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
+          html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
           html += '</div>';
+          html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
         }
 
-        if (page.type === 'open-question') {
-          html += '<div class="open-question-text">' + (page.question || 'Question ouverte') + '</div>';
-          html += '<textarea id="openReponse-' + page.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(' + page.index + ')">Envoyer la réponse</button>';
-          html += '<div class="reponse-confirmation" id="openConfirmation-' + page.index + '">✓ Réponse enregistrée</div>';
+        if (slide.type === 'open') {
+          html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
+          html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(' + slide.index + ')">Envoyer la réponse</button>';
+          html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
         }
 
-        if (page.type === 'retenir') {
+        if (slide.type === 'retenir') {
           html += '<div class="retenir-label">📌 À retenir</div>';
           html += '<div class="retenir-mots">';
-          page.mots.forEach(function(mot) {
+          slide.mots.forEach(function(mot) {
             if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
           });
           html += '</div>';
@@ -365,33 +517,166 @@
         html += '</div>';
       });
 
-      wrapper.innerHTML = html;
-      observerPages();
-      document.getElementById('btnFermer').addEventListener('click', function() { window.location.href = '/medit/mes-textes.html'; });
+      // Pagination
+      html += '<div class="pagination" id="pagination">1 / ' + etat.slides.length + '</div>';
+
+      // Zones de clic
+      html += '<div class="click-zone prev" onclick="slidePrecedente()"></div>';
+      html += '<div class="click-zone next" id="clickZoneNext" onclick="slideSuivante()"></div>';
+
+      container.innerHTML = html;
+
+      // Gestion du scroll
+      var scrollTimeout = null;
+      container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 600);
+
+        if (e.deltaY > 0) {
+          slideSuivante();
+        } else {
+          slidePrecedente();
+        }
+      }, { passive: false });
+
+      // Gestion du clavier
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          slideSuivante();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          slidePrecedente();
+        }
+      });
+
+      document.getElementById('btnFermer').addEventListener('click', function() {
+        window.location.href = '/medit/mes-textes.html';
+      });
+
+      // Désactiver la zone next sur les quiz tant qu'on a pas répondu
+      var firstQuiz = etat.slides.findIndex(function(s) { return s.type === 'quiz'; });
+      if (firstQuiz !== -1) {
+        var clickZone = document.getElementById('clickZoneNext');
+        clickZone.classList.add('quiz-zone');
+      }
+
       recupererStatutExistant();
+      mettreAJourPagination();
     }
 
-    function observerPages() {
-      var wrapper = document.getElementById('pagesWrapper');
-      if (!wrapper) return;
-      var observer = new IntersectionObserver(function(entries) {
-        entries.forEach(function(entry) {
-          if (entry.isIntersecting) entry.target.classList.add('visible');
-        });
-      }, { threshold: 0.1, rootMargin: '0px 0px -50px 0px' });
-      wrapper.querySelectorAll('.page-item').forEach(function(page) { observer.observe(page); });
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function slideSuivante() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex >= etat.slides.length - 1) return;
+
+      // Vérifier si on est sur un quiz et qu'il n'est pas répondu
+      var slide = etat.slides[etat.currentIndex];
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) return;
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (!btn || !btn.classList.contains('visible')) return;
+      }
+
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
+
+      if (current) {
+        current.classList.remove('active');
+        current.classList.add('exit-up');
+      }
+
+      if (next) {
+        next.classList.add('active');
+      }
+
+      etat.currentIndex++;
+      mettreAJourPagination();
+
+      setTimeout(function() {
+        if (current) {
+          current.classList.remove('exit-up');
+        }
+        etat.enTransition = false;
+        mettreAJourZoneClic();
+      }, 500);
+    }
+
+    function slidePrecedente() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex <= 0) return;
+
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
+
+      if (current) {
+        current.classList.remove('active');
+        current.classList.add('exit-down');
+      }
+
+      if (prev) {
+        prev.classList.add('active');
+      }
+
+      etat.currentIndex--;
+      mettreAJourPagination();
+
+      setTimeout(function() {
+        if (current) {
+          current.classList.remove('exit-down');
+        }
+        etat.enTransition = false;
+        mettreAJourZoneClic();
+      }, 500);
+    }
+
+    function mettreAJourPagination() {
+      var pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
+      }
+    }
+
+    function mettreAJourZoneClic() {
+      var slide = etat.slides[etat.currentIndex];
+      var clickZone = document.getElementById('clickZoneNext');
+
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) {
+          clickZone.classList.add('quiz-zone');
+          return;
+        }
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (btn && btn.classList.contains('visible')) {
+          clickZone.classList.remove('quiz-zone');
+        } else {
+          clickZone.classList.add('quiz-zone');
+        }
+      } else {
+        clickZone.classList.remove('quiz-zone');
+      }
     }
 
     // ============================================================
     // QUIZ
     // ============================================================
     function selectionnerReponse(quizIndex, reponseIndex) {
-      var page = etat.pages.find(function(p) { return p.type === 'quiz' && p.index === quizIndex; });
-      if (!page) return;
+      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
+      if (!slide) return;
       if (etat.reponsesQuiz[quizIndex]) return;
 
-      var reponses = document.querySelectorAll('#page-' + getPageIndex(quizIndex) + ' .quiz-reponse');
-      var reponse = page.reponses[reponseIndex];
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      if (!slideEl) return;
+
+      var reponses = slideEl.querySelectorAll('.quiz-reponse');
+      var reponse = slide.reponses[reponseIndex];
 
       reponses.forEach(function(el, idx) {
         el.classList.remove('selectionnee');
@@ -399,18 +684,27 @@
       });
 
       etat.reponsesQuiz[quizIndex] = { reponseIndex: reponseIndex, correct: reponse.correct };
-      afficherFeedbackQuiz(quizIndex);
+
+      // Feedback avec un léger délai pour pas être trop soudain
+      setTimeout(function() {
+        afficherFeedbackQuiz(quizIndex);
+      }, 300);
     }
 
     function afficherFeedbackQuiz(quizIndex) {
-      var page = etat.pages.find(function(p) { return p.type === 'quiz' && p.index === quizIndex; });
-      if (!page) return;
+      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
+      if (!slide) return;
+
       var reponseData = etat.reponsesQuiz[quizIndex];
       if (!reponseData) return;
 
-      var reponses = document.querySelectorAll('#page-' + getPageIndex(quizIndex) + ' .quiz-reponse');
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      if (!slideEl) return;
+
+      var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
       var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
+      var btnContinuer = document.getElementById('btnContinuer-' + quizIndex);
 
       reponses.forEach(function(el, idx) {
         el.classList.remove('correcte', 'incorrecte');
@@ -418,7 +712,7 @@
         if (idx === reponseData.reponseIndex) {
           if (reponseData.correct) { el.classList.add('correcte'); icon.textContent = '✓'; }
           else { el.classList.add('incorrecte'); icon.textContent = '✗'; }
-        } else if (page.reponses[idx] && page.reponses[idx].correct) {
+        } else if (slide.reponses[idx] && slide.reponses[idx].correct) {
           el.classList.add('correcte');
           icon.textContent = '✓';
         } else {
@@ -429,21 +723,31 @@
       if (reponseData.correct) {
         bonneReponse.textContent = '✅ Bonne réponse !';
       } else {
-        var bonne = page.reponses.find(function(r) { return r.correct; });
+        var bonne = slide.reponses.find(function(r) { return r.correct; });
         bonneReponse.textContent = '❌ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
       }
 
       feedback.classList.add('visible');
+
+      // Afficher le bouton continuer
+      setTimeout(function() {
+        btnContinuer.classList.add('visible');
+        mettreAJourZoneClic();
+      }, 400);
+
       verifierQuizComplets();
     }
 
     function verifierQuizComplets() {
-      var quizPages = etat.pages.filter(function(p) { return p.type === 'quiz'; });
-      var tousRepondus = quizPages.every(function(q) { return etat.reponsesQuiz[q.index] !== undefined; });
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      var tousRepondus = quizSlides.every(function(q) {
+        return etat.reponsesQuiz[q.index] !== undefined;
+      });
+
       if (!tousRepondus) return;
 
       var totalBonnes = 0, totalQuestions = 0;
-      quizPages.forEach(function(q) {
+      quizSlides.forEach(function(q) {
         var rep = etat.reponsesQuiz[q.index];
         if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
       });
@@ -470,8 +774,8 @@
       if (!etat.postId) return;
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var choixQcm = '';
-      var quizPages = etat.pages.filter(function(p) { return p.type === 'quiz'; });
-      quizPages.forEach(function(q) {
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      quizSlides.forEach(function(q) {
         var rep = etat.reponsesQuiz[q.index];
         if (rep) {
           if (choixQcm) choixQcm += '|';
@@ -487,7 +791,9 @@
         '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
         '&total=' + encodeURIComponent(etat.totalQuestions);
 
-      fetch(url).then(function(r) { return r.json(); }).then(function(data) { if (data.success) console.log('✅ Quiz sauvegardé'); }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
+      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) console.log('✅ Quiz sauvegardé');
+      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
     // ============================================================
@@ -533,15 +839,6 @@
     // ============================================================
     // UTILITAIRES
     // ============================================================
-    function getPageIndex(quizIndex) {
-      var pages = document.querySelectorAll('.page-item');
-      for (var i = 0; i < pages.length; i++) {
-        var page = etat.pages[i];
-        if (page && page.type === 'quiz' && page.index === quizIndex) return i;
-      }
-      return 0;
-    }
-
     function recupererStatutExistant() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
@@ -564,7 +861,7 @@
     }
 
     function afficherErreur(message) {
-      document.getElementById('pagesWrapper').innerHTML = `
+      document.getElementById('slidesContainer').innerHTML = `
         <div class="lecture-error">
           <div class="icone">📖</div>
           <h2>Texte introuvable</h2>
@@ -576,6 +873,9 @@
 
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
+    window.slideSuivante = slideSuivante;
+    window.slidePrecedente = slidePrecedente;
   </script>
+
 </body>
 </html>
