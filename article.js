@@ -143,7 +143,7 @@ function afficherSlide(index) {
     var wrapper = document.getElementById('slideWrapper');
     var slideText = slides[index] || 'Slide vide';
     
-    // Nettoyer le texte des retours à la ligne et caractères spéciaux
+    // Nettoyer le texte
     slideText = slideText.replace(/\n/g, '<br>');
     slideText = slideText.replace(/"/g, '&quot;');
     
@@ -153,11 +153,12 @@ function afficherSlide(index) {
     mettreAJourDots();
     verifierAnnotation(index);
     
+    // Afficher le quiz et la question ouverte UNIQUEMENT sur la dernière slide
     var slideQuiz = document.getElementById('slideQuiz');
-    if (index === slides.length - 1 && (quizData.length > 0 || questionOuverte)) {
+    if (index === slides.length - 1) {
         slideQuiz.style.display = 'block';
-        afficherQuiz();
-        afficherQuestionOuverte();
+        if (quizData.length > 0) afficherQuiz();
+        if (questionOuverte) afficherQuestionOuverte();
     } else {
         slideQuiz.style.display = 'none';
     }
@@ -233,7 +234,6 @@ function verifierAnnotation(slideIndex) {
     }
 }
 
-// Bouton annotation
 document.getElementById('btnAnnotate').addEventListener('click', function() {
     ouvrirAnnotation(currentSlide);
 });
@@ -250,13 +250,11 @@ function ouvrirAnnotation(slideIndex) {
     textarea.focus();
 }
 
-// Fermer annotation
 document.getElementById('annotateClose').addEventListener('click', function() {
     sauvegarderAnnotation();
     document.getElementById('annotatePopup').style.display = 'none';
 });
 
-// Sauvegarde automatique de l'annotation
 document.getElementById('annotateTextarea').addEventListener('input', function() {
     sauvegarderAnnotation();
 });
@@ -280,7 +278,6 @@ function sauvegarderAnnotation() {
         status.textContent = '';
     }, 1500);
     
-    // Sauvegarder dans le serveur
     var articleId = articleData.id;
     DataManager.sauvegarderAnnotation(articleId, slideNum, texte)
         .then(function() {
@@ -293,7 +290,6 @@ function sauvegarderAnnotation() {
         });
 }
 
-// Fermer popup en cliquant à l'extérieur
 document.getElementById('annotatePopup').addEventListener('click', function(e) {
     if (e.target === this) {
         sauvegarderAnnotation();
@@ -302,7 +298,7 @@ document.getElementById('annotatePopup').addEventListener('click', function(e) {
 });
 
 // ============================================================
-// QUIZ
+// QUIZ - TOUS LES QUIZ AFFICHÉS ENSEMBLE
 // ============================================================
 function afficherQuiz() {
     var container = document.getElementById('quizQuestionsContainer');
@@ -370,7 +366,6 @@ function afficherQuestionOuverte() {
     if (!container) return;
     container.textContent = questionOuverte || 'Qu\'est-ce que ce texte vous a inspiré ?';
     
-    // Charger la réponse existante
     var reponses = DataManager.getReponses();
     for (var i = 0; i < reponses.length; i++) {
         if (reponses[i].articleId === articleData.id) {
