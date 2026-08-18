@@ -488,7 +488,7 @@
         });
     }
 
-    function afficherAdmin() {
+        function afficherAdmin() {
       document.getElementById('loader').style.display = 'none';
 
       var total = tousLesPosts.length;
@@ -502,6 +502,11 @@
       document.getElementById('compteurPublies').textContent = publies;
       document.getElementById('compteurBrouillons').textContent = brouillons;
 
+      // === GÉNÉRER LES FILTRES DE CATÉGORIES ===
+      genererFiltresCategories();
+      // =========================================
+
+      // Filtrer par statut (Tous / Publiés / Brouillons)
       var postsFiltres = [];
       if (ongletActuel === 'tous') {
         postsFiltres = tousLesPosts.slice();
@@ -511,9 +516,14 @@
         postsFiltres = tousLesPosts.filter(function(p) { return p.statut === 'brouillon'; });
       }
 
+      // === FILTRER PAR CATÉGORIE ===
+      if (categorieActuelle !== 'toutes') {
+        postsFiltres = postsFiltres.filter(function(p) { return p.categorie === categorieActuelle; });
+      }
+      // ==============================
+
       afficherPosts(postsFiltres);
     }
-
     function afficherPosts(posts) {
       var container = document.getElementById('contenu');
 
