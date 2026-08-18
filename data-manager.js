@@ -234,199 +234,53 @@ var DataManager = {
     // ============================================================
     // AJOUTER UN POST - AVEC DÉCOUPAGE EN COLONNES
     // ============================================================
-    ajouterPost: function(titre, niveau, categorie, contenu, question) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
+        ajouterPost: function(titre, niveau, categorie, contenu, question) {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        return Promise.reject('Non connecté');
+      }
 
-        // Découper le contenu séparé par " | "
-        var elements = contenu.split(' | ');
-        
-        // Préparer les paramètres pour chaque colonne
-        var params = {
-            titre: titre,
-            niveau: niveau,
-            categorie: categorie,
-            question: question || ''
-        };
+      // Découper le contenu séparé par " | "
+      var elements = contenu.split(' | ');
+      
+      // Préparer les paramètres pour chaque colonne
+      var params = {
+        titre: titre,
+        niveau: niveau,
+        categorie: categorie,
+        question: question || ''
+      };
 
-        // Ajouter chaque élément comme paramètre séparé
-        for (var i = 0; i < elements.length; i++) {
-            var key = 'col' + (i + 1);
-            params[key] = elements[i] || '';
-        }
+      // Ajouter chaque élément comme paramètre séparé
+      for (var i = 0; i < elements.length; i++) {
+        var key = 'col' + (i + 1);
+        params[key] = elements[i] || '';
+      }
 
-        // Construire l'URL
-        var url = CONFIG.SCRIPT_URL + '?action=addPost' +
-            '&titre=' + encodeURIComponent(params.titre) +
-            '&niveau=' + encodeURIComponent(params.niveau) +
-            '&categorie=' + encodeURIComponent(params.categorie) +
-            '&question=' + encodeURIComponent(params.question);
+      // Construire l'URL
+      var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+        '&titre=' + encodeURIComponent(params.titre) +
+        '&niveau=' + encodeURIComponent(params.niveau) +
+        '&categorie=' + encodeURIComponent(params.categorie) +
+        '&question=' + encodeURIComponent(params.question);
 
-        // Ajouter les colonnes
-        for (var i = 0; i < elements.length; i++) {
-            var key = 'col' + (i + 1);
-            url += '&' + key + '=' + encodeURIComponent(params[key] || '');
-        }
+      // Ajouter les colonnes
+      for (var i = 0; i < elements.length; i++) {
+        var key = 'col' + (i + 1);
+        url += '&' + key + '=' + encodeURIComponent(params[key] || '');
+      }
 
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la création');
-                }
-            });
+      return fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            DataManager.invalider();
+            return data;
+          } else {
+            throw new Error(data.message || 'Erreur lors de la création');
+          }
+        });
     },
-
-    modifierPost: function(id, titre, niveau, categorie, contenu, question, statut) {
-        var userId = localStorage.getItem('etudiant_id');
-        if (!userId) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=updatePost' +
-            '&id=' + encodeURIComponent(id) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&niveau=' + encodeURIComponent(niveau) +
-            '&categorie=' + encodeURIComponent(categorie) +
-            '&contenu=' + encodeURIComponent(contenu) +
-            '&question=' + encodeURIComponent(question) +
-            '&statut=' + encodeURIComponent(statut);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la modification');
-                }
-            });
-    },
-
-    supprimerPost: function(id) {
-        var userId = localStorage.getItem('etudiant_id');
-        if (!userId) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=deletePost&id=' + encodeURIComponent(id);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la suppression');
-                }
-            });
-    },
-
-    sauvegarderAnnotation: function(articleId, slide, annotation) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
-            '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
-            '&slide=' + encodeURIComponent(slide) +
-            '&annotation=' + encodeURIComponent(annotation);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
-                }
-            });
-    },
-
-    sauvegarderReponseOuverte: function(articleId, reponse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
-            '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
-            '&reponseOuverte=' + encodeURIComponent(reponse);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
-                }
-            });
-    },
-
-    sauvegarderQuiz: function(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
-            '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&choixQcm=' + encodeURIComponent(choixQcm) +
-            '&bonnes=' + encodeURIComponent(bonnes) +
-            '&total=' + encodeURIComponent(total) +
-            '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la sauvegarde du quiz');
-                }
-            });
-    },
-
-    sauvegarderLecture: function(articleId, titre) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
-            '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
-            '&titre=' + encodeURIComponent(titre);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la sauvegarde');
-                }
-            });
-    }
-};
-
 // ============================================================
 // FONCTIONS UTILITAIRES
 // ============================================================
