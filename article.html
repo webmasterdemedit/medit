@@ -164,7 +164,7 @@
     .annotation-container {
       position: fixed;
       bottom: 80px;
-      right: 32px;
+      right: 28px;
       z-index: 20;
       display: flex;
       flex-direction: column;
@@ -175,21 +175,15 @@
       background: transparent;
       border: none;
       color: #4a4a4a;
-      font-size: 22px;
+      font-size: 24px;
       cursor: pointer;
       transition: color 0.3s ease;
-      padding: 8px;
-      border-radius: 50%;
-      width: 44px;
-      height: 44px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid #2a2a2a;
-      background: #1a1a1a;
+      padding: 4px;
+      line-height: 1;
+      position: relative;
     }
-    .annotation-toggle:hover { color: #8ac8a0; border-color: #4a6a5a; }
-    .annotation-toggle.has-note { color: #8ac8a0; border-color: #4a6a5a; }
+    .annotation-toggle:hover { color: #8ac8a0; }
+    .annotation-toggle.has-note { color: #8ac8a0; }
     .annotation-toggle .dot-save {
       display: none;
       width: 8px;
@@ -197,8 +191,8 @@
       background: #4a6a5a;
       border-radius: 50%;
       position: absolute;
-      bottom: 4px;
-      right: 4px;
+      bottom: 0px;
+      right: -4px;
     }
     .annotation-toggle .dot-save.saved { display: block; background: #4a8a5a; }
     .annotation-toggle .dot-save.saving { display: block; background: #c8b87a; animation: pulse-dot 0.8s ease-in-out infinite; }
@@ -306,6 +300,7 @@
       .pagination { bottom: 24px; font-size: 12px; padding: 4px 14px; }
       .annotation-container { bottom: 70px; right: 16px; }
       .annotation-box { width: 240px; }
+      .annotation-toggle { font-size: 22px; }
     }
     @media (max-width: 480px) {
       .lecture-header { padding: 8px 12px; min-height: 50px; }
@@ -320,7 +315,7 @@
       .pagination { bottom: 16px; font-size: 11px; padding: 4px 12px; }
       .annotation-container { bottom: 60px; right: 12px; }
       .annotation-box { width: 200px; }
-      .annotation-toggle { width: 38px; height: 38px; font-size: 18px; }
+      .annotation-toggle { font-size: 20px; }
     }
   </style>
 </head>
@@ -354,7 +349,7 @@
       <textarea id="annotationTextarea" placeholder="Écrire une note sur cette slide..."></textarea>
     </div>
     <button class="annotation-toggle" id="annotationToggle" title="Notes">
-      <span>✎</span>
+      ✎
       <span class="dot-save" id="annotationDot"></span>
     </button>
   </div>
@@ -405,14 +400,21 @@
     }
 
     // ============================================================
-    // PARSER - NETTOYAGE DES | INCLUS
+    // PARSER - NETTOYAGE DE TOUS LES |
     // ============================================================
     function parserContenu(texte) {
       var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
       if (!texte) return result;
 
-      // Nettoyer les | superflus
-      texte = texte.replace(/\s*\|\s*$/gm, '');
+      // ===== NETTOYAGE AGRESSIF DES | =====
+      // Supprimer tous les | isolés (avec ou sans espaces)
+      texte = texte.replace(/\s*\|\s*/g, ' ');
+      // Supprimer les | en fin de ligne
+      texte = texte.replace(/\|\s*$/gm, '');
+      // Supprimer les | en début de ligne
+      texte = texte.replace(/^\s*\|\s*/gm, '');
+      // Supprimer les doubles espaces
+      texte = texte.replace(/\s{2,}/g, ' ');
 
       var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
       var indices = [];
@@ -578,6 +580,7 @@
           html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
           html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
           html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
+          html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
         }
 
         if (slide.type === 'retenir') {
@@ -695,6 +698,11 @@
         if (!btn || !btn.classList.contains('visible')) return;
       }
 
+      if (slide.type === 'open') {
+        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
+        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
+      }
+
       etat.enTransition = true;
       var current = document.getElementById('slide-' + etat.currentIndex);
       var next = document.getElementById('slide-' + (etat.currentIndex + 1));
@@ -796,11 +804,11 @@
       });
 
       if (reponseData.correct) {
-        bonneReponse.textContent = '✅ Bonne réponse !';
+        bonneReponse.textContent = '✓ Bonne réponse !';
         bonneReponse.className = 'bonne-reponse';
       } else {
         var bonne = slide.reponses.find(function(r) { return r.correct; });
-        bonneReponse.textContent = '❌ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
+        bonneReponse.textContent = '✗ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
         bonneReponse.className = 'mauvaise-reponse';
       }
 
@@ -840,8 +848,8 @@
 
     function mettreAJourBadge() {
       var badge = document.getElementById('badgeStatut');
-      if (etat.statutFinal === 'valide') { badge.textContent = '✅ Validé'; badge.className = 'badge-statut valide'; }
-      else if (etat.statutFinal === 'non-valide') { badge.textContent = '📖 À relire'; badge.className = 'badge-statut non-valide'; }
+      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
+      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
       else { badge.textContent = '⏳ En cours'; badge.className = 'badge-statut en-attente'; }
     }
 
@@ -867,7 +875,7 @@
         '&total=' + encodeURIComponent(etat.totalQuestions);
 
       fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.success) console.log('✅ Quiz sauvegardé');
+        if (data.success) console.log('✓ Quiz sauvegardé');
       }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
@@ -896,10 +904,14 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           var confirmation = document.getElementById('openConfirmation-' + index);
+          var btnContinuer = document.getElementById('btnContinuerOpen-' + index);
           if (data.success) {
             confirmation.classList.add('visible');
             textarea.disabled = true;
             btn.textContent = '✓ Envoyé';
+            setTimeout(function() {
+              btnContinuer.classList.add('visible');
+            }, 400);
           } else {
             alert('Erreur : ' + (data.message || 'Impossible d\'envoyer.'));
             btn.disabled = false;
@@ -919,12 +931,15 @@
     function toggleAnnotation() {
       etat.annotationOpen = !etat.annotationOpen;
       var box = document.getElementById('annotationBox');
+      var toggle = document.getElementById('annotationToggle');
       if (etat.annotationOpen) {
         box.classList.add('open');
+        toggle.textContent = '✎';
         document.getElementById('annotationTextarea').focus();
         chargerAnnotationSlide();
       } else {
         box.classList.remove('open');
+        toggle.textContent = '✎';
         sauvegarderAnnotation();
       }
     }
@@ -969,7 +984,7 @@
         .then(function(data) {
           if (data.success) {
             dot.className = 'dot-save saved';
-            console.log('✅ Annotation sauvegardée');
+            console.log('✓ Annotation sauvegardée');
           } else {
             dot.className = 'dot-save';
             console.error('Erreur sauvegarde annotation');
