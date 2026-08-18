@@ -176,16 +176,6 @@
       transform: translateY(0);
     }
 
-    .page-item .page-num {
-      font-family: 'Inter', sans-serif;
-      font-size: 11px;
-      font-weight: 500;
-      color: #3a3a3a;
-      letter-spacing: 0.5px;
-      margin-bottom: 20px;
-      text-transform: uppercase;
-    }
-
     .page-item .page-content {
       font-size: 19px;
       line-height: 1.9;
@@ -205,6 +195,15 @@
       color: #6b6b6b;
       border-left: 3px solid #2a2a2a;
       padding-left: 20px;
+    }
+
+    .page-item.slide .slide-num {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: #3a3a3a;
+      text-align: right;
+      margin-top: 20px;
+      letter-spacing: 0.5px;
     }
 
     /* ===== QUIZ ===== */
@@ -285,12 +284,6 @@
     .page-item.quiz .quiz-feedback.visible { display: block; }
 
     .page-item.quiz .quiz-feedback .bonne-reponse { color: #8ac8a0; }
-
-    .page-item.quiz .quiz-feedback .score {
-      font-weight: 500;
-      color: #e8e0d8;
-      margin-top: 8px;
-    }
 
     /* ===== QUESTION OUVERTE ===== */
     .page-item.open-question .page-content { font-size: 18px; }
@@ -394,68 +387,6 @@
       margin-bottom: 8px;
     }
 
-    /* ===== RÉSULTAT FINAL ===== */
-    .page-item.resultat .page-content { text-align: center; }
-
-    .page-item.resultat .resultat-icone { font-size: 64px; margin-bottom: 20px; }
-
-    .page-item.resultat .resultat-titre {
-      font-size: 24px;
-      font-weight: 400;
-      color: #e8e0d8;
-      margin-bottom: 8px;
-    }
-
-    .page-item.resultat .resultat-sous-titre {
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      color: #6b6b6b;
-    }
-
-    .page-item.resultat .resultat-score {
-      font-family: 'Inter', sans-serif;
-      font-size: 48px;
-      font-weight: 300;
-      color: #e8e0d8;
-      margin: 16px 0;
-    }
-
-    .page-item.resultat .resultat-detail {
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      color: #6b6b6b;
-    }
-
-    .page-item.resultat .resultat-actions {
-      display: flex;
-      gap: 12px;
-      justify-content: center;
-      margin-top: 24px;
-      flex-wrap: wrap;
-    }
-
-    .page-item.resultat .resultat-actions button {
-      padding: 10px 28px;
-      border-radius: 8px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      background: transparent;
-      border: 1px solid #2a2a2a;
-      color: #c8c0b8;
-    }
-
-    .page-item.resultat .resultat-actions button:hover { background: #2a2a2a; }
-
-    .page-item.resultat .resultat-actions .btn-fermer {
-      border-color: #4a6a5a;
-      color: #8ac8a0;
-    }
-
-    .page-item.resultat .resultat-actions .btn-fermer:hover { background: #1a2a1e; }
-
     /* ===== LOADER ===== */
     .lecture-loader {
       display: flex;
@@ -530,12 +461,10 @@
       .page-item { padding: 20px 12px; min-height: calc(100vh - 160px); }
       .page-item .page-content { font-size: 17px; line-height: 1.8; }
       .page-item.slide .page-content { font-size: 18px; line-height: 1.9; }
-      .page-item .page-num { font-size: 10px; margin-bottom: 14px; }
       .page-item.quiz .quiz-question { font-size: 17px; }
       .page-item.quiz .quiz-reponse { font-size: 14px; padding: 10px 14px; }
       .page-item.retenir .retenir-mot { font-size: 22px; padding: 10px 18px; }
       .page-item.open-question textarea { min-height: 100px; font-size: 14px; }
-      .page-item.resultat .resultat-score { font-size: 36px; }
     }
 
     @media (max-width: 480px) {
@@ -551,8 +480,6 @@
       .page-item.quiz .quiz-reponse { font-size: 13px; padding: 8px 12px; gap: 10px; }
       .page-item.quiz .quiz-reponse .lettre { font-size: 12px; min-width: 20px; }
       .page-item.retenir .retenir-mot { font-size: 18px; padding: 8px 14px; }
-      .page-item.resultat .resultat-score { font-size: 28px; }
-      .page-item.resultat .resultat-actions button { padding: 8px 20px; font-size: 13px; }
       .page-item.open-question .btn-envoyer-reponse { padding: 8px 20px; font-size: 13px; }
     }
   </style>
@@ -645,161 +572,155 @@
     }
 
     // ============================================================
-    // PRÉPARER LES PAGES - VERSION CORRIGÉE
+    // PARSER LE CONTENU - CHERCHE LES INDICATEURS (-s-, -q-, etc.)
+    // ============================================================
+    function parserContenu(texte) {
+      var result = {
+        slides: [],
+        slidesIdee: [],
+        quizs: [],
+        openQuestions: [],
+        retenir: []
+      };
+
+      if (!texte) return result;
+
+      // ============================================================
+      // NETTOYAGE : Supprimer les " | " qui sont des séparateurs
+      // ============================================================
+      texte = texte.replace(/ \| /g, '\n');
+      texte = texte.replace(/\|\s*$/gm, '');
+      texte = texte.replace(/^\s*\|\s*/gm, '');
+
+      // Découpage par sauts de ligne
+      var elements = texte.split('\n').filter(function(l) { return l.trim() !== ''; });
+
+      // Si pas de sauts de ligne, essayer les tabulations
+      if (elements.length === 0 && texte.includes('\t')) {
+        elements = texte.split('\t').filter(function(l) { return l.trim() !== ''; });
+      }
+
+      // Si toujours rien, chercher manuellement les indicateurs
+      if (elements.length === 0) {
+        var indices = [];
+        var patterns = ['-s-', '-si-', '-q-', '-qs-', '-r-', '-i-'];
+        for (var p = 0; p < patterns.length; p++) {
+          var pos = texte.indexOf(patterns[p]);
+          while (pos !== -1) {
+            indices.push({ pos: pos, pattern: patterns[p] });
+            pos = texte.indexOf(patterns[p], pos + 1);
+          }
+        }
+        indices.sort(function(a, b) { return a.pos - b.pos; });
+
+        for (var i = 0; i < indices.length; i++) {
+          var start = indices[i].pos;
+          var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
+          var element = texte.substring(start, end).trim();
+          if (element) elements.push(element);
+        }
+      }
+
+      // Parcourir chaque élément
+      for (var i = 0; i < elements.length; i++) {
+        var ligne = elements[i].trim();
+        if (!ligne) continue;
+
+        // --- SLIDE NORMAL ---
+        if (ligne.startsWith('-s-')) {
+          var contenuSlide = ligne.replace('-s-', '').trim();
+          if (!contenuSlide && i + 1 < elements.length) {
+            var next = elements[i + 1].trim();
+            if (!next.startsWith('-')) {
+              contenuSlide = next;
+              i++;
+            }
+          }
+          result.slides.push(contenuSlide || 'Slide vide');
+          result.slidesIdee.push(false);
+          continue;
+        }
+
+        // --- SLIDE IDÉE ---
+        if (ligne.startsWith('-si-')) {
+          result.slides.push(ligne.replace('-si-', '').trim() || 'Idée');
+          result.slidesIdee.push(true);
+          continue;
+        }
+
+        // --- QUIZ ---
+        if (ligne.startsWith('-q-')) {
+          var qText = ligne.replace('-q-', '').trim() || 'Question sans texte';
+          var reponses = [];
+          var j = i + 1;
+
+          while (j < elements.length) {
+            var nextLine = elements[j].trim();
+            if (nextLine.startsWith('-v-')) {
+              reponses.push({
+                texte: nextLine.replace('-v-', '').trim() || 'Vrai',
+                correct: true
+              });
+              j++;
+            } else if (nextLine.startsWith('-f-')) {
+              reponses.push({
+                texte: nextLine.replace('-f-', '').trim() || 'Faux',
+                correct: false
+              });
+              j++;
+            } else {
+              break;
+            }
+          }
+
+          if (reponses.length === 0) {
+            reponses.push({ texte: 'Vrai', correct: true });
+            reponses.push({ texte: 'Faux', correct: false });
+          }
+
+          i = j - 1;
+          result.quizs.push({ question: qText, reponses: reponses });
+          continue;
+        }
+
+        // --- QUESTION OUVERTE ---
+        if (ligne.startsWith('-qs-')) {
+          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
+          continue;
+        }
+
+        // --- RETENIR ---
+        if (ligne.startsWith('-r-')) {
+          var retenirText = ligne.replace('-r-', '').trim();
+          if (retenirText) {
+            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+            result.retenir = mots.filter(function(m) { return m.length > 0; });
+          }
+          continue;
+        }
+
+        // --- INFO (on ignore) ---
+        if (ligne.startsWith('-i-')) {
+          continue;
+        }
+
+        // --- Texte libre sans préfixe : on l'ajoute comme slide ---
+        if (ligne.length > 0 && !ligne.startsWith('-')) {
+          result.slides.push(ligne);
+          result.slidesIdee.push(false);
+        }
+      }
+
+      return result;
+    }
+
+    // ============================================================
+    // PRÉPARER LES PAGES
     // ============================================================
     function preparerPages(post) {
       var pages = [];
       var contenu = post.contenu || '';
 
-      // ============================================================
-// PARSER LE CONTENU - CHERCHE LES INDICATEURS (-s-, -q-, etc.)
-// ============================================================
-function parserContenu(texte) {
-  var result = {
-    slides: [],
-    slidesIdee: [],
-    quizs: [],
-    openQuestions: [],
-    retenir: []
-  };
-
-  if (!texte) return result;
-
-  // On découpe en éléments en cherchant les indicateurs
-  // On utilise une expression régulière pour trouver tout ce qui commence par -s-, -q-, etc.
-  
-  // Méthode 1 : Si le texte a des sauts de ligne, on découpe par ligne
-  var elements = [];
-  if (texte.includes('\n')) {
-    elements = texte.split('\n').filter(function(l) { return l.trim() !== ''; });
-  } 
-  // Méthode 2 : Si le texte a des tabulations
-  else if (texte.includes('\t')) {
-    elements = texte.split('\t').filter(function(l) { return l.trim() !== ''; });
-  } 
-  // Méthode 3 : On cherche manuellement les indicateurs
-  else {
-    // On va chercher chaque occurrence de -s-, -q-, etc.
-    var indices = [];
-    var patterns = ['-s-', '-si-', '-q-', '-qs-', '-r-', '-i-'];
-    for (var p = 0; p < patterns.length; p++) {
-      var pos = texte.indexOf(patterns[p]);
-      while (pos !== -1) {
-        indices.push({ pos: pos, pattern: patterns[p] });
-        pos = texte.indexOf(patterns[p], pos + 1);
-      }
-    }
-    // Trier par position
-    indices.sort(function(a, b) { return a.pos - b.pos; });
-    
-    // Extraire chaque élément
-    for (var i = 0; i < indices.length; i++) {
-      var start = indices[i].pos;
-      var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
-      var element = texte.substring(start, end).trim();
-      if (element) elements.push(element);
-    }
-  }
-
-  // Parcourir chaque élément
-  for (var i = 0; i < elements.length; i++) {
-    var ligne = elements[i].trim();
-    if (!ligne) continue;
-
-    // --- SLIDE NORMAL ---
-    if (ligne.startsWith('-s-')) {
-      var contenuSlide = ligne.replace('-s-', '').trim();
-      // Si la slide est vide et que l'élément suivant n'a pas d'indicateur, on le prend
-      if (!contenuSlide && i + 1 < elements.length) {
-        var next = elements[i + 1].trim();
-        if (!next.startsWith('-')) {
-          contenuSlide = next;
-          i++;
-        }
-      }
-      result.slides.push(contenuSlide || 'Slide vide');
-      result.slidesIdee.push(false);
-      continue;
-    }
-
-    // --- SLIDE IDÉE ---
-    if (ligne.startsWith('-si-')) {
-      result.slides.push(ligne.replace('-si-', '').trim() || 'Idée');
-      result.slidesIdee.push(true);
-      continue;
-    }
-
-    // --- QUIZ ---
-    if (ligne.startsWith('-q-')) {
-      var qText = ligne.replace('-q-', '').trim() || 'Question sans texte';
-      var reponses = [];
-      var j = i + 1;
-
-      // Collecter les réponses (-v- et -f-) qui suivent
-      while (j < elements.length) {
-        var nextLine = elements[j].trim();
-        if (nextLine.startsWith('-v-')) {
-          reponses.push({ 
-            texte: nextLine.replace('-v-', '').trim() || 'Vrai', 
-            correct: true 
-          });
-          j++;
-        } else if (nextLine.startsWith('-f-')) {
-          reponses.push({ 
-            texte: nextLine.replace('-f-', '').trim() || 'Faux', 
-            correct: false 
-          });
-          j++;
-        } else {
-          // On s'arrête si on tombe sur une autre section
-          break;
-        }
-      }
-
-      // Si aucune réponse trouvée, mettre des valeurs par défaut
-      if (reponses.length === 0) {
-        reponses.push({ texte: 'Vrai', correct: true });
-        reponses.push({ texte: 'Faux', correct: false });
-      }
-
-      i = j - 1;
-      result.quizs.push({ question: qText, reponses: reponses });
-      continue;
-    }
-
-    // --- QUESTION OUVERTE ---
-    if (ligne.startsWith('-qs-')) {
-      result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
-      continue;
-    }
-
-    // --- RETENIR ---
-    if (ligne.startsWith('-r-')) {
-      var retenirText = ligne.replace('-r-', '').trim();
-      if (retenirText) {
-        var mots = retenirText.split(',').map(function(m) { return m.trim(); });
-        result.retenir = mots.filter(function(m) { return m.length > 0; });
-      }
-      continue;
-    }
-
-    // --- INFO (on ignore) ---
-    if (ligne.startsWith('-i-')) {
-      continue;
-    }
-
-    // --- Texte libre sans préfixe : on l'ajoute comme slide ---
-    if (ligne.length > 0 && !ligne.startsWith('-')) {
-      result.slides.push(ligne);
-      result.slidesIdee.push(false);
-    }
-  }
-
-  return result;
-}
-      // ============================================================
-      // CONSTRUIRE LES PAGES
-      // ============================================================
       var parsed = parserContenu(contenu);
 
       // 1. Slides
@@ -808,7 +729,8 @@ function parserContenu(texte) {
           type: 'slide',
           titre: 'Slide ' + (index + 1),
           contenu: slide,
-          estIdee: parsed.slidesIdee[index] || false
+          estIdee: parsed.slidesIdee[index] || false,
+          numero: index + 1
         });
       });
 
@@ -819,7 +741,8 @@ function parserContenu(texte) {
           titre: 'Quiz ' + (index + 1),
           question: quiz.question,
           reponses: quiz.reponses,
-          index: index
+          index: index,
+          numero: pages.length + 1
         });
       });
 
@@ -829,7 +752,8 @@ function parserContenu(texte) {
           type: 'open-question',
           titre: 'Question ouverte ' + (index + 1),
           question: q,
-          index: index
+          index: index,
+          numero: pages.length + 1
         });
       });
 
@@ -838,15 +762,10 @@ function parserContenu(texte) {
         pages.push({
           type: 'retenir',
           titre: 'À retenir',
-          mots: parsed.retenir
+          mots: parsed.retenir,
+          numero: pages.length + 1
         });
       }
-
-      // 5. Résultat final
-      pages.push({
-        type: 'resultat',
-        titre: 'Résultat'
-      });
 
       etat.pages = pages;
     }
@@ -872,12 +791,11 @@ function parserContenu(texte) {
         var visibleClass = index === 0 ? ' visible' : '';
 
         html += '<div class="page-item ' + typeClass + visibleClass + '" data-index="' + index + '" id="page-' + index + '">';
-        html += '<div class="page-num">' + (index + 1) + ' / ' + etat.pages.length + '</div>';
         html += '<div class="page-content">';
 
         switch (page.type) {
           case 'slide':
-            html += renderSlide(page);
+            html += renderSlide(page, index);
             break;
           case 'quiz':
             html += renderQuiz(page, index);
@@ -887,9 +805,6 @@ function parserContenu(texte) {
             break;
           case 'retenir':
             html += renderRetenir(page);
-            break;
-          case 'resultat':
-            html += renderResultat();
             break;
         }
 
@@ -915,7 +830,7 @@ function parserContenu(texte) {
     // ============================================================
     // RENDER: SLIDE
     // ============================================================
-    function renderSlide(page) {
+    function renderSlide(page, index) {
       var content = page.contenu || '';
       var isIdee = page.estIdee || false;
 
@@ -927,6 +842,9 @@ function parserContenu(texte) {
       if (isIdee) {
         html = '<div class="slide-idee">' + html + '</div>';
       }
+
+      // Numéro en bas
+      html += '<div class="slide-num">— ' + (index + 1) + ' —</div>';
 
       return html;
     }
@@ -951,7 +869,6 @@ function parserContenu(texte) {
       html += '</div>';
       html += '<div class="quiz-feedback" id="quizFeedback-' + index + '">';
       html += '<div class="bonne-reponse" id="quizBonneReponse-' + index + '"></div>';
-      html += '<div class="score" id="quizScore-' + index + '"></div>';
       html += '</div>';
 
       return html;
@@ -989,59 +906,6 @@ function parserContenu(texte) {
     }
 
     // ============================================================
-    // RENDER: RÉSULTAT
-    // ============================================================
-    function renderResultat() {
-      var statut = etat.statutFinal || 'en-attente';
-      var bonnes = etat.totalBonnes || 0;
-      var total = etat.totalQuestions || 0;
-      var pourcentage = total > 0 ? Math.round((bonnes / total) * 100) : 0;
-
-      var icone, titre, sousTitre, classeStatut;
-
-      if (statut === 'valide') {
-        icone = '✅';
-        titre = 'Félicitations !';
-        sousTitre = 'Vous avez validé ce texte avec succès.';
-        classeStatut = 'valide';
-      } else if (statut === 'non-valide') {
-        icone = '📖';
-        titre = 'À relire';
-        sousTitre = 'Prenez le temps de relire ce texte pour mieux le comprendre.';
-        classeStatut = 'non-valide';
-      } else {
-        icone = '⏳';
-        titre = 'En attente';
-        sousTitre = 'Répondez aux quiz pour valider ce texte.';
-        classeStatut = 'en-attente';
-      }
-
-      var html = '';
-      html += '<div class="resultat-icone">' + icone + '</div>';
-      html += '<div class="resultat-titre">' + titre + '</div>';
-      html += '<div class="resultat-sous-titre">' + sousTitre + '</div>';
-
-      if (total > 0) {
-        html += '<div class="resultat-score">' + bonnes + '/' + total + '</div>';
-        html += '<div class="resultat-detail">' + pourcentage + '% de bonnes réponses</div>';
-      } else {
-        html += '<div class="resultat-score">—</div>';
-        html += '<div class="resultat-detail">Aucun quiz à évaluer</div>';
-      }
-
-      html += '<div class="resultat-actions">';
-      html += '<button class="btn-fermer" onclick="fermerLiseuse()">Terminer la lecture</button>';
-      html += '</div>';
-
-      // Mettre à jour le badge
-      var badge = document.getElementById('badgeStatut');
-      badge.textContent = statut === 'valide' ? '✅ Validé' : statut === 'non-valide' ? '📖 À relire' : '⏳ En cours';
-      badge.className = 'badge-statut ' + classeStatut;
-
-      return html;
-    }
-
-    // ============================================================
     // OBSERVER LES PAGES
     // ============================================================
     function observerPages() {
@@ -1075,13 +939,11 @@ function parserContenu(texte) {
 
       if (!page) return;
 
-      // Vérifier si déjà répondu
       if (etat.reponsesQuiz[quizIndex]) return;
 
       var reponses = document.querySelectorAll('#page-' + getPageIndex(quizIndex) + ' .quiz-reponse');
       var reponse = page.reponses[reponseIndex];
 
-      // Marquer la sélection
       reponses.forEach(function(el, idx) {
         el.classList.remove('selectionnee');
         if (idx === reponseIndex) {
@@ -1089,13 +951,11 @@ function parserContenu(texte) {
         }
       });
 
-      // Enregistrer la réponse
       etat.reponsesQuiz[quizIndex] = {
         reponseIndex: reponseIndex,
         correct: reponse.correct
       };
 
-      // Afficher le feedback
       afficherFeedbackQuiz(quizIndex);
     }
 
@@ -1116,7 +976,6 @@ function parserContenu(texte) {
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
       var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
 
-      // Marquer les réponses
       reponses.forEach(function(el, idx) {
         el.classList.remove('correcte', 'incorrecte');
         var icon = el.querySelector('.result-icon');
@@ -1137,7 +996,6 @@ function parserContenu(texte) {
         }
       });
 
-      // Feedback
       if (reponseData.correct) {
         bonneReponse.textContent = '✅ Bonne réponse !';
       } else {
@@ -1147,7 +1005,6 @@ function parserContenu(texte) {
 
       feedback.classList.add('visible');
 
-      // Vérifier si tous les quiz sont répondus
       verifierQuizComplets();
     }
 
@@ -1162,7 +1019,6 @@ function parserContenu(texte) {
 
       if (!tousRepondus) return;
 
-      // Calculer le score total
       var totalBonnes = 0;
       var totalQuestions = 0;
 
@@ -1177,7 +1033,6 @@ function parserContenu(texte) {
       etat.totalBonnes = totalBonnes;
       etat.totalQuestions = totalQuestions;
 
-      // Déterminer le statut (50% de bonnes réponses pour valider)
       var seuil = Math.ceil(totalQuestions / 2);
       var valide = totalQuestions > 0 && totalBonnes >= seuil;
 
@@ -1186,70 +1041,27 @@ function parserContenu(texte) {
         etat.statutFinal = 'en-attente';
       }
 
-      // Mettre à jour la page résultat
-      mettreAJourResultat();
-
-      // Sauvegarder le quiz
+      mettreAJourBadge();
       sauvegarderQuiz();
     }
 
     // ============================================================
-    // METTRE À JOUR LE RÉSULTAT
+    // METTRE À JOUR LE BADGE
     // ============================================================
-    function mettreAJourResultat() {
-      var pageResultat = document.querySelector('.page-item.resultat');
-      if (!pageResultat) return;
-
-      var content = pageResultat.querySelector('.page-content');
-      if (!content) return;
-
+    function mettreAJourBadge() {
       var statut = etat.statutFinal || 'en-attente';
-      var bonnes = etat.totalBonnes || 0;
-      var total = etat.totalQuestions || 0;
-      var pourcentage = total > 0 ? Math.round((bonnes / total) * 100) : 0;
-
-      var icone, titre, sousTitre, classeStatut;
+      var badge = document.getElementById('badgeStatut');
 
       if (statut === 'valide') {
-        icone = '✅';
-        titre = 'Félicitations !';
-        sousTitre = 'Vous avez validé ce texte avec succès.';
-        classeStatut = 'valide';
+        badge.textContent = '✅ Validé';
+        badge.className = 'badge-statut valide';
       } else if (statut === 'non-valide') {
-        icone = '📖';
-        titre = 'À relire';
-        sousTitre = 'Prenez le temps de relire ce texte pour mieux le comprendre.';
-        classeStatut = 'non-valide';
+        badge.textContent = '📖 À relire';
+        badge.className = 'badge-statut non-valide';
       } else {
-        icone = '⏳';
-        titre = 'En attente';
-        sousTitre = 'Répondez aux quiz pour valider ce texte.';
-        classeStatut = 'en-attente';
+        badge.textContent = '⏳ En cours';
+        badge.className = 'badge-statut en-attente';
       }
-
-      var html = '';
-      html += '<div class="resultat-icone">' + icone + '</div>';
-      html += '<div class="resultat-titre">' + titre + '</div>';
-      html += '<div class="resultat-sous-titre">' + sousTitre + '</div>';
-
-      if (total > 0) {
-        html += '<div class="resultat-score">' + bonnes + '/' + total + '</div>';
-        html += '<div class="resultat-detail">' + pourcentage + '% de bonnes réponses</div>';
-      } else {
-        html += '<div class="resultat-score">—</div>';
-        html += '<div class="resultat-detail">Aucun quiz à évaluer</div>';
-      }
-
-      html += '<div class="resultat-actions">';
-      html += '<button class="btn-fermer" onclick="fermerLiseuse()">Terminer la lecture</button>';
-      html += '</div>';
-
-      content.innerHTML = html;
-
-      // Mettre à jour le badge
-      var badge = document.getElementById('badgeStatut');
-      badge.textContent = statut === 'valide' ? '✅ Validé' : statut === 'non-valide' ? '📖 À relire' : '⏳ En cours';
-      badge.className = 'badge-statut ' + classeStatut;
     }
 
     // ============================================================
@@ -1362,7 +1174,7 @@ function parserContenu(texte) {
                   etat.statutFinal = 'valide';
                   etat.totalBonnes = reponse.bonnes;
                   etat.totalQuestions = reponse.total;
-                  mettreAJourResultat();
+                  mettreAJourBadge();
                 }
               }
             }
