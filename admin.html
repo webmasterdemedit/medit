@@ -524,7 +524,7 @@
 
       afficherPosts(postsFiltres);
     }
-    function afficherPosts(posts) {
+        function afficherPosts(posts) {
       var container = document.getElementById('contenu');
 
       if (posts.length === 0) {
@@ -540,28 +540,9 @@
 
       var html = '<div class="grille">';
 
+      // ICI : on utilise le paramètre "posts", PAS "tousLesPosts"
       posts.forEach(function(post) {
-        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
-        var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
-
-        html += `
-          <div class="carte-post">
-            <div class="infos">
-              <div class="titre">${post.titre || 'Sans titre'}</div>
-              <div class="meta">
-                <span>Niveau ${post.niveau || 0}</span>
-                <span>${post.categorie || 'Sans catégorie'}</span>
-                <span class="badge ${statutClass}">${statutLabel}</span>
-                ${post.mots ? '<span>' + post.mots + ' mots</span>' : ''}
-              </div>
-            </div>
-            <div class="actions">
-              <button onclick="modifierPost('${post.id}')">✎ Modifier</button>
-              <button onclick="exporterPost('${post.id}')">Exporter</button>
-              <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">✕</button>
-            </div>
-          </div>
-        `;
+        // ...
       });
 
       html += '</div>';
