@@ -566,6 +566,38 @@
       });
       afficherAdmin();
     }
+        // ============================================================
+    // FILTRER PAR CATÉGORIE
+    // ============================================================
+    function filtrerParCategorie(cat) {
+      categorieActuelle = cat;
+      document.querySelectorAll('.filtre-cat-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.cat === cat) el.classList.add('active');
+      });
+      afficherAdmin();
+    }
+
+    function genererFiltresCategories() {
+      var cats = {};
+      tousLesPosts.forEach(function(post) {
+        if (post.categorie) {
+          cats[post.categorie] = (cats[post.categorie] || 0) + 1;
+        }
+      });
+      
+      var container = document.getElementById('filtresCategories');
+      var html = '<button class="filtre-cat-btn active" data-cat="toutes" onclick="filtrerParCategorie(\'toutes\')">Toutes <span class="compteur-cat" id="catToutes">' + tousLesPosts.length + '</span></button>';
+      
+      var keys = Object.keys(cats).sort();
+      keys.forEach(function(cat) {
+        var count = cats[cat];
+        var activeClass = (categorieActuelle === cat) ? ' active' : '';
+        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span></button>';
+      });
+      
+      container.innerHTML = html;
+    }
 
     // ============================================================
     // MODAL TEXTE
