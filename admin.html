@@ -67,19 +67,14 @@
     .carte-post .meta .stat-lecture { font-size: 11px; color: #6b7a8a; }
     .carte-post .meta .stat-lecture .ok { color: #2d6a4f; }
     .carte-post .meta .stat-lecture .ko { color: #b8b0a8; }
+    .carte-post .meta .info-badge { padding: 1px 8px; border-radius: 4px; font-size: 10px; font-weight: 500; display: inline-block; background: #e8e5e0; color: #6b7a8a; }
 
-    .carte-post .apercu-rapide { display: none; padding: 10px 14px; margin-top: 6px; border-radius: 4px; font-size: 13px; font-style: italic; line-height: 1.6; background: #e8e5e0; color: #2c2c2c; pointer-events: none; }
-    .carte-post .apercu-rapide.visible { display: block; }
-    .carte-post .apercu-rapide strong { font-style: normal; font-weight: 600; display: block; margin-bottom: 2px; font-size: 11px; letter-spacing: 0.5px; text-transform: uppercase; color: #6b7a8a; }
+    .carte-post .apercu-rapide { padding: 10px 14px; margin-top: 6px; border-radius: 4px; font-size: 13px; font-style: italic; line-height: 1.6; background: #e8e5e0; color: #2c2c2c; pointer-events: none; }
 
     .carte-post .actions { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: auto; }
     .carte-post .actions button { padding: 6px 14px; border: 1px solid #d1ccc4; border-radius: 30px; font-size: 12px; cursor: pointer; background: transparent; color: #6b7a8a; font-family: 'Segoe UI', sans-serif; }
     .carte-post .actions button:hover { background: #e8e5e0; color: #2c2c2c; }
     .carte-post .actions .btn-supprimer:hover { background: #f5f0eb; color: #6b7a8a; }
-    .carte-post .actions .btn-dupliquer { color: #6b7a8a; }
-    .carte-post .actions .btn-dupliquer:hover { color: #2c2c2c; }
-    .carte-post .actions .btn-apercu { color: #6b7a8a; }
-    .carte-post .actions .btn-apercu:hover { color: #2c2c2c; }
 
     .carte-post.dragging { opacity: 0.4; }
     .carte-post.drag-over { border: 2px dashed #2c2c2c; background: #e8e5e0; }
@@ -651,6 +646,9 @@
             if (p.statut !== 'publie' && p.statut !== 'brouillon') {
               p.statut = 'publie';
             }
+            // Assurer que les champs versions existent
+            if (!p.versions) p.versions = 1;
+            if (!p.dateModif) p.dateModif = p.date || '';
           });
           
           afficherAdmin();
@@ -769,6 +767,7 @@
         
         var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
         
+        // Statistiques de lecture
         var lectures = toutesLesReponses.filter(function(r) { return r.articleId === post.id; });
         var nbLectures = lectures.length;
         var nbQuiz = lectures.filter(function(r) { return r.bonnes > 0 || r.total > 0; }).length;
@@ -782,42 +781,72 @@
             '</span>';
         }
 
+        // === INFOS COMME DANS MES-TEXTES ===
+        var nbSlides = post.contenu ? post.contenu.split(' -s- ').length : 0;
+        var hasQuiz = post.contenu && post.contenu.includes('-q-');
+        var hasQuestion = post.contenu && post.contenu.includes('-qs-');
+        var hasRetenir = post.contenu && post.contenu.includes('-r-');
+        var hasInfo = post.contenu && post.contenu.includes('-i-');
+        var mots = post.mots || 0;
+        
+        var infoBadges = '';
+        infoBadges += '<span class="info-badge">📄 ' + nbSlides + ' slides</span>';
+        if (hasQuiz) infoBadges += '<span class="info-badge">🧪 Quiz</span>';
+        if (hasQuestion) infoBadges += '<span class="info-badge">✏️ Q. ouverte</span>';
+        if (hasRetenir) infoBadges += '<span class="info-badge">📌 Mémo</span>';
+        if (hasInfo) infoBadges += '<span class="info-badge">ℹ️ Infos</span>';
+        if (mots > 0) infoBadges += '<span class="info-badge">📝 ' + mots + ' mots</span>';
+        
+        // Date création et modification
+        var dateCreation = post.date ? new Date(post.date) : null;
+        var dateModif = post.dateModif ? new Date(post.dateModif) : null;
+        var dateStr = '';
+        if (dateCreation) {
+          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        if (dateModif && dateModif.getTime() !== dateCreation?.getTime()) {
+          dateStr += ' | Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+        var versionsStr = post.versions ? ' v' + post.versions : '';
+        // ========================================================
+
+        // === APERÇU TOUJOURS VISIBLE ===
         var apercuHtml = '';
-if (post.contenu) {
-    var slides = post.contenu.split(' | -s- ');
-    var apercu = slides.slice(0, 3).join(' | ');
-    if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
-    if (slides.length > 3) apercu += ' ...';
-    if (apercu.trim()) {
-        apercuHtml = `
-            <div class="apercu-rapide visible" id="apercu_${post.id}">
-                <strong>📖 Aperçu</strong>
+        if (post.contenu) {
+          var slides = post.contenu.split(' | -s- ');
+          var apercu = slides.slice(0, 2).join(' | ');
+          if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
+          if (slides.length > 2) apercu += ' ...';
+          if (apercu.trim()) {
+            apercuHtml = `
+              <div class="apercu-rapide" id="apercu_${post.id}">
                 ${apercu}
-            </div>
-        `;
-    }
-}
+              </div>
+            `;
+          }
+        }
+        // ========================================================
+
         html += `
-          <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" 
-               onmouseenter="afficherApercu('${post.id}')" onmouseleave="cacherApercu('${post.id}')">
-            <div class="infos" onclick="modifierPost('${post.id}')">
+          <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" onclick="modifierPost('${post.id}')">
+            <div class="infos">
               <div class="titre">
                 <span class="drag-handle" onclick="event.stopPropagation(); event.preventDefault();">⠿</span>
                 ${post.titre || 'Sans titre'}
                 ${ordreHtml}
+                <span style="font-size:11px;color:#b8b0a8;font-weight:400;">${dateStr}${versionsStr}</span>
               </div>
               <div class="meta">
                 <span>Niveau ${post.niveau || 0}</span>
                 <span>${post.categorie || 'Sans catégorie'}</span>
                 <span class="badge ${statutClass}">${statutLabel}</span>
-                ${post.mots ? '<span>' + post.mots + ' mots</span>' : ''}
+                ${infoBadges}
                 ${statsHtml}
               </div>
               ${apercuHtml}
             </div>
             <div class="actions">
               <button onclick="event.stopPropagation(); modifierPost('${post.id}')">✎ Modifier</button>
-              <button class="btn-dupliquer" onclick="event.stopPropagation(); dupliquerPost('${post.id}')">📋 Dupliquer</button>
               <button onclick="event.stopPropagation(); exporterPost('${post.id}')">📥 Exporter</button>
               <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
             </div>
@@ -947,26 +976,6 @@ if (post.contenu) {
           }
         }
       });
-    }
-
-    // ============================================================
-    // APERÇU RAPIDE
-    // ============================================================
-    function afficherApercu(postId) {
-      var el = document.getElementById('apercu_' + postId);
-      if (el) el.classList.add('visible');
-    }
-
-    function cacherApercu(postId) {
-      var el = document.getElementById('apercu_' + postId);
-      if (el) el.classList.remove('visible');
-    }
-
-    function toggleApercu(postId) {
-      var el = document.getElementById('apercu_' + postId);
-      if (el) {
-        el.classList.toggle('visible');
-      }
     }
 
     // ============================================================
@@ -1161,25 +1170,6 @@ if (post.contenu) {
     }
 
     // ============================================================
-    // DUPLIQUER POST
-    // ============================================================
-    function dupliquerPost(postId) {
-      var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) { alert('Post introuvable'); return; }
-      
-      var nouveauTitre = post.titre + ' (copie)';
-      
-      DataManager.ajouterPost(nouveauTitre, post.niveau, post.categorie, post.contenu || '', post.question_ouverte || '')
-        .then(function() {
-          alert('✅ Post dupliqué avec succès !');
-          chargerAdmin();
-        })
-        .catch(function(err) {
-          alert('❌ Erreur : ' + err.message);
-        });
-    }
-
-    // ============================================================
     // EXPORTER TOUT
     // ============================================================
     function exporterTout() {
@@ -1203,7 +1193,9 @@ if (post.contenu) {
             mots: p.mots,
             hasQuiz: p.hasQuiz,
             hasQuestion: p.hasQuestion,
-            ordre: p.ordre || 0
+            ordre: p.ordre || 0,
+            versions: p.versions || 1,
+            dateModif: p.dateModif || p.date || ''
           };
         })
       };
@@ -1641,14 +1633,24 @@ if (post.contenu) {
       btn.disabled = true;
       msg.style.display = 'none';
 
+      var maintenant = new Date().toISOString();
+
       if (modeEdition && id) {
-        // === MODIFICATION : envoi des colonnes dynamiques ===
+        // === MODIFICATION : envoi des colonnes dynamiques + incrément version ===
+        var version = 1;
+        var postExistant = tousLesPosts.find(function(p) { return p.id === id; });
+        if (postExistant) {
+          version = (postExistant.versions || 1) + 1;
+        }
+        
         var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
           '&id=' + encodeURIComponent(id) +
           '&titre=' + encodeURIComponent(titre) +
           '&niveau=' + encodeURIComponent(niveau) +
           '&categorie=' + encodeURIComponent(categorie) +
-          '&statut=' + encodeURIComponent(statut);
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(version) +
+          '&dateModif=' + encodeURIComponent(maintenant);
 
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
@@ -1658,7 +1660,7 @@ if (post.contenu) {
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post mis à jour !', 'success');
+              afficherMsgTexte('✅ Post mis à jour ! (v' + version + ')', 'success');
               btn.textContent = 'Mettre à jour';
               btn.disabled = false;
               fermerModalTexte();
@@ -1678,7 +1680,9 @@ if (post.contenu) {
           '&titre=' + encodeURIComponent(titre) +
           '&niveau=' + encodeURIComponent(niveau) +
           '&categorie=' + encodeURIComponent(categorie) +
-          '&statut=' + encodeURIComponent(statut);
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(1) +
+          '&dateModif=' + encodeURIComponent(maintenant);
 
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
