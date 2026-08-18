@@ -575,145 +575,154 @@
     // PARSER LE CONTENU - CHERCHE LES INDICATEURS (-s-, -q-, etc.)
     // ============================================================
     function parserContenu(texte) {
-      var result = {
-        slides: [],
-        slidesIdee: [],
-        quizs: [],
-        openQuestions: [],
-        retenir: []
-      };
+  var result = {
+    slides: [],
+    slidesIdee: [],
+    quizs: [],
+    openQuestions: [],
+    retenir: []
+  };
 
-      if (!texte) return result;
+  if (!texte) return result;
 
-      // ============================================================
-      // NETTOYAGE : Supprimer les " | " qui sont des séparateurs
-      // ============================================================
-      texte = texte.replace(/ \| /g, '\n');
-      texte = texte.replace(/\|\s*$/gm, '');
-      texte = texte.replace(/^\s*\|\s*/gm, '');
+  // Nettoyage
+  texte = texte.replace(/ \| /g, '\n');
+  texte = texte.replace(/\|\s*$/gm, '');
+  texte = texte.replace(/^\s*\|\s*/gm, '');
 
-      // Découpage par sauts de ligne
-      var elements = texte.split('\n').filter(function(l) { return l.trim() !== ''; });
+  var elements = texte.split('\n').filter(function(l) { return l.trim() !== ''; });
 
-      // Si pas de sauts de ligne, essayer les tabulations
-      if (elements.length === 0 && texte.includes('\t')) {
-        elements = texte.split('\t').filter(function(l) { return l.trim() !== ''; });
+  if (elements.length === 0 && texte.includes('\t')) {
+    elements = texte.split('\t').filter(function(l) { return l.trim() !== ''; });
+  }
+
+  if (elements.length === 0) {
+    var indices = [];
+    var patterns = ['-s-', '-si-', '-q-', '-qs-', '-r-', '-i-'];
+    for (var p = 0; p < patterns.length; p++) {
+      var pos = texte.indexOf(patterns[p]);
+      while (pos !== -1) {
+        indices.push({ pos: pos, pattern: patterns[p] });
+        pos = texte.indexOf(patterns[p], pos + 1);
       }
+    }
+    indices.sort(function(a, b) { return a.pos - b.pos; });
 
-      // Si toujours rien, chercher manuellement les indicateurs
-      if (elements.length === 0) {
-        var indices = [];
-        var patterns = ['-s-', '-si-', '-q-', '-qs-', '-r-', '-i-'];
-        for (var p = 0; p < patterns.length; p++) {
-          var pos = texte.indexOf(patterns[p]);
-          while (pos !== -1) {
-            indices.push({ pos: pos, pattern: patterns[p] });
-            pos = texte.indexOf(patterns[p], pos + 1);
-          }
-        }
-        indices.sort(function(a, b) { return a.pos - b.pos; });
+    for (var i = 0; i < indices.length; i++) {
+      var start = indices[i].pos;
+      var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
+      var element = texte.substring(start, end).trim();
+      if (element) elements.push(element);
+    }
+  }
 
-        for (var i = 0; i < indices.length; i++) {
-          var start = indices[i].pos;
-          var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
-          var element = texte.substring(start, end).trim();
-          if (element) elements.push(element);
-        }
-      }
+  for (var i = 0; i < elements.length; i++) {
+    var ligne = elements[i].trim();
+    if (!ligne) continue;
 
-      // Parcourir chaque élément
-      for (var i = 0; i < elements.length; i++) {
-        var ligne = elements[i].trim();
-        if (!ligne) continue;
-
-        // --- SLIDE NORMAL ---
-        if (ligne.startsWith('-s-')) {
-          var contenuSlide = ligne.replace('-s-', '').trim();
-          if (!contenuSlide && i + 1 < elements.length) {
-            var next = elements[i + 1].trim();
-            if (!next.startsWith('-')) {
-              contenuSlide = next;
-              i++;
-            }
-          }
-          result.slides.push(contenuSlide || 'Slide vide');
-          result.slidesIdee.push(false);
-          continue;
-        }
-
-        // --- SLIDE IDÉE ---
-        if (ligne.startsWith('-si-')) {
-          result.slides.push(ligne.replace('-si-', '').trim() || 'Idée');
-          result.slidesIdee.push(true);
-          continue;
-        }
-
-        // --- QUIZ ---
-        if (ligne.startsWith('-q-')) {
-          var qText = ligne.replace('-q-', '').trim() || 'Question sans texte';
-          var reponses = [];
-          var j = i + 1;
-
-          while (j < elements.length) {
-            var nextLine = elements[j].trim();
-            if (nextLine.startsWith('-v-')) {
-              reponses.push({
-                texte: nextLine.replace('-v-', '').trim() || 'Vrai',
-                correct: true
-              });
-              j++;
-            } else if (nextLine.startsWith('-f-')) {
-              reponses.push({
-                texte: nextLine.replace('-f-', '').trim() || 'Faux',
-                correct: false
-              });
-              j++;
-            } else {
-              break;
-            }
-          }
-
-          if (reponses.length === 0) {
-            reponses.push({ texte: 'Vrai', correct: true });
-            reponses.push({ texte: 'Faux', correct: false });
-          }
-
-          i = j - 1;
-          result.quizs.push({ question: qText, reponses: reponses });
-          continue;
-        }
-
-        // --- QUESTION OUVERTE ---
-        if (ligne.startsWith('-qs-')) {
-          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
-          continue;
-        }
-
-        // --- RETENIR ---
-        if (ligne.startsWith('-r-')) {
-          var retenirText = ligne.replace('-r-', '').trim();
-          if (retenirText) {
-            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
-            result.retenir = mots.filter(function(m) { return m.length > 0; });
-          }
-          continue;
-        }
-
-        // --- INFO (on ignore) ---
-        if (ligne.startsWith('-i-')) {
-          continue;
-        }
-
-        // --- Texte libre sans préfixe : on l'ajoute comme slide ---
-        if (ligne.length > 0 && !ligne.startsWith('-')) {
-          result.slides.push(ligne);
-          result.slidesIdee.push(false);
+    // --- SLIDE ---
+    if (ligne.startsWith('-s-')) {
+      var contenuSlide = ligne.replace('-s-', '').trim();
+      if (!contenuSlide && i + 1 < elements.length) {
+        var next = elements[i + 1].trim();
+        if (!next.startsWith('-')) {
+          contenuSlide = next;
+          i++;
         }
       }
-
-      return result;
+      result.slides.push(contenuSlide || 'Slide vide');
+      result.slidesIdee.push(false);
+      continue;
     }
 
+    // --- SLIDE IDÉE ---
+    if (ligne.startsWith('-si-')) {
+      result.slides.push(ligne.replace('-si-', '').trim() || 'Idée');
+      result.slidesIdee.push(true);
+      continue;
+    }
+
+    // --- QUIZ ---
+    if (ligne.startsWith('-q-')) {
+      var qText = ligne.replace('-q-', '').trim() || 'Question sans texte';
+      var reponses = [];
+      var j = i + 1;
+
+      // Liste des indicateurs qui arrêtent la collecte des réponses
+      var stopIndicators = ['-s-', '-si-', '-q-', '-qs-', '-r-', '-i-'];
+
+      while (j < elements.length) {
+        var nextLine = elements[j].trim();
+        var isStop = false;
+
+        for (var s = 0; s < stopIndicators.length; s++) {
+          if (nextLine.startsWith(stopIndicators[s])) {
+            isStop = true;
+            break;
+          }
+        }
+
+        if (isStop) {
+          break;
+        }
+
+        if (nextLine.startsWith('-v-')) {
+          reponses.push({
+            texte: nextLine.replace('-v-', '').trim() || 'Vrai',
+            correct: true
+          });
+          j++;
+        } else if (nextLine.startsWith('-f-')) {
+          reponses.push({
+            texte: nextLine.replace('-f-', '').trim() || 'Faux',
+            correct: false
+          });
+          j++;
+        } else {
+          j++;
+        }
+      }
+
+      if (reponses.length === 0) {
+        reponses.push({ texte: 'Vrai', correct: true });
+        reponses.push({ texte: 'Faux', correct: false });
+      }
+
+      i = j - 1;
+      result.quizs.push({ question: qText, reponses: reponses });
+      continue;
+    }
+
+    // --- QUESTION OUVERTE ---
+    if (ligne.startsWith('-qs-')) {
+      result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
+      continue;
+    }
+
+    // --- RETENIR ---
+    if (ligne.startsWith('-r-')) {
+      var retenirText = ligne.replace('-r-', '').trim();
+      if (retenirText) {
+        var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+        result.retenir = mots.filter(function(m) { return m.length > 0; });
+      }
+      continue;
+    }
+
+    // --- INFO (on ignore) ---
+    if (ligne.startsWith('-i-')) {
+      continue;
+    }
+
+    // --- Texte libre ---
+    if (ligne.length > 0 && !ligne.startsWith('-')) {
+      result.slides.push(ligne);
+      result.slidesIdee.push(false);
+    }
+  }
+
+  return result;
+}
     // ============================================================
     // PRÉPARER LES PAGES
     // ============================================================
