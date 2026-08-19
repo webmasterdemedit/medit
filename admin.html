@@ -61,6 +61,14 @@
       transition: all 0.2s;
     }
     .header-admin .btn-importer-header:hover { background: #1e1e1e; color: #e8e0d8; }
+    .header-admin .btn-categories {
+      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
+      font-size: 13px; cursor: pointer;
+      background: transparent; color: #6b6b6b;
+      font-family: 'Inter', sans-serif; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .header-admin .btn-categories:hover { background: #1e1e1e; color: #e8e0d8; }
 
     /* ===== STATS ===== */
     .stats-ligne {
@@ -1034,7 +1042,7 @@
               p.statut = 'publie';
             }
             if (!p.versions) p.versions = 1;
-            if (!p.dateModif) p.dateModif = p.date || '';
+            if (!p.dateModif) p.dateModif = '';
           });
           
           afficherAdmin();
@@ -1125,7 +1133,7 @@
     }
 
     // ============================================================
-    // AFFICHER POSTS - VERSION CORRIGÉE
+    // AFFICHER POSTS
     // ============================================================
     function afficherPosts(posts) {
       var container = document.getElementById('contenu');
@@ -1183,15 +1191,14 @@
         if (hasInfo) infoBadges += '<span class="info-badge">ℹ️ Infos</span>';
         if (mots > 0) infoBadges += '<span class="info-badge">📝 ' + mots + ' mots</span>';
         
-        // Date création et modification
+        // Date : afficher la colonne B (date) en priorité, sinon la colonne H (dateModif)
         var dateCreation = post.date ? new Date(post.date) : null;
         var dateModif = post.dateModif ? new Date(post.dateModif) : null;
         var dateStr = '';
         if (dateCreation) {
           dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
-        }
-        if (dateModif && dateModif.getTime() !== dateCreation?.getTime()) {
-          dateStr += ' | Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        } else if (dateModif) {
+          dateStr = 'Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
         }
         var versionsStr = post.versions ? ' v' + post.versions : '';
 
@@ -1575,7 +1582,7 @@
             hasQuestion: p.hasQuestion,
             ordre: p.ordre || 0,
             versions: p.versions || 1,
-            dateModif: p.dateModif || p.date || ''
+            dateModif: p.dateModif || ''
           };
         })
       };
@@ -1961,7 +1968,7 @@
     }
 
     // ============================================================
-    // ENREGISTRER - IDENTIQUE (je ne touche pas)
+    // ENREGISTRER
     // ============================================================
     function enregistrerTexte() {
       var id = document.getElementById('editId').value;
@@ -2017,6 +2024,7 @@
       msg.style.display = 'none';
 
       var maintenant = new Date().toISOString();
+      var dateCreation = document.getElementById('inputDate').value;
 
       if (modeEdition && id) {
         var version = 1;
@@ -2034,8 +2042,14 @@
           '&versions=' + encodeURIComponent(version) +
           '&dateModif=' + encodeURIComponent(maintenant);
 
+        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        // Ajouter la date de création personnalisée (colonne B)
+        if (dateCreation) {
+          url += '&date=' + encodeURIComponent(dateCreation);
         }
 
         fetch(url)
@@ -2062,9 +2076,14 @@
           '&niveau=' + encodeURIComponent(niveau) +
           '&categorie=' + encodeURIComponent(categorie) +
           '&statut=' + encodeURIComponent(statut) +
-          '&versions=' + encodeURIComponent(1) +
-          '&dateModif=' + encodeURIComponent(maintenant);
+          '&versions=' + encodeURIComponent(1);
 
+        // Ajouter la date de création personnalisée (colonne B)
+        if (dateCreation) {
+          url += '&date=' + encodeURIComponent(dateCreation);
+        }
+
+        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
         }
@@ -2098,7 +2117,7 @@
     }
 
     // ============================================================
-    // MODIFIER POST - IDENTIQUE (je ne touche pas)
+    // MODIFIER POST
     // ============================================================
     function modifierPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
@@ -2110,6 +2129,7 @@
       document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
       document.getElementById('editId').value = postId;
 
+      // Pré-remplir la date avec la date de création (colonne B)
       if (post.date) {
         var d = new Date(post.date);
         if (!isNaN(d.getTime())) {
