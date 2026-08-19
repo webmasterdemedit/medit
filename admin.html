@@ -1158,6 +1158,7 @@
       posts.forEach(function(post, index) {
         var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
+        var estPublie = post.statut === 'publie';
         
         var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
         
@@ -1235,6 +1236,8 @@
               ${apercuHtml}
             </div>
             <div class="actions">
+              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">📤 Exporter</button>
+              <button class="${estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier'}" onclick="event.stopPropagation(); ${estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')'}">${estPublie ? 'Passer en brouillon' : 'Publier'}</button>
               <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
             </div>
           </div>
