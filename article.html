@@ -7,321 +7,11 @@
   <title>Lecture</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    /* ============================================================
-       LISEUSE - VERSION FINALE
-       ============================================================ */
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; overflow: hidden; background: #121212; }
-    body { font-family: 'Merriweather', serif; color: #e8e0d8; display: flex; flex-direction: column; height: 100vh; overflow: hidden; background: #121212; }
-
-    /* ===== HEADER ===== */
-    .lecture-header {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 14px 32px; background: #1a1a1a; border-bottom: 1px solid #2a2a2a;
-      flex-shrink: 0; min-height: 64px; z-index: 10;
-    }
-    .lecture-header .meta-left { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-    .lecture-header .meta-left .cat-niveau { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.8px; color: #6b6b6b; }
-    .lecture-header .meta-left .titre { font-family: 'Merriweather', serif; font-size: 18px; font-weight: 400; color: #e8e0d8; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .lecture-header .actions { display: flex; align-items: center; gap: 12px; flex-shrink: 0; }
-    .lecture-header .actions .btn-close { background: none; border: none; color: #6b6b6b; font-size: 26px; cursor: pointer; padding: 4px 8px; line-height: 1; transition: color 0.2s; font-family: 'Inter', sans-serif; }
-    .lecture-header .actions .btn-close:hover { color: #e8e0d8; }
-    .lecture-header .actions .badge-statut { font-family: 'Inter', sans-serif; font-size: 11px; font-weight: 500; padding: 4px 14px; border-radius: 20px; background: #2a2a2a; color: #6b6b6b; letter-spacing: 0.3px; display: none; }
-    .lecture-header .actions .badge-statut.valide { display: inline-block; background: #1e3a2a; color: #7ab893; }
-    .lecture-header .actions .badge-statut.non-valide { display: inline-block; background: #3a1e1e; color: #c87a7a; }
-    .lecture-header .actions .badge-statut.en-attente { display: inline-block; background: #2a2a1e; color: #c8b87a; }
-
-    /* ===== SLIDES CONTAINER ===== */
-    .slides-container {
-      flex: 1;
-      position: relative;
-      overflow: hidden;
-      background: #121212;
-      cursor: pointer;
-    }
-
-    .slide-wrapper {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 40px 60px;
-      opacity: 0;
-      transition: opacity 0.6s ease;
-      pointer-events: none;
-    }
-
-    .slide-wrapper.active {
-      opacity: 1;
-      pointer-events: auto;
-    }
-
-    .slide-content {
-      max-width: 780px;
-      width: 100%;
-      margin: 0 auto;
-      font-size: 21px;
-      line-height: 2;
-      color: #e0d8d0;
-      font-weight: 300;
-      letter-spacing: 0.3px;
-      position: relative;
-    }
-
-    .slide-content p { margin-bottom: 1.2em; }
-    .slide-content p:last-child { margin-bottom: 0; }
-
-    /* ===== SLIDE IDÉE ===== */
-    .slide-content .slide-idee {
-      font-style: italic;
-      color: #6b6b6b;
-      border-left: 3px solid #2a2a2a;
-      padding-left: 20px;
-    }
-
-    /* ===== QUIZ ===== */
-    .slide-content.quiz-content { font-size: 18px; }
-    .slide-content .quiz-question { font-weight: 400; font-size: 20px; margin-bottom: 20px; color: #e8e0d8; }
-    .slide-content .quiz-reponses { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
-    .slide-content .quiz-reponse {
-      display: flex; align-items: center; gap: 14px; padding: 12px 18px;
-      border-radius: 8px; background: #1e1e1e; border: 1px solid #2a2a2a;
-      cursor: pointer; transition: all 0.2s ease;
-      font-family: 'Inter', sans-serif; font-size: 15px; font-weight: 400; color: #c8c0b8;
-    }
-    .slide-content .quiz-reponse:hover { background: #262626; border-color: #3a3a3a; }
-    .slide-content .quiz-reponse .lettre { font-weight: 600; color: #6b6b6b; min-width: 24px; font-size: 13px; }
-    .slide-content .quiz-reponse.selectionnee { border-color: #4a6a5a; background: #1e2a24; }
-    .slide-content .quiz-reponse.correcte { border-color: #4a8a5a; background: #1a2a1e; color: #8ac8a0; }
-    .slide-content .quiz-reponse.incorrecte { border-color: #8a4a4a; background: #2a1a1a; color: #c88a8a; }
-    .slide-content .quiz-reponse .result-icon { margin-left: auto; font-size: 18px; }
-    .slide-content .quiz-feedback {
-      margin-top: 16px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      opacity: 0;
-      transition: opacity 0.4s ease;
-    }
-    .slide-content .quiz-feedback.visible { opacity: 1; }
-    .slide-content .quiz-feedback .bonne-reponse { color: #8ac8a0; }
-    .slide-content .quiz-feedback .mauvaise-reponse { color: #c87a7a; }
-
-    /* ===== BOUTON CONTINUER ===== */
-    .btn-continuer {
-      display: inline-block;
-      background: transparent;
-      color: #8ac8a0;
-      border: 1px solid #4a6a5a;
-      border-radius: 30px;
-      padding: 8px 28px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: all 0.3s ease;
-      opacity: 0;
-      transform: translateY(8px);
-    }
-    .btn-continuer.visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-    .btn-continuer:hover {
-      background: #1a2a1e;
-    }
-
-    /* ===== QUESTION OUVERTE ===== */
-    .slide-content.open-content { font-size: 18px; }
-    .slide-content .open-question-text { font-weight: 400; font-size: 20px; color: #e8e0d8; margin-bottom: 16px; }
-    .slide-content textarea {
-      width: 100%; min-height: 120px; padding: 14px 18px; border-radius: 8px;
-      background: #1a1a1a; border: 1px solid #2a2a2a; color: #e0d8d0;
-      font-family: 'Inter', sans-serif; font-size: 15px; line-height: 1.6;
-      resize: vertical; transition: border-color 0.2s;
-    }
-    .slide-content textarea:focus { outline: none; border-color: #4a6a5a; }
-    .slide-content textarea::placeholder { color: #4a4a4a; }
-    .slide-content .btn-envoyer-reponse {
-      margin-top: 12px; padding: 10px 28px; border-radius: 8px;
-      background: transparent; border: 1px solid #4a6a5a; color: #8ac8a0;
-      font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 500;
-      cursor: pointer; transition: all 0.2s; align-self: flex-start;
-    }
-    .slide-content .btn-envoyer-reponse:hover { background: #1a2a1e; border-color: #5a8a6a; }
-    .slide-content .btn-envoyer-reponse:disabled { opacity: 0.4; cursor: not-allowed; }
-    .slide-content .reponse-confirmation {
-      margin-top: 12px; font-family: 'Inter', sans-serif; font-size: 14px;
-      color: #7ab893; display: none;
-    }
-    .slide-content .reponse-confirmation.visible { display: block; }
-
-    /* ===== ANNOTATION ===== */
-    .annotation-container {
-      position: fixed;
-      bottom: 80px;
-      right: 28px;
-      z-index: 20;
-      display: flex;
-      flex-direction: column;
-      align-items: flex-end;
-      gap: 6px;
-    }
-    .annotation-toggle {
-      background: transparent;
-      border: none;
-      color: #4a4a4a;
-      font-size: 24px;
-      cursor: pointer;
-      transition: color 0.3s ease;
-      padding: 4px;
-      line-height: 1;
-      position: relative;
-    }
-    .annotation-toggle:hover { color: #8ac8a0; }
-    .annotation-toggle.has-note { color: #8ac8a0; }
-    .annotation-toggle .dot-save {
-      display: none;
-      width: 8px;
-      height: 8px;
-      background: #4a6a5a;
-      border-radius: 50%;
-      position: absolute;
-      bottom: 0px;
-      right: -4px;
-    }
-    .annotation-toggle .dot-save.saved { display: block; background: #4a8a5a; }
-    .annotation-toggle .dot-save.saving { display: block; background: #c8b87a; animation: pulse-dot 0.8s ease-in-out infinite; }
-    @keyframes pulse-dot { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
-
-    .annotation-box {
-      display: none;
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 8px;
-      padding: 12px 16px;
-      width: 300px;
-      max-width: 80vw;
-      margin-bottom: 4px;
-    }
-    .annotation-box.open { display: block; }
-    .annotation-box textarea {
-      width: 100%;
-      min-height: 80px;
-      background: transparent;
-      border: none;
-      color: #e0d8d0;
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      line-height: 1.6;
-      resize: vertical;
-      outline: none;
-    }
-    .annotation-box textarea::placeholder { color: #4a4a4a; }
-
-    /* ===== RETENIR ===== */
-    .slide-content.retenir-content { font-size: 18px; text-align: center; }
-    .slide-content .retenir-mots { display: flex; flex-wrap: wrap; justify-content: center; gap: 16px; margin: 24px 0; }
-    .slide-content .retenir-mot { font-family: 'Merriweather', serif; font-size: 28px; font-weight: 400; color: #e8e0d8; padding: 12px 24px; border: 1px solid #2a2a2a; border-radius: 8px; background: #1a1a1a; }
-    .slide-content .retenir-label { font-family: 'Inter', sans-serif; font-size: 12px; font-weight: 500; text-transform: uppercase; letter-spacing: 1px; color: #6b6b6b; margin-bottom: 8px; }
-
-    /* ===== PAGINATION ===== */
-    .pagination {
-      position: absolute;
-      bottom: 40px;
-      left: 50%;
-      transform: translateX(-50%);
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      color: #4a4a4a;
-      letter-spacing: 0.5px;
-      background: rgba(18, 18, 18, 0.8);
-      padding: 6px 16px;
-      border-radius: 20px;
-      border: 1px solid #2a2a2a;
-      pointer-events: none;
-      z-index: 5;
-    }
-
-    /* ===== BOUTON FERMER DERNIER SLIDE ===== */
-    .btn-fermer-slide {
-      display: inline-block;
-      background: transparent;
-      color: #c8c0b8;
-      border: 1px solid #2a2a2a;
-      border-radius: 30px;
-      padding: 8px 28px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      margin-top: 16px;
-      transition: all 0.2s;
-    }
-    .btn-fermer-slide:hover {
-      background: #1e1e1e;
-      color: #e8e0d8;
-    }
-
-    /* ===== LOADER ===== */
-    .lecture-loader {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; font-size: 14px;
-    }
-    .lecture-loader .spinner {
-      width: 32px; height: 32px; border: 3px solid #2a2a2a;
-      border-top-color: #6b6b6b; border-radius: 50%;
-      animation: spin 0.8s linear infinite; margin-bottom: 16px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .lecture-error {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      height: 100%; color: #6b6b6b; font-family: 'Inter', sans-serif; text-align: center; padding: 40px;
-    }
-    .lecture-error .icone { font-size: 48px; margin-bottom: 16px; }
-    .lecture-error h2 { font-family: 'Merriweather', serif; font-size: 22px; font-weight: 400; color: #e8e0d8; margin-bottom: 8px; }
-    .lecture-error p { font-size: 14px; color: #6b6b6b; }
-    .lecture-error .btn-retour { margin-top: 20px; padding: 10px 28px; border-radius: 8px; background: transparent; border: 1px solid #2a2a2a; color: #c8c0b8; font-family: 'Inter', sans-serif; font-size: 14px; cursor: pointer; transition: all 0.2s; text-decoration: none; }
-    .lecture-error .btn-retour:hover { background: #2a2a2a; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 768px) {
-      .lecture-header { padding: 10px 16px; min-height: 56px; }
-      .lecture-header .meta-left .titre { font-size: 15px; }
-      .slide-wrapper { padding: 20px 24px; }
-      .slide-content { font-size: 18px; line-height: 1.9; }
-      .slide-content .quiz-question { font-size: 17px; }
-      .slide-content .quiz-reponse { font-size: 14px; padding: 10px 14px; }
-      .slide-content .retenir-mot { font-size: 22px; padding: 10px 18px; }
-      .pagination { bottom: 24px; font-size: 12px; padding: 4px 14px; }
-      .annotation-container { bottom: 70px; right: 16px; }
-      .annotation-box { width: 240px; }
-      .annotation-toggle { font-size: 22px; }
-    }
-    @media (max-width: 480px) {
-      .lecture-header { padding: 8px 12px; min-height: 50px; }
-      .lecture-header .meta-left .titre { font-size: 13px; }
-      .slide-wrapper { padding: 16px 16px; }
-      .slide-content { font-size: 16px; line-height: 1.8; }
-      .slide-content .quiz-question { font-size: 15px; }
-      .slide-content .quiz-reponse { font-size: 13px; padding: 8px 12px; gap: 10px; }
-      .slide-content .quiz-reponse .lettre { font-size: 12px; min-width: 20px; }
-      .slide-content .retenir-mot { font-size: 18px; padding: 8px 14px; }
-      .slide-content textarea { min-height: 100px; font-size: 14px; }
-      .pagination { bottom: 16px; font-size: 11px; padding: 4px 12px; }
-      .annotation-container { bottom: 60px; right: 12px; }
-      .annotation-box { width: 200px; }
-      .annotation-toggle { font-size: 20px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/medit/style.css" />
 </head>
 <body>
 
-  <!-- ===== HEADER ===== -->
+  <!-- HEADER -->
   <header class="lecture-header">
     <div class="meta-left">
       <div class="cat-niveau">
@@ -335,7 +25,7 @@
     </div>
   </header>
 
-  <!-- ===== SLIDES ===== -->
+  <!-- SLIDES -->
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
       <div class="spinner"></div>
@@ -343,7 +33,7 @@
     </div>
   </div>
 
-  <!-- ===== ANNOTATION ===== -->
+  <!-- ANNOTATION -->
   <div class="annotation-container" id="annotationContainer">
     <div class="annotation-box" id="annotationBox">
       <textarea id="annotationTextarea" placeholder="Écrire une note sur cette slide..."></textarea>
@@ -372,9 +62,7 @@
       annotationSaving: false
     };
 
-    // ============================================================
-    // INIT
-    // ============================================================
+    // ===== INIT =====
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
@@ -383,9 +71,7 @@
       chargerPost(id);
     });
 
-    // ============================================================
-    // CHARGER
-    // ============================================================
+    // ===== CHARGER =====
     function chargerPost(id) {
       fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
         .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
@@ -399,21 +85,14 @@
         .catch(function(error) { afficherErreur(error.message); });
     }
 
-    // ============================================================
-    // PARSER - NETTOYAGE DE TOUS LES |
-    // ============================================================
+    // ===== PARSER =====
     function parserContenu(texte) {
       var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
       if (!texte) return result;
 
-      // ===== NETTOYAGE AGRESSIF DES | =====
-      // Supprimer tous les | isolés (avec ou sans espaces)
       texte = texte.replace(/\s*\|\s*/g, ' ');
-      // Supprimer les | en fin de ligne
       texte = texte.replace(/\|\s*$/gm, '');
-      // Supprimer les | en début de ligne
       texte = texte.replace(/^\s*\|\s*/gm, '');
-      // Supprimer les doubles espaces
       texte = texte.replace(/\s{2,}/g, ' ');
 
       var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
@@ -496,9 +175,7 @@
       return result;
     }
 
-    // ============================================================
-    // PRÉPARER LES SLIDES
-    // ============================================================
+    // ===== PRÉPARER LES SLIDES =====
     function preparerSlides(post) {
       var slides = [];
       var contenu = post.contenu || '';
@@ -523,9 +200,7 @@
       etat.slides = slides;
     }
 
-    // ============================================================
-    // AFFICHER LES SLIDES
-    // ============================================================
+    // ===== AFFICHER LES SLIDES =====
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
@@ -590,7 +265,7 @@
             if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
           });
           html += '</div>';
-          html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:#6b6b6b;margin-top:8px;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+          html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
           html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
         }
 
@@ -598,14 +273,12 @@
         html += '</div>';
       });
 
-      // Pagination
       html += '<div class="pagination" id="pagination">1 / ' + etat.slides.length + '</div>';
 
       container.innerHTML = html;
 
-      // ===== GESTION DU CLIC SUR LE CONTAINER =====
+      // Gestion des événements
       container.addEventListener('click', function(e) {
-        // Ignorer si on clique sur un élément interactif
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
             target.closest('.btn-continuer') ||
@@ -616,7 +289,6 @@
           return;
         }
 
-        // Bord gauche = précédent (20% de l'écran)
         var rect = container.getBoundingClientRect();
         var x = e.clientX - rect.left;
         var width = rect.width;
@@ -628,7 +300,6 @@
         }
       });
 
-      // ===== GESTION DU SCROLL =====
       var scrollTimeout = null;
       container.addEventListener('wheel', function(e) {
         e.preventDefault();
@@ -642,7 +313,6 @@
         }
       }, { passive: false });
 
-      // ===== GESTION DU CLAVIER =====
       document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
@@ -657,13 +327,12 @@
         fermerLiseuse();
       });
 
-      // ===== ANNOTATION =====
+      // Annotation
       document.getElementById('annotationToggle').addEventListener('click', function(e) {
         e.stopPropagation();
         toggleAnnotation();
       });
 
-      // Sauvegarde auto des annotations
       var annotationTextarea = document.getElementById('annotationTextarea');
       var saveTimeout = null;
       annotationTextarea.addEventListener('input', function() {
@@ -673,7 +342,6 @@
         }, 800);
       });
 
-      // Empêcher la propagation du clic sur la zone annotation
       document.querySelector('.annotation-container').addEventListener('click', function(e) {
         e.stopPropagation();
       });
@@ -683,9 +351,7 @@
       mettreAJourAnnotation();
     }
 
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
+    // ===== NAVIGATION =====
     function slideSuivante() {
       if (etat.enTransition) return;
       if (etat.currentIndex >= etat.slides.length - 1) return;
@@ -746,9 +412,7 @@
       }
     }
 
-    // ============================================================
-    // QUIZ
-    // ============================================================
+    // ===== QUIZ =====
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
 
@@ -879,9 +543,7 @@
       }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
-    // ============================================================
-    // QUESTION OUVERTE
-    // ============================================================
+    // ===== QUESTION OUVERTE =====
     function envoyerReponseOuverte(event, index) {
       if (event) event.stopPropagation();
 
@@ -925,9 +587,7 @@
         });
     }
 
-    // ============================================================
-    // ANNOTATIONS
-    // ============================================================
+    // ===== ANNOTATIONS =====
     function toggleAnnotation() {
       etat.annotationOpen = !etat.annotationOpen;
       var box = document.getElementById('annotationBox');
@@ -1014,9 +674,7 @@
         .catch(function(e) { console.error('Erreur chargement annotations:', e); });
     }
 
-    // ============================================================
-    // UTILITAIRES
-    // ============================================================
+    // ===== UTILITAIRES =====
     function recupererStatutExistant() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
