@@ -1452,7 +1452,7 @@
             <span class="cat-name">${cat} (${cats[cat]} articles)</span>
             <div class="cat-actions">
               ${!isDefault ? '<button class="btn-del-cat-modal" onclick="supprimerCategorie(\'' + cat + '\')">✕ Supprimer</button>' : ''}
-              <button onclick="renommerCategorie(\'' + cat + '\')">✏️ Renommer</button>
+              <button onclick="renommerCategorie(\'' + cat + '\')">Renommer</button>
             </div>
           </div>
         `;
@@ -1513,41 +1513,49 @@
         .catch(function(e) { alert('❌ Erreur : ' + e.message); });
     }
 
-    function renommerCategorie(oldCat) {
-      var newCat = prompt('Nouveau nom pour "' + oldCat + '" :');
-      if (!newCat || newCat.trim() === '') return;
-      newCat = newCat.trim();
-      if (categoriesData.indexOf(newCat) !== -1 && newCat !== oldCat) {
-        alert('Cette catégorie existe déjà.');
-        return;
-      }
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === oldCat) p.categorie = newCat;
-      });
-      
-      var index = categoriesData.indexOf(oldCat);
-      if (index !== -1) {
-        categoriesData[index] = newCat;
-      }
-      
-      var url = CONFIG.SCRIPT_URL + '?action=renameLabel&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie renommée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+    function renommerCategorie(oldCat, newCat) {
+  if (!newCat || newCat.trim() === '') return;
+  newCat = newCat.trim();
+  
+  // Vérifier si la nouvelle catégorie existe déjà
+  var select = document.getElementById('inputCategorie');
+  for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === newCat && newCat !== oldCat) {
+      alert('Cette catégorie existe déjà.');
+      return;
     }
+  }
+  
+  // Mettre à jour dans tous les posts
+  tousLesPosts.forEach(function(p) {
+    if (p.categorie === oldCat) {
+      p.categorie = newCat;
+    }
+  });
+  
+  // Mettre à jour le select
+  for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === oldCat) {
+      select.options[i].value = newCat;
+      select.options[i].textContent = newCat;
+      break;
+    }
+  }
+  
+  // Sauvegarder dans la BDD
+  var url = CONFIG.SCRIPT_URL + '?action=renameCategorie&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        alert('✅ Catégorie renommée avec succès !');
+        afficherAdmin();
+      } else {
+        alert('❌ Erreur : ' + data.message);
+      }
+    })
+    .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+}
 
     // ============================================================
     // EXPORTER TOUT
