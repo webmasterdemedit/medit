@@ -831,7 +831,7 @@
     // === SLIDES ===
     var dragIndex = null;
 
-    function initDragDrop() {
+        function initDragDrop() {
       var items = document.querySelectorAll('.slide-item');
       items.forEach(function(item) {
         item.addEventListener('dragstart', function(e) {
@@ -843,6 +843,8 @@
           document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
             el.classList.remove('drag-over');
           });
+          // Sauvegarder l'ordre après le déplacement
+          sauvegarderOrdreSlides();
         });
         item.addEventListener('dragover', function(e) {
           e.preventDefault();
@@ -867,6 +869,96 @@
           }
         });
       });
+    }
+
+        // === SAUVEGARDER ORDRE DES SLIDES ===
+    function sauvegarderOrdreSlides() {
+      var postId = document.getElementById('editId').value;
+      if (!postId) return; // Pas de post en cours d'édition
+      
+      // Récupérer le post existant
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) return;
+      
+      // Reconstruire le contenu avec le nouvel ordre
+      var colonnes = [];
+      
+      // Ajouter les slides dans le nouvel ordre
+      slidesData.forEach(function(slide, index) {
+        if (!slidesIdee[index]) {
+          colonnes.push('-s- ' + slide);
+        }
+      });
+      
+      // Ajouter les quiz
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          colonnes.push('-q- ' + q.question);
+          q.reponses.forEach(function(r) {
+            colonnes.push((r.correct ? '-v- ' : '-f- ') + r.texte);
+          });
+        }
+      });
+      
+      // Ajouter les questions ouvertes
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          colonnes.push('-qs- ' + q);
+        }
+      });
+      
+      // Ajouter le retenir
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+      if (retenir) {
+        colonnes.push('-r- ' + retenir);
+      }
+      
+      // Ajouter les infos
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          colonnes.push('-i- ' + info);
+        }
+      });
+      
+      // Sauvegarder dans la base
+      var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+        '&id=' + encodeURIComponent(postId) +
+        '&titre=' + encodeURIComponent(post.titre || '') +
+        '&niveau=' + encodeURIComponent(post.niveau || 0) +
+        '&categorie=' + encodeURIComponent(post.categorie || '') +
+        '&statut=' + encodeURIComponent(post.statut || 'publie') +
+        '&versions=' + encodeURIComponent(post.versions || 1) +
+        '&dateModif=' + encodeURIComponent(new Date().toISOString());
+      
+      for (var i = 0; i < colonnes.length; i++) {
+        url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+      }
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            // Mettre à jour le post dans la mémoire locale
+            if (post) {
+              post.contenu = colonnes.join(' | ');
+            }
+            // Afficher une indication visuelle rapide
+            var indicator = document.getElementById('autoSaveIndicator');
+            indicator.textContent = '💾 Ordre sauvegardé';
+            indicator.className = 'auto-save-indicator visible saved';
+            setTimeout(function() {
+              indicator.className = 'auto-save-indicator visible';
+            }, 2000);
+          } else {
+            console.error('Erreur sauvegarde ordre:', data.message);
+          }
+        })
+        .catch(function(e) {
+          console.error('Erreur:', e);
+        });
     }
 
     function supprimerSlide(index) {
@@ -1158,12 +1250,15 @@
       if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
       if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
 
-      var colonnes = [];
+           var colonnes = [];
 
+      // IMPORTANT: Utiliser slidesData dans l'ordre actuel
       var slidesReelles = slidesData.filter(function(s, i) { return !slidesIdee[i]; });
       slidesReelles.forEach(function(slide) {
         colonnes.push('-s- ' + slide);
       });
+
+      // Le reste du code reste identique...
 
       quizData.forEach(function(q) {
         if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
