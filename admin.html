@@ -1157,8 +1157,7 @@
 
       posts.forEach(function(post, index) {
         var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
-var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
-var estPublie = post.statut === 'publie';
+        var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
         
         var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
         
@@ -1235,15 +1234,9 @@ var estPublie = post.statut === 'publie';
               </div>
               ${apercuHtml}
             </div>
-            // Bouton de changement de statut
-var btnStatutTexte = estPublie ? 'Passer en brouillon' : 'Publier';
-var btnStatutClass = estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier';
-var btnStatutAction = estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')';
             <div class="actions">
-  <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">📤 Exporter</button>
-  <button class="${estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier'}" onclick="event.stopPropagation(); ${estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')'}">${estPublie ? 'Passer en brouillon' : 'Publier'}</button>
-  <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
-</div>
+              <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
+            </div>
           </div>
         `;
       });
@@ -2397,42 +2390,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
           alert('❌ Erreur : ' + err.message);
           btn.textContent = '✕';
           btn.disabled = false;
-        });
-    }
-        // ============================================================
-    // CHANGER LE STATUT D'UN POST
-    // ============================================================
-    function changerStatut(postId, nouveauStatut) {
-      var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) { alert('Post introuvable'); return; }
-
-      var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
-        '&id=' + encodeURIComponent(postId) +
-        '&titre=' + encodeURIComponent(post.titre) +
-        '&niveau=' + encodeURIComponent(post.niveau || 0) +
-        '&categorie=' + encodeURIComponent(post.categorie || '') +
-        '&statut=' + encodeURIComponent(nouveauStatut) +
-        '&versions=' + encodeURIComponent(post.versions || 1) +
-        '&dateModif=' + encodeURIComponent(new Date().toISOString());
-
-      if (post.contenu) {
-        var colonnes = post.contenu.split(' | ');
-        for (var i = 0; i < colonnes.length; i++) {
-          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
-        }
-      }
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            chargerAdmin();
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) {
-          alert('❌ Erreur : ' + e.message);
         });
     }
 
