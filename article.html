@@ -8,7 +8,114 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
-<link rel="stylesheet" href="/medit/theme.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    /* STYLES FORCÉS - INDÉPENDANTS DU THEME */
+    body.mode-jour {
+      background-color: #f5f0eb !important;
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .slide-content {
+      background-color: #f5f0eb !important;
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .slide-content p {
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .pagination-text {
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .lecture-header {
+      background-color: #e8e0d8 !important;
+      border-bottom: 1px solid #d0c8c0 !important;
+    }
+
+    body.mode-jour .meta-left .titre {
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .meta-left .cat-niveau {
+      color: #555 !important;
+    }
+
+    body.mode-jour .btn-close {
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .badge-statut {
+      color: #2c2c2c !important;
+    }
+
+    body.mode-jour .btn-mode {
+      color: #2c2c2c !important;
+    }
+
+    /* BOUTON JOUR/NUIT */
+    .btn-mode {
+      background: none !important;
+      border: none !important;
+      font-size: 22px !important;
+      cursor: pointer !important;
+      padding: 4px 10px !important;
+      border-radius: 6px !important;
+      transition: background 0.2s !important;
+      color: var(--text-primary, #e0e0e0) !important;
+    }
+
+    .btn-mode:hover {
+      background: rgba(255, 255, 255, 0.1) !important;
+    }
+
+    body.mode-jour .btn-mode:hover {
+      background: rgba(0, 0, 0, 0.05) !important;
+    }
+
+    /* TRANSITION DE PAGE PLUS FLUIDE */
+    .slide-wrapper {
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+
+    .slide-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .slides-container {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* PAGINATION */
+    .pagination-text {
+      text-align: center;
+      margin-top: 24px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      letter-spacing: 0.5px;
+      color: var(--text-primary, #e0e0e0);
+      padding: 4px 0;
+    }
+
+    /* HEADER - ajout du bouton mode */
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+  </style>
+
 </head>
 <body>
 
@@ -22,6 +129,7 @@
     </div>
     <div class="actions">
       <span class="badge-statut" id="badgeStatut"></span>
+      <button class="btn-mode" id="btnMode" title="Mode jour / nuit">🌙</button>
       <button class="btn-close" id="btnFermer">✕</button>
     </div>
   </header>
@@ -34,10 +142,8 @@
     </div>
   </div>
 
-  <!-- PAGINATION : hors cadre, centrée, plus bas, même couleur que le texte -->
-  <div style="text-align:center; margin-top:24px; font-family:var(--font-text, Merriweather, serif); color:var(--text-primary, #e0e0e0); font-size:16px; letter-spacing:0.5px;">
-    <span id="pagination">1 / 1</span>
-  </div>
+  <!-- PAGINATION -->
+  <div class="pagination-text" id="pagination">1 / 1</div>
 
   <script>
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
@@ -51,7 +157,8 @@
       totalBonnes: 0,
       totalQuestions: 0,
       statutFinal: null,
-      enTransition: false
+      enTransition: false,
+      modeNuit: true // par défaut : mode nuit
     };
 
     // ===== INIT =====
@@ -61,7 +168,45 @@
       if (!id) { afficherErreur('Aucun identifiant.'); return; }
       etat.postId = id;
       chargerPost(id);
+
+      // Bouton Jour/Nuit
+      document.getElementById('btnMode').addEventListener('click', function() {
+        basculerMode();
+      });
+
+      // Restaurer le mode
+      var modeSauvegarde = localStorage.getItem('mode_lecture');
+      if (modeSauvegarde === 'jour') {
+        etat.modeNuit = false;
+        passerModeJour();
+      } else {
+        etat.modeNuit = true;
+        passerModeNuit();
+      }
     });
+
+    // ===== MODE JOUR / NUIT =====
+    function basculerMode() {
+      if (etat.modeNuit) {
+        passerModeJour();
+      } else {
+        passerModeNuit();
+      }
+    }
+
+    function passerModeJour() {
+      document.body.classList.add('mode-jour');
+      document.getElementById('btnMode').textContent = '☀️';
+      etat.modeNuit = false;
+      localStorage.setItem('mode_lecture', 'jour');
+    }
+
+    function passerModeNuit() {
+      document.body.classList.remove('mode-jour');
+      document.getElementById('btnMode').textContent = '🌙';
+      etat.modeNuit = true;
+      localStorage.setItem('mode_lecture', 'nuit');
+    }
 
     // ===== CHARGER =====
     function chargerPost(id) {
@@ -319,7 +464,7 @@
       mettreAJourPagination();
     }
 
-    // ===== NAVIGATION =====
+    // ===== NAVIGATION AVEC TRANSITION FLUIDE =====
     function slideSuivante() {
       if (etat.enTransition) return;
       if (etat.currentIndex >= etat.slides.length - 1) return;
@@ -349,7 +494,7 @@
 
       setTimeout(function() {
         etat.enTransition = false;
-      }, 600);
+      }, 550);
     }
 
     function slidePrecedente() {
@@ -368,7 +513,7 @@
 
       setTimeout(function() {
         etat.enTransition = false;
-      }, 600);
+      }, 550);
     }
 
     function mettreAJourPagination() {
