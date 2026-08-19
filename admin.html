@@ -974,33 +974,29 @@
     // NOUVELLE CATÉGORIE DANS LE POPUP
     // ============================================================
     function ajouterNouvelleCategorie() {
-      var input = document.getElementById('inputNouvelleCategorie');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            remplirSelectCategories();
-            var select = document.getElementById('inputCategorie');
-            for (var i = 0; i < select.options.length; i++) {
-              if (select.options[i].value === cat) {
-                select.selectedIndex = i;
-                break;
-              }
-            }
-            alert('✅ Catégorie "' + cat + '" ajoutée !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
+  var input = document.getElementById('inputNouvelleCategorie');
+  var cat = input.value.trim();
+  if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
+  
+  // Vérifier si elle existe déjà dans le select
+  var select = document.getElementById('inputCategorie');
+  for (var i = 0; i < select.options.length; i++) {
+    if (select.options[i].value === cat) {
+      alert('Cette catégorie existe déjà.');
+      return;
     }
+  }
+  
+  // Ajouter dans le select (local)
+  var opt = document.createElement('option');
+  opt.value = cat;
+  opt.textContent = cat;
+  select.appendChild(opt);
+  select.value = cat;
+  
+  input.value = '';
+  alert('✅ Catégorie "' + cat + '" ajoutée !');
+}
 
     // ============================================================
     // CHARGEMENT ADMIN
