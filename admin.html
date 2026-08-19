@@ -2275,7 +2275,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       reader.readAsText(file, 'UTF-8');
     }
 
-         // ============================================================
+        // ============================================================
     // PARSER CONTENU (IMPORT)
     // ============================================================
     function parserContenu(contenu) {
@@ -2299,7 +2299,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
 
       for (var i = 0; i < colonnes.length; i++) {
         var ligne = colonnes[i].trim();
-        console.log('Ligne:', ligne);
         if (!ligne) continue;
 
         if (ligne.startsWith('Nvx:') || ligne.startsWith('Cat:') || ligne.startsWith('Date:') || ligne.startsWith('Statut:')) continue;
@@ -2310,18 +2309,20 @@ document.getElementById('inputDate').setAttribute('readonly', true);
         } else if (ligne.startsWith('-q-')) {
           var qText = ligne.replace('-q-', '').trim();
           var reponses = [];
-          for (var j = i + 1; j < colonnes.length; j++) {
+          var j = i + 1;
+          while (j < colonnes.length) {
             var nextLine = colonnes[j].trim();
             if (nextLine.startsWith('-v-')) {
               reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
-              i = j;
+              j++;
             } else if (nextLine.startsWith('-f-')) {
               reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
-              i = j;
+              j++;
             } else {
               break;
             }
           }
+          i = j - 1; // Important : on place i sur le dernier élément traité
           if (reponses.length === 0) {
             reponses.push({ texte: '', correct: true });
             reponses.push({ texte: '', correct: false });
