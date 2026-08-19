@@ -108,36 +108,36 @@
 
         <!-- SLIDES -->
         <div class="section-block">
-          <div class="section-header" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="ouvrirComposeur()">
-            <span class="section-label" style="flex-shrink:0;">Slides</span>
-            <button type="button" class="btn-add-section" onclick="event.stopPropagation(); ouvrirComposeur()" style="font-size:13px;margin-left:0;">✎ composer</button>
+          <div class="section-header">
+            <span class="section-label">Slides</span>
+            <button type="button" class="btn-add-section" onclick="ouvrirComposeur()" style="font-size:13px;">✎ composer</button>
           </div>
           <div class="slides-list" id="slidesList"></div>
         </div>
 
         <!-- QUIZ -->
         <div class="section-block">
-          <div class="section-header" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="ajouterQuestion()">
-            <span class="section-label" style="flex-shrink:0;">Quiz</span>
-            <button type="button" class="btn-add-section" onclick="event.stopPropagation(); ajouterQuestion()" style="margin-left:0;">+ quiz</button>
+          <div class="section-header">
+            <span class="section-label">Quiz</span>
+            <button type="button" class="btn-add-section" onclick="ajouterQuestion()">+ quiz</button>
           </div>
           <div class="quiz-list" id="quizList"></div>
         </div>
 
         <!-- QUESTIONS OUVERTES -->
         <div class="section-block">
-          <div class="section-header" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="ajouterQuestionOuverte()">
-            <span class="section-label" style="flex-shrink:0;">Questions ouvertes</span>
-            <button type="button" class="btn-add-section" onclick="event.stopPropagation(); ajouterQuestionOuverte()" style="margin-left:0;">+ question</button>
+          <div class="section-header">
+            <span class="section-label">Questions ouvertes</span>
+            <button type="button" class="btn-add-section" onclick="ajouterQuestionOuverte()">+ question</button>
           </div>
           <div class="open-questions-list" id="openQuestionsList"></div>
         </div>
 
         <!-- RETENIR -->
         <div class="section-block">
-          <div class="section-header" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="toggleRetenir()">
-            <span class="section-label" style="flex-shrink:0;">À retenir</span>
-            <button type="button" class="btn-add-section" onclick="event.stopPropagation(); toggleRetenir()" style="margin-left:0;">+ mémo</button>
+          <div class="section-header">
+            <span class="section-label">À retenir</span>
+            <button type="button" class="btn-add-section" onclick="toggleRetenir()">+ mémo</button>
           </div>
           <div class="retenir-container">
             <div class="retenir-champs" id="retenirChamps">
@@ -150,9 +150,9 @@
 
         <!-- INFOS -->
         <div class="section-block">
-          <div class="section-header" style="display:flex;align-items:center;gap:12px;cursor:pointer;" onclick="ajouterInfo()">
-            <span class="section-label" style="flex-shrink:0;">Infos</span>
-            <button type="button" class="btn-add-section" onclick="event.stopPropagation(); ajouterInfo()" style="margin-left:0;">+ info</button>
+          <div class="section-header">
+            <span class="section-label">Infos</span>
+            <button type="button" class="btn-add-section" onclick="ajouterInfo()">+ info</button>
           </div>
           <div class="infos-list" id="infosList"></div>
         </div>
@@ -1023,49 +1023,37 @@
     }
 
     // === RENVOYER SLIDE ===
-function renvoyerSlide() {
-  var textarea = document.getElementById('composeurTextarea');
-  var texte = textarea.value;
-  var cursorPos = textarea.selectionStart;
-  
-  // Si le curseur est au début, on ne fait rien
-  if (cursorPos === 0) {
-    alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
-    return;
-  }
-  
-  // Récupérer la partie avant et après le curseur SANS trim()
-  var debut = texte.substring(0, cursorPos);
-  var fin = texte.substring(cursorPos);
-  
-  // Vérifier qu'il y a bien du texte à renvoyer
-  if (fin.trim().length === 0) {
-    alert('Il n\'y a pas de texte à renvoyer après le curseur.');
-    return;
-  }
-  
-  // Sauvegarder l'idée de la slide actuelle
-  var ideeActuelle = slidesIdee[composeurIndex] || false;
-  
-  // 1. Mettre à jour la slide actuelle avec le début
-  if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
-    slidesData[composeurIndex] = debut;
-  }
-  
-  // 2. Ajouter la nouvelle slide APRÈS la slide actuelle
-  var newSlideIndex = composeurIndex + 1;
-  slidesData.splice(newSlideIndex, 0, fin);
-  slidesIdee.splice(newSlideIndex, 0, ideeActuelle);
-  
-  // 3. Mettre à jour le textarea pour afficher le début
-  textarea.value = debut;
-  
-  // 4. Mettre à jour l'affichage
-  afficherSlides();
-  
-  // 5. Fermer le composeur
-  fermerComposeur();
-}
+    function renvoyerSlide() {
+      var textarea = document.getElementById('composeurTextarea');
+      var texte = textarea.value;
+      var cursorPos = textarea.selectionStart;
+      
+      if (cursorPos === 0) {
+        alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
+        return;
+      }
+      
+      var debut = texte.substring(0, cursorPos).trim();
+      var fin = texte.substring(cursorPos).trim();
+      
+      if (!fin) {
+        alert('Il n\'y a pas de texte à renvoyer après le curseur.');
+        return;
+      }
+      
+      textarea.value = debut;
+      
+      var newSlideIndex = composeurIndex + 1;
+      slidesData.splice(newSlideIndex, 0, fin);
+      slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
+      
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = debut;
+      }
+      
+      afficherSlides();
+      fermerComposeur();
+    }
 
     // === RETENIR ===
     function toggleRetenir() {
