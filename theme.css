@@ -1817,3 +1817,220 @@ body.night-mode {
     font-size: 14px;
   }
 }
+
+/* ============================================================
+   LISEUSE MODE - Snap Scroll + Pagination + Tap
+   ============================================================ */
+
+/* ===== 1. CONTENEUR SNAP ===== */
+.app-snap-wrapper {
+    height: 100vh;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    scroll-behavior: smooth;
+    
+    /* Cache la scrollbar mais garde le scroll */
+    scrollbar-width: thin;
+    scrollbar-color: var(--border-color) transparent;
+}
+
+.app-snap-wrapper::-webkit-scrollbar {
+    width: 4px;
+}
+
+.app-snap-wrapper::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.app-snap-wrapper::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 4px;
+}
+
+/* ===== 2. CHAQUE PAGE ===== */
+/* On transforme TOUTES les sections principales en pages */
+.app-snap-wrapper > * {
+    scroll-snap-align: start;
+    min-height: 100vh;
+    height: auto;
+    
+    /* Centre le contenu verticalement si petit */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    
+    /* Padding pour respirer */
+    padding: 40px 20px;
+    
+    /* Transition douce pour le snap */
+    transition: opacity 0.3s ease;
+    
+    /* Fond hérité du thème */
+    background: var(--bg-primary);
+}
+
+/* ===== 3. CAS PARTICULIERS ===== */
+
+/* Le header : on le colle en haut de la 1ère page */
+.app-snap-wrapper > .site-header:first-child {
+    justify-content: flex-start;
+    padding-top: 20px;
+    min-height: auto;
+    height: auto;
+    scroll-snap-align: start;
+}
+
+/* Le footer : on le colle en bas de la dernière page */
+.app-snap-wrapper > .site-footer:last-child {
+    justify-content: flex-end;
+    padding-bottom: 80px; /* pour laisser place à la pagination */
+    min-height: auto;
+    height: auto;
+    scroll-snap-align: start;
+}
+
+/* Les sections avec BEAUCOUP de contenu */
+.app-snap-wrapper > * {
+    overflow-y: auto; /* scroll interne si trop long */
+}
+
+/* ===== 4. PAGINATION OVERLAY ===== */
+.pagination-overlay {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    background: rgba(245, 239, 230, 0.7);
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+    
+    border: 0.5px solid var(--border-color);
+    border-radius: 20px;
+    padding: 6px 18px;
+    
+    font-family: var(--font-sans);
+    font-size: 13px;
+    color: var(--text-secondary);
+    
+    z-index: 999;
+    pointer-events: none;
+    user-select: none;
+    
+    opacity: 1;
+    transition: opacity 0.6s ease;
+}
+
+.pagination-overlay.hidden {
+    opacity: 0;
+}
+
+.pagination-overlay .sep {
+    margin: 0 4px;
+    color: var(--text-muted);
+}
+
+.pagination-overlay #page-courante,
+.pagination-overlay #page-total {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+/* ===== 5. ZONE DE TAP ===== */
+.tap-zone {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 50%;
+    height: 100vh;
+    z-index: 100;
+    
+    /* Invisible mais cliquable */
+    background: transparent;
+    cursor: pointer;
+    
+    /* Désactivé par défaut, activé en JS */
+    display: none;
+}
+
+.tap-zone.active {
+    display: block;
+}
+
+/* Indicateur visuel subtil au survol (optionnel) */
+.tap-zone:hover {
+    background: rgba(0, 0, 0, 0.01);
+}
+
+/* ===== 6. MODE NUIT - Adaptation ===== */
+body.night-mode .pagination-overlay {
+    background: rgba(26, 22, 18, 0.8);
+    border-color: var(--border-color);
+}
+
+body.night-mode .pagination-overlay #page-courante,
+body.night-mode .pagination-overlay #page-total {
+    color: var(--text-primary);
+}
+
+body.night-mode .pagination-overlay .sep {
+    color: var(--text-muted);
+}
+
+/* ===== 7. RESPONSIVE ===== */
+@media (max-width: 768px) {
+    .app-snap-wrapper > * {
+        padding: 30px 16px;
+    }
+    
+    .pagination-overlay {
+        bottom: 20px;
+        font-size: 12px;
+        padding: 4px 14px;
+    }
+    
+    .tap-zone {
+        width: 40%; /* plus petit sur mobile pour éviter les clics accidentels */
+    }
+}
+
+@media (max-width: 550px) {
+    .app-snap-wrapper > * {
+        padding: 20px 12px;
+    }
+    
+    .pagination-overlay {
+        bottom: 16px;
+        font-size: 11px;
+        padding: 3px 12px;
+    }
+}
+
+/* ===== 8. SCROLL INDICATOR (optionnel) ===== */
+/* Petit indicateur visuel pour montrer qu'on peut scroller */
+.scroll-hint {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    
+    color: var(--text-muted);
+    font-size: 24px;
+    font-family: var(--font-sans);
+    
+    animation: bounce-hint 2s ease-in-out infinite;
+    opacity: 0.5;
+    z-index: 50;
+    pointer-events: none;
+    
+    transition: opacity 0.6s ease;
+}
+
+.scroll-hint.hidden {
+    opacity: 0;
+}
+
+@keyframes bounce-hint {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-8px); }
+}
