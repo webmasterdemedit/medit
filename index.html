@@ -8,766 +8,9 @@
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>۞</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/style.css" />
-  <style>
-    /* ============================================================
-       RESET & BASE
-       ============================================================ */
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-      background-color: #f4f2ed;
-      color: #1e293b;
-      min-height: 100vh;
-      letter-spacing: 0.2px;
-      display: flex;
-      flex-direction: column;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    /* ============================================================
-       PAGE D'ACCUEIL
-       ============================================================ */
-    .page-home {
-      max-width: 1100px;
-      margin: 0 auto;
-      padding: 30px 24px 60px;
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    /* ============================================================
-       HERO
-       ============================================================ */
-    .hero {
-      text-align: center;
-      padding: 30px 20px 40px;
-      margin-bottom: 10px;
-      background: linear-gradient(135deg, #f8f6f2 0%, #edeae5 100%);
-      border-radius: 24px;
-    }
-
-    .hero .logo {
-      font-size: 52px;
-      font-weight: 300;
-      color: #1a2a2e;
-      letter-spacing: 2px;
-      font-family: 'Georgia', 'Times New Roman', serif;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-    }
-
-    .hero .logo strong {
-      font-weight: 700;
-      color: #2d6a4f;
-    }
-
-    .hero .sous-titre {
-      font-size: 18px;
-      color: #6b7a8a;
-      font-style: italic;
-      margin-top: 8px;
-      letter-spacing: 0.5px;
-      font-family: 'Georgia', serif;
-    }
-
-    .hero .description {
-      max-width: 650px;
-      margin: 16px auto 0;
-      font-size: 16px;
-      color: #64748b;
-      line-height: 1.8;
-    }
-
-    /* ============================================================
-       BOUTON ENTRER
-       ============================================================ */
-    .btn-entrer {
-      display: inline-block;
-      margin-top: 28px;
-      padding: 16px 52px;
-      background: #2d6a4f;
-      color: #ffffff;
-      border: none;
-      border-radius: 50px;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
-      font-family: 'Segoe UI', sans-serif;
-      box-shadow: 0 4px 20px #ffffff;
-    }
-
-    .btn-entrer:hover {
-      background: #1a4a3a;
-      transform: translateY(-3px);
-      box-shadow: 0 8px 30px rgba(45, 106, 79, 0.35);
-    }
-
-    /* ============================================================
-       DEVISE
-       ============================================================ */
-    .devise-home {
-      text-align: center;
-      padding: 30px 0 10px;
-      font-size: 16px;
-      color: #b8b0a8;
-      font-style: italic;
-      letter-spacing: 0.5px;
-      font-family: 'Georgia', serif;
-      border-top: 1px solid #edeae5;
-      margin-top: 30px;
-    }
-
-    /* ============================================================
-       TOAST MESSAGE
-       ============================================================ */
-    .toast-message {
-      position: fixed;
-      top: 80px;
-      left: 50%;
-      transform: translateX(-50%);
-      background: #065f46;
-      color: #ffffff;
-      padding: 20px 32px;
-      border-radius: 16px;
-      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-      z-index: 999999;
-      max-width: 500px;
-      text-align: center;
-      font-size: 15px;
-      line-height: 1.6;
-      display: none;
-      animation: slideDown 0.5s ease;
-    }
-
-    .toast-message .toast-icon {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .toast-message .toast-titre {
-      font-weight: 600;
-      font-size: 17px;
-      margin-bottom: 4px;
-    }
-
-    .toast-message .toast-sous {
-      color: #a7f3d0;
-      font-size: 14px;
-    }
-
-    .toast-message .toast-btn {
-      margin-top: 12px;
-      padding: 8px 24px;
-      background: rgba(255, 255, 255, 0.2);
-      border: 1px solid rgba(255, 255, 255, 0.3);
-      border-radius: 30px;
-      color: #fff;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background 0.2s;
-    }
-
-    .toast-message .toast-btn:hover {
-      background: rgba(255, 255, 255, 0.3);
-    }
-
-    @keyframes slideDown {
-      from { opacity: 0; transform: translateX(-50%) translateY(-20px); }
-      to { opacity: 1; transform: translateX(-50%) translateY(0); }
-    }
-
-    /* ============================================================
-       HEADER
-       ============================================================ */
-    #header-container {
-      width: 100%;
-    }
-
-    .site-header {
-      width: 100%;
-      background: #1a3a4a;
-      color: #e8f5e9;
-      padding: 12px 20px;
-      border-bottom: 2px solid #2d6a4f;
-      flex-shrink: 0;
-    }
-
-    .header-inner {
-      max-width: 1000px;
-      margin: 0 auto;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 12px;
-    }
-
-    .header-left {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-    }
-
-    .header-logo a {
-      font-size: 22px;
-      font-weight: 300;
-      color: #e8f5e9;
-      text-decoration: none;
-      letter-spacing: 1px;
-      font-family: 'Georgia', 'Times New Roman', serif;
-    }
-
-    .header-logo a strong {
-      font-weight: 700;
-      color: #4c9f70;
-    }
-
-    .header-username {
-      font-size: 14px;
-      font-weight: 500;
-      color: #b8d4d4;
-      letter-spacing: 0.3px;
-      background: rgba(255,255,255,0.06);
-      padding: 4px 14px;
-      border-radius: 30px;
-      border: 1px solid rgba(255,255,255,0.05);
-    }
-
-    .header-nav {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 14px;
-    }
-
-    .header-link {
-      color: #b8d4d4;
-      text-decoration: none;
-      transition: color 0.3s ease;
-      padding: 4px 0;
-      border-bottom: 2px solid transparent;
-    }
-
-    .header-link:hover {
-      color: #ffffff;
-      border-bottom-color: #4c9f70;
-    }
-
-    .header-btn {
-      background: transparent;
-      color: #b8d4d4;
-      border: 1px solid #4a6a7a;
-      border-radius: 30px;
-      padding: 4px 16px;
-      font-size: 13px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .header-btn:hover {
-      background: #2d6a4f;
-      color: #ffffff;
-      border-color: #2d6a4f;
-    }
-
-    .header-btn-compte {
-      background: #b8956a;
-      color: #fff;
-      border: none;
-      border-radius: 30px;
-      padding: 6px 18px;
-      font-size: 13px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      letter-spacing: 0.3px;
-      font-family: 'Segoe UI', sans-serif;
-    }
-
-    .header-btn-compte:hover {
-      background: #a07d55;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 15px rgba(184, 149, 106, 0.3);
-    }
-
-    /* ============================================================
-       FOOTER
-       ============================================================ */
-    #footer-container {
-      width: 100%;
-    }
-
-    .site-footer {
-      width: 100%;
-      text-align: center;
-      padding: 24px 20px 16px;
-      margin-top: auto;
-      background: #2d6a4f;
-      color: #e8f5e9;
-      border-top: none;
-      font-size: 13px;
-      letter-spacing: 0.3px;
-      flex-shrink: 0;
-    }
-
-    .site-footer .footer-devise {
-      font-style: italic;
-      font-family: 'Georgia', serif;
-      font-size: 14px;
-      color: #d4edda;
-      margin-bottom: 4px;
-    }
-
-    .site-footer .footer-copy {
-      font-size: 12px;
-      color: #a8d5ba;
-    }
-
-    /* ============================================================
-       MODAL
-       ============================================================ */
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0, 0, 0, 0.4);
-      z-index: 9999;
-      display: none;
-      justify-content: center;
-      align-items: center;
-      padding: 20px;
-    }
-
-    .modal-overlay.visible {
-      display: flex;
-    }
-
-    .modal-content {
-      background: #ffffff;
-      border-radius: 20px;
-      padding: 32px 36px;
-      max-width: 460px;
-      width: 100%;
-      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
-      position: relative;
-      animation: slideDown 0.3s ease;
-    }
-
-    .modal-content .close-modal {
-      position: absolute;
-      top: 12px;
-      right: 18px;
-      font-size: 28px;
-      cursor: pointer;
-      color: #94a3b8;
-      transition: color 0.2s;
-      background: none;
-      border: none;
-    }
-
-    .modal-content .close-modal:hover {
-      color: #1a2a2e;
-    }
-
-    .modal-content h2 {
-      font-size: 24px;
-      font-weight: 300;
-      color: #1a2a2e;
-      font-family: 'Georgia', serif;
-      margin-bottom: 4px;
-      text-align: center;
-    }
-
-    .modal-content h2 strong {
-      font-weight: 700;
-      color: #2d6a4f;
-    }
-
-    .modal-content .modal-sous {
-      text-align: center;
-      font-size: 14px;
-      color: #94a3b8;
-      margin-bottom: 20px;
-      font-style: italic;
-    }
-
-    .modal-content .champ {
-      margin-bottom: 14px;
-    }
-
-    .modal-content label {
-      display: block;
-      font-size: 13px;
-      font-weight: 500;
-      color: #475569;
-      margin-bottom: 3px;
-      letter-spacing: 0.3px;
-    }
-
-    .modal-content input,
-    .modal-content textarea,
-    .modal-content select {
-      width: 100%;
-      padding: 10px 14px;
-      border: 1px solid #e2e0db;
-      border-radius: 10px;
-      font-size: 14px;
-      background: #faf9f7;
-      transition: border-color 0.3s;
-      font-family: inherit;
-      color: #1a2a2e;
-    }
-
-    .modal-content input:focus,
-    .modal-content textarea:focus,
-    .modal-content select:focus {
-      border-color: #2d6a4f;
-      outline: none;
-      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.06);
-    }
-
-    .modal-content textarea {
-      resize: vertical;
-      min-height: 60px;
-    }
-
-    .modal-content .btn-submit {
-      width: 100%;
-      padding: 12px;
-      background: #2d6a4f;
-      color: #ffffff;
-      border: none;
-      border-radius: 30px;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.25s ease;
-      font-family: 'Segoe UI', sans-serif;
-      letter-spacing: 0.3px;
-      margin-top: 4px;
-    }
-
-    .modal-content .btn-submit:hover {
-      background: #1a4a3a;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(45, 106, 79, 0.15);
-    }
-
-    .modal-content .message {
-      margin-top: 10px;
-      font-size: 14px;
-      text-align: center;
-    }
-
-    .modal-content .message.success {
-      color: #2d6a4f;
-    }
-
-    .modal-content .message.error {
-      color: #b33;
-    }
-
-    .modal-content .message.info {
-      color: #94a3b8;
-    }
-
-    .modal-content .lien-form {
-      text-align: center;
-      margin-top: 12px;
-      font-size: 13px;
-      color: #94a3b8;
-    }
-
-    .modal-content .lien-form a {
-      color: #2d6a4f;
-      font-weight: 500;
-      cursor: pointer;
-    }
-
-    .modal-content .lien-form a:hover {
-      text-decoration: underline;
-    }
-
-    .modal-content .disciplines-group {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px 16px;
-      padding: 6px 0;
-    }
-
-    .modal-content .disciplines-group label {
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 13px;
-      font-weight: 400;
-      color: #475569;
-      cursor: pointer;
-    }
-
-    .modal-content .disciplines-group input[type="checkbox"] {
-      width: 16px;
-      height: 16px;
-      accent-color: #2d6a4f;
-    }
-
-    /* ============================================================
-   BLOC PRÉSENTATION - 6 CARTES BLEU CIEL
-   ============================================================ */
-
-.presentation-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-}
-
-.presentation-card {
-  background: rgb(105, 179, 242);
-  border-radius: 16px;
-  padding: 24px 20px;
-  text-align: center;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: all 0.3s ease;
-}
-
-.presentation-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-  border-color: rgba(255, 255, 255, 0.4);
-}
-
-.presentation-icon {
-  font-size: 32px;
-  display: block;
-  margin-bottom: 10px;
-  opacity: 0.8;
-}
-
-.presentation-card h3 {
-  font-size: 16px;
-  font-weight: 600;
-  color: rgb(255, 241, 116);
-  margin-bottom: 6px;
-  font-family: 'Georgia', serif;
-  letter-spacing: 0.3px;
-}
-
-.presentation-card p {
-  font-size: 14px;
-  color: #1a1a1a;
-  line-height: 1.6;
-}
-
-/* ============================================================
-   BLOC PRÉSENTATION - CADRE BLANC
-   ============================================================ */
-.presentation-section {
-  margin: 40px 0 20px;
-  padding: 36px 28px;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid #edeae5;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-}
-
-.presentation-titre {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 400;
-  font-family: 'Georgia', serif;
-  color: #1a2a2e;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-}
-
-.presentation-sous-titre {
-  text-align: center;
-  font-size: 16px;
-  color: #94a3b8;
-  margin-bottom: 28px;
-  font-style: italic;
-}
-
-/* ============================================================
-   BLOC MÉTHODE - 3 LIGNES 1 COLONNE
-   ============================================================ */
-.methode-section {
-  margin: 40px 0 20px;
-  padding: 36px 28px;
-  background: #ffffff;
-  border-radius: 24px;
-  border: 1px solid #edeae5;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.03);
-}
-
-.methode-titre {
-  text-align: center;
-  font-size: 28px;
-  font-weight: 400;
-  font-family: 'Georgia', serif;
-  color: #1a2a2e;
-  margin-bottom: 4px;
-  letter-spacing: 0.5px;
-}
-
-.methode-sous-titre {
-  text-align: center;
-  font-size: 16px;
-  color: #94a3b8;
-  margin-bottom: 28px;
-  font-style: italic;
-}
-
-.methode-grid {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  max-width: 800px;
-  margin: 0 auto;
-}
-
-.methode-card {
-  display: flex;
-  align-items: flex-start;
-  gap: 20px;
-  padding: 18px 24px;
-  background: #f8f6f2;
-  border-radius: 16px;
-  border: 1px solid #edeae5;
-  transition: all 0.3s ease;
-}
-
-.methode-card:hover {
-  transform: translateX(4px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
-  border-color: #d4d0c8;
-}
-
-.methode-num {
-  font-size: 18px;
-  font-weight: 600;
-  color: #b8956a;
-  font-family: 'Georgia', serif;
-  min-width: 48px;
-  letter-spacing: 0.3px;
-  line-height: 1.4;
-}
-
-.methode-card h3 {
-  font-size: 17px;
-  font-weight: 600;
-  color: #1a2a2e;
-  margin-bottom: 4px;
-  font-family: 'Georgia', serif;
-  letter-spacing: 0.3px;
-}
-
-.methode-card p {
-  font-size: 15px;
-  color: #64748b;
-  line-height: 1.7;
-  margin: 0;
-}
-
-    /* ============================================================
-       RESPONSIVE
-       ============================================================ */
-    @media (max-width: 900px) {
-      .presentation-grid {
-        grid-template-columns: repeat(2, 1fr);
-      }
-    }
-
-    @media (max-width: 768px) {
-      .page-home {
-        padding: 20px 16px 40px;
-      }
-      .hero .logo {
-        font-size: 38px;
-      }
-      .toast-message {
-        max-width: 90%;
-        padding: 16px 20px;
-        top: 70px;
-      }
-      .header-inner {
-        flex-direction: column;
-        text-align: center;
-      }
-      .header-left {
-        justify-content: center;
-      }
-      .header-nav {
-        justify-content: center;
-      }
-      .modal-content {
-        padding: 24px 20px;
-      }
-      .methode-card {
-        flex-direction: column;
-        gap: 8px;
-        padding: 16px 18px;
-      }
-      .methode-num {
-        min-width: auto;
-      }
-      .methode-titre {
-        font-size: 24px;
-      }
-    }
-
-    @media (max-width: 550px) {
-      .presentation-grid {
-        grid-template-columns: 1fr;
-        gap: 14px;
-      }
-      .presentation-section {
-        padding: 24px 16px;
-      }
-      .presentation-titre {
-        font-size: 22px;
-      }
-      .hero .logo {
-        font-size: 30px;
-      }
-      .hero .description {
-        font-size: 14px;
-      }
-      .btn-entrer {
-        padding: 14px 32px;
-        font-size: 16px;
-      }
-    }
-  </style>
 </head>
-
 <body>
 
-  <!-- ========== HEADER ========== -->
   <div id="header-container"></div>
 
   <script>
@@ -797,26 +40,16 @@
     function mettreAJourHeader() {
       var id = localStorage.getItem('etudiant_id');
       var nav = document.getElementById('headerNav');
-      var userNameSpan = document.getElementById('headerUserName');
-
-      if (userNameSpan) {
-        if (id) {
-          userNameSpan.textContent = '👤 ' + id;
-        } else {
-          userNameSpan.textContent = '';
-        }
-      }
-
       if (nav) {
         if (id) {
           nav.innerHTML = `
             <a href="/medit/mes-textes.html" class="header-btn-compte">📒 Mes textes</a>
             <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
-            <button class="header-btn" onclick="deconnecter()">Se déconnecter</button>
+            <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
           `;
         } else {
           nav.innerHTML = `
-          <a href="/medit/index.html" class="header-link">E-learning</a>
+            <a href="/medit/index.html" class="header-link">E-learning</a>
             <a href="/medit/index.html" class="header-link">Accueil</a>
           `;
         }
@@ -824,7 +57,7 @@
     }
   </script>
 
-  <!-- ========== TOAST MESSAGE ========== -->
+  <!-- Toast message -->
   <div class="toast-message" id="toastMessage">
     <span class="toast-icon">✅</span>
     <div class="toast-titre">Demande envoyée avec succès !</div>
@@ -836,7 +69,7 @@
 
   <div class="page-home">
 
-    <!-- ========== HERO ========== -->
+    <!-- HERO -->
     <div class="hero">
       <div class="logo">
         <strong>Qiraat</strong>
@@ -848,9 +81,7 @@
       <p class="description" style="color:#94a3b8;font-style:italic;margin-top:2px;">
         Proposée par lui-même d'après ses fichiers de cours.
       </p>
-
       <button class="btn-entrer" onclick="ouvrirConnexion()">Se connecter</button>
-
       <div style="margin-top:14px;font-size:14px;color:#94a3b8;">
         <a onclick="ouvrirInscription()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
           Faire une demande d'inscription
@@ -858,57 +89,50 @@
       </div>
     </div>
 
-    <!-- ========== BLOC PRÉSENTATION ========== -->
+    <!-- PRÉSENTATION -->
     <div class="presentation-section">
       <h2 class="presentation-titre">Adapté sous la forme d'un système d'e-learning complet.</h2>
       <p class="presentation-sous-titre">Un espace conçu pour s'assurer de la bonne acquisition des textes avec un suivi personnalisé.</p>
-
       <div class="presentation-grid">
         <div class="presentation-card">
           <span class="presentation-icon">☰</span>
           <h3>Textes courts</h3>
-          <p> Pour réduire la difficulté, les sujets bref et précis, et les textes sont divisés en sont divisés en courts paragraphes.</p>
+          <p>Pour réduire la difficulté, les sujets bref et précis, et les textes sont divisés en courts paragraphes.</p>
         </div>
-
         <div class="presentation-card">
           <span class="presentation-icon">⌞ ⌝</span>
           <h3>Lecture solide</h3>
           <p>Pour la concentration et méditation, chaque paragraphe s'ouvre en plein écran, sans distraction.</p>
         </div>
-
         <div class="presentation-card">
           <span class="presentation-icon">✎﹏﹏﹏﹏</span>
           <h3>Quiz + questions ouvertes</h3>
           <p>Pour vérifier la compréhension, des QCM et question sont toujours proposé à la fin des textes.</p>
         </div>
-
         <div class="presentation-card">
           <span class="presentation-icon">𝄜</span>
           <h3>Progression personnelle</h3>
           <p>L'espace étudiant contient historique des lectures, résultats aux quiz, et visualisation de sa progression.</p>
         </div>
-
         <div class="presentation-card">
           <span class="presentation-icon">🗓</span>
           <h3>Textes organisés selon l'âge</h3>
           <p>Douze échelle de progression allant de la CP au Lycée, avec des textes classés par discipline. Chaque étudiant ne voit que les textes adaptés à son niveau.</p>
         </div>
-
         <div class="presentation-card">
-          <span class="presentation-icon">⌯⌲ 🗪 </span>
+          <span class="presentation-icon">⌯⌲ 🗪</span>
           <h3>Retour personnalisé de l'enseignant</h3>
           <p>Les réponses ouvertes sont reçues par l'enseignant, qui les corrige et commente pour l'élève.</p>
         </div>
       </div>
     </div>
 
-    <!-- ========== BLOC MÉTHODE ========== -->
+    <!-- MÉTHODE -->
     <div class="methode-section">
       <h2 class="methode-titre">L'esprit des cours</h2>
       <p class="methode-sous-titre">
         Au-delà de la lecture, une formation à la langue, à la sensibilité et à l'intelligence du texte.
       </p>
-
       <div class="methode-grid">
         <div class="methode-card">
           <span class="methode-num">01</span>
@@ -917,7 +141,6 @@
             <p>Lire, c'est d'abord connaître les mots. Observation des sens premiers, emploi fréquent des dictionnaires, et constitution d'un lexique personnel pour entrer dans la profondeur des textes.</p>
           </div>
         </div>
-
         <div class="methode-card">
           <span class="methode-num">02</span>
           <div>
@@ -925,7 +148,6 @@
             <p>Se familiariser avec la langue des poètes médiévaux, des romans de chevalerie et des traités de sagesse. Développer l'oreille et le cœur pour goûter la beauté des mots.</p>
           </div>
         </div>
-
         <div class="methode-card">
           <span class="methode-num">03</span>
           <div>
@@ -936,14 +158,14 @@
       </div>
     </div>
 
-    <!-- ========== DEVISE ========== -->
+    <!-- DEVISE -->
     <div class="devise-home">
       “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
 
   </div>
 
-  <!-- ========== MODAL ========== -->
+  <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-content">
       <button class="close-modal" onclick="fermerModal()">✕</button>
@@ -952,7 +174,6 @@
       <div id="formConnexion">
         <h2><strong>Se</strong> connecter</h2>
         <p class="modal-sous">Entrez vos identifiants</p>
-
         <div class="champ">
           <label for="loginId">Identifiant</label>
           <input type="text" id="loginId" placeholder="Votre identifiant" />
@@ -972,37 +193,30 @@
       <div id="formInscription" style="display:none;">
         <h2><strong>Faire</strong> une demande</h2>
         <p class="modal-sous">Remplissez ce formulaire</p>
-
         <div class="champ">
           <label for="registerNom">Nom et prénom</label>
           <input type="text" id="registerNom" placeholder="Votre nom complet" />
         </div>
-
         <div class="champ">
           <label for="registerContact">Email ou téléphone</label>
           <input type="text" id="registerContact" placeholder="adresse@email.com ou 06..." />
         </div>
-
         <div class="champ">
           <label for="registerNiveau">Niveau souhaité</label>
           <select id="registerNiveau">
             <option value="">Choisissez un niveau</option>
           </select>
         </div>
-
         <div class="champ">
           <label>Disciplines qui vous intéressent</label>
           <div class="disciplines-group" id="registerDisciplines"></div>
         </div>
-
         <div class="champ">
           <label for="registerMessage">Message (optionnel)</label>
           <textarea id="registerMessage" placeholder="Votre message..." rows="2"></textarea>
         </div>
-
         <button class="btn-submit" onclick="sInscrire()">Envoyer la demande</button>
         <div id="registerStatusMessage" class="message"></div>
-
         <div class="lien-form">
           Vous avez déjà un compte ? <a onclick="ouvrirConnexion()">Connectez-vous</a>
         </div>
@@ -1010,7 +224,6 @@
     </div>
   </div>
 
-  <!-- ========== FOOTER ========== -->
   <div id="footer-container"></div>
 
   <script>
@@ -1035,20 +248,15 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // TOAST
-    // ============================================================
+    // ===== TOAST =====
     function afficherToast() {
       document.getElementById('toastMessage').style.display = 'block';
     }
-
     function fermerToast() {
       document.getElementById('toastMessage').style.display = 'none';
     }
 
-    // ============================================================
-    // MODAL
-    // ============================================================
+    // ===== MODAL =====
     function ouvrirConnexion() {
       var overlay = document.getElementById('modalOverlay');
       if (overlay) {
@@ -1061,7 +269,6 @@
         document.getElementById('registerStatusMessage').className = 'message';
       }
     }
-
     function ouvrirInscription() {
       var overlay = document.getElementById('modalOverlay');
       if (overlay) {
@@ -1075,25 +282,18 @@
         chargerDisciplinesEtNiveaux();
       }
     }
-
     function fermerModal() {
       var overlay = document.getElementById('modalOverlay');
-      if (overlay) {
-        overlay.classList.remove('visible');
-      }
+      if (overlay) overlay.classList.remove('visible');
     }
-
     document.addEventListener('keydown', function(e) {
       if (e.key === 'Escape') fermerModal();
     });
-
     document.addEventListener('click', function(e) {
       if (e.target && e.target.id === 'modalOverlay') fermerModal();
     });
 
-    // ============================================================
-    // CHARGER DISCIPLINES & NIVEAUX
-    // ============================================================
+    // ===== CHARGER DISCIPLINES & NIVEAUX =====
     function chargerDisciplinesEtNiveaux() {
       var urlDisciplines = CONFIG.SCRIPT_URL + '?action=getLabels';
       fetch(urlDisciplines)
@@ -1148,9 +348,7 @@
         .catch(function() { console.error('Erreur chargement niveaux'); });
     }
 
-    // ============================================================
-    // CONNEXION
-    // ============================================================
+    // ===== CONNEXION =====
     function seConnecter() {
       var id = document.getElementById('loginId').value.trim();
       var mdp = document.getElementById('loginMdp').value.trim();
@@ -1202,9 +400,7 @@
         });
     }
 
-    // ============================================================
-    // INSCRIPTION
-    // ============================================================
+    // ===== INSCRIPTION =====
     function sInscrire() {
       var nom = document.getElementById('registerNom').value.trim();
       var contact = document.getElementById('registerContact').value.trim();
@@ -1224,19 +420,16 @@
         msg.className = 'message error';
         return;
       }
-
       if (!contact) {
         msg.textContent = '⚠️ Veuillez entrer votre email ou numéro de téléphone.';
         msg.className = 'message error';
         return;
       }
-
       if (disciplines.length === 0) {
         msg.textContent = '⚠️ Veuillez choisir au moins une discipline.';
         msg.className = 'message error';
         return;
       }
-
       if (!niveau) {
         msg.textContent = '⚠️ Veuillez choisir un niveau.';
         msg.className = 'message error';
@@ -1278,9 +471,7 @@
         });
     }
 
-    // ============================================================
-    // DÉCONNEXION
-    // ============================================================
+    // ===== DÉCONNEXION =====
     function deconnecter() {
       if (confirm('Se déconnecter ?')) {
         localStorage.removeItem('etudiant_id');
@@ -1289,9 +480,7 @@
       }
     }
 
-    // ============================================================
-    // INIT
-    // ============================================================
+    // ===== INIT =====
     function demarrer() {
       var id = localStorage.getItem('etudiant_id');
       if (id) {
@@ -1306,6 +495,6 @@
       demarrer();
     }
   </script>
-  <link rel="stylesheet" href="/medit/lecture-mode.css" />
+
 </body>
 </html>
