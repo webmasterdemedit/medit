@@ -1023,37 +1023,43 @@
     }
 
     // === RENVOYER SLIDE ===
-    function renvoyerSlide() {
-      var textarea = document.getElementById('composeurTextarea');
-      var texte = textarea.value;
-      var cursorPos = textarea.selectionStart;
-      
-      if (cursorPos === 0) {
-        alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
-        return;
-      }
-      
-      var debut = texte.substring(0, cursorPos).trim();
-      var fin = texte.substring(cursorPos).trim();
-      
-      if (!fin) {
-        alert('Il n\'y a pas de texte à renvoyer après le curseur.');
-        return;
-      }
-      
-      textarea.value = debut;
-      
-      var newSlideIndex = composeurIndex + 1;
-      slidesData.splice(newSlideIndex, 0, fin);
-      slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
-      
-      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
-        slidesData[composeurIndex] = debut;
-      }
-      
-      afficherSlides();
-      fermerComposeur();
-    }
+function renvoyerSlide() {
+  var textarea = document.getElementById('composeurTextarea');
+  var texte = textarea.value;
+  var cursorPos = textarea.selectionStart;
+  
+  if (cursorPos === 0) {
+    alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
+    return;
+  }
+  
+  var debut = texte.substring(0, cursorPos).trim();
+  var fin = texte.substring(cursorPos).trim();
+  
+  if (!fin) {
+    alert('Il n\'y a pas de texte à renvoyer après le curseur.');
+    return;
+  }
+  
+  // 1. D'abord, mettre à jour la slide actuelle avec le début
+  if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+    slidesData[composeurIndex] = debut;
+  }
+  
+  // 2. Puis ajouter la nouvelle slide APRÈS la slide actuelle
+  var newSlideIndex = composeurIndex + 1;
+  slidesData.splice(newSlideIndex, 0, fin);
+  slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
+  
+  // 3. Mettre à jour le textarea pour afficher le début
+  textarea.value = debut;
+  
+  // 4. Mettre à jour l'affichage
+  afficherSlides();
+  
+  // 5. Fermer le composeur
+  fermerComposeur();
+}
 
     // === RETENIR ===
     function toggleRetenir() {
