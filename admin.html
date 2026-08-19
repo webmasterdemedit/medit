@@ -99,23 +99,22 @@
           <input type="date" id="inputDate">
           <input type="text" id="inputTitre" placeholder="Titre">
           <select id="inputNiveau"></select>
+          <select id="inputCategorie"></select>
           <div class="nouvelle-cat-container">
             <input type="text" id="inputNouvelleCategorie" placeholder="Nouvelle catégorie...">
             <button type="button" onclick="ajouterNouvelleCategorie()">+ Ajouter</button>
           </div>
-          <select id="inputCategorie"></select>
         </div>
 
         <!-- SLIDES -->
         <div class="section-block">
           <div class="section-header">
             <span class="section-label">Slides</span>
-            <div>
-              <button type="button" class="btn-add-section" onclick="ajouterSlide()">+ slide</button>
-              <button type="button" class="btn-add-section" onclick="ouvrirComposeur()" style="margin-left:4px;">✎ composer</button>
-            </div>
           </div>
           <div class="slides-list" id="slidesList"></div>
+          <div style="display:flex;justify-content:flex-end;margin-top:4px;">
+            <button type="button" class="btn-add-section" onclick="ouvrirComposeur()" style="font-size:13px;">✎ composer</button>
+          </div>
         </div>
 
         <!-- QUIZ -->
@@ -161,12 +160,12 @@
         </div>
 
         <div class="btn-groupe">
+          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon" style="border:none;background:transparent;padding:8px 12px;">Brouillon</button>
           <span style="flex:1;"></span>
           <span class="chrono" id="chronoDisplay">00:00</span>
           <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegardé</span>
           <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
           <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
-          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
         </div>
 
         <div id="messageTexte" class="message"></div>
@@ -178,8 +177,16 @@
   <div id="composeurOverlay" class="composer-overlay">
     <div class="composer-content" id="composerContent">
       <button class="composer-close" onclick="fermerComposeur()">✕</button>
+      <div class="composer-toolbar">
+        <button onclick="appliquerFormat('bold')" title="Gras (Ctrl+B)"><b>B</b></button>
+        <button onclick="appliquerFormat('italic')" title="Italique (Ctrl+I)"><i>I</i></button>
+        <button onclick="appliquerFormat('quote')" title="Citation">“</button>
+        <button onclick="appliquerFormat('remove')" title="Supprimer le formatage">↺</button>
+      </div>
       <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
       <div class="composer-actions">
+        <button onclick="renvoyerSlide()" class="composer-renvoyer" style="border:none;background:transparent;color:var(--text-secondary);">↩ Renvoyer</button>
+        <div style="flex:1;"></div>
         <button onclick="validerComposeur()">✓ Valider</button>
         <button onclick="validerComposeurIdee()">💡 Idée</button>
         <button onclick="fermerComposeur()">Annuler</button>
@@ -205,7 +212,7 @@
 
   <script>
     // ============================================================
-    // ADMIN - CODE COMPLET (je garde toute la logique JS)
+    // ADMIN - CODE COMPLET
     // ============================================================
 
     var tousLesPosts = [];
@@ -323,11 +330,11 @@
         }
         
         if (confirm('💾 Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
-          slidesData = data.slidesData || [''];
-          slidesIdee = data.slidesIdee || [false];
-          quizData = data.quizData || [{ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] }];
-          openQuestionsData = data.openQuestionsData || [''];
-          infosData = data.infosData || [''];
+          slidesData = data.slidesData || [];
+          slidesIdee = data.slidesIdee || [];
+          quizData = data.quizData || [];
+          openQuestionsData = data.openQuestionsData || [];
+          infosData = data.infosData || [];
           retenirOpen = data.retenirOpen || false;
           
           document.getElementById('inputTitre').value = data.titre || '';
@@ -1060,9 +1067,6 @@
       var selectCategorie = document.getElementById('inputCategorie');
       if (selectCategorie.options.length > 0) selectCategorie.selectedIndex = 0;
 
-      slidesData.push('');
-      slidesIdee.push(false);
-
       afficherSlides();
       afficherQuiz();
       afficherOpenQuestions();
@@ -1132,17 +1136,13 @@
     function supprimerSlide(index) {
       slidesData.splice(index, 1);
       slidesIdee.splice(index, 1);
-      if (slidesData.length === 0) {
-        slidesData.push('');
-        slidesIdee.push(false);
-      }
       afficherSlides();
     }
 
     function afficherSlides() {
       var container = document.getElementById('slidesList');
       if (slidesData.length === 0) {
-        container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:4px 0;">Aucune slide</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1209,6 +1209,91 @@
       afficherSlides();
     }
 
+    // === RENVOYER SLIDE ===
+    function renvoyerSlide() {
+      var textarea = document.getElementById('composeurTextarea');
+      var texte = textarea.value;
+      var cursorPos = textarea.selectionStart;
+      
+      if (cursorPos === 0) {
+        alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
+        return;
+      }
+      
+      var debut = texte.substring(0, cursorPos).trim();
+      var fin = texte.substring(cursorPos).trim();
+      
+      if (!fin) {
+        alert('Il n\'y a pas de texte à renvoyer après le curseur.');
+        return;
+      }
+      
+      // Mettre à jour la slide actuelle avec le début
+      textarea.value = debut;
+      
+      // Ajouter une nouvelle slide après la slide actuelle
+      var newSlideIndex = composeurIndex + 1;
+      slidesData.splice(newSlideIndex, 0, fin);
+      slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
+      
+      // Mettre à jour l'affichage
+      afficherSlides();
+      
+      // Fermer le composeur
+      fermerComposeur();
+    }
+
+    // === FORMATAGE TEXTE ===
+    function appliquerFormat(type) {
+      var textarea = document.getElementById('composeurTextarea');
+      var start = textarea.selectionStart;
+      var end = textarea.selectionEnd;
+      var selectedText = textarea.value.substring(start, end);
+      
+      if (!selectedText && type !== 'remove') {
+        alert('Sélectionnez du texte à formater.');
+        return;
+      }
+      
+      var newText = '';
+      var cursorOffset = 0;
+      
+      switch(type) {
+        case 'bold':
+          newText = '**' + selectedText + '**';
+          cursorOffset = 2;
+          break;
+        case 'italic':
+          newText = '*' + selectedText + '*';
+          cursorOffset = 1;
+          break;
+        case 'quote':
+          newText = '> ' + selectedText;
+          cursorOffset = 2;
+          break;
+        case 'remove':
+          // Supprimer le formatage
+          newText = selectedText
+            .replace(/\*\*(.*?)\*\*/g, '$1')
+            .replace(/\*(.*?)\*/g, '$1')
+            .replace(/^> /gm, '');
+          cursorOffset = 0;
+          break;
+        default:
+          return;
+      }
+      
+      var before = textarea.value.substring(0, start);
+      var after = textarea.value.substring(end);
+      textarea.value = before + newText + after;
+      
+      // Restaurer la sélection
+      var newStart = start;
+      var newEnd = start + newText.length;
+      textarea.setSelectionRange(newStart, newEnd);
+      textarea.focus();
+    }
+
     // === RETENIR ===
     function toggleRetenir() {
       retenirOpen = !retenirOpen;
@@ -1234,9 +1319,6 @@
 
     function supprimerQuestion(index) {
       quizData.splice(index, 1);
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
       afficherQuiz();
     }
 
@@ -1247,9 +1329,6 @@
 
     function supprimerReponse(quizIndex, repIndex) {
       quizData[quizIndex].reponses.splice(repIndex, 1);
-      if (quizData[quizIndex].reponses.length === 0) {
-        quizData[quizIndex].reponses.push({ texte: '', correct: true });
-      }
       afficherQuiz();
     }
 
@@ -1270,7 +1349,7 @@
     function afficherQuiz() {
       var container = document.getElementById('quizList');
       if (quizData.length === 0) {
-        container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:4px 0;">Aucun quiz</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1312,14 +1391,13 @@
 
     function supprimerQuestionOuverte(index) {
       openQuestionsData.splice(index, 1);
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
       afficherOpenQuestions();
     }
 
     function afficherOpenQuestions() {
       var container = document.getElementById('openQuestionsList');
       if (openQuestionsData.length === 0) {
-        container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:4px 0;">Aucune question ouverte</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1343,14 +1421,13 @@
 
     function supprimerInfo(index) {
       infosData.splice(index, 1);
-      if (infosData.length === 0) infosData.push('');
       afficherInfos();
     }
 
     function afficherInfos() {
       var container = document.getElementById('infosList');
       if (infosData.length === 0) {
-        container.innerHTML = '<div style="color:var(--text-muted);font-style:italic;padding:4px 0;">Aucune info</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1621,13 +1698,6 @@
         }
       }
 
-      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
-      if (infosData.length === 0) infosData.push('');
-
       afficherSlides();
       afficherQuiz();
       afficherOpenQuestions();
@@ -1852,13 +1922,6 @@
         }
       }
 
-      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
-      if (infosData.length === 0) infosData.push('');
-
       afficherSlides();
       afficherQuiz();
       afficherOpenQuestions();
@@ -1926,6 +1989,19 @@
     function demarrer() {
       chargerAdmin();
     }
+
+    // Ajouter le raccourci clavier Ctrl+B / Ctrl+I dans le composeur
+    document.addEventListener('keydown', function(e) {
+      if (document.getElementById('composeurOverlay').classList.contains('visible')) {
+        if (e.ctrlKey && e.key === 'b') {
+          e.preventDefault();
+          appliquerFormat('bold');
+        } else if (e.ctrlKey && e.key === 'i') {
+          e.preventDefault();
+          appliquerFormat('italic');
+        }
+      }
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', demarrer);
