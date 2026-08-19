@@ -34,15 +34,9 @@
     </div>
   </div>
 
-  <!-- ANNOTATION -->
-  <div class="annotation-container" id="annotationContainer">
-    <div class="annotation-box" id="annotationBox">
-      <textarea id="annotationTextarea" placeholder="Écrire une note sur cette slide..."></textarea>
-    </div>
-    <button class="annotation-toggle" id="annotationToggle" title="Notes">
-      ✎
-      <span class="dot-save" id="annotationDot"></span>
-    </button>
+  <!-- PAGINATION : hors cadre, centrée, plus bas, même couleur que le texte -->
+  <div style="text-align:center; margin-top:24px; font-family:var(--font-text, Merriweather, serif); color:var(--text-primary, #e0e0e0); font-size:16px; letter-spacing:0.5px;">
+    <span id="pagination">1 / 1</span>
   </div>
 
   <script>
@@ -57,10 +51,7 @@
       totalBonnes: 0,
       totalQuestions: 0,
       statutFinal: null,
-      enTransition: false,
-      annotations: {},
-      annotationOpen: false,
-      annotationSaving: false
+      enTransition: false
     };
 
     // ===== INIT =====
@@ -81,7 +72,6 @@
           etat.post = data.post;
           preparerSlides(etat.post);
           afficherSlides();
-          chargerAnnotations();
         })
         .catch(function(error) { afficherErreur(error.message); });
     }
@@ -274,8 +264,6 @@
         html += '</div>';
       });
 
-      html += '<div class="pagination" id="pagination">1 / ' + etat.slides.length + '</div>';
-
       container.innerHTML = html;
 
       // Gestion des événements
@@ -285,8 +273,7 @@
             target.closest('.btn-continuer') ||
             target.closest('.btn-envoyer-reponse') ||
             target.closest('textarea') ||
-            target.closest('.btn-fermer-slide') ||
-            target.closest('.annotation-container')) {
+            target.closest('.btn-fermer-slide')) {
           return;
         }
 
@@ -328,28 +315,8 @@
         fermerLiseuse();
       });
 
-      // Annotation
-      document.getElementById('annotationToggle').addEventListener('click', function(e) {
-        e.stopPropagation();
-        toggleAnnotation();
-      });
-
-      var annotationTextarea = document.getElementById('annotationTextarea');
-      var saveTimeout = null;
-      annotationTextarea.addEventListener('input', function() {
-        clearTimeout(saveTimeout);
-        saveTimeout = setTimeout(function() {
-          sauvegarderAnnotation();
-        }, 800);
-      });
-
-      document.querySelector('.annotation-container').addEventListener('click', function(e) {
-        e.stopPropagation();
-      });
-
       recupererStatutExistant();
       mettreAJourPagination();
-      mettreAJourAnnotation();
     }
 
     // ===== NAVIGATION =====
@@ -379,7 +346,6 @@
 
       etat.currentIndex++;
       mettreAJourPagination();
-      mettreAJourAnnotation();
 
       setTimeout(function() {
         etat.enTransition = false;
@@ -399,7 +365,6 @@
 
       etat.currentIndex--;
       mettreAJourPagination();
-      mettreAJourAnnotation();
 
       setTimeout(function() {
         etat.enTransition = false;
@@ -586,93 +551,6 @@
           btn.disabled = false;
           btn.textContent = 'Envoyer la réponse';
         });
-    }
-
-    // ===== ANNOTATIONS =====
-    function toggleAnnotation() {
-      etat.annotationOpen = !etat.annotationOpen;
-      var box = document.getElementById('annotationBox');
-      var toggle = document.getElementById('annotationToggle');
-      if (etat.annotationOpen) {
-        box.classList.add('open');
-        toggle.textContent = '✎';
-        document.getElementById('annotationTextarea').focus();
-        chargerAnnotationSlide();
-      } else {
-        box.classList.remove('open');
-        toggle.textContent = '✎';
-        sauvegarderAnnotation();
-      }
-    }
-
-    function chargerAnnotationSlide() {
-      var key = etat.postId + '_' + etat.currentIndex;
-      var annotation = etat.annotations[key] || '';
-      document.getElementById('annotationTextarea').value = annotation;
-    }
-
-    function mettreAJourAnnotation() {
-      var dot = document.getElementById('annotationDot');
-      var key = etat.postId + '_' + etat.currentIndex;
-      if (etat.annotations[key] && etat.annotations[key].trim() !== '') {
-        dot.className = 'dot-save saved';
-      } else {
-        dot.className = 'dot-save';
-      }
-    }
-
-    function sauvegarderAnnotation() {
-      var textarea = document.getElementById('annotationTextarea');
-      var note = textarea.value.trim();
-      var key = etat.postId + '_' + etat.currentIndex;
-
-      if (note === '' && !etat.annotations[key]) return;
-
-      etat.annotations[key] = note;
-
-      var dot = document.getElementById('annotationDot');
-      dot.className = 'dot-save saving';
-
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveAnnotation' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&slideIndex=' + encodeURIComponent(etat.currentIndex) +
-        '&annotation=' + encodeURIComponent(note);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            dot.className = 'dot-save saved';
-            console.log('✓ Annotation sauvegardée');
-          } else {
-            dot.className = 'dot-save';
-            console.error('Erreur sauvegarde annotation');
-          }
-        })
-        .catch(function(e) {
-          dot.className = 'dot-save';
-          console.error('Erreur:', e);
-        });
-    }
-
-    function chargerAnnotations() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=getAnnotations&nom=' + encodeURIComponent(nom) + '&articleId=' + encodeURIComponent(etat.postId);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.annotations) {
-            data.annotations.forEach(function(a) {
-              var key = etat.postId + '_' + a.slideIndex;
-              etat.annotations[key] = a.annotation || '';
-            });
-            mettreAJourAnnotation();
-          }
-        })
-        .catch(function(e) { console.error('Erreur chargement annotations:', e); });
     }
 
     // ===== UTILITAIRES =====
