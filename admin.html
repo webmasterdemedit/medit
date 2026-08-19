@@ -571,7 +571,6 @@
         <button class="btn-importer-header" onclick="importerTexte()">📥 Importer</button>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
         <button class="btn-export-all" onclick="exporterTout()">📤 Exporter tout</button>
-        <button class="btn-categories" onclick="ouvrirModalCategories()">🏷️ Catégories</button>
         <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
       </div>
     </div>
@@ -608,19 +607,6 @@
       </div>
     </div>
 
-  </div>
-
-  <!-- MODAL CATÉGORIES -->
-  <div id="modalCategories" class="modal-overlay">
-    <div class="modal-contenu">
-      <button class="modal-close" onclick="fermerModalCategories()">✕</button>
-      <h3>🏷️ Gérer les catégories</h3>
-      <div id="listeCategories"></div>
-      <div class="ajout-cat">
-        <input type="text" id="newCatInput" placeholder="Nouvelle catégorie...">
-        <button onclick="ajouterCategorie()">+ Ajouter</button>
-      </div>
-    </div>
   </div>
 
   <!-- MODAL TEXTE -->
@@ -1428,135 +1414,6 @@
       });
       
       container.innerHTML = html;
-    }
-
-    // ============================================================
-    // GESTION DES CATÉGORIES
-    // ============================================================
-    function ouvrirModalCategories() {
-      var modal = document.getElementById('modalCategories');
-      modal.classList.add('visible');
-      afficherListeCategories();
-    }
-
-    function fermerModalCategories() {
-      document.getElementById('modalCategories').classList.remove('visible');
-    }
-
-    function afficherListeCategories() {
-      var container = document.getElementById('listeCategories');
-      var html = '';
-      
-      var cats = {};
-      tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!cats[cat]) cats[cat] = 0;
-        cats[cat]++;
-      });
-      
-      var sorted = Object.keys(cats).sort();
-      sorted.forEach(function(cat) {
-        var isDefault = categoriesData.indexOf(cat) !== -1 || cat === 'Sans catégorie';
-        html += `
-          <div class="cat-item">
-            <span class="cat-name">${cat} (${cats[cat]} articles)</span>
-            <div class="cat-actions">
-              ${!isDefault ? '<button class="btn-del-cat-modal" onclick="supprimerCategorie(\'' + cat + '\')">✕ Supprimer</button>' : ''}
-              <button onclick="renommerCategorie(\'' + cat + '\')">✏️ Renommer</button>
-            </div>
-          </div>
-        `;
-      });
-      
-      container.innerHTML = html;
-    }
-
-    function ajouterCategorie() {
-      var input = document.getElementById('newCatInput');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            afficherListeCategories();
-            remplirSelectCategories();
-            alert('✅ Catégorie ajoutée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function supprimerCategorie(cat) {
-      if (cat === 'Sans catégorie') { alert('Impossible de supprimer la catégorie "Sans catégorie".'); return; }
-      if (!confirm('Supprimer la catégorie "' + cat + '" ? Les articles seront reassignés à "Sans catégorie".')) return;
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === cat) p.categorie = 'Sans catégorie';
-      });
-      
-      var index = categoriesData.indexOf(cat);
-      if (index !== -1) categoriesData.splice(index, 1);
-      
-      var url = CONFIG.SCRIPT_URL + '?action=deleteLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie supprimée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function renommerCategorie(oldCat) {
-      var newCat = prompt('Nouveau nom pour "' + oldCat + '" :');
-      if (!newCat || newCat.trim() === '') return;
-      newCat = newCat.trim();
-      if (categoriesData.indexOf(newCat) !== -1 && newCat !== oldCat) {
-        alert('Cette catégorie existe déjà.');
-        return;
-      }
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === oldCat) p.categorie = newCat;
-      });
-      
-      var index = categoriesData.indexOf(oldCat);
-      if (index !== -1) {
-        categoriesData[index] = newCat;
-      }
-      
-      var url = CONFIG.SCRIPT_URL + '?action=renameLabel&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie renommée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
     }
 
     // ============================================================
