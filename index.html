@@ -12,93 +12,89 @@
 </head>
 <body>
 
-  <!-- ===== DEBUT WRAPPER LISEUSE ===== -->
-  <div class="app-snap-wrapper">
+  <div id="header-container"></div>
 
-    <!-- HEADER -->
-    <div id="header-container"></div>
-
-    <script>
-      fetch('/medit/header.html')
-        .then(function(response) { return response.text(); })
-        .then(function(data) {
-          document.getElementById('header-container').innerHTML = data;
-          mettreAJourHeader();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement header:', error);
-          document.getElementById('header-container').innerHTML = `
-            <header class="site-header">
-              <div class="header-inner">
-                <div class="header-logo">
-                  <a href="/medit/index.html">✎ <strong>Qiraat</strong></a>
-                </div>
-                <nav class="header-nav" id="headerNav">
-                  <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-                </nav>
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+        mettreAJourHeader();
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-logo">
+                <a href="/medit/index.html">✎ <strong>Qiraat</strong></a>
               </div>
-            </header>
-          `;
-          mettreAJourHeader();
-        });
+              <nav class="header-nav" id="headerNav">
+                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+        mettreAJourHeader();
+      });
 
-      function mettreAJourHeader() {
-        var id = localStorage.getItem('etudiant_id');
-        var nav = document.getElementById('headerNav');
-        if (nav) {
-          if (id) {
-            nav.innerHTML = `
-              <a href="/medit/mes-textes.html" class="header-btn-compte">📒 Mes textes</a>
-              <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
-              <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
-            `;
-          } else {
-            nav.innerHTML = `
-              <a href="/medit/index.html" class="header-link">E-learning</a>
-              <a href="/medit/index.html" class="header-link">Accueil</a>
-            `;
-          }
+    function mettreAJourHeader() {
+      var id = localStorage.getItem('etudiant_id');
+      var nav = document.getElementById('headerNav');
+      if (nav) {
+        if (id) {
+          nav.innerHTML = `
+            <a href="/medit/mes-textes.html" class="header-btn-compte">📒 Mes textes</a>
+            <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
+            <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
+          `;
+        } else {
+          nav.innerHTML = `
+            <a href="/medit/index.html" class="header-link">E-learning</a>
+            <a href="/medit/index.html" class="header-link">Accueil</a>
+          `;
         }
       }
-    </script>
+    }
+  </script>
 
-    <!-- Toast message -->
-    <div class="toast-message" id="toastMessage">
-      <span class="toast-icon">✅</span>
-      <div class="toast-titre">Demande envoyée avec succès !</div>
-      <div class="toast-sous">Votre demande d'inscription a bien été reçue.<br>
-      L'enseignant étudiera votre dossier et vous enverra vos identifiants de connexion par email.<br>
-      Un niveau vous sera attribué selon votre profil.</div>
-      <button class="toast-btn" onclick="fermerToast()">Fermer</button>
-    </div>
+  <!-- Toast message -->
+  <div class="toast-message" id="toastMessage">
+    <span class="toast-icon">✅</span>
+    <div class="toast-titre">Demande envoyée avec succès !</div>
+    <div class="toast-sous">Votre demande d'inscription a bien été reçue.<br>
+    L'enseignant étudiera votre dossier et vous enverra vos identifiants de connexion par email.<br>
+    Un niveau vous sera attribué selon votre profil.</div>
+    <button class="toast-btn" onclick="fermerToast()">Fermer</button>
+  </div>
 
-    <!-- ===== PAGE 1 : HERO ===== -->
-    <div class="hero-page" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 20px;background:var(--bg-primary);">
-      <div class="hero" style="width:100%;max-width:800px;text-align:center;">
-        <div class="logo">
-          <strong>Qiraat</strong>
-        </div>
-        <div class="sous-titre">Une plateforme de lecture.</div>
-        <p class="description">
-          Dédiée à préparer à la récitation fréquente du Coran et à introduire aux traduction savants de versets et aux méditations de Sir Khan.
-        </p>
-        <p class="description" style="color:#94a3b8;font-style:italic;margin-top:2px;">
-          Proposée par lui-même d'après ses fichiers de cours.
-        </p>
-        <button class="btn-entrer" onclick="ouvrirConnexion()">Se connecter</button>
-        <div style="margin-top:14px;font-size:14px;color:#94a3b8;">
-          <a onclick="ouvrirInscription()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
-            Faire une demande d'inscription
-          </a>
-        </div>
+  <div class="page-home">
+
+    <!-- HERO -->
+    <div class="hero">
+      <div class="logo">
+        <strong>Qiraat</strong>
+      </div>
+      <div class="sous-titre">Une plateforme de lecture.</div>
+      <p class="description">
+        Dédiée à préparer à la récitation fréquente du Coran et à introduire aux traduction savants de versets et aux méditations de Sir Khan.
+      </p>
+      <p class="description" style="color:#94a3b8;font-style:italic;margin-top:2px;">
+        Proposée par lui-même d'après ses fichiers de cours.
+      </p>
+      <button class="btn-entrer" onclick="ouvrirConnexion()">Se connecter</button>
+      <div style="margin-top:14px;font-size:14px;color:#94a3b8;">
+        <a onclick="ouvrirInscription()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
+          Faire une demande d'inscription
+        </a>
       </div>
     </div>
 
-    <!-- ===== PAGE 2 : PRÉSENTATION ===== -->
-    <div class="presentation-section" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:40px 20px;background:var(--bg-secondary);">
-      <h2 class="presentation-titre" style="text-align:center;">Adapté sous la forme d'un système d'e-learning complet.</h2>
-      <p class="presentation-sous-titre" style="text-align:center;">Un espace conçu pour s'assurer de la bonne acquisition des textes avec un suivi personnalisé.</p>
-      <div class="presentation-grid" style="max-width:1100px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px;">
+    <!-- PRÉSENTATION -->
+    <div class="presentation-section">
+      <h2 class="presentation-titre">Adapté sous la forme d'un système d'e-learning complet.</h2>
+      <p class="presentation-sous-titre">Un espace conçu pour s'assurer de la bonne acquisition des textes avec un suivi personnalisé.</p>
+      <div class="presentation-grid">
         <div class="presentation-card">
           <span class="presentation-icon">☰</span>
           <h3>Textes courts</h3>
@@ -132,13 +128,13 @@
       </div>
     </div>
 
-    <!-- ===== PAGE 3 : MÉTHODE ===== -->
-    <div class="methode-section" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;padding:40px 20px;background:var(--bg-primary);">
-      <h2 class="methode-titre" style="text-align:center;">L'esprit des cours</h2>
-      <p class="methode-sous-titre" style="text-align:center;">
+    <!-- MÉTHODE -->
+    <div class="methode-section">
+      <h2 class="methode-titre">L'esprit des cours</h2>
+      <p class="methode-sous-titre">
         Au-delà de la lecture, une formation à la langue, à la sensibilité et à l'intelligence du texte.
       </p>
-      <div class="methode-grid" style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:24px;">
+      <div class="methode-grid">
         <div class="methode-card">
           <span class="methode-num">01</span>
           <div>
@@ -163,43 +159,12 @@
       </div>
     </div>
 
-    <!-- ===== PAGE 4 : DEVISE ===== -->
-    <div class="devise-home" style="min-height:100vh;display:flex;flex-direction:column;justify-content:center;align-items:center;padding:40px 20px;background:var(--bg-secondary);font-size:24px;font-style:italic;text-align:center;color:var(--text-secondary);">
+    <!-- DEVISE -->
+    <div class="devise-home">
       “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
 
-    <!-- FOOTER -->
-    <div id="footer-container"></div>
-
-    <script>
-      fetch('/medit/footer.html')
-        .then(function(response) { return response.text(); })
-        .then(function(data) {
-          document.getElementById('footer-container').innerHTML = data;
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement footer:', error);
-          document.getElementById('footer-container').innerHTML = `
-            <footer class="site-footer">
-              <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-              <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-            </footer>
-          `;
-        });
-    </script>
-
-  <!-- ===== FIN WRAPPER LISEUSE ===== -->
   </div>
-
-  <!-- ===== PAGINATION OVERLAY ===== -->
-  <div class="pagination-overlay" id="pagination">
-    <span id="page-courante">1</span>
-    <span class="sep">/</span>
-    <span id="page-total">1</span>
-  </div>
-
-  <!-- ===== ZONE DE TAP ===== -->
-  <div class="tap-zone" id="tapZone"></div>
 
   <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay">
@@ -259,6 +224,25 @@
       </div>
     </div>
   </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
@@ -512,9 +496,6 @@
       demarrer();
     }
   </script>
-
-  <!-- ===== SCRIPT LISEUSE ===== -->
-  <script src="/medit/liseuse.js"></script>
 
 </body>
 </html>
