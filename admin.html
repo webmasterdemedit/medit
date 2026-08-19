@@ -61,14 +61,6 @@
       transition: all 0.2s;
     }
     .header-admin .btn-importer-header:hover { background: #1e1e1e; color: #e8e0d8; }
-    .header-admin .btn-categories {
-      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .header-admin .btn-categories:hover { background: #1e1e1e; color: #e8e0d8; }
 
     /* ===== STATS ===== */
     .stats-ligne {
@@ -192,6 +184,9 @@
     }
     .carte-post .actions button:hover { background: #1e1e1e; color: #e8e0d8; }
     .carte-post .actions .btn-supprimer:hover { color: #c87a7a; }
+    .carte-post .actions .btn-exporter:hover { color: #7ab893; }
+    .carte-post .actions .btn-statut-publier:hover { color: #7ab893; }
+    .carte-post .actions .btn-statut-brouillon:hover { color: #c8b87a; }
 
     .carte-post.dragging { opacity: 0.4; }
     .carte-post.drag-over { border: 2px dashed #3a3a3a; background: #1a1a1a; }
@@ -568,9 +563,9 @@
     <div class="header-admin">
       <h1>⚙ Administration</h1>
       <div class="header-actions">
-        <button class="btn-importer-header" onclick="importerTexte()"> 🢁 Importer</button>
+        <button class="btn-importer-header" onclick="importerTexte()">📥 Importer</button>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
-        <button class="btn-export-all" onclick="exporterTout()">🔰 Exporter tout</button>
+        <button class="btn-export-all" onclick="exporterTout()">📤 Exporter tout</button>
         <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
       </div>
     </div>
@@ -1222,7 +1217,7 @@
               ${apercuHtml}
             </div>
             <div class="actions">
-              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">🡻 Exporter</button>
+              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">📤 Exporter</button>
               <button class="${estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier'}" onclick="event.stopPropagation(); ${estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')'}">${estPublie ? 'Passer en brouillon' : 'Publier'}</button>
               <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
             </div>
@@ -1902,12 +1897,10 @@
           '&versions=' + encodeURIComponent(version) +
           '&dateModif=' + encodeURIComponent(maintenant);
 
-        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
         }
 
-        // Ajouter la date de création personnalisée (colonne B)
         if (dateCreation) {
           url += '&date=' + encodeURIComponent(dateCreation);
         }
@@ -1938,12 +1931,10 @@
           '&statut=' + encodeURIComponent(statut) +
           '&versions=' + encodeURIComponent(1);
 
-        // Ajouter la date de création personnalisée (colonne B)
         if (dateCreation) {
           url += '&date=' + encodeURIComponent(dateCreation);
         }
 
-        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
         }
@@ -1989,16 +1980,15 @@
       document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
       document.getElementById('editId').value = postId;
 
-      // Pré-remplir la date avec la date de création (colonne B)
       if (post.date) {
         var d = new Date(post.date);
         if (!isNaN(d.getTime())) {
           var y = d.getFullYear();
           var m = String(d.getMonth() + 1).padStart(2, '0');
           var dd = String(d.getDate()).padStart(2, '0');
-          document.getElementById('inputDate').removeAttribute('readonly');
           document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
-document.getElementById('inputDate').setAttribute('readonly', true);
+          document.getElementById('inputDate').setAttribute('readonly', true);
+          document.getElementById('inputDate').style.color = '#6b6b6b';
         }
       }
 
@@ -2102,7 +2092,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       startChrono();
     }
 
-        // ============================================================
+    // ============================================================
     // EXPORTER POST
     // ============================================================
     function exporterPost(postId) {
@@ -2111,132 +2101,40 @@ document.getElementById('inputDate').setAttribute('readonly', true);
 
       var contenu = '';
       contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
-      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n';
+      
+      var dateAffichage = post.date || post.dateModif || '';
+      if (dateAffichage) {
+        var d = new Date(dateAffichage);
+        if (!isNaN(d.getTime())) {
+          contenu += 'Date: ' + d.toISOString().split('T')[0] + '\n';
+        } else {
+          contenu += 'Date: ' + dateAffichage + '\n';
+        }
+      }
+      
+      contenu += 'Statut: ' + (post.statut || 'publie') + '\n\n';
 
       if (post.contenu) {
         var lignes = post.contenu.split(' | ');
-        var quizEnCours = null;
-        var firstSection = true;
+        var premierElement = true;
 
         for (var i = 0; i < lignes.length; i++) {
           var ligne = lignes[i].trim();
           if (!ligne) continue;
 
-          // --- SLIDES ---
-          if (ligne.startsWith('-s-')) {
-            if (!firstSection) {
-              contenu += '\n';
-            }
+          if (ligne.startsWith('-v-') || ligne.startsWith('-f-')) {
             contenu += ligne + '\n';
-            firstSection = false;
+            continue;
           }
 
-          // --- QUIZ ---
-          else if (ligne.startsWith('-q-')) {
-            if (quizEnCours) {
-              // Fermer le quiz précédent
-              quizEnCours.reponses.forEach(function(r) {
-                contenu += r + '\n';
-              });
-              contenu += '\n';
-            }
-            // Ajouter une ligne vide avant le quiz (sauf si c'est le premier élément)
-            if (!firstSection) {
-              contenu += '\n';
-            }
-            quizEnCours = { question: ligne, reponses: [] };
-            contenu += ligne + '\n';
-            firstSection = false;
+          if (!premierElement) {
+            contenu += '\n';
           }
-          else if (ligne.startsWith('-v-') || ligne.startsWith('-f-')) {
-            if (quizEnCours) {
-              quizEnCours.reponses.push(ligne);
-            } else {
-              // Si une réponse arrive sans question, on la traite normalement
-              if (!firstSection) {
-                contenu += '\n';
-              }
-              contenu += ligne + '\n';
-              firstSection = false;
-            }
-          }
-
-          // --- QUESTIONS OUVERTES ---
-          else if (ligne.startsWith('-qs-')) {
-            if (quizEnCours) {
-              // Fermer le quiz en cours
-              quizEnCours.reponses.forEach(function(r) {
-                contenu += r + '\n';
-              });
-              quizEnCours = null;
-              contenu += '\n';
-            }
-            // Ajouter une ligne vide avant la question ouverte
-            if (!firstSection) {
-              contenu += '\n';
-            }
-            contenu += ligne + '\n';
-            firstSection = false;
-          }
-
-          // --- RETENIR ---
-          else if (ligne.startsWith('-r-')) {
-            if (quizEnCours) {
-              quizEnCours.reponses.forEach(function(r) {
-                contenu += r + '\n';
-              });
-              quizEnCours = null;
-              contenu += '\n';
-            }
-            // Ajouter une ligne vide avant retenir
-            if (!firstSection) {
-              contenu += '\n';
-            }
-            contenu += ligne + '\n';
-            firstSection = false;
-          }
-
-          // --- INFOS ---
-          else if (ligne.startsWith('-i-')) {
-            if (quizEnCours) {
-              quizEnCours.reponses.forEach(function(r) {
-                contenu += r + '\n';
-              });
-              quizEnCours = null;
-              contenu += '\n';
-            }
-            if (!firstSection) {
-              contenu += '\n';
-            }
-            contenu += ligne + '\n';
-            firstSection = false;
-          }
-
-          // --- AUTRE (cas où une ligne ne commence par aucun code connu) ---
-          else {
-            if (quizEnCours) {
-              quizEnCours.reponses.forEach(function(r) {
-                contenu += r + '\n';
-              });
-              quizEnCours = null;
-              contenu += '\n';
-            }
-            if (!firstSection) {
-              contenu += '\n';
-            }
-            contenu += ligne + '\n';
-            firstSection = false;
-          }
+          contenu += ligne + '\n';
+          premierElement = false;
         }
 
-        // Fermer le dernier quiz s'il existe
-        if (quizEnCours) {
-          quizEnCours.reponses.forEach(function(r) {
-            contenu += r + '\n';
-          });
-        }
-
-        // Supprimer les sauts de ligne en trop à la fin
         contenu = contenu.replace(/\n{3,}$/, '\n\n');
 
       } else {
@@ -2255,7 +2153,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
     }
 
     // ============================================================
-    // IMPORTER (maintenant en dehors du popup)
+    // IMPORTER
     // ============================================================
     function importerTexte() {
       document.getElementById('fileInput').click();
@@ -2268,14 +2166,15 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       var reader = new FileReader();
       reader.onload = function(e) {
         var contenu = e.target.result;
+        contenu = contenu.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
         parserContenu(contenu);
         document.getElementById('fileInput').value = '';
-         ouvrirModalTexte();
+        ouvrirModalTexte();
       };
       reader.readAsText(file, 'UTF-8');
     }
 
-        // ============================================================
+    // ============================================================
     // PARSER CONTENU (IMPORT)
     // ============================================================
     function parserContenu(contenu) {
@@ -2322,7 +2221,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
               break;
             }
           }
-          i = j - 1; // Important : on place i sur le dernier élément traité
+          i = j - 1;
           if (reponses.length === 0) {
             reponses.push({ texte: '', correct: true });
             reponses.push({ texte: '', correct: false });
@@ -2357,7 +2256,8 @@ document.getElementById('inputDate').setAttribute('readonly', true);
 
       document.getElementById('messageTexte').style.display = 'none';
     }
-        // ============================================================
+
+    // ============================================================
     // CHANGER LE STATUT D'UN POST
     // ============================================================
     function changerStatut(postId, nouveauStatut) {
@@ -2391,6 +2291,28 @@ document.getElementById('inputDate').setAttribute('readonly', true);
         })
         .catch(function(e) {
           alert('❌ Erreur : ' + e.message);
+        });
+    }
+
+    // ============================================================
+    // SUPPRIMER POST
+    // ============================================================
+    function supprimerPost(postId) {
+      if (!confirm('Supprimer ce texte définitivement ?')) return;
+
+      var btn = document.querySelector('.btn-supprimer');
+      btn.textContent = '...';
+      btn.disabled = true;
+
+      DataManager.supprimerPost(postId)
+        .then(function() {
+          alert('✅ Post supprimé avec succès !');
+          chargerAdmin();
+        })
+        .catch(function(err) {
+          alert('❌ Erreur : ' + err.message);
+          btn.textContent = '✕';
+          btn.disabled = false;
         });
     }
 
