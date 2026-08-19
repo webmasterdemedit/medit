@@ -2395,6 +2395,42 @@ document.getElementById('inputDate').setAttribute('readonly', true);
           btn.disabled = false;
         });
     }
+        // ============================================================
+    // CHANGER LE STATUT D'UN POST
+    // ============================================================
+    function changerStatut(postId, nouveauStatut) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+        '&id=' + encodeURIComponent(postId) +
+        '&titre=' + encodeURIComponent(post.titre) +
+        '&niveau=' + encodeURIComponent(post.niveau || 0) +
+        '&categorie=' + encodeURIComponent(post.categorie || '') +
+        '&statut=' + encodeURIComponent(nouveauStatut) +
+        '&versions=' + encodeURIComponent(post.versions || 1) +
+        '&dateModif=' + encodeURIComponent(new Date().toISOString());
+
+      if (post.contenu) {
+        var colonnes = post.contenu.split(' | ');
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+      }
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            chargerAdmin();
+          } else {
+            alert('❌ Erreur : ' + data.message);
+          }
+        })
+        .catch(function(e) {
+          alert('❌ Erreur : ' + e.message);
+        });
+    }
 
     // ============================================================
     // INIT
