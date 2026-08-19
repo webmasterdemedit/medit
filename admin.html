@@ -45,6 +45,14 @@
       transition: all 0.2s;
     }
     .header-admin .btn-ajout:hover { background: #1e1e1e; }
+    .header-admin .btn-export-all {
+      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
+      font-size: 13px; cursor: pointer;
+      background: transparent; color: #6b6b6b;
+      font-family: 'Inter', sans-serif; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .header-admin .btn-export-all:hover { background: #1e1e1e; color: #e8e0d8; }
     .header-admin .btn-importer-header {
       padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
       font-size: 13px; cursor: pointer;
@@ -53,6 +61,14 @@
       transition: all 0.2s;
     }
     .header-admin .btn-importer-header:hover { background: #1e1e1e; color: #e8e0d8; }
+    .header-admin .btn-categories {
+      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
+      font-size: 13px; cursor: pointer;
+      background: transparent; color: #6b6b6b;
+      font-family: 'Inter', sans-serif; white-space: nowrap;
+      transition: all 0.2s;
+    }
+    .header-admin .btn-categories:hover { background: #1e1e1e; color: #e8e0d8; }
 
     /* ===== STATS ===== */
     .stats-ligne {
@@ -176,9 +192,6 @@
     }
     .carte-post .actions button:hover { background: #1e1e1e; color: #e8e0d8; }
     .carte-post .actions .btn-supprimer:hover { color: #c87a7a; }
-    .carte-post .actions .btn-exporter:hover { color: #7ab893; }
-    .carte-post .actions .btn-statut-publier:hover { color: #7ab893; }
-    .carte-post .actions .btn-statut-brouillon:hover { color: #c8b87a; }
 
     .carte-post.dragging { opacity: 0.4; }
     .carte-post.drag-over { border: 2px dashed #3a3a3a; background: #1a1a1a; }
@@ -557,6 +570,8 @@
       <div class="header-actions">
         <button class="btn-importer-header" onclick="importerTexte()">📥 Importer</button>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
+        <button class="btn-export-all" onclick="exporterTout()">📤 Exporter tout</button>
+        <button class="btn-categories" onclick="ouvrirModalCategories()">🏷️ Catégories</button>
         <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
       </div>
     </div>
@@ -1143,7 +1158,6 @@
       posts.forEach(function(post, index) {
         var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
-        var estPublie = post.statut === 'publie';
         
         var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
         
@@ -1202,11 +1216,6 @@
           }
         }
 
-        // Bouton de changement de statut
-        var btnStatutTexte = estPublie ? 'Passer en brouillon' : 'Publier';
-        var btnStatutClass = estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier';
-        var btnStatutAction = estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')';
-
         html += `
           <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" onclick="modifierPost('${post.id}')">
             <div class="infos">
@@ -1226,8 +1235,6 @@
               ${apercuHtml}
             </div>
             <div class="actions">
-              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">📤 Exporter</button>
-              <button class="${btnStatutClass}" onclick="event.stopPropagation(); ${btnStatutAction}">${btnStatutTexte}</button>
               <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
             </div>
           </div>
@@ -1238,44 +1245,6 @@
       container.innerHTML = html;
       
       initDragDropPosts();
-    }
-
-    // ============================================================
-    // CHANGER LE STATUT D'UN POST
-    // ============================================================
-    function changerStatut(postId, nouveauStatut) {
-      var post = tousLesPosts.find(function(p) { return p.id === postId; });
-      if (!post) { alert('Post introuvable'); return; }
-
-      var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
-        '&id=' + encodeURIComponent(postId) +
-        '&titre=' + encodeURIComponent(post.titre) +
-        '&niveau=' + encodeURIComponent(post.niveau || 0) +
-        '&categorie=' + encodeURIComponent(post.categorie || '') +
-        '&statut=' + encodeURIComponent(nouveauStatut) +
-        '&versions=' + encodeURIComponent(post.versions || 1) +
-        '&dateModif=' + encodeURIComponent(new Date().toISOString());
-
-      // Ajouter les colonnes dynamiques
-      if (post.contenu) {
-        var colonnes = post.contenu.split(' | ');
-        for (var i = 0; i < colonnes.length; i++) {
-          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
-        }
-      }
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            chargerAdmin();
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) {
-          alert('❌ Erreur : ' + e.message);
-        });
     }
 
     // ============================================================
@@ -1397,7 +1366,8 @@
     }
 
     // ============================================================
-    // SWITCH TAB    // ============================================================
+    // SWITCH TAB
+    // ============================================================
     function switchTab(tab) {
       ongletActuel = tab;
       
@@ -1587,104 +1557,704 @@
     }
 
     // ============================================================
-    // EXPORTER UN POST
+    // EXPORTER TOUT
+    // ============================================================
+    function exporterTout() {
+      if (tousLesPosts.length === 0) {
+        alert('Aucun article à exporter.');
+        return;
+      }
+      
+      var data = {
+        exportDate: new Date().toISOString(),
+        total: tousLesPosts.length,
+        posts: tousLesPosts.map(function(p) {
+          return {
+            id: p.id,
+            titre: p.titre,
+            niveau: p.niveau,
+            categorie: p.categorie,
+            date: p.date,
+            statut: p.statut,
+            contenu: p.contenu ? p.contenu.replace(/ \| /g, '\n') : '',
+            mots: p.mots,
+            hasQuiz: p.hasQuiz,
+            hasQuestion: p.hasQuestion,
+            ordre: p.ordre || 0,
+            versions: p.versions || 1,
+            dateModif: p.dateModif || ''
+          };
+        })
+      };
+      
+      var json = JSON.stringify(data, null, 2);
+      var blob = new Blob([json], { type: 'application/json;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = 'export_tous_articles_' + new Date().toISOString().slice(0,10) + '.json';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      alert('✅ Exportation de ' + tousLesPosts.length + ' articles terminée !');
+    }
+
+    // ============================================================
+    // MODAL TEXTE
+    // ============================================================
+    function ouvrirModalTexte() {
+      modeEdition = false;
+      estBrouillon = false;
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Ajouter';
+      document.getElementById('editId').value = '';
+      document.getElementById('btnBrouillon').classList.remove('active');
+      document.getElementById('btnBrouillon').textContent = 'Brouillon';
+
+      slidesData = [];
+      slidesIdee = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      retenirOpen = false;
+      document.getElementById('retenirChamps').classList.remove('open');
+
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('inputDate').value = y + '-' + m + '-' + d;
+      document.getElementById('inputTitre').value = '';
+      document.getElementById('retenir1').value = '';
+      document.getElementById('retenir2').value = '';
+      document.getElementById('retenir3').value = '';
+      document.getElementById('inputNouvelleCategorie').value = '';
+      document.getElementById('messageTexte').style.display = 'none';
+
+      var selectNiveau = document.getElementById('inputNiveau');
+      if (selectNiveau.options.length > 0) selectNiveau.selectedIndex = 0;
+      var selectCategorie = document.getElementById('inputCategorie');
+      if (selectCategorie.options.length > 0) selectCategorie.selectedIndex = 0;
+
+      slidesData.push('');
+      slidesIdee.push(false);
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('inputTitre').focus();
+
+      startChrono();
+      chargerAutoSave();
+    }
+
+    function fermerModalTexte() {
+      stopChrono();
+      arreterAutoSave();
+      document.getElementById('modalTexte').classList.remove('visible');
+      localStorage.removeItem('admin_auto_save');
+    }
+
+    // ============================================================
+    // SLIDES
+    // ============================================================
+    var dragIndex = null;
+
+    function initDragDrop() {
+      var items = document.querySelectorAll('.slide-item');
+      items.forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+          dragIndex = parseInt(this.dataset.index);
+          this.classList.add('dragging');
+        });
+        item.addEventListener('dragend', function(e) {
+          this.classList.remove('dragging');
+          document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+        });
+        item.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+          this.classList.add('drag-over');
+        });
+        item.addEventListener('dragleave', function(e) {
+          this.classList.remove('drag-over');
+        });
+        item.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.classList.remove('drag-over');
+          var targetIndex = parseInt(this.dataset.index);
+          if (dragIndex !== null && dragIndex !== targetIndex) {
+            var slideMoved = slidesData.splice(dragIndex, 1)[0];
+            slidesData.splice(targetIndex, 0, slideMoved);
+            var ideeMoved = slidesIdee.splice(dragIndex, 1)[0];
+            slidesIdee.splice(targetIndex, 0, ideeMoved);
+            afficherSlides();
+          }
+        });
+      });
+    }
+
+    function ajouterSlide() {
+      slidesData.push('');
+      slidesIdee.push(false);
+      afficherSlides();
+    }
+
+    function supprimerSlide(index) {
+      slidesData.splice(index, 1);
+      slidesIdee.splice(index, 1);
+      if (slidesData.length === 0) {
+        slidesData.push('');
+        slidesIdee.push(false);
+      }
+      afficherSlides();
+    }
+
+    function afficherSlides() {
+      var container = document.getElementById('slidesList');
+      if (slidesData.length === 0) {
+        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune slide</div>';
+        return;
+      }
+      var html = '';
+      slidesData.forEach(function(slide, index) {
+        var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
+        var ideeClass = slidesIdee[index] ? 'idee' : '';
+        var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
+        html += `
+          <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
+            <span class="slide-handle">⠿</span>
+            <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
+            <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+      initDragDrop();
+    }
+
+    // ============================================================
+    // COMPOSEUR
+    // ============================================================
+    function ouvrirComposeur(index) {
+      composeurIndex = (index !== undefined) ? index : -1;
+      var textarea = document.getElementById('composeurTextarea');
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        textarea.value = slidesData[composeurIndex];
+      } else {
+        textarea.value = '';
+      }
+      document.getElementById('composeurOverlay').classList.add('visible');
+      textarea.focus();
+    }
+
+    function fermerComposeur() {
+      document.getElementById('composeurOverlay').classList.remove('visible');
+    }
+
+    function validerComposeur() {
+      var texte = document.getElementById('composeurTextarea').value.trim();
+      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = texte;
+        slidesIdee[composeurIndex] = false;
+      } else {
+        slidesData.push(texte);
+        slidesIdee.push(false);
+      }
+      fermerComposeur();
+      afficherSlides();
+    }
+
+    function validerComposeurIdee() {
+      var texte = document.getElementById('composeurTextarea').value.trim();
+      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = texte;
+        slidesIdee[composeurIndex] = true;
+      } else {
+        slidesData.push(texte);
+        slidesIdee.push(true);
+      }
+      fermerComposeur();
+      afficherSlides();
+    }
+
+    // ============================================================
+    // RETENIR
+    // ============================================================
+    function toggleRetenir() {
+      retenirOpen = !retenirOpen;
+      var container = document.getElementById('retenirChamps');
+      if (retenirOpen) {
+        container.classList.add('open');
+      } else {
+        container.classList.remove('open');
+      }
+    }
+
+    // ============================================================
+    // QUIZ - AVEC AUTO-INVERSION V/F
+    // ============================================================
+    function ajouterQuestion() {
+      quizData.push({
+        question: '',
+        reponses: [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ]
+      });
+      afficherQuiz();
+    }
+
+    function supprimerQuestion(index) {
+      quizData.splice(index, 1);
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+      afficherQuiz();
+    }
+
+    function ajouterReponse(quizIndex) {
+      quizData[quizIndex].reponses.push({ texte: '', correct: false });
+      afficherQuiz();
+    }
+
+    function supprimerReponse(quizIndex, repIndex) {
+      quizData[quizIndex].reponses.splice(repIndex, 1);
+      if (quizData[quizIndex].reponses.length === 0) {
+        quizData[quizIndex].reponses.push({ texte: '', correct: true });
+      }
+      afficherQuiz();
+    }
+
+    function setVraiFaux(quizIndex, repIndex, estVrai) {
+      var q = quizData[quizIndex];
+      q.reponses[repIndex].correct = estVrai;
+      
+      // Auto-inversion : si on met une réponse à Vrai, les autres passent à Faux
+      if (estVrai) {
+        for (var i = 0; i < q.reponses.length; i++) {
+          if (i !== repIndex) {
+            q.reponses[i].correct = false;
+          }
+        }
+      }
+      afficherQuiz();
+    }
+
+    function afficherQuiz() {
+      var container = document.getElementById('quizList');
+      if (quizData.length === 0) {
+        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucun quiz</div>';
+        return;
+      }
+      var html = '';
+      quizData.forEach(function(q, qi) {
+        html += `
+          <div class="quiz-item">
+            <input type="text" class="q-text" placeholder="Question QCM..." value="${q.question}" 
+                   onchange="quizData[${qi}].question = this.value">
+            <div class="quiz-reponses">
+        `;
+        q.reponses.forEach(function(r, ri) {
+          var lettre = String.fromCharCode(65 + ri);
+          html += `
+            <input type="text" placeholder="Réponse ${lettre}" value="${r.texte}" 
+                   style="flex:1;min-width:60px;" 
+                   onchange="quizData[${qi}].reponses[${ri}].texte = this.value">
+            <div class="vf-group">
+              <button class="vf-btn ${r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, true)">V</button>
+              <button class="vf-btn ${!r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, false)">F</button>
+            </div>
+            <button class="btn-del-quiz" onclick="supprimerReponse(${qi}, ${ri})">✕</button>
+          `;
+        });
+        html += `
+            </div>
+            <button class="btn-add-section" onclick="ajouterReponse(${qi})" style="font-size:11px;padding:2px 10px;border:1px solid #2a2a2a;border-radius:30px;background:transparent;color:#6b6b6b;cursor:pointer;">+ réponse</button>
+            <button class="btn-del-quiz" onclick="supprimerQuestion(${qi})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // QUESTIONS OUVERTES
+    // ============================================================
+    function ajouterQuestionOuverte() {
+      openQuestionsData.push('');
+      afficherOpenQuestions();
+    }
+
+    function supprimerQuestionOuverte(index) {
+      openQuestionsData.splice(index, 1);
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      afficherOpenQuestions();
+    }
+
+    function afficherOpenQuestions() {
+      var container = document.getElementById('openQuestionsList');
+      if (openQuestionsData.length === 0) {
+        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune question ouverte</div>';
+        return;
+      }
+      var html = '';
+      openQuestionsData.forEach(function(q, qi) {
+        html += `
+          <div class="open-question-item">
+            <input type="text" placeholder="Question ouverte..." value="${q}" 
+                   onchange="openQuestionsData[${qi}] = this.value">
+            <button class="btn-del-open" onclick="supprimerQuestionOuverte(${qi})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // INFOS
+    // ============================================================
+    function ajouterInfo() {
+      infosData.push('');
+      afficherInfos();
+    }
+
+    function supprimerInfo(index) {
+      infosData.splice(index, 1);
+      if (infosData.length === 0) infosData.push('');
+      afficherInfos();
+    }
+
+    function afficherInfos() {
+      var container = document.getElementById('infosList');
+      if (infosData.length === 0) {
+        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune info</div>';
+        return;
+      }
+      var html = '';
+      infosData.forEach(function(info, ii) {
+        html += `
+          <div class="info-item">
+            <input type="text" placeholder="Info..." value="${info}" 
+                   onchange="infosData[${ii}] = this.value">
+            <button class="btn-del-info" onclick="supprimerInfo(${ii})">✕</button>
+          </div>
+        `;
+      });
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // BROUILLON
+    // ============================================================
+    function toggleBrouillon() {
+      estBrouillon = !estBrouillon;
+      var btn = document.getElementById('btnBrouillon');
+      btn.classList.toggle('active');
+      btn.textContent = estBrouillon ? '✓ Brouillon' : 'Brouillon';
+    }
+
+    // ============================================================
+    // ENREGISTRER
+    // ============================================================
+    function enregistrerTexte() {
+      var id = document.getElementById('editId').value;
+      var titre = document.getElementById('inputTitre').value.trim();
+      var niveau = document.getElementById('inputNiveau').value;
+      var categorie = document.getElementById('inputCategorie').value;
+      var statut = estBrouillon ? 'brouillon' : 'publie';
+      var msg = document.getElementById('messageTexte');
+
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+
+      if (!titre) { afficherMsgTexte('Veuillez saisir un titre', 'error'); return; }
+      if (slidesData.length === 0) { afficherMsgTexte('Veuillez ajouter au moins une slide', 'error'); return; }
+
+      var colonnes = [];
+
+      var slidesReelles = slidesData.filter(function(s, i) { return !slidesIdee[i]; });
+      slidesReelles.forEach(function(slide) {
+        colonnes.push('-s- ' + slide);
+      });
+
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          colonnes.push('-q- ' + q.question);
+          q.reponses.forEach(function(r) {
+            colonnes.push((r.correct ? '-v- ' : '-f- ') + r.texte);
+          });
+        }
+      });
+
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          colonnes.push('-qs- ' + q);
+        }
+      });
+
+      if (retenir) {
+        colonnes.push('-r- ' + retenir);
+      }
+
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          colonnes.push('-i- ' + info);
+        }
+      });
+
+      var btn = document.getElementById('btnEnregistrer');
+      btn.textContent = 'Enregistrement...';
+      btn.disabled = true;
+      msg.style.display = 'none';
+
+      var maintenant = new Date().toISOString();
+      var dateCreation = document.getElementById('inputDate').value;
+
+      if (modeEdition && id) {
+        var version = 1;
+        var postExistant = tousLesPosts.find(function(p) { return p.id === id; });
+        if (postExistant) {
+          version = (postExistant.versions || 1) + 1;
+        }
+        
+        var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+          '&id=' + encodeURIComponent(id) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(version) +
+          '&dateModif=' + encodeURIComponent(maintenant);
+
+        // Ajouter les colonnes dynamiques
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        // Ajouter la date de création personnalisée (colonne B)
+        if (dateCreation) {
+          url += '&date=' + encodeURIComponent(dateCreation);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✅ Post mis à jour ! (v' + version + ')', 'success');
+              btn.textContent = 'Mettre à jour';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la modification');
+            }
+          })
+          .catch(function(err) {
+            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            btn.textContent = 'Mettre à jour';
+            btn.disabled = false;
+          });
+      } else {
+        var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent(statut) +
+          '&versions=' + encodeURIComponent(1);
+
+        // Ajouter la date de création personnalisée (colonne B)
+        if (dateCreation) {
+          url += '&date=' + encodeURIComponent(dateCreation);
+        }
+
+        // Ajouter les colonnes dynamiques
+        for (var i = 0; i < colonnes.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              afficherMsgTexte('✅ Post ajouté !', 'success');
+              btn.textContent = 'Ajouter';
+              btn.disabled = false;
+              fermerModalTexte();
+              chargerAdmin();
+            } else {
+              throw new Error(data.message || 'Erreur lors de la création');
+            }
+          })
+          .catch(function(err) {
+            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            btn.textContent = 'Ajouter';
+            btn.disabled = false;
+          });
+      }
+    }
+
+    function afficherMsgTexte(texte, type) {
+      var msg = document.getElementById('messageTexte');
+      msg.textContent = texte;
+      msg.className = 'message ' + type;
+      msg.style.display = 'block';
+    }
+
+    // ============================================================
+    // MODIFIER POST
+    // ============================================================
+    function modifierPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) { alert('Post introuvable'); return; }
+
+      modeEdition = true;
+      estBrouillon = post.statut === 'brouillon';
+      document.getElementById('modalTitre').textContent = 'Texte';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('editId').value = postId;
+
+      // Pré-remplir la date avec la date de création (colonne B)
+      if (post.date) {
+        var d = new Date(post.date);
+        if (!isNaN(d.getTime())) {
+          var y = d.getFullYear();
+          var m = String(d.getMonth() + 1).padStart(2, '0');
+          var dd = String(d.getDate()).padStart(2, '0');
+          document.getElementById('inputDate').removeAttribute('readonly');
+          document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
+document.getElementById('inputDate').setAttribute('readonly', true);
+        }
+      }
+
+      document.getElementById('inputTitre').value = post.titre || '';
+
+      var selectNiveau = document.getElementById('inputNiveau');
+      for (var i = 0; i < selectNiveau.options.length; i++) {
+        if (selectNiveau.options[i].value == post.niveau) {
+          selectNiveau.selectedIndex = i;
+          break;
+        }
+      }
+
+      var selectCategorie = document.getElementById('inputCategorie');
+      for (var i = 0; i < selectCategorie.options.length; i++) {
+        if (selectCategorie.options[i].value === post.categorie) {
+          selectCategorie.selectedIndex = i;
+          break;
+        }
+      }
+
+      var btnBrouillon = document.getElementById('btnBrouillon');
+      if (estBrouillon) {
+        btnBrouillon.classList.add('active');
+        btnBrouillon.textContent = '✓ Brouillon';
+      } else {
+        btnBrouillon.classList.remove('active');
+        btnBrouillon.textContent = 'Brouillon';
+      }
+
+      slidesData = [];
+      slidesIdee = [];
+      quizData = [];
+      openQuestionsData = [];
+      infosData = [];
+      retenirOpen = false;
+      document.getElementById('retenirChamps').classList.remove('open');
+
+      if (post.contenu) {
+        var colonnes = post.contenu.split(' | ');
+        
+        for (var i = 0; i < colonnes.length; i++) {
+          var ligne = colonnes[i].trim();
+          if (!ligne) continue;
+
+          if (ligne.startsWith('-s-')) {
+            slidesData.push(ligne.replace('-s-', '').trim());
+            slidesIdee.push(false);
+          } else if (ligne.startsWith('-q-')) {
+            var qText = ligne.replace('-q-', '').trim();
+            var reponses = [];
+            for (var j = i + 1; j < colonnes.length; j++) {
+              var nextLine = colonnes[j].trim();
+              if (nextLine.startsWith('-v-')) {
+                reponses.push({ texte: nextLine.replace('-v-', '').trim(), correct: true });
+                i = j;
+              } else if (nextLine.startsWith('-f-')) {
+                reponses.push({ texte: nextLine.replace('-f-', '').trim(), correct: false });
+                i = j;
+              } else {
+                break;
+              }
+            }
+            if (reponses.length === 0) {
+              reponses.push({ texte: '', correct: true });
+              reponses.push({ texte: '', correct: false });
+            }
+            quizData.push({ question: qText, reponses: reponses });
+          } else if (ligne.startsWith('-qs-')) {
+            openQuestionsData.push(ligne.replace('-qs-', '').trim());
+          } else if (ligne.startsWith('-r-')) {
+            var retenirText = ligne.replace('-r-', '').trim();
+            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+            document.getElementById('retenir1').value = mots[0] || '';
+            document.getElementById('retenir2').value = mots[1] || '';
+            document.getElementById('retenir3').value = mots[2] || '';
+            retenirOpen = true;
+            document.getElementById('retenirChamps').classList.add('open');
+          } else if (ligne.startsWith('-i-')) {
+            infosData.push(ligne.replace('-i-', '').trim());
+          }
+        }
+      }
+
+      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
+      if (quizData.length === 0) {
+        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
+      }
+      if (openQuestionsData.length === 0) openQuestionsData.push('');
+      if (infosData.length === 0) infosData.push('');
+
+      afficherSlides();
+      afficherQuiz();
+      afficherOpenQuestions();
+      afficherInfos();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('messageTexte').style.display = 'none';
+      document.getElementById('inputTitre').focus();
+
+      startChrono();
+    }
+
+    // ============================================================
+    // EXPORTER POST
     // ============================================================
     function exporterPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
       if (!post) { alert('Post introuvable'); return; }
 
       var contenu = '';
-      contenu += 'Titre: ' + (post.titre || 'Sans titre') + '\n';
-      contenu += 'Niveau: ' + (post.niveau || 0) + '\n';
-      contenu += 'Catégorie: ' + (post.categorie || 'Sans catégorie') + '\n';
-      contenu += 'Date de création: ' + (post.date || '') + '\n';
-      contenu += 'Statut: ' + (post.statut || 'publie') + '\n\n';
+      contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
 
       if (post.contenu) {
-        var lignes = post.contenu.split(' | ');
-        var sections = {
-          slides: [],
-          quiz: [],
-          questions: [],
-          retenir: [],
-          infos: []
-        };
-        var sectionActuelle = 'slides';
-        var quizEnCours = null;
-
-        lignes.forEach(function(ligne) {
-          var l = ligne.trim();
-          if (!l) return;
-
-          if (l.startsWith('-s-')) {
-            sections.slides.push(l.replace('-s-', '').trim());
-          } else if (l.startsWith('-q-')) {
-            if (quizEnCours) {
-              sections.quiz.push(quizEnCours);
-            }
-            quizEnCours = { question: l.replace('-q-', '').trim(), reponses: [] };
-          } else if (l.startsWith('-v-') && quizEnCours) {
-            quizEnCours.reponses.push({ texte: l.replace('-v-', '').trim(), correct: true });
-          } else if (l.startsWith('-f-') && quizEnCours) {
-            quizEnCours.reponses.push({ texte: l.replace('-f-', '').trim(), correct: false });
-          } else if (l.startsWith('-qs-')) {
-            sections.questions.push(l.replace('-qs-', '').trim());
-          } else if (l.startsWith('-r-')) {
-            sections.retenir.push(l.replace('-r-', '').trim());
-          } else if (l.startsWith('-i-')) {
-            sections.infos.push(l.replace('-i-', '').trim());
-          }
-        });
-        if (quizEnCours) {
-          sections.quiz.push(quizEnCours);
-        }
-
-        // Slides
-        if (sections.slides.length > 0) {
-          contenu += '--- SLIDES ---\n';
-          sections.slides.forEach(function(slide) {
-            contenu += slide + '\n';
-          });
-          contenu += '\n';
-        }
-
-        // Quiz
-        if (sections.quiz.length > 0) {
-          contenu += '--- QUIZ ---\n';
-          sections.quiz.forEach(function(q) {
-            contenu += 'Question: ' + q.question + '\n';
-            q.reponses.forEach(function(r) {
-              contenu += (r.correct ? '- Vrai: ' : '- Faux: ') + r.texte + '\n';
-            });
-            contenu += '\n';
-          });
-        }
-
-        // Questions ouvertes
-        if (sections.questions.length > 0) {
-          contenu += '--- QUESTIONS OUVERTES ---\n';
-          sections.questions.forEach(function(q) {
-            contenu += q + '\n';
-          });
-          contenu += '\n';
-        }
-
-        // Retenir
-        if (sections.retenir.length > 0) {
-          contenu += '--- À RETENIR ---\n';
-          sections.retenir.forEach(function(r) {
-            contenu += r + '\n';
-          });
-          contenu += '\n';
-        }
-
-        // Infos
-        if (sections.infos.length > 0) {
-          contenu += '--- INFOS ---\n';
-          sections.infos.forEach(function(i) {
-            contenu += i + '\n';
-          });
-        }
+        contenu += post.contenu.replace(/ \| /g, '\n');
       } else {
         contenu += '-s- ' + (post.titre || 'Sans titre') + '\n\n';
       }
@@ -1701,7 +2271,7 @@
     }
 
     // ============================================================
-    // IMPORTER
+    // IMPORTER (maintenant en dehors du popup)
     // ============================================================
     function importerTexte() {
       document.getElementById('fileInput').click();
@@ -1746,9 +2316,7 @@
         var ligne = colonnes[i].trim();
         if (!ligne) continue;
 
-        if (ligne.startsWith('Titre:') || ligne.startsWith('Niveau:') || 
-            ligne.startsWith('Catégorie:') || ligne.startsWith('Date de création:') || 
-            ligne.startsWith('Statut:') || ligne.startsWith('---')) continue;
+        if (ligne.startsWith('Nvx:') || ligne.startsWith('Cat:')) continue;
 
         if (ligne.startsWith('-s-')) {
           slidesData.push(ligne.replace('-s-', '').trim());
