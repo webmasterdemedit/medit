@@ -34,7 +34,6 @@
         <button class="btn-importer-header" onclick="importerTexte()">📥 Importer</button>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
         <button class="btn-export-all" onclick="exporterTout()">📤 Exporter tout</button>
-        <button class="btn-categories" onclick="ouvrirModalCategories()">🏷️ Catégories</button>
         <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
       </div>
     </div>
@@ -79,31 +78,24 @@
       <button class="modal-close" onclick="fermerModalCategories()">✕</button>
       <h3>🏷️ Gérer les catégories</h3>
       <div id="listeCategories"></div>
-      <div class="ajout-cat">
-        <input type="text" id="newCatInput" placeholder="Nouvelle catégorie...">
-        <button onclick="ajouterCategorie()">+ Ajouter</button>
-      </div>
     </div>
   </div>
 
   <!-- MODAL TEXTE -->
   <div id="modalTexte" class="modal-overlay">
     <div class="modal-contenu ajout-post">
-      <button class="modal-close" onclick="fermerModalTexte()">✕</button>
-      <h3 id="modalTitre">Texte</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <input type="text" id="inputTitre" placeholder="Titre" style="flex:1;font-size:20px;font-weight:700;border:none;background:transparent;color:var(--text-primary);outline:none;padding:4px 0;">
+        <button class="modal-close" onclick="fermerModalTexte()" style="margin-left:12px;">✕</button>
+      </div>
 
       <form id="formTexte" onsubmit="return false;">
         <input type="hidden" id="editId" value="">
 
         <div class="row-compact">
           <input type="date" id="inputDate">
-          <input type="text" id="inputTitre" placeholder="Titre">
           <select id="inputNiveau"></select>
           <select id="inputCategorie"></select>
-          <div class="nouvelle-cat-container">
-            <input type="text" id="inputNouvelleCategorie" placeholder="Nouvelle catégorie...">
-            <button type="button" onclick="ajouterNouvelleCategorie()">+ Ajouter</button>
-          </div>
         </div>
 
         <!-- SLIDES -->
@@ -165,7 +157,6 @@
           <span class="chrono" id="chronoDisplay">00:00</span>
           <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegardé</span>
           <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
-          <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
         </div>
 
         <div id="messageTexte" class="message"></div>
@@ -176,20 +167,15 @@
   <!-- COMPOSEUR -->
   <div id="composeurOverlay" class="composer-overlay">
     <div class="composer-content" id="composerContent">
-      <button class="composer-close" onclick="fermerComposeur()">✕</button>
-      <div class="composer-toolbar">
-        <button onclick="appliquerFormat('bold')" title="Gras (Ctrl+B)"><b>B</b></button>
-        <button onclick="appliquerFormat('italic')" title="Italique (Ctrl+I)"><i>I</i></button>
-        <button onclick="appliquerFormat('quote')" title="Citation">“</button>
-        <button onclick="appliquerFormat('remove')" title="Supprimer le formatage">↺</button>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <button onclick="validerComposeur()" class="btn" style="font-size:14px;padding:4px 16px;">✓ Valider</button>
+        <button class="composer-close" onclick="fermerComposeur()">✕</button>
       </div>
       <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
       <div class="composer-actions">
         <button onclick="renvoyerSlide()" class="composer-renvoyer" style="border:none;background:transparent;color:var(--text-secondary);">↩ Renvoyer</button>
         <div style="flex:1;"></div>
-        <button onclick="validerComposeur()">✓ Valider</button>
         <button onclick="validerComposeurIdee()">💡 Idée</button>
-        <button onclick="fermerComposeur()">Annuler</button>
       </div>
     </div>
   </div>
@@ -238,9 +224,6 @@
 
     var composeurIndex = -1;
     var retenirOpen = false;
-
-    var dragIndexPost = null;
-    var dragCategorieActuelle = '';
 
     // === CHRONO ===
     function startChrono() {
@@ -442,35 +425,6 @@
       }
     }
 
-    function ajouterNouvelleCategorie() {
-      var input = document.getElementById('inputNouvelleCategorie');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            remplirSelectCategories();
-            var select = document.getElementById('inputCategorie');
-            for (var i = 0; i < select.options.length; i++) {
-              if (select.options[i].value === cat) {
-                select.selectedIndex = i;
-                break;
-              }
-            }
-            alert('✅ Catégorie "' + cat + '" ajoutée !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
     // === CHARGEMENT ADMIN ===
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
@@ -599,8 +553,11 @@
         return;
       }
 
+      // Trier du plus récent au plus ancien
       posts.sort(function(a, b) {
-        return (a.ordre || 999) - (b.ordre || 999);
+        var dateA = a.date ? new Date(a.date) : new Date(0);
+        var dateB = b.date ? new Date(b.date) : new Date(0);
+        return dateB - dateA;
       });
 
       var html = '<div class="grille">';
@@ -609,8 +566,6 @@
         var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
         var estPublie = post.statut === 'publie';
-        
-        var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
         
         var lectures = toutesLesReponses.filter(function(r) { return r.articleId === post.id; });
         var nbLectures = lectures.length;
@@ -644,19 +599,19 @@
         var dateModif = post.dateModif ? new Date(post.dateModif) : null;
         var dateStr = '';
         if (dateCreation) {
-          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' à ' + dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         } else if (dateModif) {
-          dateStr = 'Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+          dateStr = 'Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' à ' + dateModif.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         }
         var versionsStr = post.versions ? ' v' + post.versions : '';
 
         var apercuHtml = '';
         if (post.contenu) {
           var apercu = post.contenu.replace(/-s-/g, '').trim();
-          if (apercu.length > 150) apercu = apercu.substring(0, 150) + '...';
+          if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
           if (apercu.trim()) {
             apercuHtml = `
-              <div class="apercu-rapide">
+              <div class="apercu-rapide" style="width:100%;">
                 ${apercu}
               </div>
             `;
@@ -664,12 +619,10 @@
         }
 
         html += `
-          <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" onclick="modifierPost('${post.id}')">
-            <div class="infos">
+          <div class="carte-post" data-id="${post.id}" onclick="modifierPost('${post.id}')">
+            <div class="infos" style="width:100%;">
               <div class="titre">
-                <span class="drag-handle" onclick="event.stopPropagation(); event.preventDefault();">⠿</span>
                 ${post.titre || 'Sans titre'}
-                ${ordreHtml}
                 <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${dateStr}${versionsStr}</span>
               </div>
               <div class="meta">
@@ -692,118 +645,6 @@
 
       html += '</div>';
       container.innerHTML = html;
-      
-      initDragDropPosts();
-    }
-
-    // === DRAG & DROP ===
-    function initDragDropPosts() {
-      var items = document.querySelectorAll('.carte-post[data-id]');
-      items.forEach(function(item) {
-        item.setAttribute('draggable', 'true');
-        
-        item.addEventListener('dragstart', function(e) {
-          dragIndexPost = parseInt(this.dataset.index);
-          dragCategorieActuelle = this.dataset.categorie;
-          this.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-        });
-        
-        item.addEventListener('dragend', function(e) {
-          this.classList.remove('dragging');
-          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
-            el.classList.remove('drag-over');
-          });
-        });
-        
-        item.addEventListener('dragover', function(e) {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
-            el.classList.remove('drag-over');
-          });
-          if (this.dataset.categorie === dragCategorieActuelle) {
-            this.classList.add('drag-over');
-          }
-        });
-        
-        item.addEventListener('dragleave', function(e) {
-          this.classList.remove('drag-over');
-        });
-        
-        item.addEventListener('drop', function(e) {
-          e.preventDefault();
-          this.classList.remove('drag-over');
-          var targetIndex = parseInt(this.dataset.index);
-          
-          if (this.dataset.categorie !== dragCategorieActuelle) {
-            alert('Impossible de déplacer un article dans une autre catégorie.');
-            return;
-          }
-          
-          if (dragIndexPost !== null && dragIndexPost !== targetIndex) {
-            var postsCategorie = tousLesPosts.filter(function(p) {
-              return p.categorie === dragCategorieActuelle;
-            });
-            postsCategorie.sort(function(a, b) {
-              return (a.ordre || 999) - (b.ordre || 999);
-            });
-            
-            var draggedPost = postsCategorie[dragIndexPost];
-            var targetPost = postsCategorie[targetIndex];
-            var tempOrdre = draggedPost.ordre || (dragIndexPost + 1);
-            draggedPost.ordre = targetPost.ordre || (targetIndex + 1);
-            targetPost.ordre = tempOrdre;
-            
-            sauvegarderOrdresCategorie(dragCategorieActuelle);
-          }
-        });
-      });
-    }
-
-    function sauvegarderOrdresCategorie(categorie) {
-      var postsCategorie = tousLesPosts.filter(function(p) {
-        return p.categorie === categorie;
-      });
-      postsCategorie.sort(function(a, b) {
-        return (a.ordre || 999) - (b.ordre || 999);
-      });
-      
-      postsCategorie.forEach(function(p, index) {
-        p.ordre = index + 1;
-      });
-      
-      var url = CONFIG.SCRIPT_URL + '?action=updateOrdres';
-      postsCategorie.forEach(function(p) {
-        url += '&id[]=' + encodeURIComponent(p.id) + '&ordre[]=' + encodeURIComponent(p.ordre);
-      });
-      
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            console.log('✅ Ordres sauvegardés pour la catégorie "' + categorie + '"');
-            mettreAJourBadgesOrdre();
-          } else {
-            console.error('❌ Erreur sauvegarde ordres:', data.message);
-          }
-        })
-        .catch(function(e) {
-          console.error('❌ Erreur:', e);
-        });
-    }
-
-    function mettreAJourBadgesOrdre() {
-      document.querySelectorAll('.carte-post[data-id]').forEach(function(el) {
-        var id = el.dataset.id;
-        var post = tousLesPosts.find(function(p) { return p.id === id; });
-        if (post) {
-          var badge = el.querySelector('.ordre-badge');
-          if (badge) {
-            badge.textContent = '#' + (post.ordre || '');
-          }
-        }
-      });
     }
 
     // === SWITCH TAB ===
@@ -853,10 +694,7 @@
       categoriesTriees.forEach(function(cat) {
         var count = cats[cat];
         var activeClass = (categorieActuelle === cat) ? ' active' : '';
-        var isDefault = categoriesData.indexOf(cat) === -1 && cat !== 'Sans catégorie';
-        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span>' +
-          (isDefault ? ' <span class="btn-del-cat" onclick="event.stopPropagation(); supprimerCategorie(\'' + cat + '\')">✕</span>' : '') +
-          '</button>';
+        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span></button>';
       });
       
       container.innerHTML = html;
@@ -886,107 +724,14 @@
       
       var sorted = Object.keys(cats).sort();
       sorted.forEach(function(cat) {
-        var isDefault = categoriesData.indexOf(cat) !== -1 || cat === 'Sans catégorie';
         html += `
           <div class="cat-item">
             <span class="cat-name">${cat} (${cats[cat]} articles)</span>
-            <div class="cat-actions">
-              ${!isDefault ? '<button class="btn-del-cat-modal" onclick="supprimerCategorie(\'' + cat + '\')">✕ Supprimer</button>' : ''}
-              <button onclick="renommerCategorie(\'' + cat + '\')">✏️ Renommer</button>
-            </div>
           </div>
         `;
       });
       
       container.innerHTML = html;
-    }
-
-    function ajouterCategorie() {
-      var input = document.getElementById('newCatInput');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            afficherListeCategories();
-            remplirSelectCategories();
-            alert('✅ Catégorie ajoutée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function supprimerCategorie(cat) {
-      if (cat === 'Sans catégorie') { alert('Impossible de supprimer la catégorie "Sans catégorie".'); return; }
-      if (!confirm('Supprimer la catégorie "' + cat + '" ? Les articles seront reassignés à "Sans catégorie".')) return;
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === cat) p.categorie = 'Sans catégorie';
-      });
-      
-      var index = categoriesData.indexOf(cat);
-      if (index !== -1) categoriesData.splice(index, 1);
-      
-      var url = CONFIG.SCRIPT_URL + '?action=deleteLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie supprimée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function renommerCategorie(oldCat) {
-      var newCat = prompt('Nouveau nom pour "' + oldCat + '" :');
-      if (!newCat || newCat.trim() === '') return;
-      newCat = newCat.trim();
-      if (categoriesData.indexOf(newCat) !== -1 && newCat !== oldCat) {
-        alert('Cette catégorie existe déjà.');
-        return;
-      }
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === oldCat) p.categorie = newCat;
-      });
-      
-      var index = categoriesData.indexOf(oldCat);
-      if (index !== -1) {
-        categoriesData[index] = newCat;
-      }
-      
-      var url = CONFIG.SCRIPT_URL + '?action=renameLabel&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie renommée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
     }
 
     // === EXPORTER TOUT ===
@@ -1011,7 +756,6 @@
             mots: p.mots,
             hasQuiz: p.hasQuiz,
             hasQuestion: p.hasQuestion,
-            ordre: p.ordre || 0,
             versions: p.versions || 1,
             dateModif: p.dateModif || ''
           };
@@ -1036,7 +780,6 @@
     function ouvrirModalTexte() {
       modeEdition = false;
       estBrouillon = false;
-      document.getElementById('modalTitre').textContent = 'Texte';
       document.getElementById('btnEnregistrer').textContent = 'Ajouter';
       document.getElementById('editId').value = '';
       document.getElementById('btnBrouillon').classList.remove('active');
@@ -1059,7 +802,6 @@
       document.getElementById('retenir1').value = '';
       document.getElementById('retenir2').value = '';
       document.getElementById('retenir3').value = '';
-      document.getElementById('inputNouvelleCategorie').value = '';
       document.getElementById('messageTexte').style.display = 'none';
 
       var selectNiveau = document.getElementById('inputNiveau');
@@ -1125,12 +867,6 @@
           }
         });
       });
-    }
-
-    function ajouterSlide() {
-      slidesData.push('');
-      slidesIdee.push(false);
-      afficherSlides();
     }
 
     function supprimerSlide(index) {
@@ -1236,62 +972,16 @@
       slidesData.splice(newSlideIndex, 0, fin);
       slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
       
+      // Supprimer le contenu renvoyé de la slide actuelle
+      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+        slidesData[composeurIndex] = debut;
+      }
+      
       // Mettre à jour l'affichage
       afficherSlides();
       
       // Fermer le composeur
       fermerComposeur();
-    }
-
-    // === FORMATAGE TEXTE ===
-    function appliquerFormat(type) {
-      var textarea = document.getElementById('composeurTextarea');
-      var start = textarea.selectionStart;
-      var end = textarea.selectionEnd;
-      var selectedText = textarea.value.substring(start, end);
-      
-      if (!selectedText && type !== 'remove') {
-        alert('Sélectionnez du texte à formater.');
-        return;
-      }
-      
-      var newText = '';
-      var cursorOffset = 0;
-      
-      switch(type) {
-        case 'bold':
-          newText = '**' + selectedText + '**';
-          cursorOffset = 2;
-          break;
-        case 'italic':
-          newText = '*' + selectedText + '*';
-          cursorOffset = 1;
-          break;
-        case 'quote':
-          newText = '> ' + selectedText;
-          cursorOffset = 2;
-          break;
-        case 'remove':
-          // Supprimer le formatage
-          newText = selectedText
-            .replace(/\*\*(.*?)\*\*/g, '$1')
-            .replace(/\*(.*?)\*/g, '$1')
-            .replace(/^> /gm, '');
-          cursorOffset = 0;
-          break;
-        default:
-          return;
-      }
-      
-      var before = textarea.value.substring(0, start);
-      var after = textarea.value.substring(end);
-      textarea.value = before + newText + after;
-      
-      // Restaurer la sélection
-      var newStart = start;
-      var newEnd = start + newText.length;
-      textarea.setSelectionRange(newStart, newEnd);
-      textarea.focus();
     }
 
     // === RETENIR ===
@@ -1601,7 +1291,6 @@
 
       modeEdition = true;
       estBrouillon = post.statut === 'brouillon';
-      document.getElementById('modalTitre').textContent = 'Texte';
       document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
       document.getElementById('editId').value = postId;
 
@@ -1989,19 +1678,6 @@
     function demarrer() {
       chargerAdmin();
     }
-
-    // Ajouter le raccourci clavier Ctrl+B / Ctrl+I dans le composeur
-    document.addEventListener('keydown', function(e) {
-      if (document.getElementById('composeurOverlay').classList.contains('visible')) {
-        if (e.ctrlKey && e.key === 'b') {
-          e.preventDefault();
-          appliquerFormat('bold');
-        } else if (e.ctrlKey && e.key === 'i') {
-          e.preventDefault();
-          appliquerFormat('italic');
-        }
-      }
-    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', demarrer);
