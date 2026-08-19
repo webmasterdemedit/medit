@@ -12,159 +12,194 @@
 </head>
 <body>
 
-  <div id="header-container"></div>
+  <!-- ===== DEBUT WRAPPER LISEUSE ===== -->
+  <div class="app-snap-wrapper">
 
-  <script>
-    fetch('/medit/header.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('header-container').innerHTML = data;
-        mettreAJourHeader();
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement header:', error);
-        document.getElementById('header-container').innerHTML = `
-          <header class="site-header">
-            <div class="header-inner">
-              <div class="header-logo">
-                <a href="/medit/index.html">✎ <strong>Qiraat</strong></a>
+    <div id="header-container"></div>
+
+    <script>
+      fetch('/medit/header.html')
+        .then(function(response) { return response.text(); })
+        .then(function(data) {
+          document.getElementById('header-container').innerHTML = data;
+          mettreAJourHeader();
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement header:', error);
+          document.getElementById('header-container').innerHTML = `
+            <header class="site-header">
+              <div class="header-inner">
+                <div class="header-logo">
+                  <a href="/medit/index.html">✎ <strong>Qiraat</strong></a>
+                </div>
+                <nav class="header-nav" id="headerNav">
+                  <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+                </nav>
               </div>
-              <nav class="header-nav" id="headerNav">
-                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-              </nav>
-            </div>
-          </header>
-        `;
-        mettreAJourHeader();
-      });
+            </header>
+          `;
+          mettreAJourHeader();
+        });
 
-    function mettreAJourHeader() {
-      var id = localStorage.getItem('etudiant_id');
-      var nav = document.getElementById('headerNav');
-      if (nav) {
-        if (id) {
-          nav.innerHTML = `
-            <a href="/medit/mes-textes.html" class="header-btn-compte">📒 Mes textes</a>
-            <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
-            <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
-          `;
-        } else {
-          nav.innerHTML = `
-            <a href="/medit/index.html" class="header-link">E-learning</a>
-            <a href="/medit/index.html" class="header-link">Accueil</a>
-          `;
+      function mettreAJourHeader() {
+        var id = localStorage.getItem('etudiant_id');
+        var nav = document.getElementById('headerNav');
+        if (nav) {
+          if (id) {
+            nav.innerHTML = `
+              <a href="/medit/mes-textes.html" class="header-btn-compte">📒 Mes textes</a>
+              <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
+              <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
+            `;
+          } else {
+            nav.innerHTML = `
+              <a href="/medit/index.html" class="header-link">E-learning</a>
+              <a href="/medit/index.html" class="header-link">Accueil</a>
+            `;
+          }
         }
       }
-    }
-  </script>
+    </script>
 
-  <!-- Toast message -->
-  <div class="toast-message" id="toastMessage">
-    <span class="toast-icon">✅</span>
-    <div class="toast-titre">Demande envoyée avec succès !</div>
-    <div class="toast-sous">Votre demande d'inscription a bien été reçue.<br>
-    L'enseignant étudiera votre dossier et vous enverra vos identifiants de connexion par email.<br>
-    Un niveau vous sera attribué selon votre profil.</div>
-    <button class="toast-btn" onclick="fermerToast()">Fermer</button>
+    <!-- Toast message -->
+    <div class="toast-message" id="toastMessage">
+      <span class="toast-icon">✅</span>
+      <div class="toast-titre">Demande envoyée avec succès !</div>
+      <div class="toast-sous">Votre demande d'inscription a bien été reçue.<br>
+      L'enseignant étudiera votre dossier et vous enverra vos identifiants de connexion par email.<br>
+      Un niveau vous sera attribué selon votre profil.</div>
+      <button class="toast-btn" onclick="fermerToast()">Fermer</button>
+    </div>
+
+    <div class="page-home">
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="logo">
+          <strong>Qiraat</strong>
+        </div>
+        <div class="sous-titre">Une plateforme de lecture.</div>
+        <p class="description">
+          Dédiée à préparer à la récitation fréquente du Coran et à introduire aux traduction savants de versets et aux méditations de Sir Khan.
+        </p>
+        <p class="description" style="color:#94a3b8;font-style:italic;margin-top:2px;">
+          Proposée par lui-même d'après ses fichiers de cours.
+        </p>
+        <button class="btn-entrer" onclick="ouvrirConnexion()">Se connecter</button>
+        <div style="margin-top:14px;font-size:14px;color:#94a3b8;">
+          <a onclick="ouvrirInscription()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
+            Faire une demande d'inscription
+          </a>
+        </div>
+      </div>
+
+      <!-- PRÉSENTATION -->
+      <div class="presentation-section">
+        <h2 class="presentation-titre">Adapté sous la forme d'un système d'e-learning complet.</h2>
+        <p class="presentation-sous-titre">Un espace conçu pour s'assurer de la bonne acquisition des textes avec un suivi personnalisé.</p>
+        <div class="presentation-grid">
+          <div class="presentation-card">
+            <span class="presentation-icon">☰</span>
+            <h3>Textes courts</h3>
+            <p>Pour réduire la difficulté, les sujets bref et précis, et les textes sont divisés en courts paragraphes.</p>
+          </div>
+          <div class="presentation-card">
+            <span class="presentation-icon">⌞ ⌝</span>
+            <h3>Lecture solide</h3>
+            <p>Pour la concentration et méditation, chaque paragraphe s'ouvre en plein écran, sans distraction.</p>
+          </div>
+          <div class="presentation-card">
+            <span class="presentation-icon">✎﹏﹏﹏﹏</span>
+            <h3>Quiz + questions ouvertes</h3>
+            <p>Pour vérifier la compréhension, des QCM et question sont toujours proposé à la fin des textes.</p>
+          </div>
+          <div class="presentation-card">
+            <span class="presentation-icon">𝄜</span>
+            <h3>Progression personnelle</h3>
+            <p>L'espace étudiant contient historique des lectures, résultats aux quiz, et visualisation de sa progression.</p>
+          </div>
+          <div class="presentation-card">
+            <span class="presentation-icon">🗓</span>
+            <h3>Textes organisés selon l'âge</h3>
+            <p>Douze échelle de progression allant de la CP au Lycée, avec des textes classés par discipline. Chaque étudiant ne voit que les textes adaptés à son niveau.</p>
+          </div>
+          <div class="presentation-card">
+            <span class="presentation-icon">⌯⌲ 🗪</span>
+            <h3>Retour personnalisé de l'enseignant</h3>
+            <p>Les réponses ouvertes sont reçues par l'enseignant, qui les corrige et commente pour l'élève.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÉTHODE -->
+      <div class="methode-section">
+        <h2 class="methode-titre">L'esprit des cours</h2>
+        <p class="methode-sous-titre">
+          Au-delà de la lecture, une formation à la langue, à la sensibilité et à l'intelligence du texte.
+        </p>
+        <div class="methode-grid">
+          <div class="methode-card">
+            <span class="methode-num">01</span>
+            <div>
+              <h3>Acquisition du vocabulaire moral</h3>
+              <p>Lire, c'est d'abord connaître les mots. Observation des sens premiers, emploi fréquent des dictionnaires, et constitution d'un lexique personnel pour entrer dans la profondeur des textes.</p>
+            </div>
+          </div>
+          <div class="methode-card">
+            <span class="methode-num">02</span>
+            <div>
+              <h3>Acquisition du goût poétique</h3>
+              <p>Se familiariser avec la langue des poètes médiévaux, des romans de chevalerie et des traités de sagesse. Développer l'oreille et le cœur pour goûter la beauté des mots.</p>
+            </div>
+          </div>
+          <div class="methode-card">
+            <span class="methode-num">03</span>
+            <div>
+              <h3>Sentir la rhétorique du Coran</h3>
+              <p>Approcher la structure, les figures et l'éloquence du texte coranique. Non pas comme un objet d'étude, mais comme une expérience vivante qui forme l'intelligence et la sensibilité.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DEVISE -->
+      <div class="devise-home">
+        “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+      </div>
+
+    </div>
+
+    <div id="footer-container"></div>
+
+    <script>
+      fetch('/medit/footer.html')
+        .then(function(response) { return response.text(); })
+        .then(function(data) {
+          document.getElementById('footer-container').innerHTML = data;
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement footer:', error);
+          document.getElementById('footer-container').innerHTML = `
+            <footer class="site-footer">
+              <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+              <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+            </footer>
+          `;
+        });
+    </script>
+
+  <!-- ===== FIN WRAPPER LISEUSE ===== -->
   </div>
 
-  <div class="page-home">
-
-    <!-- HERO -->
-    <div class="hero">
-      <div class="logo">
-        <strong>Qiraat</strong>
-      </div>
-      <div class="sous-titre">Une plateforme de lecture.</div>
-      <p class="description">
-        Dédiée à préparer à la récitation fréquente du Coran et à introduire aux traduction savants de versets et aux méditations de Sir Khan.
-      </p>
-      <p class="description" style="color:#94a3b8;font-style:italic;margin-top:2px;">
-        Proposée par lui-même d'après ses fichiers de cours.
-      </p>
-      <button class="btn-entrer" onclick="ouvrirConnexion()">Se connecter</button>
-      <div style="margin-top:14px;font-size:14px;color:#94a3b8;">
-        <a onclick="ouvrirInscription()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
-          Faire une demande d'inscription
-        </a>
-      </div>
-    </div>
-
-    <!-- PRÉSENTATION -->
-    <div class="presentation-section">
-      <h2 class="presentation-titre">Adapté sous la forme d'un système d'e-learning complet.</h2>
-      <p class="presentation-sous-titre">Un espace conçu pour s'assurer de la bonne acquisition des textes avec un suivi personnalisé.</p>
-      <div class="presentation-grid">
-        <div class="presentation-card">
-          <span class="presentation-icon">☰</span>
-          <h3>Textes courts</h3>
-          <p>Pour réduire la difficulté, les sujets bref et précis, et les textes sont divisés en courts paragraphes.</p>
-        </div>
-        <div class="presentation-card">
-          <span class="presentation-icon">⌞ ⌝</span>
-          <h3>Lecture solide</h3>
-          <p>Pour la concentration et méditation, chaque paragraphe s'ouvre en plein écran, sans distraction.</p>
-        </div>
-        <div class="presentation-card">
-          <span class="presentation-icon">✎﹏﹏﹏﹏</span>
-          <h3>Quiz + questions ouvertes</h3>
-          <p>Pour vérifier la compréhension, des QCM et question sont toujours proposé à la fin des textes.</p>
-        </div>
-        <div class="presentation-card">
-          <span class="presentation-icon">𝄜</span>
-          <h3>Progression personnelle</h3>
-          <p>L'espace étudiant contient historique des lectures, résultats aux quiz, et visualisation de sa progression.</p>
-        </div>
-        <div class="presentation-card">
-          <span class="presentation-icon">🗓</span>
-          <h3>Textes organisés selon l'âge</h3>
-          <p>Douze échelle de progression allant de la CP au Lycée, avec des textes classés par discipline. Chaque étudiant ne voit que les textes adaptés à son niveau.</p>
-        </div>
-        <div class="presentation-card">
-          <span class="presentation-icon">⌯⌲ 🗪</span>
-          <h3>Retour personnalisé de l'enseignant</h3>
-          <p>Les réponses ouvertes sont reçues par l'enseignant, qui les corrige et commente pour l'élève.</p>
-        </div>
-      </div>
-    </div>
-
-    <!-- MÉTHODE -->
-    <div class="methode-section">
-      <h2 class="methode-titre">L'esprit des cours</h2>
-      <p class="methode-sous-titre">
-        Au-delà de la lecture, une formation à la langue, à la sensibilité et à l'intelligence du texte.
-      </p>
-      <div class="methode-grid">
-        <div class="methode-card">
-          <span class="methode-num">01</span>
-          <div>
-            <h3>Acquisition du vocabulaire moral</h3>
-            <p>Lire, c'est d'abord connaître les mots. Observation des sens premiers, emploi fréquent des dictionnaires, et constitution d'un lexique personnel pour entrer dans la profondeur des textes.</p>
-          </div>
-        </div>
-        <div class="methode-card">
-          <span class="methode-num">02</span>
-          <div>
-            <h3>Acquisition du goût poétique</h3>
-            <p>Se familiariser avec la langue des poètes médiévaux, des romans de chevalerie et des traités de sagesse. Développer l'oreille et le cœur pour goûter la beauté des mots.</p>
-          </div>
-        </div>
-        <div class="methode-card">
-          <span class="methode-num">03</span>
-          <div>
-            <h3>Sentir la rhétorique du Coran</h3>
-            <p>Approcher la structure, les figures et l'éloquence du texte coranique. Non pas comme un objet d'étude, mais comme une expérience vivante qui forme l'intelligence et la sensibilité.</p>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- DEVISE -->
-    <div class="devise-home">
-      “Ne méditent-ils donc pas sur le Coran, ou bien y a-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
-    </div>
-
+  <!-- ===== PAGINATION OVERLAY ===== -->
+  <div class="pagination-overlay" id="pagination">
+    <span id="page-courante">1</span>
+    <span class="sep">/</span>
+    <span id="page-total">1</span>
   </div>
+
+  <!-- ===== ZONE DE TAP ===== -->
+  <div class="tap-zone" id="tapZone"></div>
 
   <!-- MODAL -->
   <div class="modal-overlay" id="modalOverlay">
@@ -224,25 +259,6 @@
       </div>
     </div>
   </div>
-
-  <div id="footer-container"></div>
-
-  <script>
-    fetch('/medit/footer.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('footer-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = `
-          <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-          </footer>
-        `;
-      });
-  </script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
@@ -496,6 +512,9 @@
       demarrer();
     }
   </script>
+
+  <!-- ===== SCRIPT LISEUSE ===== -->
+  <script src="/medit/liseuse.js"></script>
 
 </body>
 </html>
