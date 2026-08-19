@@ -949,26 +949,7 @@
       }
     }
 
-    function remplirSelectCategories() {
-      var select = document.getElementById('inputCategorie');
-      select.innerHTML = '';
-      if (categoriesData.length === 0) {
-        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Méditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
-        defaults.forEach(function(c) {
-          var opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          select.appendChild(opt);
-        });
-      } else {
-        categoriesData.forEach(function(c) {
-          var opt = document.createElement('option');
-          opt.value = c;
-          opt.textContent = c;
-          select.appendChild(opt);
-        });
-      }
-    }
+    
 
     // ============================================================
     // NOUVELLE CATÉGORIE DANS LE POPUP
@@ -1462,22 +1443,6 @@
       var cat = input.value.trim();
       if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
       if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            afficherListeCategories();
-            remplirSelectCategories();
-            alert('✅ Catégorie ajoutée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
     }
 
     // ============================================================
