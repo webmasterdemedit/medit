@@ -168,19 +168,21 @@
     </div>
   </div>
 
-  <!-- COMPOSEUR -->
-<div id="composeurOverlay" class="composer-overlay">
-  <div class="composer-content" id="composerContent">
-    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
-      <button onclick="renvoyerSlide()" style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);padding:6px 16px;border-radius:20px;cursor:pointer;font-size:13px;">✂️ Scinder</button>
-      <div style="display:flex;align-items:center;gap:6px;">
-        <button onclick="validerComposeur()" style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);padding:8px 24px;border-radius:20px;cursor:pointer;font-size:15px;font-weight:500;">✓ OK</button>
-        <button onclick="validerComposeurIdee()" style="border:1px solid var(--border-color);background:transparent;color:var(--text-secondary);padding:8px 24px;border-radius:20px;cursor:pointer;font-size:15px;">💭 Argument</button>
-        <button class="composer-close" onclick="fermerComposeur()" style="border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:20px;padding:4px 8px;">✕</button>
-      </div>
-    </div>
-    <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..." spellcheck="true" lang="fr"></textarea>
-  </div>
+  function ouvrirComposeur(index) {
+  composeurIndex = (index !== undefined) ? index : -1;
+  var textarea = document.getElementById('composeurTextarea');
+  if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
+    textarea.value = slidesData[composeurIndex];
+  } else {
+    textarea.value = '';
+  }
+  document.getElementById('composeurOverlay').style.display = 'flex';  // ← Important
+  textarea.focus();
+}
+
+function fermerComposeur() {
+  document.getElementById('composeurOverlay').style.display = 'none';  // ← Important
+}
 </div>
 
   <div id="footer-container"></div>
