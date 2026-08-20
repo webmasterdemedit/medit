@@ -1039,36 +1039,45 @@
 
     // === RENVOYER SLIDE ===
     function renvoyerSlide() {
-      var textarea = document.getElementById('composeurTextarea');
-      var texte = textarea.value;
-      var cursorPos = textarea.selectionStart;
-      
-      if (cursorPos === 0) {
-        alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
-        return;
-      }
-      
-      var debut = texte.substring(0, cursorPos).trim();
-      var fin = texte.substring(cursorPos).trim();
-      
-      if (!fin) {
-        alert('Il n\'y a pas de texte à renvoyer après le curseur.');
-        return;
-      }
-      
-      textarea.value = debut;
-      
-      var newSlideIndex = composeurIndex + 1;
-      slidesData.splice(newSlideIndex, 0, fin);
-      slidesIdee.splice(newSlideIndex, 0, slidesIdee[composeurIndex] || false);
-      
-      if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
-        slidesData[composeurIndex] = debut;
-      }
-      
-      afficherSlides();
-      fermerComposeur();
-    }
+  var textarea = document.getElementById('composeurTextarea');
+  var texte = textarea.value;
+  var cursorPos = textarea.selectionStart;
+  
+  if (cursorPos === 0) {
+    alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
+    return;
+  }
+  
+  var debut = texte.substring(0, cursorPos).trim();
+  var fin = texte.substring(cursorPos).trim();
+  
+  if (!fin) {
+    alert('Il n\'y a pas de texte à renvoyer après le curseur.');
+    return;
+  }
+  
+  // Pour une nouvelle slide ou une slide existante
+  if (composeurIndex === -1) {
+    // Nouvelle slide : créer deux slides
+    slidesData.push(debut);
+    slidesIdee.push(false);
+    slidesData.push(fin);
+    slidesIdee.push(false);
+  } else {
+    // Slide existante : remplacer la slide actuelle par 'debut'
+    // et insérer 'fin' juste après
+    slidesData[composeurIndex] = debut;
+    slidesIdee[composeurIndex] = slidesIdee[composeurIndex] || false;
+    
+    // Insérer la nouvelle slide juste après
+    var newSlideIndex = composeurIndex + 1;
+    slidesData.splice(newSlideIndex, 0, fin);
+    slidesIdee.splice(newSlideIndex, 0, false);
+  }
+  
+  afficherSlides();
+  fermerComposeur();
+}
 
     // === RETENIR ===
     function toggleRetenir() {
