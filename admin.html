@@ -952,28 +952,45 @@
       afficherSlides();
     }
 
-    function afficherSlides() {
-      var container = document.getElementById('slidesList');
-      if (slidesData.length === 0) {
-        container.innerHTML = '';
-        return;
-      }
-      var html = '';
-      slidesData.forEach(function(slide, index) {
-        var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
-        var ideeClass = slidesIdee[index] ? 'idee' : '';
-        var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
-        html += `
-          <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
-            <span class="slide-handle">⠿</span>
-            <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
-            <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-      initDragDrop();
-    }
+  function afficherSlides() {
+  var container = document.getElementById('slidesList');
+  if (slidesData.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  var html = '';
+  
+  // Compteur total de mots (optionnel)
+  var totalMots = 0;
+  for (var i = 0; i < slidesData.length; i++) {
+    var motsSlide = slidesData[i].split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+    totalMots += motsSlide;
+  }
+  
+  slidesData.forEach(function(slide, index) {
+    var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
+    var ideeClass = slidesIdee[index] ? 'idee' : '';
+    var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
+    
+    // COMPTEUR DE MOTS POUR CETTE SLIDE
+    var mots = slide.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+    
+    html += `
+      <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
+        <span class="slide-handle">⠿</span>
+        <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
+        <span style="font-family:var(--font-sans);font-size:9px;color:var(--text-muted);opacity:0.5;flex-shrink:0;min-width:18px;text-align:center;user-select:none;margin-left:4px;">${mots}</span>
+        <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
+      </div>
+    `;
+  });
+  
+  // Ajout du total en haut
+  var compteurHtml = '<div style="font-family:var(--font-sans);font-size:11px;color:var(--text-muted);padding:2px 0 4px 0;border-bottom:0.5px solid var(--border-light);margin-bottom:4px;user-select:none;">📝 ' + totalMots + ' mots</div>';
+  
+  container.innerHTML = compteurHtml + html;
+  initDragDrop();
+}
 
     // === COMPOSEUR ===
     function ouvrirComposeur(index) {
