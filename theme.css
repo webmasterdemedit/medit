@@ -1,6 +1,6 @@
 /* ============================================================
-   THEME - LISEUSE NOIR & BLANC ABSOLU AVEC SCROLL SNAPPING
-   Kindle-like, défilement par blocs, barre visible
+   THEME - LISEUSE NOIR & BLANC (PAGE TURNER)
+   Défilement par blocs, transition instantanée
    ============================================================ */
 
 :root {
@@ -16,19 +16,21 @@
   --font-sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
 }
 
-/* ===== SCROLL SNAPPING - DÉFILEMENT PAR BLOCS ===== */
+/* ===== SCROLL SNAPPING - DÉFILEMENT PAR BLOCS "SEC" ===== */
 html {
   scroll-snap-type: y mandatory;
+  scroll-behavior: auto !important; /* PAS de transition fluide */
   overflow-y: scroll;
   height: 100vh;
 }
 
-/* Toutes les sections principales deviennent des blocs */
+/* Force l'arrêt complet sur chaque bloc */
 .page-home, .page, .page-article, .hero, .presentation-section,
 .methode-section, .blog-article, .slides-container,
 .section-block, .vide, .post-footer, .carte-post,
 .modal-content, .header-admin, .grille, .stats-ligne {
   scroll-snap-align: start;
+  scroll-snap-stop: always; /* Force l'arrêt */
   min-height: 100vh;
   padding: 20px 0;
 }
@@ -189,7 +191,7 @@ input:focus, textarea:focus, select:focus {
   border-color: var(--border-hover);
 }
 
-/* ===== LECTURE MODE - LE CŒUR ===== */
+/* ===== LECTURE MODE ===== */
 .slides-container {
   background: var(--bg);
 }
@@ -289,3 +291,4 @@ input:focus, textarea:focus, select:focus {
   .slide-content .quiz-question { font-size: 15px; }
   .slide-content .quiz-reponse { font-size: 13px; padding: 8px 12px; }
 }
+
