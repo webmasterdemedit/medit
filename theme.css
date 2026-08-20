@@ -1,6 +1,6 @@
 /* ============================================================
-   THEME - LISEUSE NOIR & BLANC ABSOLU
-   Kindle-like, zéro couleur, zéro ombre, zéro arrondi
+   THEME - LISEUSE NOIR & BLANC ABSOLU AVEC SCROLL SNAPPING
+   Kindle-like, défilement par blocs, barre visible
    ============================================================ */
 
 :root {
@@ -14,6 +14,23 @@
   --border-hover: #aaaaaa;
   --font-serif: Georgia, 'Times New Roman', serif;
   --font-sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
+}
+
+/* ===== SCROLL SNAPPING - DÉFILEMENT PAR BLOCS ===== */
+html {
+  scroll-snap-type: y mandatory;
+  overflow-y: scroll;
+  height: 100vh;
+}
+
+/* Toutes les sections principales deviennent des blocs */
+.page-home, .page, .page-article, .hero, .presentation-section,
+.methode-section, .blog-article, .slides-container,
+.section-block, .vide, .post-footer, .carte-post,
+.modal-content, .header-admin, .grille, .stats-ligne {
+  scroll-snap-align: start;
+  min-height: 100vh;
+  padding: 20px 0;
 }
 
 /* ===== BASE ===== */
@@ -38,7 +55,8 @@ body * {
 .carte-post, .modal-content, .search-bar, .tabs-container, 
 .section-block, .composer-content, .annotation-box,
 .stats, .hero, .vide, .presentation-card, .methode-card,
-.blog-article, .post-footer, .header-admin, .filtres-container {
+.blog-article, .post-footer, .header-admin, .filtres-container,
+.slides-container, .stats-ligne {
   border: 1px solid var(--border);
   border-radius: 0 !important;
   box-shadow: none !important;
@@ -182,7 +200,7 @@ input:focus, textarea:focus, select:focus {
   line-height: 2.2;
   max-width: 700px;
   margin: 0 auto;
-  padding: 20px 0;
+  padding: 40px 0;
   text-align: justify;
 }
 .slide-content p {
@@ -238,7 +256,7 @@ input:focus, textarea:focus, select:focus {
   padding: 6px 16px;
 }
 
-/* ===== SCROLLBAR ===== */
+/* ===== SCROLLBAR (VISIBLE) ===== */
 ::-webkit-scrollbar-track {
   background: var(--bg);
 }
@@ -255,7 +273,7 @@ input:focus, textarea:focus, select:focus {
   .slide-content {
     font-size: 19px;
     line-height: 2;
-    padding: 10px 0;
+    padding: 20px 0;
   }
   .slide-content .quiz-question { font-size: 17px; }
   .slide-content .quiz-reponse { font-size: 14px; padding: 10px 14px; }
@@ -266,49 +284,8 @@ input:focus, textarea:focus, select:focus {
   .slide-content {
     font-size: 17px;
     line-height: 1.9;
+    padding: 15px 0;
   }
   .slide-content .quiz-question { font-size: 15px; }
   .slide-content .quiz-reponse { font-size: 13px; padding: 8px 12px; }
-}
-
-/* ============================================================
-   SCROLL SNAPPING - DÉFILEMENT PAR BLOCS
-   ============================================================ */
-
-html {
-  scroll-snap-type: y mandatory;
-  overflow-y: scroll;
-  height: 100vh;
-}
-
-/* Chaque section principale devient un bloc */
-.page-home, .page, .page-article, .hero, .presentation-section,
-.methode-section, .blog-article, .carte-post, .slides-container,
-.section-block, .vide, .post-footer {
-  scroll-snap-align: start;
-  min-height: 100vh;
-  /* Optionnel : pour que le contenu soit centré verticalement */
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 20px 0;
-}
-
-/* Pour la lecture : chaque slide est un bloc */
-.slide-content {
-  scroll-snap-align: start;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 40px 0;
-}
-
-/* Cache la scrollbar pour un effet plus propre (optionnel) */
-::-webkit-scrollbar {
-  display: none;
-}
-html {
-  -ms-overflow-style: none;
-  scrollbar-width: none;
 }
