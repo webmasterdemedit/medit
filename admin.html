@@ -72,7 +72,7 @@
 
   </div>
 
-  <!-- MODAL CATÉGORIES -->
+  <!-- MODAL CATEGORIES -->
   <div id="modalCategories" class="modal-overlay">
     <div class="modal-contenu">
       <button class="modal-close" onclick="fermerModalCategories()">✕</button>
@@ -94,7 +94,7 @@
 
         <div class="row-compact">
           <input type="date" id="inputDate">
-          <!-- NIVEAUX - Boutons ronds 1 à 3 -->
+          <!-- NIVEAUX - Boutons ronds 1 a 3 -->
           <div style="display:flex;align-items:center;gap:6px;">
             <span style="font-size:12px;color:var(--text-muted);margin-right:4px;">Nv</span>
             <button type="button" class="btn-niveau" data-niveau="1" onclick="setNiveau(1)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">1</button>
@@ -134,8 +134,8 @@
         <!-- RETENIR -->
         <div class="section-block">
           <div class="section-header">
-            <span class="section-label">À retenir</span>
-            <button type="button" class="btn-add-section" onclick="toggleRetenir()">+ mémo</button>
+            <span class="section-label">A retenir</span>
+            <button type="button" class="btn-add-section" onclick="toggleRetenir()">+ memo</button>
           </div>
           <div class="retenir-container">
             <div class="retenir-champs" id="retenirChamps">
@@ -159,7 +159,7 @@
           <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon" style="border:none;background:transparent;padding:8px 12px;">Brouillon</button>
           <span style="flex:1;"></span>
           <span class="chrono" id="chronoDisplay">00:00</span>
-          <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegardé</span>
+          <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegarde</span>
           <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
         </div>
 
@@ -179,7 +179,7 @@
         <button class="composer-close" onclick="fermerComposeur()" style="border:none;background:transparent;color:var(--text-secondary);cursor:pointer;font-size:20px;padding:4px 8px;">✕</button>
       </div>
     </div>
-    <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..." spellcheck="true" lang="fr"></textarea>
+    <textarea id="composeurTextarea" placeholder="Ecrivez votre slide ici..." spellcheck="true" lang="fr"></textarea>
   </div>
 </div>
 
@@ -261,9 +261,9 @@
     btn.style.background = 'transparent';
     btn.style.color = 'var(--text-secondary)';
     if (parseInt(btn.dataset.niveau) === n) {
-      btn.style.borderColor = 'var(--border-color)';  // Garde la même bordure
-      btn.style.background = '#2a2a2a';               // Fond plus foncé
-      btn.style.color = 'var(--text-primary)';        // Texte plus clair pour contraste
+      btn.style.borderColor = 'var(--border-color)';
+      btn.style.background = '#2a2a2a';
+      btn.style.color = 'var(--text-primary)';
     }
   });
 }
@@ -311,7 +311,7 @@
       
       try {
         localStorage.setItem('admin_auto_save', JSON.stringify(data));
-        indicator.textContent = '💾 Sauvegardé';
+        indicator.textContent = '💾 Sauvegarde';
         indicator.className = 'auto-save-indicator visible saved';
         setTimeout(function() {
           indicator.className = 'auto-save-indicator visible';
@@ -366,7 +366,7 @@
           afficherInfos();
           
           localStorage.removeItem('admin_auto_save');
-          document.getElementById('autoSaveIndicator').textContent = '💾 Restauré';
+          document.getElementById('autoSaveIndicator').textContent = '💾 Restaure';
           document.getElementById('autoSaveIndicator').className = 'auto-save-indicator visible saved';
           setTimeout(function() {
             document.getElementById('autoSaveIndicator').className = 'auto-save-indicator';
@@ -377,7 +377,7 @@
       }
     }
 
-    // === CHARGER NIVEAUX ET CATÉGORIES ===
+    // === CHARGER NIVEAUX ET CATEGORIES ===
     function chargerNiveauxEtCategories() {
       var urlCategories = CONFIG.SCRIPT_URL + '?action=getLabels';
       fetch(urlCategories)
@@ -388,14 +388,14 @@
             remplirSelectCategories();
           }
         })
-        .catch(function(e) { console.error('Erreur catégories:', e); });
+        .catch(function(e) { console.error('Erreur categories:', e); });
     }
 
     function remplirSelectCategories() {
       var select = document.getElementById('inputCategorie');
       select.innerHTML = '';
       if (categoriesData.length === 0) {
-        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Méditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
+        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Meditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
         defaults.forEach(function(c) {
           var opt = document.createElement('option');
           opt.value = c;
@@ -534,13 +534,13 @@
           <div class="vide">
             <span class="icone">📭</span>
             <h2>Aucun texte</h2>
-            <p>Aucun texte ne correspond à vos critères.</p>
+            <p>Aucun texte ne correspond à vos criteres.</p>
           </div>
         `;
         return;
       }
 
-      // Trier du plus récent au plus ancien
+      // Trier du plus recent au plus ancien
       posts.sort(function(a, b) {
         var dateA = a.date ? new Date(a.date) : new Date(0);
         var dateB = b.date ? new Date(b.date) : new Date(0);
@@ -550,7 +550,7 @@
       var html = '<div class="grille">';
 
       posts.forEach(function(post, index) {
-        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
+        var statutLabel = post.statut === 'publie' ? 'Publie' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
         var estPublie = post.statut === 'publie';
         
@@ -578,7 +578,7 @@
         infoBadges += '<span class="info-badge">📄 ' + nbSlides + ' slides</span>';
         if (hasQuiz) infoBadges += '<span class="info-badge">🧪 Quiz</span>';
         if (hasQuestion) infoBadges += '<span class="info-badge">✏️ Q. ouverte</span>';
-        if (hasRetenir) infoBadges += '<span class="info-badge">📌 Mémo</span>';
+        if (hasRetenir) infoBadges += '<span class="info-badge">📌 Memo</span>';
         if (hasInfo) infoBadges += '<span class="info-badge">ℹ️ Infos</span>';
         if (mots > 0) infoBadges += '<span class="info-badge">📝 ' + mots + ' mots</span>';
         
@@ -586,9 +586,9 @@
         var dateModif = post.dateModif ? new Date(post.dateModif) : null;
         var dateStr = '';
         if (dateCreation) {
-          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' à ' + dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          dateStr = 'Cree le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' a ' + dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         } else if (dateModif) {
-          dateStr = 'Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' à ' + dateModif.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+          dateStr = 'Modifie le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' a ' + dateModif.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         }
         var versionsStr = post.versions ? ' v' + post.versions : '';
 
@@ -614,7 +614,7 @@
               </div>
               <div class="meta">
                 <span>Niveau ${post.niveau || 0}</span>
-                <span>${post.categorie || 'Sans catégorie'}</span>
+                <span>${post.categorie || 'Sans categorie'}</span>
                 <span class="badge ${statutClass}">${statutLabel}</span>
                 ${infoBadges}
                 ${statsHtml}
@@ -648,7 +648,7 @@
       afficherAdmin();
     }
 
-    // === FILTRER PAR CATÉGORIE ===
+    // === FILTRER PAR CATEGORIE ===
     function filtrerParCategorie(cat) {
       categorieActuelle = cat;
       
@@ -662,12 +662,12 @@
       afficherAdmin();
     }
 
-    // === GÉNÉRER FILTRES CATÉGORIES ===
+    // === GENERER FILTRES CATEGORIES ===
     function genererFiltresCategories() {
       var cats = {};
       
       tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
+        var cat = post.categorie || 'Sans categorie';
         if (!cats[cat]) cats[cat] = 0;
         cats[cat]++;
       });
@@ -687,7 +687,7 @@
       container.innerHTML = html;
     }
 
-    // === GESTION DES CATÉGORIES ===
+    // === GESTION DES CATEGORIES ===
     function ouvrirModalCategories() {
       var modal = document.getElementById('modalCategories');
       modal.classList.add('visible');
@@ -704,7 +704,7 @@
       
       var cats = {};
       tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
+        var cat = post.categorie || 'Sans categorie';
         if (!cats[cat]) cats[cat] = 0;
         cats[cat]++;
       });
@@ -724,7 +724,7 @@
     // === EXPORTER TOUT ===
     function exporterTout() {
       if (tousLesPosts.length === 0) {
-        alert('Aucun article à exporter.');
+        alert('Aucun article a exporter.');
         return;
       }
       
@@ -760,7 +760,7 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      alert('✅ Exportation de ' + tousLesPosts.length + ' articles terminée !');
+      alert('✅ Exportation de ' + tousLesPosts.length + ' articles terminee !');
     }
 
     // === MODAL TEXTE ===
@@ -921,7 +921,7 @@
               post.contenu = colonnes.join(' | ');
             }
             var indicator = document.getElementById('autoSaveIndicator');
-            indicator.textContent = '💾 Ordre sauvegardé';
+            indicator.textContent = '💾 Ordre sauvegarde';
             indicator.className = 'auto-save-indicator visible saved';
             setTimeout(function() {
               indicator.className = 'auto-save-indicator visible';
@@ -1000,7 +1000,7 @@
 
     function validerComposeur() {
       var texte = document.getElementById('composeurTextarea').value.trim();
-      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+      if (!texte) { alert('Veuillez ecrire du contenu.'); return; }
 
       if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
         slidesData[composeurIndex] = texte;
@@ -1015,7 +1015,7 @@
 
     function validerComposeurIdee() {
       var texte = document.getElementById('composeurTextarea').value.trim();
-      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+      if (!texte) { alert('Veuillez ecrire du contenu.'); return; }
 
       if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
         slidesData[composeurIndex] = texte;
@@ -1035,7 +1035,7 @@
   var cursorPos = textarea.selectionStart;
   
   if (cursorPos === 0) {
-    alert('Placez le curseur à l\'endroit où vous voulez couper le texte.');
+    alert('Placez le curseur a l\'endroit ou vous voulez couper le texte.');
     return;
   }
   
@@ -1043,7 +1043,7 @@
   var fin = texte.substring(cursorPos).trim();
   
   if (!fin) {
-    alert('Il n\'y a pas de texte à renvoyer après le curseur.');
+    alert('Il n\'y a pas de texte a renvoyer apres le curseur.');
     return;
   }
   
@@ -1056,11 +1056,11 @@
     slidesIdee.push(false);
   } else {
     // Slide existante : remplacer la slide actuelle par 'debut'
-    // et insérer 'fin' juste après
+    // et inserer 'fin' juste apres
     slidesData[composeurIndex] = debut;
     slidesIdee[composeurIndex] = slidesIdee[composeurIndex] || false;
     
-    // Insérer la nouvelle slide juste après
+    // Inserer la nouvelle slide juste apres
     var newSlideIndex = composeurIndex + 1;
     slidesData.splice(newSlideIndex, 0, fin);
     slidesIdee.splice(newSlideIndex, 0, false);
@@ -1139,7 +1139,7 @@
         q.reponses.forEach(function(r, ri) {
           var lettre = String.fromCharCode(65 + ri);
           html += `
-            <input type="text" placeholder="Réponse ${lettre}" value="${r.texte}" 
+            <input type="text" placeholder="Reponse ${lettre}" value="${r.texte}" 
                    style="flex:1;min-width:60px;" 
                    onchange="quizData[${qi}].reponses[${ri}].texte = this.value">
             <div class="vf-group">
@@ -1312,8 +1312,8 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post mis à jour ! (v' + version + ')', 'success');
-              btn.textContent = 'Mettre à jour';
+              afficherMsgTexte('✅ Post mis a jour ! (v' + version + ')', 'success');
+              btn.textContent = 'Mettre a jour';
               btn.disabled = false;
               fermerModalTexte();
               chargerAdmin();
@@ -1323,7 +1323,7 @@
           })
           .catch(function(err) {
             afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
-            btn.textContent = 'Mettre à jour';
+            btn.textContent = 'Mettre a jour';
             btn.disabled = false;
           });
       } else {
@@ -1346,13 +1346,13 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post ajouté !', 'success');
+              afficherMsgTexte('✅ Post ajoute !', 'success');
               btn.textContent = 'Ajouter';
               btn.disabled = false;
               fermerModalTexte();
               chargerAdmin();
             } else {
-              throw new Error(data.message || 'Erreur lors de la création');
+              throw new Error(data.message || 'Erreur lors de la creation');
             }
           })
           .catch(function(err) {
@@ -1377,7 +1377,7 @@
 
       modeEdition = true;
       estBrouillon = post.statut === 'brouillon';
-      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre a jour';
       document.getElementById('editId').value = postId;
 
       if (post.date) {
@@ -1488,7 +1488,7 @@
 
       var contenu = '';
       contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
-      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans categorie') + '\n\n';
 
       if (post.contenu) {
         var lignes = post.contenu.split(' | ');
@@ -1703,7 +1703,7 @@
 
     // === SUPPRIMER POST ===
     function supprimerPost(postId) {
-      if (!confirm('Supprimer ce texte définitivement ?')) return;
+      if (!confirm('Supprimer ce texte definitivement ?')) return;
 
       var btn = document.querySelector('.btn-supprimer');
       btn.textContent = '...';
@@ -1711,7 +1711,7 @@
 
       DataManager.supprimerPost(postId)
         .then(function() {
-          alert('✅ Post supprimé avec succès !');
+          alert('✅ Post supprime avec succes !');
           chargerAdmin();
         })
         .catch(function(err) {
@@ -1761,7 +1761,7 @@
       chargerAdmin();
     }
 
-    // Raccourci Ctrl+Entrée pour valider le composeur
+    // Raccourci Ctrl+Entree pour valider le composeur
     document.addEventListener('keydown', function(e) {
       if (document.getElementById('composeurOverlay').classList.contains('visible')) {
         if (e.ctrlKey && e.key === 'Enter') {
