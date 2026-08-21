@@ -11,26 +11,29 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ===== ADMIN SIMPLIFIÉ ===== */
+    :root {
+      --radius: 0px;
+    }
+
     .admin-container {
       max-width: 900px;
       margin: 0 auto;
-      padding: 20px;
+      padding: 16px;
     }
 
     .admin-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 16px 0;
+      padding: 12px 0;
       border-bottom: 1px solid var(--border);
-      margin-bottom: 24px;
+      margin-bottom: 20px;
     }
 
     .admin-header h1 {
       font-family: var(--font-serif);
       font-weight: 400;
-      font-size: 24px;
+      font-size: 20px;
       color: var(--text);
       margin: 0;
     }
@@ -39,8 +42,9 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-secondary);
-      padding: 8px 20px;
+      padding: 6px 16px;
       font-family: var(--font-sans);
+      font-size: 13px;
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -51,22 +55,23 @@
       border-color: var(--border-hover);
     }
 
-    /* ===== LISTE DES POSTS ===== */
+    /* ===== LISTE ===== */
     .post-list {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .post-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 12px 16px;
+      padding: 10px 14px;
       border: 1px solid var(--border);
       background: var(--bg);
-      transition: border-color 0.15s;
       cursor: pointer;
+      transition: border-color 0.15s;
+      gap: 8px;
     }
 
     .post-item:hover {
@@ -74,29 +79,31 @@
     }
 
     .post-item .post-info {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
       flex: 1;
+      min-width: 0;
     }
 
     .post-item .post-info .titre {
       font-family: var(--font-serif);
-      font-size: 17px;
+      font-size: 16px;
       color: var(--text);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .post-item .post-info .meta {
       font-family: var(--font-sans);
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-secondary);
     }
 
     .post-item .post-info .meta .statut {
       display: inline-block;
-      padding: 1px 10px;
+      padding: 0 8px;
       border: 1px solid var(--border);
-      font-size: 11px;
+      font-size: 10px;
       font-family: var(--font-sans);
       color: var(--text-secondary);
     }
@@ -107,7 +114,7 @@
 
     .post-item .post-actions {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       flex-shrink: 0;
     }
 
@@ -115,9 +122,9 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-secondary);
-      padding: 4px 12px;
+      padding: 2px 10px;
       font-family: var(--font-sans);
-      font-size: 12px;
+      font-size: 11px;
       cursor: pointer;
       transition: all 0.15s;
     }
@@ -144,7 +151,7 @@
       z-index: 1000;
       display: none;
       flex-direction: column;
-      padding: 20px 24px;
+      padding: 12px 16px;
       box-sizing: border-box;
       overflow-y: auto;
     }
@@ -155,170 +162,198 @@
 
     .modal-fullscreen .modal-header {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding-bottom: 12px;
+      gap: 10px;
+      padding-bottom: 10px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
-      margin-bottom: 16px;
+      margin-bottom: 12px;
     }
 
-    .modal-fullscreen .modal-header .modal-titre {
+    .modal-fullscreen .modal-header .input-titre {
+      flex: 1;
+      border: none;
+      background: transparent;
       font-family: var(--font-serif);
-      font-size: 20px;
-      font-weight: 400;
+      font-size: 18px;
       color: var(--text);
-      margin: 0;
+      outline: none;
+      padding: 4px 0;
+    }
+
+    .modal-fullscreen .modal-header .input-titre::placeholder {
+      color: var(--text-muted);
+    }
+
+    .modal-fullscreen .modal-header .btn-enregistrer {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 4px 16px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .modal-fullscreen .modal-header .btn-enregistrer:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .modal-fullscreen .modal-header .btn-enregistrer:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
     }
 
     .modal-fullscreen .modal-header .btn-close {
       background: none;
       border: none;
       color: var(--text-secondary);
-      font-size: 24px;
+      font-size: 22px;
       cursor: pointer;
-      padding: 4px 8px;
+      padding: 0 4px;
+      flex-shrink: 0;
     }
 
     .modal-fullscreen .modal-header .btn-close:hover {
       color: var(--text);
     }
 
-    /* ===== FORMULAIRE ===== */
-    .form-row {
+    /* ===== METADONNÉES ===== */
+    .meta-row {
       display: flex;
-      gap: 16px;
-      margin-bottom: 16px;
-      flex-wrap: wrap;
+      gap: 12px;
+      flex-wrap: nowrap;
       flex-shrink: 0;
-    }
-
-    .form-row .form-group {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      flex: 1;
-      min-width: 150px;
-    }
-
-    .form-row .form-group label {
-      font-family: var(--font-sans);
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-    }
-
-    .form-row .form-group input,
-    .form-row .form-group select {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 8px 12px;
-      font-family: var(--font-sans);
-      font-size: 14px;
-      border-radius: 0;
-      outline: none;
-    }
-
-    .form-row .form-group input:focus,
-    .form-row .form-group select:focus {
-      border-color: var(--text);
-    }
-
-    /* ===== NIVEAUX ===== */
-    .niveaux-group {
-      display: flex;
-      gap: 6px;
+      margin-bottom: 12px;
       align-items: center;
     }
 
-    .niveaux-group .btn-niveau {
-      width: 32px;
-      height: 32px;
+    .meta-row .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-row .meta-group label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .meta-row .meta-group select,
+    .meta-row .meta-group input {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      border-radius: 0;
+      outline: none;
+      min-width: 80px;
+    }
+
+    .meta-row .meta-group select:focus,
+    .meta-row .meta-group input:focus {
+      border-color: var(--text);
+    }
+
+    .niveaux {
+      display: flex;
+      gap: 4px;
+    }
+
+    .niveaux .btn-niveau {
+      width: 28px;
+      height: 28px;
       border: 1px solid var(--border);
       background: transparent;
       color: var(--text-secondary);
       cursor: pointer;
       font-family: var(--font-sans);
-      font-size: 14px;
-      font-weight: 400;
+      font-size: 12px;
       transition: all 0.15s;
     }
 
-    .niveaux-group .btn-niveau:hover {
+    .niveaux .btn-niveau:hover {
       background: var(--bg-hover);
     }
 
-    .niveaux-group .btn-niveau.active {
+    .niveaux .btn-niveau.active {
       background: var(--bg-active);
       color: var(--text);
       border-color: var(--text);
     }
 
-    /* ===== TEXTAREA PRINCIPAL ===== */
-    .textarea-principal {
+    /* ===== TEXTAREA ===== */
+    .textarea-wrap {
       flex: 1;
-      min-height: 200px;
-      margin-bottom: 16px;
+      min-height: 150px;
+      margin-bottom: 10px;
     }
 
-    .textarea-principal textarea {
+    .textarea-wrap textarea {
       width: 100%;
       height: 100%;
-      min-height: 300px;
+      min-height: 200px;
       border: 1px solid var(--border);
       background: var(--bg);
       color: var(--text);
-      padding: 16px;
+      padding: 12px;
       font-family: var(--font-serif);
-      font-size: 18px;
+      font-size: 17px;
       line-height: 2;
       resize: vertical;
       outline: none;
       box-sizing: border-box;
     }
 
-    .textarea-principal textarea:focus {
+    .textarea-wrap textarea:focus {
       border-color: var(--text);
     }
 
-    .textarea-principal .compteur-mots {
+    .textarea-wrap .compteur {
       font-family: var(--font-sans);
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-muted);
-      padding: 4px 0;
       text-align: right;
+      padding: 2px 0;
     }
 
-    /* ===== CHAMPS AJOUTÉS ===== */
+    /* ===== CHAMPS ===== */
     .champs-section {
       flex-shrink: 0;
-      margin-bottom: 16px;
       border-top: 1px solid var(--border);
-      padding-top: 16px;
+      padding-top: 10px;
+      margin-bottom: 10px;
     }
 
     .champs-section .champs-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .champs-section .champs-header .champs-label {
       font-family: var(--font-sans);
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-secondary);
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
     }
 
     .champs-section .champs-header .btn-ajout-champ {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-secondary);
-      padding: 4px 14px;
+      padding: 2px 12px;
       font-family: var(--font-sans);
       font-size: 12px;
       cursor: pointer;
@@ -332,7 +367,7 @@
       border-color: var(--border-hover);
     }
 
-    .champs-section .champs-header .btn-ajout-champ .dropdown-menu {
+    .champs-section .champs-header .btn-ajout-champ .dropdown {
       display: none;
       position: absolute;
       top: 100%;
@@ -341,20 +376,20 @@
       border: 1px solid var(--border);
       min-width: 160px;
       z-index: 10;
-      margin-top: 4px;
+      margin-top: 2px;
     }
 
-    .champs-section .champs-header .btn-ajout-champ .dropdown-menu.open {
+    .champs-section .champs-header .btn-ajout-champ .dropdown.open {
       display: block;
     }
 
-    .champs-section .champs-header .btn-ajout-champ .dropdown-menu button {
+    .champs-section .champs-header .btn-ajout-champ .dropdown button {
       display: block;
       width: 100%;
       text-align: left;
       background: transparent;
       border: none;
-      padding: 8px 16px;
+      padding: 6px 14px;
       font-family: var(--font-sans);
       font-size: 13px;
       color: var(--text-secondary);
@@ -362,158 +397,236 @@
       transition: background 0.15s;
     }
 
-    .champs-section .champs-header .btn-ajout-champ .dropdown-menu button:hover {
+    .champs-section .champs-header .btn-ajout-champ .dropdown button:hover {
       background: var(--bg-hover);
       color: var(--text);
     }
 
-    /* ===== LISTE DES CHAMPS AJOUTÉS ===== */
-    .champs-liste {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-    }
-
+    /* ===== CHAMP ITEM ===== */
     .champ-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 6px 12px;
       border: 1px solid var(--border);
+      padding: 8px 12px;
+      margin-bottom: 6px;
       background: var(--bg);
-      font-family: var(--font-sans);
-      font-size: 14px;
-      color: var(--text-secondary);
     }
 
     .champ-item .champ-type {
-      font-size: 11px;
+      font-family: var(--font-sans);
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.3px;
-      margin-right: 10px;
+      display: block;
+      margin-bottom: 4px;
     }
 
     .champ-item .champ-contenu {
-      flex: 1;
-      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
     }
 
-    .champ-item .champ-contenu input,
-    .champ-item .champ-contenu textarea {
-      width: 100%;
+    .champ-item .champ-contenu input[type="text"] {
       border: none;
+      border-bottom: 1px solid var(--border-light);
       background: transparent;
       color: var(--text);
       font-family: var(--font-serif);
       font-size: 15px;
+      padding: 2px 0;
       outline: none;
-      padding: 4px 0;
+      width: 100%;
     }
 
-    .champ-item .champ-contenu textarea {
-      min-height: 40px;
-      resize: vertical;
+    .champ-item .champ-contenu input[type="text"]:focus {
+      border-bottom-color: var(--text);
     }
 
-    .champ-item .btn-supprimer-champ {
-      background: none;
-      border: none;
-      color: var(--text-muted);
-      cursor: pointer;
-      font-size: 16px;
-      padding: 0 4px;
-      flex-shrink: 0;
-    }
-
-    .champ-item .btn-supprimer-champ:hover {
-      color: #b34a4a;
-    }
-
-    /* ===== BOUTON ENREGISTRER ===== */
-    .form-actions {
-      flex-shrink: 0;
+    .champ-item .champ-contenu .reponses {
       display: flex;
-      gap: 12px;
-      padding-top: 16px;
-      border-top: 1px solid var(--border);
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 12px;
+      margin-top: 4px;
     }
 
-    .form-actions .btn-enregistrer {
+    .champ-item .champ-contenu .reponse-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .champ-item .champ-contenu .reponse-row input[type="text"] {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid var(--border-light);
       background: transparent;
+      color: var(--text);
+      font-family: var(--font-serif);
+      font-size: 14px;
+      padding: 2px 0;
+      outline: none;
+    }
+
+    .champ-item .champ-contenu .reponse-row input[type="text"]:focus {
+      border-bottom-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button {
+      width: 24px;
+      height: 24px;
       border: 1px solid var(--border);
+      background: transparent;
       color: var(--text-secondary);
-      padding: 10px 32px;
+      font-size: 10px;
       font-family: var(--font-sans);
-      font-size: 15px;
       cursor: pointer;
       transition: all 0.15s;
     }
 
-    .form-actions .btn-enregistrer:hover {
+    .champ-item .champ-contenu .reponse-row .vf button:hover {
+      background: var(--bg-hover);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button.active-v {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button.active-f {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 2px;
+    }
+
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep:hover {
+      color: #b34a4a;
+    }
+
+    .champ-item .champ-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+
+    .champ-item .champ-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 1px 10px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .champ-item .champ-actions button:hover {
       background: var(--bg-hover);
       color: var(--text);
       border-color: var(--border-hover);
     }
 
-    .form-actions .btn-enregistrer:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
+    .champ-item .champ-actions .btn-suppr-champ:hover {
+      color: #b34a4a;
+      border-color: #b34a4a;
+    }
+
+    .champ-item .champ-contenu input[type="text"].champ-retenir {
+      border: none;
+      border-bottom: 1px solid var(--border-light);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-serif);
+      font-size: 15px;
+      padding: 2px 0;
+      outline: none;
+      width: 100%;
+    }
+
+    .champ-item .champ-contenu input[type="text"].champ-retenir:focus {
+      border-bottom-color: var(--text);
     }
 
     /* ===== VIDE ===== */
     .vide {
       text-align: center;
-      padding: 60px 20px;
+      padding: 40px 20px;
       border: 1px solid var(--border);
     }
 
     .vide .icone {
-      font-size: 40px;
+      font-size: 32px;
       display: block;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
     }
 
     .vide h2 {
       font-family: var(--font-serif);
       font-weight: 400;
       color: var(--text);
-      font-size: 20px;
-      margin: 0 0 8px 0;
+      font-size: 18px;
+      margin: 0 0 4px 0;
     }
 
     .vide p {
       font-family: var(--font-sans);
       color: var(--text-secondary);
-      font-size: 14px;
+      font-size: 13px;
       margin: 0;
     }
 
+    /* ===== MESSAGE ===== */
+    .msg {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      padding: 4px 0;
+      display: none;
+    }
+
+    .msg.success { color: #2c7a4a; display: block; }
+    .msg.error { color: #b34a4a; display: block; }
+
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 700px) {
-      .post-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 8px;
-      }
+    @media (max-width: 600px) {
+      .admin-container { padding: 10px; }
+      .admin-header h1 { font-size: 17px; }
+      .admin-header .btn-ajout { font-size: 12px; padding: 4px 12px; }
 
-      .post-item .post-actions {
-        justify-content: flex-end;
-      }
+      .post-item { padding: 8px 10px; flex-wrap: wrap; }
+      .post-item .post-info .titre { font-size: 14px; }
+      .post-item .post-info .meta { font-size: 11px; }
 
-      .form-row {
-        flex-direction: column;
-        gap: 10px;
-      }
+      .modal-fullscreen { padding: 8px 10px; }
+      .modal-fullscreen .modal-header .input-titre { font-size: 16px; }
+      .modal-fullscreen .modal-header .btn-enregistrer { font-size: 12px; padding: 2px 12px; }
 
-      .modal-fullscreen {
-        padding: 12px 16px;
-      }
+      .meta-row { flex-wrap: wrap; gap: 6px; }
+      .meta-row .meta-group select { min-width: 60px; font-size: 12px; }
+      .meta-row .meta-group label { font-size: 10px; }
 
-      .textarea-principal textarea {
-        min-height: 200px;
-        font-size: 16px;
-      }
+      .textarea-wrap textarea { min-height: 150px; font-size: 15px; padding: 8px; }
+
+      .champ-item { padding: 6px 8px; }
+      .champ-item .champ-contenu input[type="text"] { font-size: 14px; }
+      .champ-item .champ-contenu .reponse-row input[type="text"] { font-size: 13px; }
+      .champ-item .champ-contenu .reponse-row .vf button { width: 22px; height: 22px; font-size: 9px; }
     }
   </style>
 
@@ -523,94 +636,83 @@
   <!-- ===== PAGE ADMIN ===== -->
   <div class="admin-container">
 
-    <!-- HEADER -->
     <div class="admin-header">
       <h1>Administration</h1>
-      <button class="btn-ajout" onclick="ouvrirModal()">+ Ajouter un texte</button>
+      <button class="btn-ajout" onclick="ouvrirModal()">+ Ajouter</button>
     </div>
 
-    <!-- LISTE DES POSTS -->
     <div id="postList" class="post-list">
       <div class="vide">
         <span class="icone">📖</span>
         <h2>Aucun texte</h2>
-        <p>Cliquez sur "Ajouter un texte" pour commencer.</p>
+        <p>Cliquez sur "Ajouter" pour commencer.</p>
       </div>
     </div>
 
   </div>
 
-  <!-- ===== MODALE PLEIN ÉCRAN ===== -->
+  <!-- ===== MODALE ===== -->
   <div class="modal-fullscreen" id="modalTexte">
+
+    <!-- HEADER : Titre + Enregistrer + ✕ -->
     <div class="modal-header">
-      <span class="modal-titre" id="modalTitre">Nouveau texte</span>
+      <input type="text" class="input-titre" id="inputTitre" placeholder="Titre de l'article..." />
+      <button class="btn-enregistrer" id="btnEnregistrer" onclick="enregistrer()">Enregistrer</button>
       <button class="btn-close" onclick="fermerModal()">✕</button>
     </div>
 
-    <form id="formTexte" onsubmit="return false;">
+    <!-- Métadonnées : Catégorie + Niveau -->
+    <div class="meta-row">
+      <div class="meta-group">
+        <label>Catégorie</label>
+        <select id="inputCategorie">
+          <option value="Foi">Foi</option>
+          <option value="Rappels divers">Rappels divers</option>
+          <option value="Sourate">Sourate</option>
+          <option value="Hadith">Hadith</option>
+          <option value="Meditation">Méditation</option>
+          <option value="Invocation">Invocation</option>
+          <option value="Histoire">Histoire</option>
+          <option value="Morale">Morale</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="meta-group">
+        <label>Niveau</label>
+        <div class="niveaux">
+          <button type="button" class="btn-niveau active" data-niveau="1" onclick="setNiveau(1)">1</button>
+          <button type="button" class="btn-niveau" data-niveau="2" onclick="setNiveau(2)">2</button>
+          <button type="button" class="btn-niveau" data-niveau="3" onclick="setNiveau(3)">3</button>
+        </div>
+        <input type="hidden" id="inputNiveau" value="1" />
+      </div>
+    </div>
 
-      <!-- Métadonnées -->
-      <div class="form-row">
-        <div class="form-group" style="flex:3;">
-          <label>Titre</label>
-          <input type="text" id="inputTitre" placeholder="Titre de l'article" />
-        </div>
-        <div class="form-group" style="flex:2;">
-          <label>Catégorie</label>
-          <select id="inputCategorie">
-            <option value="Foi">Foi</option>
-            <option value="Rappels divers">Rappels divers</option>
-            <option value="Sourate">Sourate</option>
-            <option value="Hadith">Hadith</option>
-            <option value="Meditation">Méditation</option>
-            <option value="Invocation">Invocation</option>
-            <option value="Histoire">Histoire</option>
-            <option value="Morale">Morale</option>
-            <option value="Autre">Autre</option>
-          </select>
-        </div>
-        <div class="form-group" style="flex:1;">
-          <label>Niveau</label>
-          <div class="niveaux-group">
-            <button type="button" class="btn-niveau active" data-niveau="1" onclick="setNiveau(1)">1</button>
-            <button type="button" class="btn-niveau" data-niveau="2" onclick="setNiveau(2)">2</button>
-            <button type="button" class="btn-niveau" data-niveau="3" onclick="setNiveau(3)">3</button>
+    <!-- TEXTAREA -->
+    <div class="textarea-wrap">
+      <textarea id="inputContenu" placeholder="Écrivez votre texte ici..." oninput="mettreAJourCompteur()"></textarea>
+      <div class="compteur" id="compteurMots">0 mots</div>
+    </div>
+
+    <!-- CHAMPS -->
+    <div class="champs-section">
+      <div class="champs-header">
+        <span class="champs-label">Champs</span>
+        <button class="btn-ajout-champ" id="btnAjoutChamp" onclick="toggleDropdown()">
+          + Ajouter
+          <div class="dropdown" id="dropdownMenu">
+            <button onclick="ajouterChamp('quiz')">Quiz</button>
+            <button onclick="ajouterChamp('open')">Question ouverte</button>
+            <button onclick="ajouterChamp('retenir')">Retenir</button>
+            <button onclick="ajouterChamp('info')">Info</button>
           </div>
-          <input type="hidden" id="inputNiveau" value="1" />
-        </div>
+        </button>
       </div>
+      <div id="champsListe"></div>
+    </div>
 
-      <!-- TEXTAREA PRINCIPAL -->
-      <div class="textarea-principal">
-        <textarea id="inputContenu" placeholder="Écrivez votre texte ici..." oninput="mettreAJourCompteur()"></textarea>
-        <div class="compteur-mots" id="compteurMots">0 mots</div>
-      </div>
+    <div id="messageTexte" class="msg"></div>
 
-      <!-- CHAMPS AJOUTÉS -->
-      <div class="champs-section">
-        <div class="champs-header">
-          <span class="champs-label">Champs supplémentaires</span>
-          <button class="btn-ajout-champ" id="btnAjoutChamp" onclick="toggleDropdown()">
-            + Ajouter un champ
-            <div class="dropdown-menu" id="dropdownMenu">
-              <button onclick="ajouterChamp('quiz')">Quiz</button>
-              <button onclick="ajouterChamp('open')">Question ouverte</button>
-              <button onclick="ajouterChamp('retenir')">Retenir</button>
-              <button onclick="ajouterChamp('info')">Info</button>
-            </div>
-          </button>
-        </div>
-        <div class="champs-liste" id="champsListe"></div>
-      </div>
-
-      <!-- ACTIONS -->
-      <div class="form-actions">
-        <button type="button" class="btn-enregistrer" id="btnEnregistrer" onclick="enregistrer()">Enregistrer</button>
-      </div>
-
-      <div id="messageTexte" style="margin-top:10px;font-family:var(--font-sans);font-size:14px;display:none;"></div>
-
-    </form>
   </div>
 
   <!-- ===== SCRIPTS ===== -->
@@ -629,7 +731,7 @@
     var dropdownOpen = false;
 
     // ============================================================
-    // CHARGER LES POSTS
+    // CHARGER
     // ============================================================
     function chargerPosts() {
       var id = localStorage.getItem('etudiant_id');
@@ -653,7 +755,7 @@
     }
 
     // ============================================================
-    // AFFICHER LA LISTE
+    // AFFICHER LISTE
     // ============================================================
     function afficherListe() {
       var container = document.getElementById('postList');
@@ -663,7 +765,7 @@
           <div class="vide">
             <span class="icone">📖</span>
             <h2>Aucun texte</h2>
-            <p>Cliquez sur "Ajouter un texte" pour commencer.</p>
+            <p>Cliquez sur "Ajouter" pour commencer.</p>
           </div>
         `;
         return;
@@ -682,7 +784,6 @@
         var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
         var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
-
         var mots = post.mots || 0;
 
         html += `
@@ -692,7 +793,7 @@
               <span class="meta">
                 ${post.categorie || 'Sans catégorie'} · Niveau ${post.niveau || 0} · ${dateStr}
                 <span class="statut ${statutClass}">${statutLabel}</span>
-                <span style="color:var(--text-muted);"> · ${mots} mots</span>
+                · ${mots} mots
               </span>
             </div>
             <div class="post-actions" onclick="event.stopPropagation();">
@@ -707,16 +808,16 @@
     }
 
     // ============================================================
-    // OUVRIR / FERMER MODALE
+    // MODALE
     // ============================================================
     function ouvrirModal() {
       modeEdition = false;
       postIdEdit = null;
-      document.getElementById('modalTitre').textContent = 'Nouveau texte';
-      document.getElementById('btnEnregistrer').textContent = 'Ajouter';
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
       document.getElementById('inputTitre').value = '';
       document.getElementById('inputContenu').value = '';
-      document.getElementById('messageTexte').style.display = 'none';
+      document.getElementById('messageTexte').className = 'msg';
+      document.getElementById('messageTexte').textContent = '';
       champsAjoutes = [];
       afficherChamps();
       mettreAJourCompteur();
@@ -736,15 +837,13 @@
       niveauActuel = n;
       document.querySelectorAll('.btn-niveau').forEach(function(btn) {
         btn.classList.remove('active');
-        if (parseInt(btn.dataset.niveau) === n) {
-          btn.classList.add('active');
-        }
+        if (parseInt(btn.dataset.niveau) === n) btn.classList.add('active');
       });
       document.getElementById('inputNiveau').value = n;
     }
 
     // ============================================================
-    // COMPTEUR DE MOTS
+    // COMPTEUR
     // ============================================================
     function mettreAJourCompteur() {
       var texte = document.getElementById('inputContenu').value || '';
@@ -753,13 +852,24 @@
     }
 
     // ============================================================
-    // CHAMPS AJOUTÉS
+    // DROPDOWN
     // ============================================================
     function toggleDropdown() {
       dropdownOpen = !dropdownOpen;
       document.getElementById('dropdownMenu').classList.toggle('open');
     }
 
+    document.addEventListener('click', function(e) {
+      var btn = document.getElementById('btnAjoutChamp');
+      if (btn && !btn.contains(e.target)) {
+        document.getElementById('dropdownMenu').classList.remove('open');
+        dropdownOpen = false;
+      }
+    });
+
+    // ============================================================
+    // AJOUTER UN CHAMP
+    // ============================================================
     function ajouterChamp(type) {
       dropdownOpen = false;
       document.getElementById('dropdownMenu').classList.remove('open');
@@ -771,20 +881,35 @@
         info: 'Info'
       };
 
-      champsAjoutes.push({
+      var nouveau = {
         type: type,
         label: labels[type] || type,
-        contenu: ''
-      });
+        contenu: '',
+        reponses: []
+      };
 
+      if (type === 'quiz') {
+        nouveau.reponses = [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ];
+      }
+
+      champsAjoutes.push(nouveau);
       afficherChamps();
     }
 
+    // ============================================================
+    // SUPPRIMER UN CHAMP
+    // ============================================================
     function supprimerChamp(index) {
       champsAjoutes.splice(index, 1);
       afficherChamps();
     }
 
+    // ============================================================
+    // AFFICHER LES CHAMPS
+    // ============================================================
     function afficherChamps() {
       var container = document.getElementById('champsListe');
 
@@ -796,30 +921,99 @@
       var html = '';
       for (var i = 0; i < champsAjoutes.length; i++) {
         var champ = champsAjoutes[i];
-        var placeholder = champ.label + '...';
-        html += `
-          <div class="champ-item">
-            <span class="champ-type">${champ.label}</span>
-            <div class="champ-contenu">
-              <input type="text" placeholder="${placeholder}" value="${champ.contenu}" 
-                     onchange="champsAjoutes[${i}].contenu = this.value" />
-            </div>
-            <button class="btn-supprimer-champ" onclick="supprimerChamp(${i})">✕</button>
-          </div>
-        `;
+        var itemClass = 'champ-item';
+
+        html += '<div class="' + itemClass + '">';
+        html += '<span class="champ-type">' + champ.label + '</span>';
+        html += '<div class="champ-contenu">';
+
+        if (champ.type === 'quiz') {
+          // Question
+          html += '<input type="text" placeholder="Question du quiz..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          // Réponses
+          html += '<div class="reponses" id="reponses-' + i + '">';
+          for (var r = 0; r < champ.reponses.length; r++) {
+            var rep = champ.reponses[r];
+            var vClass = rep.correct ? 'active-v' : '';
+            var fClass = !rep.correct ? 'active-f' : '';
+            html += '<div class="reponse-row">';
+            html += '<input type="text" placeholder="Réponse ' + (r + 1) + '" value="' + (rep.texte || '') + '" onchange="champsAjoutes[' + i + '].reponses[' + r + '].texte = this.value" />';
+            html += '<div class="vf">';
+            html += '<button class="' + vClass + '" onclick="setVrai(' + i + ',' + r + ')">V</button>';
+            html += '<button class="' + fClass + '" onclick="setFaux(' + i + ',' + r + ')">F</button>';
+            html += '</div>';
+            if (champ.reponses.length > 2) {
+              html += '<button class="btn-suppr-rep" onclick="supprimerReponse(' + i + ',' + r + ')">✕</button>';
+            }
+            html += '</div>';
+          }
+          html += '</div>';
+          html += '<div class="champ-actions">';
+          html += '<button onclick="ajouterReponse(' + i + ')">+ Réponse</button>';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        }
+
+        else if (champ.type === 'open') {
+          html += '<input type="text" placeholder="Question ouverte..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        }
+
+        else if (champ.type === 'retenir') {
+          html += '<input type="text" class="champ-retenir" placeholder="Mots-clés séparés par des virgules..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        }
+
+        else if (champ.type === 'info') {
+          html += '<input type="text" placeholder="Information..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        }
+
+        html += '</div>'; // champ-contenu
+        html += '</div>'; // champ-item
       }
 
       container.innerHTML = html;
     }
 
-    // Fermer le dropdown si on clique ailleurs
-    document.addEventListener('click', function(e) {
-      var btn = document.getElementById('btnAjoutChamp');
-      if (btn && !btn.contains(e.target)) {
-        document.getElementById('dropdownMenu').classList.remove('open');
-        dropdownOpen = false;
+    // ============================================================
+    // QUIZ - RÉPONSES
+    // ============================================================
+    function ajouterReponse(index) {
+      champsAjoutes[index].reponses.push({ texte: '', correct: false });
+      afficherChamps();
+    }
+
+    function supprimerReponse(index, repIndex) {
+      if (champsAjoutes[index].reponses.length <= 2) return;
+      champsAjoutes[index].reponses.splice(repIndex, 1);
+      afficherChamps();
+    }
+
+    function setVrai(index, repIndex) {
+      var reponses = champsAjoutes[index].reponses;
+      for (var i = 0; i < reponses.length; i++) {
+        reponses[i].correct = (i === repIndex);
       }
-    });
+      afficherChamps();
+    }
+
+    function setFaux(index, repIndex) {
+      champsAjoutes[index].reponses[repIndex].correct = false;
+      afficherChamps();
+    }
+
+    // Exposer les fonctions pour les onclick
+    window.ajouterReponse = ajouterReponse;
+    window.supprimerReponse = supprimerReponse;
+    window.setVrai = setVrai;
+    window.setFaux = setFaux;
 
     // ============================================================
     // ENREGISTRER
@@ -831,45 +1025,48 @@
       var niveau = niveauActuel;
       var msg = document.getElementById('messageTexte');
 
-      if (!titre) { afficherMsg('Veuillez saisir un titre', 'error'); return; }
-      if (!contenu) { afficherMsg('Veuillez écrire du contenu', 'error'); return; }
+      if (!titre) { msg.className = 'msg error'; msg.textContent = 'Veuillez saisir un titre'; return; }
+      if (!contenu) { msg.className = 'msg error'; msg.textContent = 'Veuillez écrire du contenu'; return; }
 
-      // Compter les mots
       var mots = contenu.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
 
-      // Construire le contenu avec les champs ajoutés
-      var contenuFinal = contenu;
+      // Construire le contenu avec les champs
       var colonnes = ['-s- ' + contenu];
 
       for (var i = 0; i < champsAjoutes.length; i++) {
         var champ = champsAjoutes[i];
-        if (!champ.contenu.trim()) continue;
-
         if (champ.type === 'quiz') {
+          if (!champ.contenu.trim()) continue;
           colonnes.push('-q- ' + champ.contenu);
-          // Ajouter deux réponses par défaut
-          colonnes.push('-v- Réponse vraie');
-          colonnes.push('-f- Réponse fausse');
+          for (var r = 0; r < champ.reponses.length; r++) {
+            var rep = champ.reponses[r];
+            if (!rep.texte.trim()) continue;
+            var prefix = rep.correct ? '-v- ' : '-f- ';
+            colonnes.push(prefix + rep.texte);
+          }
         } else if (champ.type === 'open') {
+          if (!champ.contenu.trim()) continue;
           colonnes.push('-qs- ' + champ.contenu);
         } else if (champ.type === 'retenir') {
+          if (!champ.contenu.trim()) continue;
           colonnes.push('-r- ' + champ.contenu);
         } else if (champ.type === 'info') {
+          if (!champ.contenu.trim()) continue;
           colonnes.push('-i- ' + champ.contenu);
         }
       }
 
-      var contenuColonnes = colonnes.join(' | ');
+      var contenuFinal = colonnes.join(' | ');
 
       var btn = document.getElementById('btnEnregistrer');
       btn.disabled = true;
-      btn.textContent = 'Enregistrement...';
-      msg.style.display = 'none';
+      btn.textContent = '...';
+      msg.className = 'msg';
+      msg.textContent = '';
 
       var maintenant = new Date().toISOString();
 
       if (modeEdition && postIdEdit) {
-        // MODIFICATION
         var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
           '&id=' + encodeURIComponent(postIdEdit) +
           '&titre=' + encodeURIComponent(titre) +
@@ -879,32 +1076,31 @@
           '&mots=' + encodeURIComponent(mots) +
           '&dateModif=' + encodeURIComponent(maintenant);
 
-        var colonnesArray = contenuColonnes.split(' | ');
-        for (var i = 0; i < colonnesArray.length; i++) {
-          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnesArray[i]);
+        var parts = contenuFinal.split(' | ');
+        for (var i = 0; i < parts.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(parts[i]);
         }
 
         fetch(url)
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsg('Texte mis à jour', 'success');
-              btn.textContent = 'Enregistrer';
+              msg.className = 'msg success';
+              msg.textContent = 'Texte mis à jour';
               btn.disabled = false;
-              fermerModal();
-              chargerPosts();
+              btn.textContent = 'Enregistrer';
+              setTimeout(function() { fermerModal(); chargerPosts(); }, 500);
             } else {
               throw new Error(data.message || 'Erreur');
             }
           })
           .catch(function(err) {
-            afficherMsg('Erreur : ' + err.message, 'error');
-            btn.textContent = 'Enregistrer';
+            msg.className = 'msg error';
+            msg.textContent = 'Erreur : ' + err.message;
             btn.disabled = false;
+            btn.textContent = 'Enregistrer';
           });
-
       } else {
-        // AJOUT
         var url = CONFIG.SCRIPT_URL + '?action=addPost' +
           '&titre=' + encodeURIComponent(titre) +
           '&niveau=' + encodeURIComponent(niveau) +
@@ -913,34 +1109,35 @@
           '&mots=' + encodeURIComponent(mots) +
           '&date=' + encodeURIComponent(new Date().toISOString().slice(0, 10));
 
-        var colonnesArray = contenuColonnes.split(' | ');
-        for (var i = 0; i < colonnesArray.length; i++) {
-          url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnesArray[i]);
+        var parts = contenuFinal.split(' | ');
+        for (var i = 0; i < parts.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(parts[i]);
         }
 
         fetch(url)
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsg('Texte ajouté', 'success');
-              btn.textContent = 'Ajouter';
+              msg.className = 'msg success';
+              msg.textContent = 'Texte ajouté';
               btn.disabled = false;
-              fermerModal();
-              chargerPosts();
+              btn.textContent = 'Enregistrer';
+              setTimeout(function() { fermerModal(); chargerPosts(); }, 500);
             } else {
               throw new Error(data.message || 'Erreur');
             }
           })
           .catch(function(err) {
-            afficherMsg('Erreur : ' + err.message, 'error');
-            btn.textContent = 'Ajouter';
+            msg.className = 'msg error';
+            msg.textContent = 'Erreur : ' + err.message;
             btn.disabled = false;
+            btn.textContent = 'Enregistrer';
           });
       }
     }
 
     // ============================================================
-    // MODIFIER UN POST
+    // MODIFIER
     // ============================================================
     function modifierPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
@@ -949,14 +1146,10 @@
       modeEdition = true;
       postIdEdit = postId;
 
-      document.getElementById('modalTitre').textContent = 'Modifier le texte';
-      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
       document.getElementById('inputTitre').value = post.titre || '';
-
-      // Niveau
       if (post.niveau) setNiveau(parseInt(post.niveau));
 
-      // Catégorie
       var select = document.getElementById('inputCategorie');
       for (var i = 0; i < select.options.length; i++) {
         if (select.options[i].value === post.categorie) {
@@ -965,7 +1158,6 @@
         }
       }
 
-      // Contenu
       var contenu = '';
       var champs = [];
 
@@ -978,13 +1170,31 @@
           if (ligne.startsWith('-s-')) {
             contenu = ligne.replace('-s-', '').trim();
           } else if (ligne.startsWith('-q-')) {
-            champs.push({ type: 'quiz', label: 'Quiz', contenu: ligne.replace('-q-', '').trim() });
+            var qText = ligne.replace('-q-', '').trim();
+            var reponses = [];
+            for (var j = i + 1; j < colonnes.length; j++) {
+              var next = colonnes[j].trim();
+              if (next.startsWith('-v-')) {
+                reponses.push({ texte: next.replace('-v-', '').trim(), correct: true });
+                i = j;
+              } else if (next.startsWith('-f-')) {
+                reponses.push({ texte: next.replace('-f-', '').trim(), correct: false });
+                i = j;
+              } else {
+                break;
+              }
+            }
+            if (reponses.length < 2) {
+              reponses.push({ texte: '', correct: true });
+              reponses.push({ texte: '', correct: false });
+            }
+            champs.push({ type: 'quiz', label: 'Quiz', contenu: qText, reponses: reponses });
           } else if (ligne.startsWith('-qs-')) {
-            champs.push({ type: 'open', label: 'Question ouverte', contenu: ligne.replace('-qs-', '').trim() });
+            champs.push({ type: 'open', label: 'Question ouverte', contenu: ligne.replace('-qs-', '').trim(), reponses: [] });
           } else if (ligne.startsWith('-r-')) {
-            champs.push({ type: 'retenir', label: 'Retenir', contenu: ligne.replace('-r-', '').trim() });
+            champs.push({ type: 'retenir', label: 'Retenir', contenu: ligne.replace('-r-', '').trim(), reponses: [] });
           } else if (ligne.startsWith('-i-')) {
-            champs.push({ type: 'info', label: 'Info', contenu: ligne.replace('-i-', '').trim() });
+            champs.push({ type: 'info', label: 'Info', contenu: ligne.replace('-i-', '').trim(), reponses: [] });
           }
         }
       }
@@ -995,32 +1205,18 @@
       mettreAJourCompteur();
 
       document.getElementById('modalTexte').classList.add('visible');
-      document.getElementById('messageTexte').style.display = 'none';
+      document.getElementById('messageTexte').className = 'msg';
+      document.getElementById('messageTexte').textContent = '';
     }
 
     // ============================================================
-    // SUPPRIMER UN POST
+    // SUPPRIMER
     // ============================================================
     function supprimerPost(postId) {
       if (!confirm('Supprimer ce texte définitivement ?')) return;
-
       DataManager.supprimerPost(postId)
-        .then(function() {
-          chargerPosts();
-        })
-        .catch(function(err) {
-          alert('Erreur : ' + err.message);
-        });
-    }
-
-    // ============================================================
-    // MESSAGE
-    // ============================================================
-    function afficherMsg(texte, type) {
-      var msg = document.getElementById('messageTexte');
-      msg.textContent = texte;
-      msg.style.color = type === 'success' ? '#2c7a4a' : '#b34a4a';
-      msg.style.display = 'block';
+        .then(function() { chargerPosts(); })
+        .catch(function(err) { alert('Erreur : ' + err.message); });
     }
 
     // ============================================================
@@ -1030,7 +1226,7 @@
       chargerPosts();
     });
 
-    // Exposer les fonctions au global
+    // Exposer les fonctions
     window.ouvrirModal = ouvrirModal;
     window.fermerModal = fermerModal;
     window.setNiveau = setNiveau;
