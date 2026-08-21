@@ -27,6 +27,7 @@
       padding: 40px 20px;
       box-sizing: border-box;
       z-index: 1;
+      background: var(--bg);
     }
 
     .page-wrapper.active {
@@ -46,10 +47,13 @@
       text-align: justify;
       color: var(--text);
       padding: 20px 0;
+      word-wrap: break-word;
+      hyphens: auto;
     }
 
     .page-content p {
       margin-bottom: 1.5em;
+      text-align: justify;
     }
 
     .page-content p:last-child {
@@ -126,7 +130,7 @@
       opacity: 0;
     }
 
-    /* ===== INDICATEUR DE PROGRESSION ===== */
+    /* ===== BARRE DE PROGRESSION ===== */
     .progress-bar {
       position: fixed;
       bottom: 0;
@@ -225,62 +229,7 @@
         .catch(function(error) { afficherErreur(error.message); });
     }
 
-    // ===== PRÉPARER LES PAGES =====
-    function preparerPages(post) {
-      var texteComplet = reconstituerTexte(post.contenu || '');
-      var pages = [];
-      
-      // Créer un conteneur temporaire pour mesurer
-      var mesure = document.createElement('div');
-      mesure.style.position = 'fixed';
-      mesure.style.top = '-9999px';
-      mesure.style.left = '0';
-      mesure.style.width = window.innerWidth + 'px';
-      mesure.style.maxWidth = '700px';
-      mesure.style.padding = '40px 20px';
-      mesure.style.boxSizing = 'border-box';
-      mesure.style.fontFamily = 'Georgia, Times New Roman, serif';
-      mesure.style.fontSize = '22px';
-      mesure.style.lineHeight = '2.2';
-      mesure.style.textAlign = 'justify';
-      document.body.appendChild(mesure);
-
-      // Calculer la hauteur disponible (100vh - padding)
-      var hauteurDispo = window.innerHeight - 80; // 40px de padding en haut et en bas
-
-      // Découper en mots
-      var mots = texteComplet.split(' ');
-      var pageActuelle = [];
-      var hauteurActuelle = 0;
-
-      for (var i = 0; i < mots.length; i++) {
-        pageActuelle.push(mots[i]);
-        mesure.innerHTML = pageActuelle.join(' ');
-        hauteurActuelle = mesure.scrollHeight;
-
-        if (hauteurActuelle > hauteurDispo && pageActuelle.length > 1) {
-          // Retirer le dernier mot
-          var dernierMot = pageActuelle.pop();
-          pages.push(pageActuelle.join(' '));
-          pageActuelle = [dernierMot];
-        }
-      }
-
-      if (pageActuelle.length > 0) {
-        pages.push(pageActuelle.join(' '));
-      }
-
-      document.body.removeChild(mesure);
-
-      // Si pas de pages, ajouter une page vide
-      if (pages.length === 0) {
-        pages.push('Ce texte est vide.');
-      }
-
-      etat.pages = pages;
-    }
-
-    // ===== RECONSTITUER LE TEXTE =====
+    // ===== RECONSTITUER LE TEXTE AVEC SAUTS DE LIGNE =====
     function reconstituerTexte(contenu) {
       if (!contenu) return '';
 
@@ -301,7 +250,67 @@
         return brut || '';
       }
 
-      return textes.join(' ');
+      // Joindre avec des sauts de ligne pour garder les paragraphes
+      return textes.join('\n\n');
+    }
+
+    // ===== PRÉPARER LES PAGES (PARAGRAPHES + MOTS) =====
+    function preparerPages(post) {
+      var texteComplet = reconstituerTexte(post.contenu || '');
+      if (!texteComplet) { etat.pages = ['Ce texte est vide.']; return; }
+
+      var pages = [];
+
+      // Créer un conteneur de mesure
+      var mesure = document.createElement('div');
+      mesure.style.cssText = 'position:fixed;top:-9999px;left:0;width:' + Math.min(window.innerWidth - 40, 700) + 'px;padding:40px 20px;box-sizing:border-box;font-family:Georgia,serif;font-size:22px;line-height:2.2;text-align:justify;';
+      document.body.appendChild(mesure);
+
+      var hauteurDispo = window.innerHeight - 80;
+
+      // Découper en paragraphes
+      var paragraphes = texteComplet.split('\n\n').filter(function(p) { return p.trim() !== ''; });
+
+      var pageActuelle = [];
+
+      for (var i = 0; i < paragraphes.length; i++) {
+        var test = pageActuelle.concat([paragraphes[i]]);
+        mesure.innerHTML = test.join('\n\n');
+
+        if (mesure.scrollHeight > hauteurDispo) {
+          // Si la page actuelle est vide, le paragraphe est trop long → le couper par mots
+          if (pageActuelle.length === 0) {
+            var mots = paragraphes[i].split(' ');
+            var temp = [];
+            for (var j = 0; j < mots.length; j++) {
+              temp.push(mots[j]);
+              mesure.innerHTML = temp.join(' ');
+              if (mesure.scrollHeight > hauteurDispo && temp.length > 1) {
+                temp.pop();
+                pages.push(temp.join(' '));
+                temp = [mots[j]];
+              }
+            }
+            if (temp.length > 0) {
+              pageActuelle = temp;
+            }
+          } else {
+            pages.push(pageActuelle.join('\n\n'));
+            pageActuelle = [paragraphes[i]];
+          }
+        } else {
+          pageActuelle.push(paragraphes[i]);
+        }
+      }
+
+      if (pageActuelle.length > 0) {
+        pages.push(pageActuelle.join('\n\n'));
+      }
+
+      document.body.removeChild(mesure);
+
+      if (pages.length === 0) pages = ['Ce texte est vide.'];
+      etat.pages = pages;
     }
 
     // ===== AFFICHER UNE PAGE =====
@@ -312,10 +321,14 @@
       // Nettoyer le conteneur
       container.innerHTML = '';
 
+      // Convertir les sauts de ligne en paragraphes HTML
+      var paragraphesHtml = pageHtml.split('\n\n').filter(function(p) { return p.trim() !== ''; });
+      var htmlFinal = paragraphesHtml.map(function(p) { return '<p>' + p + '</p>'; }).join('');
+
       // Créer la page
       var wrapper = document.createElement('div');
       wrapper.className = 'page-wrapper active';
-      wrapper.innerHTML = '<div class="page-content">' + pageHtml + '</div>';
+      wrapper.innerHTML = '<div class="page-content">' + htmlFinal + '</div>';
       container.appendChild(wrapper);
 
       etat.currentIndex = index;
@@ -332,10 +345,14 @@
       var container = document.getElementById('pagesContainer');
       var currentWrapper = container.querySelector('.page-wrapper.active');
 
-      // Créer la nouvelle page
+      // Convertir la nouvelle page en HTML
+      var pageHtml = etat.pages[etat.currentIndex + 1] || '';
+      var paragraphesHtml = pageHtml.split('\n\n').filter(function(p) { return p.trim() !== ''; });
+      var htmlFinal = paragraphesHtml.map(function(p) { return '<p>' + p + '</p>'; }).join('');
+
       var newWrapper = document.createElement('div');
       newWrapper.className = 'page-wrapper';
-      newWrapper.innerHTML = '<div class="page-content">' + etat.pages[etat.currentIndex + 1] + '</div>';
+      newWrapper.innerHTML = '<div class="page-content">' + htmlFinal + '</div>';
       container.appendChild(newWrapper);
 
       // Déclencher la transition
@@ -349,7 +366,6 @@
       mettreAJourProgression();
 
       setTimeout(function() {
-        // Nettoyer les anciennes pages (garder seulement la dernière)
         var wrappers = container.querySelectorAll('.page-wrapper');
         if (wrappers.length > 2) {
           for (var i = 0; i < wrappers.length - 1; i++) {
@@ -371,13 +387,15 @@
       var container = document.getElementById('pagesContainer');
       var currentWrapper = container.querySelector('.page-wrapper.active');
 
-      // Créer la nouvelle page
+      var pageHtml = etat.pages[etat.currentIndex - 1] || '';
+      var paragraphesHtml = pageHtml.split('\n\n').filter(function(p) { return p.trim() !== ''; });
+      var htmlFinal = paragraphesHtml.map(function(p) { return '<p>' + p + '</p>'; }).join('');
+
       var newWrapper = document.createElement('div');
       newWrapper.className = 'page-wrapper';
-      newWrapper.innerHTML = '<div class="page-content">' + etat.pages[etat.currentIndex - 1] + '</div>';
+      newWrapper.innerHTML = '<div class="page-content">' + htmlFinal + '</div>';
       container.appendChild(newWrapper);
 
-      // Déclencher la transition
       requestAnimationFrame(function() {
         currentWrapper.classList.remove('active');
         newWrapper.classList.add('active');
@@ -420,18 +438,14 @@
     // ===== GÉRER LE HEADER =====
     function gererHeader() {
       var header = document.getElementById('lectureHeader');
-      
-      // Réinitialiser le timer
       if (etat.headerTimeout) {
         clearTimeout(etat.headerTimeout);
         etat.headerTimeout = null;
       }
-
-      // Montrer le header
       header.classList.remove('hidden');
       etat.headerVisible = true;
+      document.getElementById('pagination').classList.remove('hidden');
 
-      // Cacher après 3 secondes d'inactivité
       etat.headerTimeout = setTimeout(function() {
         header.classList.add('hidden');
         etat.headerVisible = false;
@@ -448,7 +462,6 @@
       var x = e.clientX - rect.left;
       var width = rect.width;
 
-      // Ignorer les clics sur les boutons
       if (e.target.closest('.btn-close')) return;
 
       if (x < width * 0.2) {
@@ -456,13 +469,11 @@
       } else if (x > width * 0.8) {
         pageSuivante();
       } else {
-        // Clic au milieu : afficher/masquer le header
         var header = document.getElementById('lectureHeader');
         if (header.classList.contains('hidden')) {
           header.classList.remove('hidden');
           document.getElementById('pagination').classList.remove('hidden');
           etat.headerVisible = true;
-          // Remettre le timer pour cacher
           if (etat.headerTimeout) clearTimeout(etat.headerTimeout);
           etat.headerTimeout = setTimeout(function() {
             header.classList.add('hidden');
@@ -515,6 +526,25 @@
       }, 500);
     });
 
+    // Mouvement souris pour réafficher le header
+    var mouseTimeout = null;
+    document.addEventListener('mousemove', function() {
+      var header = document.getElementById('lectureHeader');
+      var pagination = document.getElementById('pagination');
+      
+      if (header.classList.contains('hidden')) {
+        header.classList.remove('hidden');
+        pagination.classList.remove('hidden');
+        etat.headerVisible = true;
+        if (etat.headerTimeout) clearTimeout(etat.headerTimeout);
+        etat.headerTimeout = setTimeout(function() {
+          header.classList.add('hidden');
+          etat.headerVisible = false;
+          pagination.classList.add('hidden');
+        }, 3000);
+      }
+    });
+
     // ===== ERREUR =====
     function afficherErreur(message) {
       var container = document.getElementById('pagesContainer');
@@ -531,26 +561,6 @@
       document.getElementById('pagination').style.display = 'none';
       document.getElementById('lectureHeader').style.display = 'none';
     }
-
-    // ===== MOUVEMENT DE LA SOURIS POUR RÉAFFICHER LE HEADER =====
-    var mouseTimeout = null;
-    document.addEventListener('mousemove', function() {
-      var header = document.getElementById('lectureHeader');
-      var pagination = document.getElementById('pagination');
-      
-      if (header.classList.contains('hidden')) {
-        header.classList.remove('hidden');
-        pagination.classList.remove('hidden');
-        etat.headerVisible = true;
-        
-        if (etat.headerTimeout) clearTimeout(etat.headerTimeout);
-        etat.headerTimeout = setTimeout(function() {
-          header.classList.add('hidden');
-          etat.headerVisible = false;
-          pagination.classList.add('hidden');
-        }, 3000);
-      }
-    });
   </script>
 
 </body>
