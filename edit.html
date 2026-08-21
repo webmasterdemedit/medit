@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Éditer</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✎</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    /* ===== PAGE PLEIN ÉCRAN ===== */
+    body {
+      margin: 0;
+      padding: 0;
+      height: 100vh;
+      overflow: hidden;
+      background: var(--bg);
+    }
+
+    .edit-container {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      padding: 8px 12px;
+      box-sizing: border-box;
+      background: var(--bg);
+    }
+
+    /* ===== HEADER ===== */
+    .edit-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border);
+      flex-shrink: 0;
+    }
+
+    .edit-header .input-titre {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: var(--font-serif);
+      font-size: 18px;
+      color: var(--text);
+      outline: none;
+      padding: 4px 0;
+    }
+
+    .edit-header .input-titre::placeholder {
+      color: var(--text-muted);
+    }
+
+    .edit-header .btn-enregistrer {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 4px 16px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      cursor: pointer;
+      transition: all 0.15s;
+      flex-shrink: 0;
+    }
+
+    .edit-header .btn-enregistrer:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .edit-header .btn-enregistrer:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .edit-header .btn-annuler {
+      background: none;
+      border: none;
+      color: var(--text-secondary);
+      font-size: 20px;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+      text-decoration: none;
+    }
+
+    .edit-header .btn-annuler:hover {
+      color: var(--text);
+    }
+
+    /* ===== METADONNÉES ===== */
+    .meta-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: nowrap;
+      flex-shrink: 0;
+      padding: 8px 0;
+      align-items: center;
+    }
+
+    .meta-row .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .meta-row .meta-group label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .meta-row .meta-group select {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 4px 8px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      border-radius: 0;
+      outline: none;
+      min-width: 80px;
+    }
+
+    .meta-row .meta-group select:focus {
+      border-color: var(--text);
+    }
+
+    .niveaux {
+      display: flex;
+      gap: 4px;
+    }
+
+    .niveaux .btn-niveau {
+      width: 28px;
+      height: 28px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      transition: all 0.15s;
+    }
+
+    .niveaux .btn-niveau:hover {
+      background: var(--bg-hover);
+    }
+
+    .niveaux .btn-niveau.active {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    /* ===== TEXTAREA ===== */
+    .textarea-wrap {
+      flex: 1;
+      min-height: 0;
+      margin-bottom: 6px;
+    }
+
+    .textarea-wrap textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 0;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      padding: 10px 12px;
+      font-family: var(--font-serif);
+      font-size: 17px;
+      line-height: 2;
+      resize: none;
+      outline: none;
+      box-sizing: border-box;
+    }
+
+    .textarea-wrap textarea:focus {
+      border-color: var(--text);
+    }
+
+    .textarea-wrap .compteur {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      padding: 2px 0;
+    }
+
+    /* ===== CHAMPS ===== */
+    .champs-section {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+      margin-bottom: 6px;
+      max-height: 40vh;
+      overflow-y: auto;
+    }
+
+    .champs-section .champs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
+
+    .champs-section .champs-header .champs-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .champs-section .champs-header .btn-ajout-champ {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 2px 12px;
+      font-family: var(--font-sans);
+      font-size: 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+      position: relative;
+    }
+
+    .champs-section .champs-header .btn-ajout-champ:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .champs-section .champs-header .btn-ajout-champ .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      min-width: 160px;
+      z-index: 10;
+      margin-top: 2px;
+    }
+
+    .champs-section .champs-header .btn-ajout-champ .dropdown.open {
+      display: block;
+    }
+
+    .champs-section .champs-header .btn-ajout-champ .dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 6px 14px;
+      font-family: var(--font-sans);
+      font-size: 13px;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .champs-section .champs-header .btn-ajout-champ .dropdown button:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+
+    /* ===== CHAMP ITEM ===== */
+    .champ-item {
+      border: 1px solid var(--border);
+      padding: 6px 10px;
+      margin-bottom: 4px;
+      background: var(--bg);
+    }
+
+    .champ-item .champ-type {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      display: block;
+      margin-bottom: 2px;
+    }
+
+    .champ-item .champ-contenu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .champ-item .champ-contenu input[type="text"] {
+      border: none;
+      border-bottom: 1px solid var(--border-light);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-serif);
+      font-size: 15px;
+      padding: 2px 0;
+      outline: none;
+      width: 100%;
+    }
+
+    .champ-item .champ-contenu input[type="text"]:focus {
+      border-bottom-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponses {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      padding-left: 10px;
+      margin-top: 2px;
+    }
+
+    .champ-item .champ-contenu .reponse-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .champ-item .champ-contenu .reponse-row input[type="text"] {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid var(--border-light);
+      background: transparent;
+      color: var(--text);
+      font-family: var(--font-serif);
+      font-size: 14px;
+      padding: 2px 0;
+      outline: none;
+    }
+
+    .champ-item .champ-contenu .reponse-row input[type="text"]:focus {
+      border-bottom-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button {
+      width: 24px;
+      height: 24px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 10px;
+      font-family: var(--font-sans);
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button:hover {
+      background: var(--bg-hover);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button.active-v {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .vf button.active-f {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--text);
+    }
+
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 2px;
+    }
+
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep:hover {
+      color: #b34a4a;
+    }
+
+    .champ-item .champ-actions {
+      display: flex;
+      gap: 6px;
+      margin-top: 4px;
+      flex-wrap: wrap;
+    }
+
+    .champ-item .champ-actions button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      padding: 1px 10px;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+
+    .champ-item .champ-actions button:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .champ-item .champ-actions .btn-suppr-champ:hover {
+      color: #b34a4a;
+      border-color: #b34a4a;
+    }
+
+    /* ===== MESSAGE ===== */
+    .msg {
+      font-family: var(--font-sans);
+      font-size: 13px;
+      padding: 4px 0;
+      display: none;
+      flex-shrink: 0;
+    }
+
+    .msg.success { color: #2c7a4a; display: block; }
+    .msg.error { color: #b34a4a; display: block; }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 600px) {
+      .edit-container { padding: 4px 8px; }
+      .edit-header .input-titre { font-size: 16px; }
+      .edit-header .btn-enregistrer { font-size: 12px; padding: 2px 12px; }
+      .edit-header .btn-annuler { font-size: 18px; }
+
+      .meta-row { flex-wrap: wrap; gap: 4px; }
+      .meta-row .meta-group select { min-width: 60px; font-size: 12px; }
+      .meta-row .meta-group label { font-size: 10px; }
+
+      .textarea-wrap textarea { font-size: 15px; padding: 6px 8px; }
+
+      .champ-item { padding: 4px 6px; }
+      .champ-item .champ-contenu input[type="text"] { font-size: 14px; }
+      .champ-item .champ-contenu .reponse-row input[type="text"] { font-size: 13px; }
+      .champ-item .champ-contenu .reponse-row .vf button { width: 22px; height: 22px; font-size: 9px; }
+
+      .champs-section { max-height: 30vh; }
+    }
+  </style>
+
+</head>
+<body>
+
+  <div class="edit-container">
+
+    <!-- HEADER -->
+    <div class="edit-header">
+      <input type="text" class="input-titre" id="inputTitre" placeholder="Titre de l'article..." />
+      <button class="btn-enregistrer" id="btnEnregistrer" onclick="enregistrer()">Enregistrer</button>
+      <a href="/medit/admin.html" class="btn-annuler">✕</a>
+    </div>
+
+    <!-- METADONNÉES -->
+    <div class="meta-row">
+      <div class="meta-group">
+        <label>Catégorie</label>
+        <select id="inputCategorie">
+          <option value="Foi">Foi</option>
+          <option value="Rappels divers">Rappels divers</option>
+          <option value="Sourate">Sourate</option>
+          <option value="Hadith">Hadith</option>
+          <option value="Meditation">Méditation</option>
+          <option value="Invocation">Invocation</option>
+          <option value="Histoire">Histoire</option>
+          <option value="Morale">Morale</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="meta-group">
+        <label>Niveau</label>
+        <div class="niveaux">
+          <button type="button" class="btn-niveau active" data-niveau="1" onclick="setNiveau(1)">1</button>
+          <button type="button" class="btn-niveau" data-niveau="2" onclick="setNiveau(2)">2</button>
+          <button type="button" class="btn-niveau" data-niveau="3" onclick="setNiveau(3)">3</button>
+        </div>
+        <input type="hidden" id="inputNiveau" value="1" />
+      </div>
+    </div>
+
+    <!-- TEXTAREA -->
+    <div class="textarea-wrap">
+      <textarea id="inputContenu" placeholder="Écrivez votre texte ici..." oninput="mettreAJourCompteur()"></textarea>
+      <div class="compteur" id="compteurMots">0 mots</div>
+    </div>
+
+    <!-- CHAMPS -->
+    <div class="champs-section">
+      <div class="champs-header">
+        <span class="champs-label">Champs</span>
+        <button class="btn-ajout-champ" id="btnAjoutChamp" onclick="toggleDropdown()">
+          + Ajouter
+          <div class="dropdown" id="dropdownMenu">
+            <button onclick="ajouterChamp('quiz')">Quiz</button>
+            <button onclick="ajouterChamp('open')">Question ouverte</button>
+            <button onclick="ajouterChamp('retenir')">Retenir</button>
+            <button onclick="ajouterChamp('info')">Info</button>
+          </div>
+        </button>
+      </div>
+      <div id="champsListe"></div>
+    </div>
+
+    <div id="messageTexte" class="msg"></div>
+
+  </div>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // ÉTAT
+    // ============================================================
+    var postIdEdit = null;
+    var modeEdition = false;
+    var niveauActuel = 1;
+    var champsAjoutes = [];
+    var dropdownOpen = false;
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+
+      if (!id || id === 'new') {
+        // Mode création
+        modeEdition = false;
+        postIdEdit = null;
+        document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+        document.getElementById('inputTitre').value = '';
+        document.getElementById('inputContenu').value = '';
+        setNiveau(1);
+        mettreAJourCompteur();
+        return;
+      }
+
+      // Mode édition
+      modeEdition = true;
+      postIdEdit = id;
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+      chargerPost(id);
+    });
+
+    // ============================================================
+    // CHARGER UN POST
+    // ============================================================
+    function chargerPost(id) {
+      DataManager.charger()
+        .then(function(data) {
+          var posts = data.posts || [];
+          var post = posts.find(function(p) { return p.id === id; });
+          if (!post) {
+            document.getElementById('messageTexte').className = 'msg error';
+            document.getElementById('messageTexte').textContent = 'Post introuvable';
+            return;
+          }
+
+          document.getElementById('inputTitre').value = post.titre || '';
+          if (post.niveau) setNiveau(parseInt(post.niveau));
+
+          var select = document.getElementById('inputCategorie');
+          for (var i = 0; i < select.options.length; i++) {
+            if (select.options[i].value === post.categorie) {
+              select.selectedIndex = i;
+              break;
+            }
+          }
+
+          var contenu = '';
+          var champs = [];
+
+          if (post.contenu) {
+            var colonnes = post.contenu.split(' | ');
+            for (var i = 0; i < colonnes.length; i++) {
+              var ligne = colonnes[i].trim();
+              if (!ligne) continue;
+
+              if (ligne.startsWith('-s-')) {
+                contenu = ligne.replace('-s-', '').trim();
+              } else if (ligne.startsWith('-q-')) {
+                var qText = ligne.replace('-q-', '').trim();
+                var reponses = [];
+                for (var j = i + 1; j < colonnes.length; j++) {
+                  var next = colonnes[j].trim();
+                  if (next.startsWith('-v-')) {
+                    reponses.push({ texte: next.replace('-v-', '').trim(), correct: true });
+                    i = j;
+                  } else if (next.startsWith('-f-')) {
+                    reponses.push({ texte: next.replace('-f-', '').trim(), correct: false });
+                    i = j;
+                  } else {
+                    break;
+                  }
+                }
+                if (reponses.length < 2) {
+                  reponses.push({ texte: '', correct: true });
+                  reponses.push({ texte: '', correct: false });
+                }
+                champs.push({ type: 'quiz', label: 'Quiz', contenu: qText, reponses: reponses });
+              } else if (ligne.startsWith('-qs-')) {
+                champs.push({ type: 'open', label: 'Question ouverte', contenu: ligne.replace('-qs-', '').trim(), reponses: [] });
+              } else if (ligne.startsWith('-r-')) {
+                champs.push({ type: 'retenir', label: 'Retenir', contenu: ligne.replace('-r-', '').trim(), reponses: [] });
+              } else if (ligne.startsWith('-i-')) {
+                champs.push({ type: 'info', label: 'Info', contenu: ligne.replace('-i-', '').trim(), reponses: [] });
+              }
+            }
+          }
+
+          document.getElementById('inputContenu').value = contenu;
+          champsAjoutes = champs;
+          afficherChamps();
+          mettreAJourCompteur();
+        })
+        .catch(function(error) {
+          document.getElementById('messageTexte').className = 'msg error';
+          document.getElementById('messageTexte').textContent = 'Erreur : ' + error.message;
+        });
+    }
+
+    // ============================================================
+    // NIVEAU
+    // ============================================================
+    function setNiveau(n) {
+      niveauActuel = n;
+      document.querySelectorAll('.btn-niveau').forEach(function(btn) {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.niveau) === n) btn.classList.add('active');
+      });
+      document.getElementById('inputNiveau').value = n;
+    }
+
+    // ============================================================
+    // COMPTEUR
+    // ============================================================
+    function mettreAJourCompteur() {
+      var texte = document.getElementById('inputContenu').value || '';
+      var mots = texte.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+      document.getElementById('compteurMots').textContent = mots + ' mots';
+    }
+
+    // ============================================================
+    // DROPDOWN
+    // ============================================================
+    function toggleDropdown() {
+      dropdownOpen = !dropdownOpen;
+      document.getElementById('dropdownMenu').classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      var btn = document.getElementById('btnAjoutChamp');
+      if (btn && !btn.contains(e.target)) {
+        document.getElementById('dropdownMenu').classList.remove('open');
+        dropdownOpen = false;
+      }
+    });
+
+    // ============================================================
+    // AJOUTER UN CHAMP
+    // ============================================================
+    function ajouterChamp(type) {
+      dropdownOpen = false;
+      document.getElementById('dropdownMenu').classList.remove('open');
+
+      var labels = {
+        quiz: 'Quiz',
+        open: 'Question ouverte',
+        retenir: 'Retenir',
+        info: 'Info'
+      };
+
+      var nouveau = {
+        type: type,
+        label: labels[type] || type,
+        contenu: '',
+        reponses: []
+      };
+
+      if (type === 'quiz') {
+        nouveau.reponses = [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ];
+      }
+
+      champsAjoutes.push(nouveau);
+      afficherChamps();
+    }
+
+    // ============================================================
+    // SU
