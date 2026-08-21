@@ -75,11 +75,13 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-    }
-
-    .lecture-header.hidden {
       transform: translateY(-100%);
       opacity: 0;
+    }
+
+    .lecture-header.visible {
+      transform: translateY(0);
+      opacity: 1;
     }
 
     .lecture-header .meta-left .cat-niveau {
@@ -124,10 +126,11 @@
       border-radius: 0;
       user-select: none;
       transition: opacity 0.3s ease;
+      opacity: 0;
     }
 
-    .pagination.hidden {
-      opacity: 0;
+    .pagination.visible {
+      opacity: 1;
     }
 
     /* ===== BARRE DE PROGRESSION ===== */
@@ -198,7 +201,7 @@
       pages: [],
       currentIndex: 0,
       enTransition: false,
-      headerVisible: true,
+      headerVisible: false,
       headerTimeout: null
     };
 
@@ -224,7 +227,6 @@
           document.getElementById('metaTitre').textContent = etat.post.titre || 'Sans titre';
           document.getElementById('metaCategorie').textContent = etat.post.categorie || 'Sans catégorie';
           document.getElementById('metaNiveau').textContent = 'Niveau ' + (etat.post.niveau || 0);
-          gererHeader();
         })
         .catch(function(error) { afficherErreur(error.message); });
     }
@@ -250,73 +252,69 @@
         return brut || '';
       }
 
-      // Joindre avec des sauts de ligne pour garder les paragraphes
       return textes.join('\n\n');
     }
 
-    // ===== PRÉPARER LES PAGES (PARAGRAPHES + MOTS) =====
+    // ===== PRÉPARER LES PAGES (NOMBRE DE LIGNES IDENTIQUE) =====
     function preparerPages(post) {
-  var texteComplet = reconstituerTexte(post.contenu || '');
-  if (!texteComplet) { etat.pages = ['Ce texte est vide.']; return; }
+      var texteComplet = reconstituerTexte(post.contenu || '');
+      if (!texteComplet) { etat.pages = ['Ce texte est vide.']; return; }
 
-  // Créer un conteneur de mesure
-  var mesure = document.createElement('div');
-  mesure.style.cssText = 'position:fixed;top:-9999px;left:0;width:' + Math.min(window.innerWidth - 40, 700) + 'px;padding:40px 20px;box-sizing:border-box;font-family:Georgia,serif;font-size:22px;line-height:2.2;text-align:justify;';
-  document.body.appendChild(mesure);
+      // Créer un conteneur de mesure
+      var mesure = document.createElement('div');
+      mesure.style.cssText = 'position:fixed;top:-9999px;left:0;width:' + Math.min(window.innerWidth - 40, 700) + 'px;padding:40px 20px;box-sizing:border-box;font-family:Georgia,serif;font-size:22px;line-height:2.2;text-align:justify;';
+      document.body.appendChild(mesure);
 
-  // Calculer la hauteur d'une ligne
-  mesure.innerHTML = 'Test';
-  var hauteurLigne = mesure.scrollHeight;
+      // Calculer la hauteur d'une ligne
+      mesure.innerHTML = 'Test';
+      var hauteurLigne = mesure.scrollHeight;
 
-  // Hauteur disponible pour le texte (100vh - padding)
-  var hauteurDispo = window.innerHeight - 80;
-  var nbLignesParPage = Math.floor(hauteurDispo / hauteurLigne);
+      // Hauteur disponible pour le texte (100vh - padding)
+      var hauteurDispo = window.innerHeight - 80;
+      var nbLignesParPage = Math.floor(hauteurDispo / hauteurLigne);
 
-  // Découper le texte en paragraphes
-  var paragraphes = texteComplet.split('\n\n').filter(function(p) { return p.trim() !== ''; });
+      // Découper le texte en paragraphes
+      var paragraphes = texteComplet.split('\n\n').filter(function(p) { return p.trim() !== ''; });
 
-  var pages = [];
-  var lignesActuelles = [];
-  var compteurLignes = 0;
+      var pages = [];
+      var lignesActuelles = [];
+      var compteurLignes = 0;
 
-  for (var i = 0; i < paragraphes.length; i++) {
-    // Compter les lignes de ce paragraphe
-    mesure.innerHTML = paragraphes[i];
-    var nbLignesParagraphe = mesure.scrollHeight / hauteurLigne;
+      for (var i = 0; i < paragraphes.length; i++) {
+        // Compter les lignes de ce paragraphe
+        mesure.innerHTML = paragraphes[i];
+        var nbLignesParagraphe = mesure.scrollHeight / hauteurLigne;
 
-    if (compteurLignes + nbLignesParagraphe > nbLignesParPage && lignesActuelles.length > 0) {
-      // La page est pleine
-      pages.push(lignesActuelles.join('\n\n'));
-      lignesActuelles = [paragraphes[i]];
-      compteurLignes = nbLignesParagraphe;
-    } else {
-      lignesActuelles.push(paragraphes[i]);
-      compteurLignes += nbLignesParagraphe;
+        if (compteurLignes + nbLignesParagraphe > nbLignesParPage && lignesActuelles.length > 0) {
+          pages.push(lignesActuelles.join('\n\n'));
+          lignesActuelles = [paragraphes[i]];
+          compteurLignes = nbLignesParagraphe;
+        } else {
+          lignesActuelles.push(paragraphes[i]);
+          compteurLignes += nbLignesParagraphe;
+        }
+      }
+
+      if (lignesActuelles.length > 0) {
+        pages.push(lignesActuelles.join('\n\n'));
+      }
+
+      document.body.removeChild(mesure);
+
+      if (pages.length === 0) pages = ['Ce texte est vide.'];
+      etat.pages = pages;
     }
-  }
 
-  if (lignesActuelles.length > 0) {
-    pages.push(lignesActuelles.join('\n\n'));
-  }
-
-  document.body.removeChild(mesure);
-
-  if (pages.length === 0) pages = ['Ce texte est vide.'];
-  etat.pages = pages;
-}
     // ===== AFFICHER UNE PAGE =====
     function afficherPage(index) {
       var container = document.getElementById('pagesContainer');
       var pageHtml = etat.pages[index] || '';
 
-      // Nettoyer le conteneur
       container.innerHTML = '';
 
-      // Convertir les sauts de ligne en paragraphes HTML
       var paragraphesHtml = pageHtml.split('\n\n').filter(function(p) { return p.trim() !== ''; });
       var htmlFinal = paragraphesHtml.map(function(p) { return '<p>' + p + '</p>'; }).join('');
 
-      // Créer la page
       var wrapper = document.createElement('div');
       wrapper.className = 'page-wrapper active';
       wrapper.innerHTML = '<div class="page-content">' + htmlFinal + '</div>';
@@ -336,7 +334,6 @@
       var container = document.getElementById('pagesContainer');
       var currentWrapper = container.querySelector('.page-wrapper.active');
 
-      // Convertir la nouvelle page en HTML
       var pageHtml = etat.pages[etat.currentIndex + 1] || '';
       var paragraphesHtml = pageHtml.split('\n\n').filter(function(p) { return p.trim() !== ''; });
       var htmlFinal = paragraphesHtml.map(function(p) { return '<p>' + p + '</p>'; }).join('');
@@ -346,7 +343,6 @@
       newWrapper.innerHTML = '<div class="page-content">' + htmlFinal + '</div>';
       container.appendChild(newWrapper);
 
-      // Déclencher la transition
       requestAnimationFrame(function() {
         currentWrapper.classList.remove('active');
         newWrapper.classList.add('active');
@@ -366,7 +362,7 @@
           }
         }
         etat.enTransition = false;
-       
+        // ← SUPPRESSION DE gererHeader() ICI
       }, 850);
     }
 
@@ -406,7 +402,7 @@
           }
         }
         etat.enTransition = false;
-       
+        // ← SUPPRESSION DE gererHeader() ICI
       }, 850);
     }
 
@@ -426,21 +422,24 @@
       }
     }
 
-    // ===== GÉRER LE HEADER =====
-    function gererHeader() {
+    // ===== GÉRER LE HEADER (UNIQUEMENT AU SURVOL EN HAUT) =====
+    function montrerHeader() {
       var header = document.getElementById('lectureHeader');
+      var pagination = document.getElementById('pagination');
+      
+      header.classList.add('visible');
+      pagination.classList.add('visible');
+      etat.headerVisible = true;
+      
       if (etat.headerTimeout) {
         clearTimeout(etat.headerTimeout);
         etat.headerTimeout = null;
       }
-      header.classList.remove('hidden');
-      etat.headerVisible = true;
-      document.getElementById('pagination').classList.remove('hidden');
-
+      
       etat.headerTimeout = setTimeout(function() {
-        header.classList.add('hidden');
+        header.classList.remove('visible');
+        pagination.classList.remove('visible');
         etat.headerVisible = false;
-        document.getElementById('pagination').classList.add('hidden');
       }, 3000);
     }
 
@@ -460,18 +459,8 @@
       } else if (x > width * 0.8) {
         pageSuivante();
       } else {
-        var header = document.getElementById('lectureHeader');
-        if (header.classList.contains('hidden')) {
-          header.classList.remove('hidden');
-          document.getElementById('pagination').classList.remove('hidden');
-          etat.headerVisible = true;
-          if (etat.headerTimeout) clearTimeout(etat.headerTimeout);
-          etat.headerTimeout = setTimeout(function() {
-            header.classList.add('hidden');
-            etat.headerVisible = false;
-            document.getElementById('pagination').classList.add('hidden');
-          }, 3000);
-        }
+        // Clic au milieu : afficher le header
+        montrerHeader();
       }
     });
 
@@ -497,6 +486,9 @@
       } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
         e.preventDefault();
         pagePrecedente();
+      } else if (e.key === 'h' || e.key === 'H') {
+        // Touche H pour afficher le header
+        montrerHeader();
       }
     });
 
@@ -517,22 +509,11 @@
       }, 500);
     });
 
-    // Mouvement souris pour réafficher le header
-    var mouseTimeout = null;
-    document.addEventListener('mousemove', function() {
-      var header = document.getElementById('lectureHeader');
-      var pagination = document.getElementById('pagination');
-      
-      if (header.classList.contains('hidden')) {
-        header.classList.remove('hidden');
-        pagination.classList.remove('hidden');
-        etat.headerVisible = true;
-        if (etat.headerTimeout) clearTimeout(etat.headerTimeout);
-        etat.headerTimeout = setTimeout(function() {
-          header.classList.add('hidden');
-          etat.headerVisible = false;
-          pagination.classList.add('hidden');
-        }, 3000);
+    // Mouvement souris : si la souris est dans le tiers supérieur de l'écran, afficher le header
+    document.addEventListener('mousemove', function(e) {
+      var hauteurEcran = window.innerHeight;
+      if (e.clientY < hauteurEcran * 0.15) {
+        montrerHeader();
       }
     });
 
