@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#ffffff" />
+  <title>Lecture · Blog</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header class="lecture-header">
+    <div class="meta-left">
+      <div class="cat-niveau">
+        <span id="metaCategorie">—</span> · <span id="metaNiveau">Niveau —</span>
+      </div>
+      <div class="titre" id="metaTitre">Chargement...</div>
+    </div>
+    <div class="actions">
+      <button class="btn-close" id="btnFermer">✕</button>
+    </div>
+  </header>
+
+  <!-- CONTENU -->
+  <div class="slides-container" id="slidesContainer">
+    <div class="lecture-loader" id="lectureLoader">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+  </div>
+
+  <!-- PIED DE PAGE (optionnel) -->
+  <div style="max-width:700px;margin:0 auto;padding:20px 20px 40px 20px;text-align:center;font-family:var(--font-sans);font-size:13px;color:var(--text-muted);border-top:1px solid var(--border);">
+    <a href="/medit/mes-textes.html" style="color:var(--text-secondary);text-decoration:none;border-bottom:1px solid transparent;">← Retour aux textes</a>
+  </div>
+
+  <script>
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
+
+    // ===== INIT =====
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+      if (!id) { afficherErreur('Aucun identifiant.'); return; }
+      chargerPost(id);
+    });
+
+    // ===== CHARGER =====
+    function chargerPost(id) {
+      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
+        .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
+        .then(function(data) {
+          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
+          afficherPost(data.post);
+        })
+        .catch(function(error) { afficherErreur(error.message); });
+    }
+
+    // ===== AFFICHER POST EN MODE BLOG =====
+    function afficherPost(post) {
+      var container = document.getElementById('slidesContainer');
+      var loader = document.getElementById('lectureLoader');
+      if (loader) loader.style.display = 'none';
+
+      // Métadonnées
+      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
+      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
+      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+
+      // Reconstituer le texte à partir des slides
+      var texteComplet = reconstituerTexte(post.contenu || '');
+
+      // Afficher
+      container.innerHTML = `
+        <div class="slide-content" style="padding:40px 20px;max-width:720px;margin:0 auto;text-align:justify;">
+          ${texteComplet}
+        </div>
+      `;
+
+      // Bouton fermer
+      document.getElementById('btnFermer').addEventListener('click', function() {
+        window.location.href = '/medit/mes-textes.html';
+      });
+    }
+
+    // ===== RECONSTITUER LE TEXTE =====
+    function reconstituerTexte(contenu) {
+      if (!contenu) return '<p>Ce texte est vide.</p>';
+
+      var colonnes = contenu.split(' | ');
+      var textes = [];
+
+      for (var i = 0; i < colonnes.length; i++) {
+        var ligne = colonnes[i].trim();
+        if (!ligne) continue;
+
+        // Garder seulement les slides (-s-)
+        if (ligne.startsWith('-s-')) {
+          var texte = ligne.replace('-s-', '').trim();
+          if (texte) textes.push(texte);
+        }
+      }
+
+      if (textes.length === 0) {
+        // Si pas de slides, afficher tout le contenu (au cas où)
+        var brut = contenu.replace(/-[a-z]-/g, '').trim();
+        if (brut) return '<p>' + brut.replace(/\n/g, '</p><p>') + '</p>';
+        return '<p>Ce texte est vide.</p>';
+      }
+
+      // Joindre tous les paragraphes avec des sauts de ligne
+      var html = '';
+      for (var i = 0; i < textes.length; i++) {
+        // Diviser en paragraphes si besoin
+        var paragraphes = textes[i].split('\n').filter(function(p) { return p.trim() !== ''; });
+        for (var j = 0; j < paragraphes.length; j++) {
+          html += '<p>' + paragraphes[j].trim() + '</p>';
+        }
+      }
+
+      return html || '<p>Ce texte est vide.</p>';
+    }
+
+    // ===== ERREUR =====
+    function afficherErreur(message) {
+      var container = document.getElementById('slidesContainer');
+      var loader = document.getElementById('lectureLoader');
+      if (loader) loader.style.display = 'none';
+      container.innerHTML = `
+        <div class="lecture-error" style="max-width:600px;margin:80px auto;text-align:center;padding:40px;">
+          <div style="font-size:48px;margin-bottom:16px;">📖</div>
+          <h2 style="font-family:var(--font-serif);font-weight:400;">Texte introuvable</h2>
+          <p style="font-family:var(--font-sans);color:var(--text-secondary);">${message || 'Le texte n\'existe pas.'}</p>
+          <a href="/medit/mes-textes.html" style="display:inline-block;margin-top:20px;padding:10px 28px;border:1px solid var(--border);color:var(--text-primary);text-decoration:none;font-family:var(--font-sans);">← Retour</a>
+        </div>
+      `;
+    }
+  </script>
+
+</body>
+</html>
