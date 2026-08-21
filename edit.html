@@ -561,79 +561,13 @@
     // CHARGER UN POST
     // ============================================================
     function chargerPost(id) {
-      DataManager.charger()
-        .then(function(data) {
-          var posts = data.posts || [];
-          var post = posts.find(function(p) { return p.id === id; });
-          if (!post) {
-            document.getElementById('messageTexte').className = 'msg error';
-            document.getElementById('messageTexte').textContent = 'Post introuvable';
-            return;
-          }
-
-          document.getElementById('inputTitre').value = post.titre || '';
-          if (post.niveau) setNiveau(parseInt(post.niveau));
-
-          var select = document.getElementById('inputCategorie');
-          for (var i = 0; i < select.options.length; i++) {
-            if (select.options[i].value === post.categorie) {
-              select.selectedIndex = i;
-              break;
-            }
-          }
-
-          var contenu = '';
-          var champs = [];
-
-          if (post.contenu) {
-            var colonnes = post.contenu.split(' | ');
-            for (var i = 0; i < colonnes.length; i++) {
-              var ligne = colonnes[i].trim();
-              if (!ligne) continue;
-
-              if (ligne.startsWith('-s-')) {
-                contenu = ligne.replace('-s-', '').trim();
-              } else if (ligne.startsWith('-q-')) {
-                var qText = ligne.replace('-q-', '').trim();
-                var reponses = [];
-                for (var j = i + 1; j < colonnes.length; j++) {
-                  var next = colonnes[j].trim();
-                  if (next.startsWith('-v-')) {
-                    reponses.push({ texte: next.replace('-v-', '').trim(), correct: true });
-                    i = j;
-                  } else if (next.startsWith('-f-')) {
-                    reponses.push({ texte: next.replace('-f-', '').trim(), correct: false });
-                    i = j;
-                  } else {
-                    break;
-                  }
-                }
-                if (reponses.length < 2) {
-                  reponses.push({ texte: '', correct: true });
-                  reponses.push({ texte: '', correct: false });
-                }
-                champs.push({ type: 'quiz', label: 'Quiz', contenu: qText, reponses: reponses });
-              } else if (ligne.startsWith('-qs-')) {
-                champs.push({ type: 'open', label: 'Question ouverte', contenu: ligne.replace('-qs-', '').trim(), reponses: [] });
-              } else if (ligne.startsWith('-r-')) {
-                champs.push({ type: 'retenir', label: 'Retenir', contenu: ligne.replace('-r-', '').trim(), reponses: [] });
-              } else if (ligne.startsWith('-i-')) {
-                champs.push({ type: 'info', label: 'Info', contenu: ligne.replace('-i-', '').trim(), reponses: [] });
-              }
-            }
-          }
-
-          document.getElementById('inputContenu').value = contenu;
-          champsAjoutes = champs;
-          afficherChamps();
-          mettreAJourCompteur();
-        })
-        .catch(function(error) {
-          document.getElementById('messageTexte').className = 'msg error';
-          document.getElementById('messageTexte').textContent = 'Erreur : ' + error.message;
-        });
-    }
-
+  DataManager.charger()
+    .then(function(data) {
+      var posts = data.posts || [];  // ← utiliser data.posts directement
+      var post = posts.find(function(p) { return p.id === id; });
+      // ... le reste
+    })
+}
     // ============================================================
     // NIVEAU
     // ============================================================
