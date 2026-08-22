@@ -71,7 +71,7 @@
 
   <div class="page">
 
-    <h1>Write</h1>
+    <h1>Administration</h1>
     <p class="sous-titre-page">Gérez vos textes : ajoutez, modifiez ou supprimez les méditations.</p>
 
     <div class="stats-ligne" id="statsLigne">
@@ -91,6 +91,12 @@
         <div class="spinner"></div>
         <p>Chargement des textes...</p>
       </div>
+      
+      <!-- Conteneur pour les sous-tabs (catégories) -->
+      <div id="sousTabsContainer"></div>
+      
+      <!-- Conteneur pour la grille des posts -->
+      <div id="grilleContainer"></div>
     </div>
 
     <div class="devise">
@@ -167,23 +173,68 @@
       border-color: var(--text-primary, #1a1a1a);
     }
 
+    /* === SOUS-TABS (CATÉGORIES) === */
+    .sous-tabs-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+    }
+
+    .sous-tab-btn {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 4px 14px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sous-tab-btn:hover {
+      background: var(--bg-hover, #f0f0f0);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .sous-tab-btn.active {
+      background: var(--bg-active, #e8e8e8);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .sous-tab-btn .compteur-sous-tab {
+      background: var(--bg-badge, #e8e8e8);
+      color: var(--text-secondary, #555);
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .sous-tab-btn.active .compteur-sous-tab {
+      background: var(--bg-badge-active, #ccc);
+    }
+
     /* === GRILLE DES POSTS (comme mes-textes) === */
     .grille {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
     }
 
     .carte-post {
       display: flex;
-      justify-content: space-between;
       align-items: center;
-      padding: 14px 18px;
+      gap: 8px;
+      padding: 12px 16px;
       border: 1px solid var(--border-color, #e0e0e0);
       background: var(--bg-card, #ffffff);
-      cursor: pointer;
       transition: border-color 0.15s, background 0.15s;
-      gap: 12px;
     }
 
     .carte-post:hover {
@@ -191,9 +242,50 @@
       background: var(--bg-hover, #f7f7f7);
     }
 
+    .carte-post .ordres {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .carte-post .ordres button {
+      background: transparent;
+      border: 1px solid var(--border-color, #ddd);
+      color: var(--text-secondary, #888);
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .carte-post .ordres button:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .carte-post .ordres button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .carte-post .ordres button:disabled:hover {
+      background: transparent;
+      color: var(--text-secondary, #888);
+      border-color: var(--border-color, #ddd);
+    }
+
     .carte-post .infos {
       flex: 1;
       min-width: 0;
+      cursor: pointer;
     }
 
     .carte-post .infos .titre {
@@ -235,32 +327,11 @@
       border-radius: 4px;
     }
 
-    .carte-post .infos .meta .mots {
-      font-family: 'Roboto', sans-serif;
-      font-size: 12px;
-      color: var(--text-secondary, #555);
-    }
-
     .carte-post .statut {
       display: flex;
-      flex-direction: column;
-      align-items: flex-end;
+      align-items: center;
+      gap: 8px;
       flex-shrink: 0;
-      gap: 2px;
-    }
-
-    .carte-post .statut .date-label {
-      font-family: 'Roboto', sans-serif;
-      font-size: 11px;
-      color: var(--text-secondary, #777);
-      text-transform: uppercase;
-      letter-spacing: 0.3px;
-    }
-
-    .carte-post .statut .date-validation {
-      font-family: 'Roboto', sans-serif;
-      font-size: 13px;
-      color: var(--text-primary, #1a1a1a);
     }
 
     .carte-post .statut .btn-supprimer-admin {
@@ -272,7 +343,6 @@
       padding: 0 4px;
       transition: color 0.15s;
       line-height: 1;
-      margin-left: 8px;
     }
 
     .carte-post .statut .btn-supprimer-admin:hover {
@@ -679,18 +749,26 @@
 
     @media (max-width: 600px) {
       .carte-post {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
+        flex-wrap: wrap;
+        padding: 10px 12px;
+      }
+      .carte-post .ordres {
+        flex-direction: row;
+        order: 3;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 4px;
+      }
+      .carte-post .ordres button {
+        width: 28px;
+        height: 28px;
+      }
+      .carte-post .infos .titre {
+        font-size: 15px;
+        white-space: normal;
       }
       .carte-post .statut {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-      }
-      .carte-post .statut .btn-supprimer-admin {
-        margin-left: 0;
+        order: 2;
       }
       .stats-ligne {
         flex-direction: column;
@@ -708,6 +786,13 @@
       }
       .meta-row .meta-group {
         flex-wrap: wrap;
+      }
+      .sous-tabs-container {
+        gap: 4px;
+      }
+      .sous-tab-btn {
+        font-size: 12px;
+        padding: 3px 10px;
       }
     }
   </style>
@@ -787,6 +872,7 @@
     var niveauActuel = 1;
     var champsAjoutes = [];
     var dropdownOpen = false;
+    var categorieActuelle = 'toutes';
 
     // ============================================================
     // CHARGER
@@ -804,19 +890,22 @@
           tousLesPosts.forEach(function(p) {
             if (!p.statut) p.statut = 'publie';
             if (!p.date) p.date = new Date().toISOString();
+            if (p.ordre === undefined) p.ordre = 99999;
           });
           afficherListe();
         })
         .catch(function(error) {
           console.error('Erreur:', error);
-          // Fallback cache
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             tousLesPosts = cache.posts || [];
+            tousLesPosts.forEach(function(p) {
+              if (p.ordre === undefined) p.ordre = 99999;
+            });
             afficherListe();
           } else {
             document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
+            document.getElementById('grilleContainer').innerHTML = `
               <div class="vide">
                 <span class="icone">⚠️</span>
                 <h2>Erreur de chargement</h2>
@@ -832,48 +921,155 @@
     }
 
     // ============================================================
-    // AFFICHER LISTE (STYLE mes-textes)
+    // AFFICHER LISTE AVEC CATÉGORIES ET ORDRE
     // ============================================================
     function afficherListe() {
-      var container = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
       document.getElementById('totalPosts').textContent = tousLesPosts.length;
 
       if (tousLesPosts.length === 0) {
-        container.innerHTML = `
+        document.getElementById('grilleContainer').innerHTML = `
           <div class="vide">
             <span class="icone">📖</span>
             <h2>Aucun texte</h2>
             <p>Cliquez sur "Ajouter" pour commencer.</p>
           </div>
         `;
+        document.getElementById('sousTabsContainer').innerHTML = '';
         return;
       }
 
-      // Trier par date (plus récent en premier)
-      tousLesPosts.sort(function(a, b) {
+      // Extraire toutes les catégories uniques
+      var categories = {};
+      tousLesPosts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(post);
+      });
+      
+      var categoriesTriees = Object.keys(categories).sort();
+
+      // Afficher les sous-tabs
+      afficherSousTabs(categoriesTriees, categories);
+
+      // Afficher les posts pour la catégorie sélectionnée
+      afficherPostsParCategorie(categorieActuelle);
+    }
+
+    // ============================================================
+    // AFFICHER SOUS-TABS (CATÉGORIES)
+    // ============================================================
+    function afficherSousTabs(categoriesTriees, categories) {
+      var container = document.getElementById('sousTabsContainer');
+      
+      var totalTous = 0;
+      categoriesTriees.forEach(function(cat) {
+        totalTous += categories[cat].length;
+      });
+
+      var html = '<div class="sous-tabs-container">';
+      
+      // Bouton "Toutes"
+      html += `
+        <button class="sous-tab-btn ${categorieActuelle === 'toutes' ? 'active' : ''}" 
+                onclick="switchCategorie('toutes')">
+          Toutes
+          <span class="compteur-sous-tab">${totalTous}</span>
+        </button>
+      `;
+
+      // Boutons par catégorie
+      categoriesTriees.forEach(function(cat) {
+        var count = categories[cat].length;
+        html += `
+          <button class="sous-tab-btn ${categorieActuelle === cat ? 'active' : ''}" 
+                  onclick="switchCategorie('${cat}')">
+            ${cat}
+            <span class="compteur-sous-tab">${count}</span>
+          </button>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // CHANGER DE CATÉGORIE
+    // ============================================================
+    function switchCategorie(categorie) {
+      categorieActuelle = categorie;
+      
+      // Mettre à jour les boutons
+      document.querySelectorAll('.sous-tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      document.querySelectorAll('.sous-tab-btn').forEach(function(btn) {
+        if (btn.textContent.trim().startsWith(categorie === 'toutes' ? 'Toutes' : categorie)) {
+          btn.classList.add('active');
+        }
+      });
+      
+      afficherPostsParCategorie(categorie);
+    }
+
+    // ============================================================
+    // AFFICHER POSTS PAR CATÉGORIE
+    // ============================================================
+    function afficherPostsParCategorie(categorie) {
+      var container = document.getElementById('grilleContainer');
+      
+      var postsFiltres = [];
+      
+      tousLesPosts.forEach(function(post) {
+        var catPost = post.categorie || 'Sans catégorie';
+        if (categorie === 'toutes' || catPost === categorie) {
+          postsFiltres.push(post);
+        }
+      });
+
+      // Trier par ordre puis par date
+      postsFiltres.sort(function(a, b) {
+        var ordreA = a.ordre !== undefined ? a.ordre : 99999;
+        var ordreB = b.ordre !== undefined ? b.ordre : 99999;
+        if (ordreA !== ordreB) return ordreA - ordreB;
         var dateA = a.date ? new Date(a.date) : new Date(0);
         var dateB = b.date ? new Date(b.date) : new Date(0);
         return dateB - dateA;
       });
 
+      if (postsFiltres.length === 0) {
+        container.innerHTML = `
+          <div class="vide" style="padding:30px 20px;">
+            <span class="icone" style="font-size:32px;">📭</span>
+            <h2 style="font-size:18px;">Aucun texte</h2>
+            <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
       var html = '<div class="grille">';
 
-      for (var i = 0; i < tousLesPosts.length; i++) {
-        var post = tousLesPosts[i];
+      for (var i = 0; i < postsFiltres.length; i++) {
+        var post = postsFiltres[i];
         var date = post.date ? new Date(post.date) : null;
         var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
         var mots = post.mots || 0;
-        var categorie = post.categorie || 'Sans catégorie';
+        var catPost = post.categorie || 'Sans catégorie';
         var niveau = post.niveau || 0;
 
         html += `
-          <div class="carte-post" onclick="modifierPost('${post.id}')">
-            <div class="infos">
+          <div class="carte-post" data-postid="${post.id}">
+            <div class="ordres">
+              <button onclick="deplacerPost('${post.id}', 'haut', '${categorie}')" ${i === 0 ? 'disabled' : ''}>▲</button>
+              <button onclick="deplacerPost('${post.id}', 'bas', '${categorie}')" ${i === postsFiltres.length - 1 ? 'disabled' : ''}>▼</button>
+            </div>
+            <div class="infos" onclick="modifierPost('${post.id}')">
               <span class="titre">${post.titre || 'Sans titre'}</span>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${niveau}</span>
-                <span class="badge-icone">${categorie}</span>
+                <span class="badge-icone">${catPost}</span>
                 <span class="badge-icone">${mots} mots</span>
                 <span class="badge-icone">${dateStr}</span>
               </div>
@@ -887,6 +1083,105 @@
 
       html += '</div>';
       container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DÉPLACER UN POST (HAUT / BAS)
+    // ============================================================
+    function deplacerPost(postId, direction, categorie) {
+      // Trouver le post dans tousLesPosts
+      var postIndex = -1;
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        if (tousLesPosts[i].id === postId) {
+          postIndex = i;
+          break;
+        }
+      }
+      
+      if (postIndex === -1) return;
+
+      // Récupérer les posts de la même catégorie
+      var catPost = tousLesPosts[postIndex].categorie || 'Sans catégorie';
+      var postsMemeCategorie = [];
+      var indexDansCategorie = -1;
+
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var p = tousLesPosts[i];
+        var pCat = p.categorie || 'Sans catégorie';
+        if (pCat === catPost) {
+          postsMemeCategorie.push(p);
+          if (p.id === postId) {
+            indexDansCategorie = postsMemeCategorie.length - 1;
+          }
+        }
+      }
+
+      // Calculer la nouvelle position
+      var newIndex = indexDansCategorie + (direction === 'haut' ? -1 : 1);
+      if (newIndex < 0 || newIndex >= postsMemeCategorie.length) return;
+
+      // Échanger dans le tableau de la catégorie
+      var temp = postsMemeCategorie[newIndex];
+      postsMemeCategorie[newIndex] = postsMemeCategorie[indexDansCategorie];
+      postsMemeCategorie[indexDansCategorie] = temp;
+
+      // Réattribuer les ordres
+      var positionsMap = {};
+      for (var i = 0; i < postsMemeCategorie.length; i++) {
+        positionsMap[postsMemeCategorie[i].id] = i;
+      }
+
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var id = tousLesPosts[i].id;
+        if (positionsMap[id] !== undefined) {
+          tousLesPosts[i].ordre = positionsMap[id];
+        }
+      }
+
+      // Sauvegarder l'ordre
+      sauvegarderOrdre(catPost);
+    }
+
+    // ============================================================
+    // SAUVEGARDER L'ORDRE DANS LE SHEET
+    // ============================================================
+    function sauvegarderOrdre(categorie) {
+      // Récupérer tous les posts de la catégorie
+      var catPosts = [];
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var p = tousLesPosts[i];
+        var pCat = p.categorie || 'Sans catégorie';
+        if (pCat === categorie) {
+          catPosts.push(p);
+        }
+      }
+
+      // Créer un objet avec l'ordre de chaque post
+      var ordres = {};
+      for (var i = 0; i < catPosts.length; i++) {
+        ordres[catPosts[i].id] = i;
+      }
+
+      // Envoyer l'ordre au serveur
+      var url = CONFIG.SCRIPT_URL + '?action=updateOrder&categorie=' + encodeURIComponent(categorie);
+      for (var id in ordres) {
+        url += '&ordre_' + encodeURIComponent(id) + '=' + encodeURIComponent(ordres[id]);
+      }
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            console.log('Ordre sauvegardé');
+            afficherPostsParCategorie(categorieActuelle);
+          } else {
+            throw new Error(data.message || 'Erreur');
+          }
+        })
+        .catch(function(err) {
+          console.error('Erreur lors de la sauvegarde de l\'ordre:', err);
+          chargerPosts();
+        });
     }
 
     // ============================================================
@@ -1188,6 +1483,7 @@
               msg.textContent = 'Texte ajouté';
               btn.disabled = false;
               btn.textContent = 'Enregistrer';
+              // Recharger pour avoir l'ordre
               setTimeout(function() { fermerModal(); chargerPosts(); }, 500);
             } else {
               throw new Error(data.message || 'Erreur');
@@ -1309,6 +1605,9 @@
     window.modifierPost = modifierPost;
     window.supprimerPost = supprimerPost;
     window.mettreAJourCompteur = mettreAJourCompteur;
+    window.switchCategorie = switchCategorie;
+    window.deplacerPost = deplacerPost;
+    window.sauvegarderOrdre = sauvegarderOrdre;
   </script>
 
 </body>
