@@ -53,13 +53,13 @@
       border-color: var(--border-hover);
     }
 
-    .post-list {
+    .grille {
       display: flex;
       flex-direction: column;
       gap: 8px;
     }
 
-    .post-item {
+    .carte-post {
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -72,17 +72,17 @@
       border-radius: 6px;
     }
 
-    .post-item:hover {
+    .carte-post:hover {
       border-color: var(--border-hover);
       background: var(--bg-hover);
     }
 
-    .post-item .post-info {
+    .carte-post .infos {
       flex: 1;
       min-width: 0;
     }
 
-    .post-item .post-info .titre {
+    .carte-post .infos .titre {
       font-family: var(--font-serif);
       font-size: 16px;
       color: var(--text);
@@ -93,7 +93,7 @@
       font-weight: 500;
     }
 
-    .post-item .post-info .meta {
+    .carte-post .infos .meta {
       font-family: var(--font-sans);
       font-size: 13px;
       color: var(--text-secondary);
@@ -104,7 +104,7 @@
       margin-top: 4px;
     }
 
-    .post-item .post-info .meta .statut {
+    .carte-post .infos .meta .statut {
       display: inline-block;
       padding: 0 10px;
       border: 1px solid var(--border);
@@ -115,19 +115,19 @@
       line-height: 20px;
     }
 
-    .post-item .post-info .meta .statut.publie {
+    .carte-post .infos .meta .statut.publie {
       color: #2d6a4f;
       border-color: #2d6a4f;
       background: rgba(45, 106, 79, 0.08);
     }
 
-    .post-item .post-info .meta .statut.brouillon {
+    .carte-post .infos .meta .statut.brouillon {
       color: #b34a4a;
       border-color: #b34a4a;
       background: rgba(179, 74, 74, 0.08);
     }
 
-    .post-item .post-info .meta .badge-icone {
+    .carte-post .infos .meta .badge-icone {
       display: inline-block;
       padding: 0 10px;
       border: 1px solid var(--border);
@@ -138,14 +138,14 @@
       line-height: 20px;
     }
 
-    .post-item .post-actions {
+    .carte-post .actions {
       display: flex;
       gap: 6px;
       flex-shrink: 0;
     }
 
-    .post-item .post-actions a,
-    .post-item .post-actions button {
+    .carte-post .actions a,
+    .carte-post .actions button {
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-secondary);
@@ -159,14 +159,14 @@
       line-height: 22px;
     }
 
-    .post-item .post-actions a:hover,
-    .post-item .post-actions button:hover {
+    .carte-post .actions a:hover,
+    .carte-post .actions button:hover {
       background: var(--bg-hover);
       color: var(--text);
       border-color: var(--border-hover);
     }
 
-    .post-item .post-actions .btn-supprimer:hover {
+    .carte-post .actions .btn-supprimer:hover {
       color: #b34a4a;
       border-color: #b34a4a;
     }
@@ -199,37 +199,123 @@
       margin: 0;
     }
 
+    .devise {
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-family: var(--font-serif);
+      font-style: italic;
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
     @media (max-width: 600px) {
       .admin-container { padding: 10px; }
       .admin-header h1 { font-size: 17px; }
       .admin-header .btn-ajout { font-size: 12px; padding: 4px 12px; }
-      .post-item { padding: 10px 12px; flex-wrap: wrap; }
-      .post-item .post-info .titre { font-size: 14px; }
-      .post-item .post-info .meta { font-size: 11px; gap: 4px; }
-      .post-item .post-actions a,
-      .post-item .post-actions button { font-size: 11px; padding: 2px 10px; }
+      .carte-post { padding: 10px 12px; flex-wrap: wrap; }
+      .carte-post .infos .titre { font-size: 14px; }
+      .carte-post .infos .meta { font-size: 11px; gap: 4px; }
+      .carte-post .actions a,
+      .carte-post .actions button { font-size: 11px; padding: 2px 10px; }
     }
   </style>
 
 </head>
 <body>
 
-  <div class="admin-container">
+  <div id="header-container"></div>
 
-    <div class="admin-header">
-      <h1>Administration</h1>
-      <a href="/medit/edit.html?id=new" class="btn-ajout">+ Ajouter</a>
-    </div>
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text();
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="window.location.href='/medit/index.html';">Se connecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
 
-    <div id="postList" class="post-list">
-      <div class="vide">
-        <span class="icone">📖</span>
-        <h2>Aucun texte</h2>
-        <p>Cliquez sur "Ajouter" pour commencer.</p>
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+      localStorage.setItem('theme', mode);
+    }
+
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'sombre') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+  </script>
+
+  <div class="page">
+
+    <div class="admin-container">
+
+      <div class="admin-header">
+        <h1>Administration</h1>
+        <a href="/medit/edit.html?id=new" class="btn-ajout">+ Ajouter</a>
       </div>
+
+      <div id="postList">
+        <div class="vide">
+          <span class="icone">📖</span>
+          <h2>Aucun texte</h2>
+          <p>Cliquez sur "Ajouter" pour commencer.</p>
+        </div>
+      </div>
+
+      <div class="devise">
+        “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+      </div>
+
     </div>
 
   </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/data-manager.js"></script>
@@ -272,7 +358,8 @@
         return;
       }
 
-      var html = '';
+      var html = '<div class="grille">';
+
       tousLesPosts.sort(function(a, b) {
         var dateA = a.date ? new Date(a.date) : new Date(0);
         var dateB = b.date ? new Date(b.date) : new Date(0);
@@ -292,8 +379,8 @@
         if (post.hasQuestion) nbQuestions++;
 
         html += `
-          <div class="post-item">
-            <div class="post-info">
+          <div class="carte-post">
+            <div class="infos">
               <span class="titre">${post.titre || 'Sans titre'}</span>
               <span class="meta">
                 <span class="badge-icone">${post.categorie || 'Sans catégorie'}</span>
@@ -304,7 +391,7 @@
                 <span class="badge-icone">${nbQuestions} question${nbQuestions > 1 ? 's' : ''}</span>
               </span>
             </div>
-            <div class="post-actions">
+            <div class="actions">
               <a href="/medit/edit.html?id=${post.id}">Modifier</a>
               <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">Supprimer</button>
             </div>
@@ -312,6 +399,7 @@
         `;
       }
 
+      html += '</div>';
       container.innerHTML = html;
     }
 
