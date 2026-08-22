@@ -920,81 +920,122 @@
         });
     }
 
-    // ============================================================
-    // AFFICHER LISTE AVEC CATÉGORIES ET ORDRE
-    // ============================================================
-    function afficherListe() {
-      document.getElementById('loader').style.display = 'none';
-      document.getElementById('totalPosts').textContent = tousLesPosts.length;
+   // ============================================================
+// AFFICHER LISTE AVEC CATÉGORIES ET ORDRE
+// ============================================================
+function afficherListe() {
+  var loader = document.getElementById('loader');
+  if (loader) loader.style.display = 'none';
+  
+  var totalSpan = document.getElementById('totalPosts');
+  if (totalSpan) totalSpan.textContent = tousLesPosts.length;
 
-      if (tousLesPosts.length === 0) {
-        document.getElementById('grilleContainer').innerHTML = `
-          <div class="vide">
-            <span class="icone">📖</span>
-            <h2>Aucun texte</h2>
-            <p>Cliquez sur "Ajouter" pour commencer.</p>
-          </div>
-        `;
-        document.getElementById('sousTabsContainer').innerHTML = '';
-        return;
-      }
-
-      // Extraire toutes les catégories uniques
-      var categories = {};
-      tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(post);
-      });
-      
-      var categoriesTriees = Object.keys(categories).sort();
-
-      // Afficher les sous-tabs
-      afficherSousTabs(categoriesTriees, categories);
-
-      // Afficher les posts pour la catégorie sélectionnée
-      afficherPostsParCategorie(categorieActuelle);
-    }
-
-    // ============================================================
-    // AFFICHER SOUS-TABS (CATÉGORIES)
-    // ============================================================
-    function afficherSousTabs(categoriesTriees, categories) {
-      var container = document.getElementById('sousTabsContainer');
-      
-      var totalTous = 0;
-      categoriesTriees.forEach(function(cat) {
-        totalTous += categories[cat].length;
-      });
-
-      var html = '<div class="sous-tabs-container">';
-      
-      // Bouton "Toutes"
-      html += `
-        <button class="sous-tab-btn ${categorieActuelle === 'toutes' ? 'active' : ''}" 
-                onclick="switchCategorie('toutes')">
-          Toutes
-          <span class="compteur-sous-tab">${totalTous}</span>
-        </button>
+  if (tousLesPosts.length === 0) {
+    var grille = document.getElementById('grilleContainer');
+    if (grille) {
+      grille.innerHTML = `
+        <div class="vide">
+          <span class="icone">📖</span>
+          <h2>Aucun texte</h2>
+          <p>Cliquez sur "Ajouter" pour commencer.</p>
+        </div>
       `;
-
-      // Boutons par catégorie
-      categoriesTriees.forEach(function(cat) {
-        var count = categories[cat].length;
-        html += `
-          <button class="sous-tab-btn ${categorieActuelle === cat ? 'active' : ''}" 
-                  onclick="switchCategorie('${cat}')">
-            ${cat}
-            <span class="compteur-sous-tab">${count}</span>
-          </button>
-        `;
-      });
-
-      html += '</div>';
-      container.innerHTML = html;
     }
+    var tabs = document.getElementById('sousTabsContainer');
+    if (tabs) tabs.innerHTML = '';
+    return;
+  }
 
-    // ============================================================
+  // Extraire toutes les catégories uniques
+  var categories = {};
+  tousLesPosts.forEach(function(post) {
+    var cat = post.categorie || 'Sans catégorie';
+    if (!categories[cat]) categories[cat] = [];
+    categories[cat].push(post);
+  });
+  
+  var categoriesTriees = Object.keys(categories).sort();
+
+  // Afficher les sous-tabs
+  afficherSousTabs(categoriesTriees, categories);
+
+  // Afficher les posts pour la catégorie sélectionnée
+  afficherPostsParCategorie(categorieActuelle);
+}// ============================================================
+// AFFICHER POSTS PAR CATÉGORIE
+// ============================================================
+function afficherPostsParCategorie(categorie) {
+  var container = document.getElementById('grilleContainer');
+  if (!container) return;
+  
+  var postsFiltres = [];
+  
+  tousLesPosts.forEach(function(post) {
+    var catPost = post.categorie || 'Sans catégorie';
+    if (categorie === 'toutes' || catPost === categorie) {
+      postsFiltres.push(post);
+    }
+  });
+
+  // Trier par ordre puis par date
+  postsFiltres.sort(function(a, b) {
+    var ordreA = a.ordre !== undefined ? a.ordre : 99999;
+    var ordreB = b.ordre !== undefined ? b.ordre : 99999;
+    if (ordreA !== ordreB) return ordreA - ordreB;
+    var dateA = a.date ? new Date(a.date) : new Date(0);
+    var dateB = b.date ? new Date(b.date) : new Date(0);
+    return dateB - dateA;
+  });
+
+  if (postsFiltres.length === 0) {
+    container.innerHTML = `
+      <div class="vide" style="padding:30px 20px;">
+        <span class="icone" style="font-size:32px;">📭</span>
+        <h2 style="font-size:18px;">Aucun texte</h2>
+        <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+      </div>
+    `;
+    return;
+  }
+
+  var html = '<div class="grille">';
+
+  for (var i = 0; i < postsFiltres.length; i++) {
+    var post = postsFiltres[i];
+    var date = post.date ? new Date(post.date) : null;
+    var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+    var mots = post.mots || 0;
+    var catPost = post.categorie || 'Sans catégorie';
+    var niveau = post.niveau || 0;
+
+    // Échapper les guillemets dans le titre
+    var titreEsc = (post.titre || 'Sans titre').replace(/'/g, "\\'");
+
+    html += `
+      <div class="carte-post" data-postid="${post.id}">
+        <div class="ordres">
+          <button onclick="deplacerPost('${post.id}', 'haut', '${categorie}')" ${i === 0 ? 'disabled' : ''}>▲</button>
+          <button onclick="deplacerPost('${post.id}', 'bas', '${categorie}')" ${i === postsFiltres.length - 1 ? 'disabled' : ''}>▼</button>
+        </div>
+        <div class="infos" onclick="modifierPost('${post.id}')">
+          <span class="titre">${post.titre || 'Sans titre'}</span>
+          <div class="meta">
+            <span class="niveau-badge">Niveau ${niveau}</span>
+            <span class="badge-icone">${catPost}</span>
+            <span class="badge-icone">${mots} mots</span>
+            <span class="badge-icone">${dateStr}</span>
+          </div>
+        </div>
+        <div class="statut" onclick="event.stopPropagation();">
+          <button class="btn-supprimer-admin" onclick="supprimerPost('${post.id}')" title="Supprimer">✕</button>
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}   // ============================================================
     // CHANGER DE CATÉGORIE
     // ============================================================
     function switchCategorie(categorie) {
