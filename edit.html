@@ -3,151 +3,315 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#ffffff" />
-  <title>Administration</title>
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Administration - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text();
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="deconnecter(); return false;">Se déconnecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+      localStorage.setItem('theme', mode);
+    }
+
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'sombre') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        localStorage.removeItem('etudiant_nom');
+        window.location.href = '/medit/index.html';
+      }
+    }
+  </script>
+
+  <div class="page">
+
+    <h1>Administration</h1>
+    <p class="sous-titre-page">Gérez vos textes : ajoutez, modifiez ou supprimez les méditations.</p>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Textes disponibles :</span>
+        <span class="nombre" id="totalPosts">0</span>
+      </div>
+      <div class="stat-item" style="justify-content:flex-end;">
+        <button class="btn-ajout" onclick="ouvrirModal()" style="background:transparent;border:1px solid var(--border-color);padding:6px 20px;font-family:inherit;font-size:14px;cursor:pointer;transition:0.15s;color:var(--text-primary);">
+          + Ajouter
+        </button>
+      </div>
+    </div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des textes...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
 
   <style>
-    :root {
-      --radius: 0px;
-    }
+    /* ============================================================
+       STYLES ADMIN - SUR LE MODÈLE DE mes-textes.html
+       ============================================================ */
 
-    .admin-container {
-      max-width: 900px;
-      margin: 0 auto;
-      padding: 16px;
-    }
-
-    .admin-header {
+    .stats-ligne {
       display: flex;
       justify-content: space-between;
       align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
       padding: 12px 0;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
       margin-bottom: 20px;
     }
 
-    .admin-header h1 {
-      font-family: var(--font-serif);
-      font-weight: 400;
-      font-size: 20px;
-      color: var(--text);
-      margin: 0;
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #555);
     }
 
-    .admin-header .btn-ajout {
+    .stat-item .nombre {
+      font-weight: 600;
+      color: var(--text-primary, #1a1a1a);
+      font-size: 18px;
+    }
+
+    .btn-ajout {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 6px 16px;
-      font-family: var(--font-sans);
-      font-size: 13px;
+      border: 1px solid var(--border-color, #ccc);
+      padding: 6px 20px;
+      font-family: inherit;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: 0.15s;
+      color: var(--text-primary, #1a1a1a);
+    }
+    .btn-ajout:hover {
+      background: var(--bg-hover, #f0f0f0);
+      border-color: var(--text-primary, #1a1a1a);
     }
 
-    .admin-header .btn-ajout:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
-    }
-
-    /* ===== LISTE ===== */
-    .post-list {
+    /* === GRILLE DES POSTS (comme mes-textes) === */
+    .grille {
       display: flex;
       flex-direction: column;
-      gap: 6px;
-    }
-
-    .post-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      cursor: pointer;
-      transition: border-color 0.15s;
       gap: 8px;
     }
 
-    .post-item:hover {
-      border-color: var(--border-hover);
+    .carte-post {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 14px 18px;
+      border: 1px solid var(--border-color, #e0e0e0);
+      background: var(--bg-card, #ffffff);
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+      gap: 12px;
     }
 
-    .post-item .post-info {
+    .carte-post:hover {
+      border-color: var(--text-primary, #1a1a1a);
+      background: var(--bg-hover, #f7f7f7);
+    }
+
+    .carte-post .infos {
       flex: 1;
       min-width: 0;
     }
 
-    .post-item .post-info .titre {
-      font-family: var(--font-serif);
-      font-size: 16px;
-      color: var(--text);
+    .carte-post .infos .titre {
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-weight: 600;
+      font-size: 17px;
+      color: var(--text-primary, #1a1a1a);
       display: block;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
     }
 
-    .post-item .post-info .meta {
-      font-family: var(--font-sans);
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .post-item .post-info .meta .statut {
-      display: inline-block;
-      padding: 0 8px;
-      border: 1px solid var(--border);
-      font-size: 10px;
-      font-family: var(--font-sans);
-      color: var(--text-secondary);
-    }
-
-    .post-item .post-info .meta .statut.publie {
-      color: var(--text);
-    }
-
-    .post-item .post-actions {
+    .carte-post .infos .meta {
       display: flex;
-      gap: 4px;
-      flex-shrink: 0;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      margin-top: 4px;
     }
 
-    .post-item .post-actions button {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
+    .carte-post .infos .meta .badge-icone {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
+      background: var(--bg-badge, #f0f0f0);
       padding: 2px 10px;
-      font-family: var(--font-sans);
+      border-radius: 4px;
+    }
+
+    .carte-post .infos .meta .niveau-badge {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary, #1a1a1a);
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      padding: 2px 10px;
+      border-radius: 4px;
+    }
+
+    .carte-post .infos .meta .mots {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
+    }
+
+    .carte-post .statut {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      flex-shrink: 0;
+      gap: 2px;
+    }
+
+    .carte-post .statut .date-label {
+      font-family: 'Roboto', sans-serif;
       font-size: 11px;
+      color: var(--text-secondary, #777);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+
+    .carte-post .statut .date-validation {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      color: var(--text-primary, #1a1a1a);
+    }
+
+    .carte-post .statut .btn-supprimer-admin {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary, #888);
+      font-size: 18px;
       cursor: pointer;
-      transition: all 0.15s;
+      padding: 0 4px;
+      transition: color 0.15s;
+      line-height: 1;
+      margin-left: 8px;
     }
 
-    .post-item .post-actions button:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
-    }
-
-    .post-item .post-actions .btn-supprimer:hover {
+    .carte-post .statut .btn-supprimer-admin:hover {
       color: #b34a4a;
-      border-color: #b34a4a;
     }
 
-    /* ===== MODALE PLEIN ÉCRAN ===== */
+    /* === VIDE === */
+    .vide {
+      text-align: center;
+      padding: 60px 20px;
+      border: 1px solid var(--border-color, #e0e0e0);
+    }
+    .vide .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .vide h2 {
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-weight: 400;
+      color: var(--text-primary, #1a1a1a);
+      font-size: 22px;
+      margin: 0 0 4px 0;
+    }
+    .vide p {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-secondary, #555);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    /* === MODALE PLEIN ÉCRAN (identique à l'ancienne) === */
     .modal-fullscreen {
       position: fixed;
       top: 0;
       left: 0;
       width: 100vw;
       height: 100vh;
-      background: var(--bg);
+      background: var(--bg, #ffffff);
       z-index: 1000;
       display: none;
       flex-direction: column;
@@ -155,293 +319,263 @@
       box-sizing: border-box;
       overflow-y: auto;
     }
-
     .modal-fullscreen.visible {
       display: flex;
     }
-
     .modal-fullscreen .modal-header {
       display: flex;
       align-items: center;
       gap: 10px;
       padding-bottom: 10px;
-      border-bottom: 1px solid var(--border);
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
       flex-shrink: 0;
       margin-bottom: 12px;
     }
-
     .modal-fullscreen .modal-header .input-titre {
       flex: 1;
       border: none;
       background: transparent;
-      font-family: var(--font-serif);
-      font-size: 18px;
-      color: var(--text);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary, #1a1a1a);
       outline: none;
       padding: 4px 0;
     }
-
     .modal-fullscreen .modal-header .input-titre::placeholder {
-      color: var(--text-muted);
+      color: var(--text-muted, #aaa);
     }
-
     .modal-fullscreen .modal-header .btn-enregistrer {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 4px 16px;
-      font-family: var(--font-sans);
-      font-size: 13px;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 4px 18px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: 0.15s;
       flex-shrink: 0;
     }
-
     .modal-fullscreen .modal-header .btn-enregistrer:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .modal-fullscreen .modal-header .btn-enregistrer:disabled {
       opacity: 0.4;
       cursor: not-allowed;
     }
-
     .modal-fullscreen .modal-header .btn-close {
       background: none;
       border: none;
-      color: var(--text-secondary);
-      font-size: 22px;
+      color: var(--text-secondary, #888);
+      font-size: 26px;
       cursor: pointer;
       padding: 0 4px;
       flex-shrink: 0;
     }
-
     .modal-fullscreen .modal-header .btn-close:hover {
-      color: var(--text);
+      color: var(--text-primary, #1a1a1a);
     }
 
-    /* ===== METADONNÉES ===== */
+    /* Métadonnées */
     .meta-row {
       display: flex;
-      gap: 12px;
-      flex-wrap: nowrap;
+      gap: 16px;
+      flex-wrap: wrap;
       flex-shrink: 0;
       margin-bottom: 12px;
       align-items: center;
     }
-
     .meta-row .meta-group {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-
     .meta-row .meta-group label {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      color: var(--text-secondary);
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-
     .meta-row .meta-group select,
     .meta-row .meta-group input {
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
+      background: var(--bg, #fff);
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-primary, #1a1a1a);
       padding: 4px 8px;
-      font-family: var(--font-sans);
-      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
       border-radius: 0;
       outline: none;
-      min-width: 80px;
+      min-width: 90px;
     }
-
     .meta-row .meta-group select:focus,
     .meta-row .meta-group input:focus {
-      border-color: var(--text);
+      border-color: var(--text-primary, #1a1a1a);
     }
 
     .niveaux {
       display: flex;
       gap: 4px;
     }
-
     .niveaux .btn-niveau {
-      width: 28px;
-      height: 28px;
-      border: 1px solid var(--border);
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border-color, #ccc);
       background: transparent;
-      color: var(--text-secondary);
+      color: var(--text-secondary, #555);
       cursor: pointer;
-      font-family: var(--font-sans);
-      font-size: 12px;
-      transition: all 0.15s;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      transition: 0.15s;
     }
-
     .niveaux .btn-niveau:hover {
-      background: var(--bg-hover);
+      background: var(--bg-hover, #f0f0f0);
     }
-
     .niveaux .btn-niveau.active {
-      background: var(--bg-active);
-      color: var(--text);
-      border-color: var(--text);
+      background: var(--bg-active, #e8e8e8);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
 
-    /* ===== TEXTAREA ===== */
+    /* Textarea */
     .textarea-wrap {
       flex: 1;
       min-height: 150px;
       margin-bottom: 10px;
     }
-
     .textarea-wrap textarea {
       width: 100%;
       height: 100%;
       min-height: 200px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
+      border: 1px solid var(--border-color, #e0e0e0);
+      background: var(--bg, #fff);
+      color: var(--text-primary, #1a1a1a);
       padding: 12px;
-      font-family: var(--font-serif);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
       font-size: 17px;
       line-height: 2;
       resize: vertical;
       outline: none;
       box-sizing: border-box;
     }
-
     .textarea-wrap textarea:focus {
-      border-color: var(--text);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .textarea-wrap .compteur {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      color: var(--text-muted);
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-muted, #aaa);
       text-align: right;
       padding: 2px 0;
     }
 
-    /* ===== CHAMPS ===== */
+    /* Champs */
     .champs-section {
       flex-shrink: 0;
-      border-top: 1px solid var(--border);
+      border-top: 1px solid var(--border-color, #e0e0e0);
       padding-top: 10px;
       margin-bottom: 10px;
     }
-
     .champs-section .champs-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
       margin-bottom: 8px;
     }
-
     .champs-section .champs-header .champs-label {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      color: var(--text-secondary);
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
       text-transform: uppercase;
       letter-spacing: 0.3px;
     }
-
     .champs-section .champs-header .btn-ajout-champ {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 2px 12px;
-      font-family: var(--font-sans);
-      font-size: 12px;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 2px 14px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: 0.15s;
       position: relative;
     }
-
     .champs-section .champs-header .btn-ajout-champ:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .champs-section .champs-header .btn-ajout-champ .dropdown {
       display: none;
       position: absolute;
       top: 100%;
       left: 0;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      min-width: 160px;
+      background: var(--bg, #fff);
+      border: 1px solid var(--border-color, #ccc);
+      min-width: 180px;
       z-index: 10;
       margin-top: 2px;
     }
-
     .champs-section .champs-header .btn-ajout-champ .dropdown.open {
       display: block;
     }
-
     .champs-section .champs-header .btn-ajout-champ .dropdown button {
       display: block;
       width: 100%;
       text-align: left;
       background: transparent;
       border: none;
-      padding: 6px 14px;
-      font-family: var(--font-sans);
-      font-size: 13px;
-      color: var(--text-secondary);
+      padding: 6px 16px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #555);
       cursor: pointer;
       transition: background 0.15s;
     }
-
     .champs-section .champs-header .btn-ajout-champ .dropdown button:hover {
-      background: var(--bg-hover);
-      color: var(--text);
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
     }
 
-    /* ===== CHAMP ITEM ===== */
+    /* Champ item */
     .champ-item {
-      border: 1px solid var(--border);
+      border: 1px solid var(--border-color, #e0e0e0);
       padding: 8px 12px;
       margin-bottom: 6px;
-      background: var(--bg);
+      background: var(--bg-card, #fff);
     }
-
     .champ-item .champ-type {
-      font-family: var(--font-sans);
-      font-size: 10px;
-      color: var(--text-muted);
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted, #aaa);
       text-transform: uppercase;
       letter-spacing: 0.3px;
       display: block;
       margin-bottom: 4px;
     }
-
     .champ-item .champ-contenu {
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
-
     .champ-item .champ-contenu input[type="text"] {
       border: none;
-      border-bottom: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light, #e8e8e8);
       background: transparent;
-      color: var(--text);
-      font-family: var(--font-serif);
-      font-size: 15px;
+      color: var(--text-primary, #1a1a1a);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 16px;
       padding: 2px 0;
       outline: none;
       width: 100%;
     }
-
     .champ-item .champ-contenu input[type="text"]:focus {
-      border-bottom-color: var(--text);
+      border-bottom-color: var(--text-primary, #1a1a1a);
     }
-
     .champ-item .champ-contenu .reponses {
       display: flex;
       flex-direction: column;
@@ -449,219 +583,146 @@
       padding-left: 12px;
       margin-top: 4px;
     }
-
     .champ-item .champ-contenu .reponse-row {
       display: flex;
       align-items: center;
       gap: 6px;
     }
-
     .champ-item .champ-contenu .reponse-row input[type="text"] {
       flex: 1;
       border: none;
-      border-bottom: 1px solid var(--border-light);
+      border-bottom: 1px solid var(--border-light, #e8e8e8);
       background: transparent;
-      color: var(--text);
-      font-family: var(--font-serif);
-      font-size: 14px;
+      color: var(--text-primary, #1a1a1a);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 15px;
       padding: 2px 0;
       outline: none;
     }
-
     .champ-item .champ-contenu .reponse-row input[type="text"]:focus {
-      border-bottom-color: var(--text);
+      border-bottom-color: var(--text-primary, #1a1a1a);
     }
-
     .champ-item .champ-contenu .reponse-row .vf {
       display: flex;
       gap: 2px;
       flex-shrink: 0;
     }
-
     .champ-item .champ-contenu .reponse-row .vf button {
-      width: 24px;
-      height: 24px;
-      border: 1px solid var(--border);
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--border-color, #ccc);
       background: transparent;
-      color: var(--text-secondary);
-      font-size: 10px;
-      font-family: var(--font-sans);
+      color: var(--text-secondary, #555);
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: 0.15s;
     }
-
     .champ-item .champ-contenu .reponse-row .vf button:hover {
-      background: var(--bg-hover);
+      background: var(--bg-hover, #f0f0f0);
     }
-
     .champ-item .champ-contenu .reponse-row .vf button.active-v {
-      background: var(--bg-active);
-      color: var(--text);
-      border-color: var(--text);
+      background: var(--bg-active, #e0e0e0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .champ-item .champ-contenu .reponse-row .vf button.active-f {
-      background: var(--bg-active);
-      color: var(--text);
-      border-color: var(--text);
+      background: var(--bg-active, #e0e0e0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .champ-item .champ-contenu .reponse-row .btn-suppr-rep {
       background: none;
       border: none;
-      color: var(--text-muted);
+      color: var(--text-muted, #aaa);
       cursor: pointer;
-      font-size: 14px;
+      font-size: 15px;
       padding: 0 2px;
     }
-
     .champ-item .champ-contenu .reponse-row .btn-suppr-rep:hover {
       color: #b34a4a;
     }
-
     .champ-item .champ-actions {
       display: flex;
       gap: 8px;
       margin-top: 6px;
       flex-wrap: wrap;
     }
-
     .champ-item .champ-actions button {
       background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      padding: 1px 10px;
-      font-family: var(--font-sans);
-      font-size: 11px;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 2px 12px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
       cursor: pointer;
-      transition: all 0.15s;
+      transition: 0.15s;
     }
-
     .champ-item .champ-actions button:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
     }
-
     .champ-item .champ-actions .btn-suppr-champ:hover {
       color: #b34a4a;
       border-color: #b34a4a;
     }
 
-    .champ-item .champ-contenu input[type="text"].champ-retenir {
-      border: none;
-      border-bottom: 1px solid var(--border-light);
-      background: transparent;
-      color: var(--text);
-      font-family: var(--font-serif);
-      font-size: 15px;
-      padding: 2px 0;
-      outline: none;
-      width: 100%;
-    }
-
-    .champ-item .champ-contenu input[type="text"].champ-retenir:focus {
-      border-bottom-color: var(--text);
-    }
-
-    /* ===== VIDE ===== */
-    .vide {
-      text-align: center;
-      padding: 40px 20px;
-      border: 1px solid var(--border);
-    }
-
-    .vide .icone {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 8px;
-    }
-
-    .vide h2 {
-      font-family: var(--font-serif);
-      font-weight: 400;
-      color: var(--text);
-      font-size: 18px;
-      margin: 0 0 4px 0;
-    }
-
-    .vide p {
-      font-family: var(--font-sans);
-      color: var(--text-secondary);
-      font-size: 13px;
-      margin: 0;
-    }
-
-    /* ===== MESSAGE ===== */
     .msg {
-      font-family: var(--font-sans);
-      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
       padding: 4px 0;
       display: none;
     }
-
     .msg.success { color: #2c7a4a; display: block; }
     .msg.error { color: #b34a4a; display: block; }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 600px) {
-      .admin-container { padding: 10px; }
-      .admin-header h1 { font-size: 17px; }
-      .admin-header .btn-ajout { font-size: 12px; padding: 4px 12px; }
-
-      .post-item { padding: 8px 10px; flex-wrap: wrap; }
-      .post-item .post-info .titre { font-size: 14px; }
-      .post-item .post-info .meta { font-size: 11px; }
-
-      .modal-fullscreen { padding: 8px 10px; }
-      .modal-fullscreen .modal-header .input-titre { font-size: 16px; }
-      .modal-fullscreen .modal-header .btn-enregistrer { font-size: 12px; padding: 2px 12px; }
-
-      .meta-row { flex-wrap: wrap; gap: 6px; }
-      .meta-row .meta-group select { min-width: 60px; font-size: 12px; }
-      .meta-row .meta-group label { font-size: 10px; }
-
-      .textarea-wrap textarea { min-height: 150px; font-size: 15px; padding: 8px; }
-
-      .champ-item { padding: 6px 8px; }
-      .champ-item .champ-contenu input[type="text"] { font-size: 14px; }
-      .champ-item .champ-contenu .reponse-row input[type="text"] { font-size: 13px; }
-      .champ-item .champ-contenu .reponse-row .vf button { width: 22px; height: 22px; font-size: 9px; }
+      .carte-post {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+      .carte-post .statut {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+      }
+      .carte-post .statut .btn-supprimer-admin {
+        margin-left: 0;
+      }
+      .stats-ligne {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .stat-item:last-child {
+        justify-content: flex-start;
+      }
+      .modal-fullscreen .modal-header .input-titre {
+        font-size: 17px;
+      }
+      .meta-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .meta-row .meta-group {
+        flex-wrap: wrap;
+      }
     }
   </style>
-
-</head>
-<body>
-
-  <!-- ===== PAGE ADMIN ===== -->
-  <div class="admin-container">
-
-    <div class="admin-header">
-      <h1>Administration</h1>
-      <button class="btn-ajout" onclick="ouvrirModal()">+ Ajouter</button>
-    </div>
-
-    <div id="postList" class="post-list">
-      <div class="vide">
-        <span class="icone">📖</span>
-        <h2>Aucun texte</h2>
-        <p>Cliquez sur "Ajouter" pour commencer.</p>
-      </div>
-    </div>
-
-  </div>
 
   <!-- ===== MODALE ===== -->
   <div class="modal-fullscreen" id="modalTexte">
 
-    <!-- HEADER : Titre + Enregistrer + ✕ -->
+    <!-- HEADER -->
     <div class="modal-header">
       <input type="text" class="input-titre" id="inputTitre" placeholder="Titre de l'article..." />
       <button class="btn-enregistrer" id="btnEnregistrer" onclick="enregistrer()">Enregistrer</button>
       <button class="btn-close" onclick="fermerModal()">✕</button>
     </div>
 
-    <!-- Métadonnées : Catégorie + Niveau -->
+    <!-- Métadonnées -->
     <div class="meta-row">
       <div class="meta-group">
         <label>Catégorie</label>
@@ -716,9 +777,6 @@
   </div>
 
   <!-- ===== SCRIPTS ===== -->
-  <script src="/medit/config.js"></script>
-  <script src="/medit/data-manager.js"></script>
-
   <script>
     // ============================================================
     // ÉTAT
@@ -751,14 +809,35 @@
         })
         .catch(function(error) {
           console.error('Erreur:', error);
+          // Fallback cache
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            tousLesPosts = cache.posts || [];
+            afficherListe();
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('contenu').innerHTML = `
+              <div class="vide">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();" 
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border-color);cursor:pointer;color:var(--text-primary);font-family:inherit;">
+                  Réessayer
+                </button>
+              </div>
+            `;
+          }
         });
     }
 
     // ============================================================
-    // AFFICHER LISTE
+    // AFFICHER LISTE (STYLE mes-textes)
     // ============================================================
     function afficherListe() {
-      var container = document.getElementById('postList');
+      var container = document.getElementById('contenu');
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('totalPosts').textContent = tousLesPosts.length;
 
       if (tousLesPosts.length === 0) {
         container.innerHTML = `
@@ -771,39 +850,42 @@
         return;
       }
 
-      var html = '';
+      // Trier par date (plus récent en premier)
       tousLesPosts.sort(function(a, b) {
         var dateA = a.date ? new Date(a.date) : new Date(0);
         var dateB = b.date ? new Date(b.date) : new Date(0);
         return dateB - dateA;
       });
 
+      var html = '<div class="grille">';
+
       for (var i = 0; i < tousLesPosts.length; i++) {
         var post = tousLesPosts[i];
         var date = post.date ? new Date(post.date) : null;
-        var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) : '—';
-        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
-        var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
+        var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
         var mots = post.mots || 0;
+        var categorie = post.categorie || 'Sans catégorie';
+        var niveau = post.niveau || 0;
 
         html += `
-          <div class="post-item" onclick="modifierPost('${post.id}')">
-            <div class="post-info">
+          <div class="carte-post" onclick="modifierPost('${post.id}')">
+            <div class="infos">
               <span class="titre">${post.titre || 'Sans titre'}</span>
-              <span class="meta">
-                ${post.categorie || 'Sans catégorie'} · Niveau ${post.niveau || 0} · ${dateStr}
-                <span class="statut ${statutClass}">${statutLabel}</span>
-                · ${mots} mots
-              </span>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${niveau}</span>
+                <span class="badge-icone">${categorie}</span>
+                <span class="badge-icone">${mots} mots</span>
+                <span class="badge-icone">${dateStr}</span>
+              </div>
             </div>
-            <div class="post-actions" onclick="event.stopPropagation();">
-              <button onclick="modifierPost('${post.id}')">Modifier</button>
-              <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">Supprimer</button>
+            <div class="statut" onclick="event.stopPropagation();">
+              <button class="btn-supprimer-admin" onclick="supprimerPost('${post.id}')" title="Supprimer">✕</button>
             </div>
           </div>
         `;
       }
 
+      html += '</div>';
       container.innerHTML = html;
     }
 
@@ -868,7 +950,7 @@
     });
 
     // ============================================================
-    // AJOUTER UN CHAMP
+    // AJOUTER / SUPPRIMER CHAMP
     // ============================================================
     function ajouterChamp(type) {
       dropdownOpen = false;
@@ -899,16 +981,13 @@
       afficherChamps();
     }
 
-    // ============================================================
-    // SUPPRIMER UN CHAMP
-    // ============================================================
     function supprimerChamp(index) {
       champsAjoutes.splice(index, 1);
       afficherChamps();
     }
 
     // ============================================================
-    // AFFICHER LES CHAMPS
+    // AFFICHER CHAMPS
     // ============================================================
     function afficherChamps() {
       var container = document.getElementById('champsListe');
@@ -921,16 +1000,12 @@
       var html = '';
       for (var i = 0; i < champsAjoutes.length; i++) {
         var champ = champsAjoutes[i];
-        var itemClass = 'champ-item';
-
-        html += '<div class="' + itemClass + '">';
+        html += '<div class="champ-item">';
         html += '<span class="champ-type">' + champ.label + '</span>';
         html += '<div class="champ-contenu">';
 
         if (champ.type === 'quiz') {
-          // Question
           html += '<input type="text" placeholder="Question du quiz..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
-          // Réponses
           html += '<div class="reponses" id="reponses-' + i + '">';
           for (var r = 0; r < champ.reponses.length; r++) {
             var rep = champ.reponses[r];
@@ -952,31 +1027,25 @@
           html += '<button onclick="ajouterReponse(' + i + ')">+ Réponse</button>';
           html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
           html += '</div>';
-        }
-
-        else if (champ.type === 'open') {
+        } else if (champ.type === 'open') {
           html += '<input type="text" placeholder="Question ouverte..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
           html += '<div class="champ-actions">';
           html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
           html += '</div>';
-        }
-
-        else if (champ.type === 'retenir') {
+        } else if (champ.type === 'retenir') {
           html += '<input type="text" class="champ-retenir" placeholder="Mots-clés séparés par des virgules..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
           html += '<div class="champ-actions">';
           html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
           html += '</div>';
-        }
-
-        else if (champ.type === 'info') {
+        } else if (champ.type === 'info') {
           html += '<input type="text" placeholder="Information..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
           html += '<div class="champ-actions">';
           html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
           html += '</div>';
         }
 
-        html += '</div>'; // champ-contenu
-        html += '</div>'; // champ-item
+        html += '</div>';
+        html += '</div>';
       }
 
       container.innerHTML = html;
@@ -1009,7 +1078,6 @@
       afficherChamps();
     }
 
-    // Exposer les fonctions pour les onclick
     window.ajouterReponse = ajouterReponse;
     window.supprimerReponse = supprimerReponse;
     window.setVrai = setVrai;
@@ -1030,9 +1098,7 @@
 
       var mots = contenu.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
 
-      // Construire le contenu avec les champs
       var colonnes = ['-s- ' + contenu];
-
       for (var i = 0; i < champsAjoutes.length; i++) {
         var champ = champsAjoutes[i];
         if (champ.type === 'quiz') {
@@ -1222,11 +1288,17 @@
     // ============================================================
     // INIT
     // ============================================================
-    document.addEventListener('DOMContentLoaded', function() {
+    function demarrer() {
       chargerPosts();
-    });
+    }
 
-    // Exposer les fonctions
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+
+    // Exposer les fonctions globales
     window.ouvrirModal = ouvrirModal;
     window.fermerModal = fermerModal;
     window.setNiveau = setNiveau;
