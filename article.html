@@ -1,877 +1,766 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#121212" />
-  <title>Lecture</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/medit/structure.css" />
-  <link rel="stylesheet" href="/medit/theme.css" />
+// ============================================================
+// article.js - VERSION OPTIMISÉE AVEC CACHE
+// ============================================================
 
-  <style>
-    .slide-wrapper {
-      opacity: 0;
-      transition: opacity 0.8s ease-in-out;
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
+// ============================================================
+// VARIABLES
+// ============================================================
+var slidesData = [];
+var slideIndex = 0;
+var totalSlides = 0;
+var quizValide = false;
+var reponseValidee = false;
+var quizVerrouille = false;
+var tempsDebut = Date.now();
+var postId = '';
+var postTitre = '';
+
+// Stocker les données du quiz pour la sauvegarde finale
+var quizData = {
+  choixQcm: [],
+  bonnes: 0,
+  total: 0
+};
+
+var chargementEnCours = false;
+var reponsesExistantes = null;
+
+// ============================================================
+// CONFIGURATION DU CACHE
+// ============================================================
+var CACHE_CONFIG = {
+    DUREE_ARTICLE: 60,      // 1 heure
+    DUREE_QUIZ: 30,         // 30 minutes
+    DUREE_REPONSES: 5       // 5 minutes
+};
+
+// ============================================================
+// FONCTIONS DE CACHE
+// ============================================================
+function sauvegarderCache(id, type, data) {
+    try {
+        var cache = {
+            data: data,
+            timestamp: Date.now()
+        };
+        localStorage.setItem('article_cache_' + type + '_' + id, JSON.stringify(cache));
+    } catch(e) {}
+}
+
+function chargerCache(id, type, dureeMax) {
+    try {
+        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
+        if (!cache) return null;
+        cache = JSON.parse(cache);
+        
+        var age = (Date.now() - cache.timestamp) / 60000;
+        if (age > dureeMax) return null;
+        
+        return cache.data;
+    } catch(e) {
+        return null;
+    }
+}
+
+function chargerCacheForce(id, type) {
+    try {
+        var cache = localStorage.getItem('article_cache_' + type + '_' + id);
+        if (!cache) return null;
+        cache = JSON.parse(cache);
+        return cache.data;
+    } catch(e) {
+        return null;
+    }
+}
+
+// ============================================================
+// CHARGEMENT PRINCIPAL - UN SEUL APPEL !
+// ============================================================
+function chargerArticle() {
+    var params = new URLSearchParams(window.location.search);
+    var id = params.get('id');
+    var loader = document.getElementById('loader');
+    var erreur = document.getElementById('erreur');
+    var articleCharge = document.getElementById('article-charge');
+
+    if (!id) {
+        loader.style.display = 'none';
+        erreur.style.display = 'block';
+        return;
     }
 
-    .slide-wrapper.active {
-      opacity: 1;
-      pointer-events: auto;
+    postId = id;
+
+    // Vérifier si connecté
+    var nom = localStorage.getItem('etudiant_id');
+    if (!nom) {
+        window.location.href = '/medit/index.html';
+        return;
     }
 
-    .slides-container {
-      position: relative;
-      overflow: hidden;
+    // 1. Essayer le cache
+    var articleCache = chargerCache(id, 'article', CACHE_CONFIG.DUREE_ARTICLE);
+    var quizCache = chargerCache(id, 'quiz', CACHE_CONFIG.DUREE_QUIZ);
+    var reponsesCache = chargerCache(id, 'reponses', CACHE_CONFIG.DUREE_REPONSES);
+
+    if (articleCache && quizCache) {
+        console.log('📦 Utilisation du cache pour l\'article', id);
+        loader.style.display = 'none';
+        articleCharge.style.display = 'block';
+        
+        // Construire l'objet post à partir du cache
+        var post = articleCache;
+        if (quizCache) {
+            post.quiz = quizCache.quiz || '';
+        }
+        if (reponsesCache) {
+            reponsesExistantes = reponsesCache;
+        }
+        
+        afficherArticle(post);
+        
+        // Rafraîchir en arrière-plan (silencieux)
+        rafraichirEnArrierePlan(id, nom);
+        return;
     }
 
-    .pagination-text {
-      text-align: center;
-      margin-top: 24px;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      letter-spacing: 0.5px;
-      color: var(--text-primary, #e0e0e0);
-      padding: 4px 0;
+    // 2. Charger depuis le serveur
+    chargerDepuisServeur(id, nom, loader, erreur, articleCharge);
+}
+
+// ============================================================
+// CHARGER DEPUIS LE SERVEUR
+// ============================================================
+function chargerDepuisServeur(id, nom, loader, erreur, articleCharge) {
+    if (chargementEnCours) return;
+    chargementEnCours = true;
+
+    // UN SEUL APPEL pour tout récupérer
+    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
+        '&nom=' + encodeURIComponent(nom);
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            chargementEnCours = false;
+            loader.style.display = 'none';
+            
+            if (data.success && data.article) {
+                // Sauvegarder en cache
+                sauvegarderCache(id, 'article', data.article);
+                
+                if (data.quiz) {
+                    sauvegarderCache(id, 'quiz', data.quiz);
+                }
+                if (data.reponses) {
+                    sauvegarderCache(id, 'reponses', data.reponses);
+                    reponsesExistantes = data.reponses;
+                }
+                
+                articleCharge.style.display = 'block';
+                afficherArticle(data.article);
+            } else {
+                // Essayer le cache même expiré
+                var articleExpire = chargerCacheForce(id, 'article');
+                if (articleExpire) {
+                    articleCharge.style.display = 'block';
+                    afficherArticle(articleExpire);
+                    afficherNotification('⚠️ Version en cache (hors ligne)');
+                } else {
+                    erreur.style.display = 'block';
+                }
+            }
+        })
+        .catch(function() {
+            chargementEnCours = false;
+            loader.style.display = 'none';
+            
+            // Essayer le cache même expiré
+            var articleExpire = chargerCacheForce(id, 'article');
+            if (articleExpire) {
+                articleCharge.style.display = 'block';
+                afficherArticle(articleExpire);
+                afficherNotification('⚠️ Version en cache (hors ligne)');
+            } else {
+                erreur.style.display = 'block';
+            }
+        });
+}
+
+// ============================================================
+// RAFRAÎCHIR EN ARRIÈRE-PLAN
+// ============================================================
+function rafraichirEnArrierePlan(id, nom) {
+    var dernier = localStorage.getItem('dernier_rafraichissement_' + id);
+    if (dernier && Date.now() - parseInt(dernier) < 60000) {
+        return; // Moins d'1 minute
     }
+    localStorage.setItem('dernier_rafraichissement_' + id, Date.now());
 
-    .slide-content {
-      max-width: 720px;
-      margin: 0 auto;
-      padding: 20px 24px;
-      font-family: 'Merriweather', serif;
-      font-size: 18px;
-      line-height: 1.8;
-      color: var(--text-primary, #e0e0e0);
+    var url = CONFIG.SCRIPT_URL + '?action=getArticleComplet&id=' + encodeURIComponent(id) +
+        '&nom=' + encodeURIComponent(nom);
+
+    fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            if (!data.success || !data.article) return;
+            
+            // Vérifier si le contenu a changé (via version)
+            var ancien = chargerCacheForce(id, 'article');
+            if (ancien && data.article && data.article.version !== ancien.version) {
+                // Mise à jour
+                sauvegarderCache(id, 'article', data.article);
+                if (data.quiz) {
+                    sauvegarderCache(id, 'quiz', data.quiz);
+                }
+                if (data.reponses) {
+                    sauvegarderCache(id, 'reponses', data.reponses);
+                    reponsesExistantes = data.reponses;
+                }
+                
+                // Recharger l'affichage
+                afficherArticle(data.article);
+                afficherNotification('📝 Cet article a été mis à jour !');
+            }
+        })
+        .catch(function() {});
+}
+
+// ============================================================
+// NOTIFICATION
+// ============================================================
+function afficherNotification(message) {
+    var notif = document.createElement('div');
+    notif.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:10px 24px;border-radius:30px;font-size:14px;font-family:Segoe UI,sans-serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+    notif.textContent = message;
+    document.body.appendChild(notif);
+    setTimeout(function() { notif.style.opacity = '1'; }, 50);
+    setTimeout(function() {
+        notif.style.opacity = '0';
+        setTimeout(function() { notif.remove(); }, 500);
+    }, 3000);
+}
+
+// ============================================================
+// AFFICHAGE (GARDER TON CODE EXISTANT)
+// ============================================================
+function afficherArticle(post) {
+  postTitre = post.titre || 'Sans titre';
+
+  if (post.categorie) {
+    document.getElementById('postLabel').textContent = post.categorie;
+  }
+
+  document.getElementById('article-titre').textContent = postTitre;
+
+  if (post.date) {
+    var d = new Date(post.date);
+    document.getElementById('postDate').textContent = d.toLocaleDateString('fr-FR', {
+      day: '2-digit', month: 'long', year: 'numeric'
+    });
+  }
+
+  var slides = [];
+  var questionsQuiz = [];
+
+  if (post.contenu) {
+    var blocs = post.contenu.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
+    blocs.forEach(function(bloc) {
+      slides.push({ type: 'text', data: { contenu: bloc } });
+    });
+  }
+
+  if (post.quiz) {
+    var quizBlocs = post.quiz.split(/\n\s*\n/).filter(function(s) { return s.trim().length > 0; });
+    quizBlocs.forEach(function(bloc) {
+      var match = bloc.match(/^([^\n]*?)\s*RV\.\s*([^\n]*?)\s*RF\.\s*([^\n]*?)$/);
+      if (match) {
+        var question = match[1].trim();
+        var bonne = match[2].trim();
+        var mauvaise = match[3].trim();
+        if (question && bonne) {
+          var options = [bonne];
+          if (mauvaise) options.push(mauvaise);
+          else options.push('Je ne sais pas');
+          while (options.length < 3) {
+            var fake = ['Peut-être', 'Pas sûr', 'Autre chose'][Math.floor(Math.random() * 3)];
+            if (options.indexOf(fake) === -1) options.push(fake);
+          }
+          questionsQuiz.push({ question: question, options: options, bonneReponse: bonne });
+        }
+      }
+    });
+    if (questionsQuiz.length > 0) {
+      slides.push({ type: 'quiz', data: { questions: questionsQuiz } });
     }
+  }
 
-    .slide-content p {
-      margin-bottom: 1.2em;
+  if (post.question_ouverte && post.question_ouverte.trim()) {
+    slides.push({ type: 'question-ouverte', data: { question: post.question_ouverte } });
+  }
+
+  if (post.retenir && post.retenir.trim()) {
+    slides.push({ type: 'memo', data: { texte: post.retenir } });
+  }
+
+  if (slides.length === 0) {
+    slides.push({ type: 'text', data: { contenu: 'Contenu non disponible.' } });
+  }
+
+  slidesData = slides;
+  totalSlides = slides.length;
+  slideIndex = 0;
+  quizValide = false;
+  reponseValidee = false;
+  quizVerrouille = false;
+  quizData = { choixQcm: [], bonnes: 0, total: 0 };
+
+  var wrapper = document.getElementById('slideWrapper');
+  wrapper.innerHTML = '';
+
+  slides.forEach(function(slide, index) {
+    var div = document.createElement('div');
+    div.className = 'paragraphe-item';
+    div.dataset.index = index;
+
+    if (slide.type === 'quiz') {
+      div.id = 'slideQuiz';
+      div.style.display = 'block';
+      div.innerHTML = genererSlideQuiz(slide.data);
+    } else if (slide.type === 'question-ouverte') {
+      div.innerHTML = genererSlideQuestionOuverte(slide.data);
+    } else if (slide.type === 'memo') {
+      div.className += ' slide-memo';
+      div.innerHTML = genererSlideMemo(slide.data);
+    } else {
+      div.innerHTML = genererSlideTexte(slide.data);
     }
+    wrapper.appendChild(div);
+  });
 
-    .slide-content.quiz-content,
-    .slide-content.open-content,
-    .slide-content.retenir-content {
-      font-family: 'Inter', sans-serif;
+  genererDots();
+  updateSlides();
+}
+
+// ============================================================
+// GÉNÉRATION DES SLIDES (TON CODE EXISTANT)
+// ============================================================
+function genererSlideTexte(data) {
+  return '<div class="contenu-slide">' + data.contenu.replace(/\n/g, '<br>') + '</div>';
+}
+
+function genererSlideQuiz(data) {
+  var html = '<div class="quiz-container"><h3>Quiz</h3>';
+  data.questions.forEach(function(q, idx) {
+    var qId = 'q' + (idx + 1);
+    html += '<div class="quiz-question" data-question="' + qId + '" data-index="' + idx + '">';
+    html += '<p><strong>' + (idx + 1) + '. ' + q.question + '</strong></p>';
+    q.options.forEach(function(opt) {
+      var isCorrect = (opt === q.bonneReponse) ? 'data-correct="true"' : '';
+      html += '<label><input type="radio" name="' + qId + '" value="' + opt + '" ' + isCorrect + '>' + opt + '</label>';
+    });
+    html += '<div class="quiz-feedback" id="feedback_' + qId + '"></div>';
+    html += '</div>';
+  });
+  html += '<div id="quiz-result"><p><strong>Score :</strong> <span id="quiz-score">0</span> / <span id="quiz-total">' + data.questions.length + '</span></p><p id="quiz-message"></p></div>';
+  html += '</div>';
+  return html;
+}
+
+function genererSlideQuestionOuverte(data) {
+  return '<div id="openQuestion" style="display:block;"><h3>Question ouverte</h3><h4>' + data.question + '</h4><p><label>Votre réponse :<br /><textarea id="reponse-mailto" placeholder="Écrivez ici votre réponse..." rows="3" style="width:100%;padding:12px 16px;border:1px solid #e2e0db;border-radius:10px;font-size:15px;font-family:Georgia,serif;resize:vertical;min-height:100px;background:#faf9f7;color:#2d3748;"></textarea></label></p><div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;"><button class="btn-nav" onclick="validerReponse()">Enregistrer</button></div><div id="form-message-mailto" style="margin-top:6px;"></div></div>';
+}
+
+function genererSlideMemo(data) {
+  var html = '<div class="slide-memo">';
+  html += '<div class="confirmation-fin">✧ Vous avez fini ! ✧</div>';
+  html += '<span class="memo-label">À retenir</span>';
+  html += '<div class="contenu-memo">' + data.texte + '</div>';
+  html += '</div>';
+  return html;
+}
+
+// ============================================================
+// DOTS & NAVIGATION (TON CODE EXISTANT)
+// ============================================================
+function genererDots() {
+  var container = document.getElementById('dotsContainer');
+  container.innerHTML = '';
+  slidesData.forEach(function(slide, idx) {
+    var dot = document.createElement('span');
+    dot.className = 'dot';
+    if (slide.type === 'quiz') dot.classList.add('quiz-dot');
+    if (slide.type === 'memo') dot.classList.add('memo-dot');
+    if (slide.type === 'question-ouverte') dot.classList.add('question-dot');
+    if (idx === 0) dot.classList.add('active');
+    dot.dataset.index = idx;
+    dot.onclick = function() { allerSlide(idx); };
+    container.appendChild(dot);
+  });
+}
+
+function isSlideAccessible(index) {
+  if (index === 0) return true;
+  for (var i = 0; i < index; i++) {
+    var slide = slidesData[i];
+    if (slide.type === 'quiz' && !quizValide) return false;
+    if (slide.type === 'question-ouverte' && !reponseValidee) return false;
+  }
+  return true;
+}
+
+function updateSlides() {
+  var wrapper = document.getElementById('slideWrapper');
+  if (slidesData.length === 0) return;
+  wrapper.style.transform = 'translateX(-' + (slideIndex * 100) + '%)';
+  document.getElementById('compteur').textContent = (slideIndex + 1) + ' / ' + slidesData.length;
+
+  var dots = document.querySelectorAll('.dot');
+  dots.forEach(function(dot, idx) {
+    dot.classList.remove('active', 'done', 'locked');
+    if (idx === slideIndex) dot.classList.add('active');
+    else if (idx < slideIndex) dot.classList.add('done');
+    if (!isSlideAccessible(idx) && idx > slideIndex) dot.classList.add('locked');
+  });
+
+  var msg = document.getElementById('lockMessage');
+  var current = slidesData[slideIndex];
+  if (current && current.type === 'quiz') {
+    if (quizValide) msg.textContent = 'Quiz validé.';
+    else msg.textContent = 'Répondez au quiz pour continuer.';
+  } else if (current && current.type === 'question-ouverte') {
+    if (reponseValidee) msg.textContent = 'Réponse enregistrée.';
+    else msg.textContent = 'Écrivez votre réponse.';
+  } else if (current && current.type === 'memo') {
+    msg.textContent = 'Méditation terminée.';
+  } else {
+    msg.textContent = '';
+  }
+
+  // Gestion du bouton "J'ai appris" + message de fin
+  var oldBtn = document.getElementById('btnAppris');
+  if (oldBtn) oldBtn.remove();
+  var oldMsg = document.getElementById('finMessage');
+  if (oldMsg) oldMsg.remove();
+
+  if (current && current.type === 'memo') {
+    ajouterBoutonAppris();
+  } else if (slideIndex === slidesData.length - 1 && current && current.type !== 'memo' && reponseValidee) {
+    afficherMessageFin();
+  }
+}
+
+function ajouterBoutonAppris() {
+  var btn = document.createElement('button');
+  btn.id = 'btnAppris';
+  btn.textContent = 'Revenir aux textes';
+  btn.className = 'btn-appris';
+  btn.onclick = function() {
+    window.location.href = '/medit/mes-textes.html';
+  };
+
+  var container = document.querySelector('.slide-memo');
+  if (container) {
+    container.appendChild(btn);
+  }
+}
+
+function afficherMessageFin() {
+  if (document.getElementById('finMessage')) return;
+
+  var finMsg = document.createElement('div');
+  finMsg.id = 'finMessage';
+  finMsg.innerHTML = '✔ Vous avez fini !';
+  finMsg.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#2d6a4f;color:#fff;padding:12px 30px;border-radius:30px;font-size:16px;font-family:Georgia,serif;box-shadow:0 4px 15px rgba(0,0,0,0.15);z-index:9999;opacity:0;transition:opacity 0.5s ease;';
+  document.body.appendChild(finMsg);
+  setTimeout(function() { finMsg.style.opacity = '1'; }, 50);
+
+  setTimeout(function() {
+    window.location.href = '/medit/mes-textes.html';
+  }, 2500);
+}
+
+function slideSuivant() {
+  if (slideIndex < slidesData.length - 1 && isSlideAccessible(slideIndex + 1)) {
+    slideIndex++;
+    updateSlides();
+  } else {
+    var current = slidesData[slideIndex];
+    if (current && current.type === 'quiz' && !quizValide) {
+      document.getElementById('lockMessage').textContent = 'Répondez au quiz.';
+    } else if (current && current.type === 'question-ouverte' && !reponseValidee) {
+      document.getElementById('lockMessage').textContent = 'Écrivez votre réponse.';
+    } else {
+      document.getElementById('lockMessage').textContent = 'Complétez d\'abord cette étape.';
     }
+  }
+}
 
-    .quiz-question {
-      font-size: 20px;
-      font-weight: 600;
-      margin-bottom: 20px;
-    }
+function slidePrecedent() {
+  if (slideIndex > 0) { slideIndex--; updateSlides(); }
+}
 
-    .quiz-reponse {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      margin-bottom: 8px;
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
+function allerSlide(index) {
+  if (isSlideAccessible(index)) { slideIndex = index; updateSlides(); }
+  else {
+    document.getElementById('lockMessage').textContent = 'Cette section est verrouillée.';
+  }
+}
 
-    .quiz-reponse:hover {
-      background: rgba(255,255,255,0.05);
-    }
+// ============================================================
+// SAUVEGARDER LE QUIZ (TON CODE EXISTANT)
+// ============================================================
+function sauvegarderQuiz() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    console.error('Non connecté');
+    return;
+  }
 
-    .quiz-reponse .lettre {
-      font-weight: 700;
-      color: var(--accent-color, #4CAF50);
-    }
+  var tempsPasse = Math.round((Date.now() - tempsDebut) / 1000) + 's';
 
-    .quiz-reponse.correcte {
-      border-color: #4CAF50;
-      background: rgba(76,175,80,0.15);
-    }
+  var url = CONFIG.SCRIPT_URL + '?action=saveQuiz&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&titre=' + encodeURIComponent(postTitre) +
+    '&choixQcm=' + encodeURIComponent(quizData.choixQcm.join('|')) +
+    '&bonnes=' + encodeURIComponent(quizData.bonnes) +
+    '&total=' + encodeURIComponent(quizData.total) +
+    '&tempsPasse=' + encodeURIComponent(tempsPasse);
 
-    .quiz-reponse.incorrecte {
-      border-color: #f44336;
-      background: rgba(244,67,54,0.15);
-    }
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        console.log('Quiz sauvegardé');
+      } else {
+        console.error('Erreur :', data.message);
+      }
+    })
+    .catch(function() {
+      console.error('Erreur réseau');
+    });
+}
 
-    .quiz-reponse.selectionnee {
-      border-color: #FFC107;
-      background: rgba(255,193,7,0.1);
-    }
+// ============================================================
+// SAUVEGARDER LA RÉPONSE OUVERTE (TON CODE EXISTANT)
+// ============================================================
+function validerReponse() {
+  var nom = localStorage.getItem('etudiant_id');
+  if (!nom) {
+    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Veuillez vous reconnecter.</span>';
+    return;
+  }
 
-    .result-icon {
-      margin-left: auto;
-      font-size: 20px;
-    }
+  var reponse = document.getElementById('reponse-mailto').value.trim();
+  if (!reponse) {
+    document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Écrivez quelque chose.</span>';
+    return;
+  }
 
-    .quiz-feedback {
-      margin-top: 16px;
-      padding: 12px 16px;
-      border-radius: 8px;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
+  var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte&nom=' + encodeURIComponent(nom) +
+    '&articleId=' + encodeURIComponent(postId) +
+    '&reponseOuverte=' + encodeURIComponent(reponse);
 
-    .quiz-feedback.visible {
-      opacity: 1;
-    }
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success) {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#2d6a4f;">✓ Réponse enregistrée.</span>';
+        reponseValidee = true;
+        document.getElementById('reponse-mailto').disabled = true;
+        var btn = document.querySelector('#openQuestion .btn-nav');
+        if (btn) btn.disabled = true;
+        updateSlides();
+        
+        if (slideIndex === slidesData.length - 1) {
+          setTimeout(function() {
+            afficherMessageFin();
+          }, 800);
+        } else {
+          setTimeout(function() {
+            if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+          }, 1000);
+        }
+      } else {
+        document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur : ' + (data.message || '') + '</span>';
+      }
+    })
+    .catch(function() {
+      document.getElementById('form-message-mailto').innerHTML = '<span style="color:#c62828;">Erreur réseau.</span>';
+    });
+}
 
-    .bonne-reponse {
-      color: #4CAF50;
-    }
+// ============================================================
+// QUIZ (TON CODE EXISTANT)
+// ============================================================
+function verifierQuizAuto() {
+  if (quizVerrouille) return;
 
-    .mauvaise-reponse {
-      color: #f44336;
-    }
+  var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+  var total = questions.length;
+  var correct = 0;
+  var toutesRepondues = true;
+  var choixQcm = [];
 
-    .btn-continuer,
-    .btn-envoyer-reponse {
-      display: none;
-      margin-top: 16px;
-      padding: 10px 24px;
-      background: var(--accent-color, #4CAF50);
-      color: #fff;
-      border: none;
-      border-radius: 6px;
-      font-size: 15px;
-      font-weight: 500;
-      cursor: pointer;
-      transition: opacity 0.3s;
-    }
+  questions.forEach(function(q) {
+    var qId = q.getAttribute('data-question');
+    var radios = q.querySelectorAll('input[type="radio"]');
+    var feedback = document.getElementById('feedback_' + qId);
+    var labels = q.querySelectorAll('label');
+    var selected = null;
+    var reponseChoisie = '';
 
-    .btn-continuer.visible,
-    .btn-envoyer-reponse.visible {
-      display: inline-block;
-    }
+    labels.forEach(function(l) { l.classList.remove('correct', 'incorrect'); });
 
-    .btn-envoyer-reponse {
-      display: inline-block;
-    }
-
-    .btn-envoyer-reponse:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
-
-    .open-question-text {
-      font-size: 19px;
-      font-weight: 500;
-      margin-bottom: 16px;
-    }
-
-    textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 12px 16px;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.1);
-      border-radius: 8px;
-      color: var(--text-primary, #e0e0e0);
-      font-family: 'Inter', sans-serif;
-      font-size: 16px;
-      resize: vertical;
-    }
-
-    textarea:focus {
-      outline: none;
-      border-color: var(--accent-color, #4CAF50);
-    }
-
-    textarea:disabled {
-      opacity: 0.5;
-    }
-
-    .reponse-confirmation {
-      margin-top: 12px;
-      color: #4CAF50;
-      opacity: 0;
-      transition: opacity 0.3s;
-    }
-
-    .reponse-confirmation.visible {
-      opacity: 1;
-    }
-
-    .retenir-label {
-      font-size: 22px;
-      font-weight: 700;
-      margin-bottom: 16px;
-    }
-
-    .retenir-mots {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 16px;
-    }
-
-    .retenir-mot {
-      padding: 8px 16px;
-      background: rgba(76,175,80,0.15);
-      border: 1px solid rgba(76,175,80,0.3);
-      border-radius: 20px;
-      font-size: 16px;
-      font-weight: 500;
-      color: var(--accent-color, #4CAF50);
-    }
-
-    .btn-fermer-slide {
-      margin-top: 20px;
-      padding: 10px 24px;
-      background: transparent;
-      border: 1px solid var(--border-color, #333);
-      border-radius: 6px;
-      color: var(--text-primary, #e0e0e0);
-      font-size: 15px;
-      cursor: pointer;
-    }
-
-    .btn-fermer-slide:hover {
-      background: rgba(255,255,255,0.05);
-    }
-
-    .lecture-error {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      text-align: center;
-      padding: 40px;
-    }
-
-    .lecture-error .icone {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
-
-    .lecture-error h2 {
-      margin-bottom: 8px;
-    }
-
-    .lecture-error .btn-retour {
-      margin-top: 16px;
-      padding: 10px 24px;
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      text-decoration: none;
-    }
-
-    /* HEADER LECTURE */
-    .lecture-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 24px;
-      border-bottom: 1px solid var(--border-color, #222);
-    }
-
-    .meta-left .cat-niveau {
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
-      color: var(--text-secondary, #888);
-    }
-
-    .meta-left .titre {
-      font-size: 20px;
-      font-weight: 600;
-      font-family: 'Inter', sans-serif;
-      margin-top: 4px;
-    }
-
-    .actions {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    .badge-statut {
-      padding: 4px 12px;
-      border-radius: 12px;
-      font-size: 13px;
-      font-family: 'Inter', sans-serif;
-      font-weight: 500;
-    }
-
-    .badge-statut.valide {
-      background: rgba(76,175,80,0.2);
-      color: #4CAF50;
-    }
-
-    .badge-statut.non-valide {
-      background: rgba(244,67,54,0.2);
-      color: #f44336;
-    }
-
-    .badge-statut.en-attente {
-      background: rgba(255,193,7,0.2);
-      color: #FFC107;
-    }
-
-    .btn-close {
-      background: none;
-      border: none;
-      color: var(--text-primary, #e0e0e0);
-      font-size: 24px;
-      cursor: pointer;
-      padding: 0 4px;
-    }
-
-    .btn-close:hover {
-      color: #fff;
-    }
-  </style>
-
-</head>
-<body>
-
-  <header class="lecture-header">
-    <div class="meta-left">
-      <div class="cat-niveau">
-        <span id="metaCategorie">—</span> · <span id="metaNiveau">Niveau —</span>
-      </div>
-      <div class="titre" id="metaTitre">Chargement...</div>
-    </div>
-    <div class="actions">
-      <span class="badge-statut" id="badgeStatut"></span>
-      <button class="btn-close" id="btnFermer">✕</button>
-    </div>
-  </header>
-
-  <div class="slides-container" id="slidesContainer">
-    <div class="lecture-loader" id="lectureLoader">
-      <div class="spinner"></div>
-      <span>Chargement...</span>
-    </div>
-  </div>
-
-  <div class="pagination-text" id="pagination">1 / 1</div>
-
-  <script>
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
-
-    var etat = {
-      postId: null,
-      post: null,
-      slides: [],
-      currentIndex: 0,
-      reponsesQuiz: {},
-      totalBonnes: 0,
-      totalQuestions: 0,
-      statutFinal: null,
-      enTransition: false
-    };
-
-    // ===== INIT =====
-    document.addEventListener('DOMContentLoaded', function() {
-      var params = new URLSearchParams(window.location.search);
-      var id = params.get('id');
-      if (!id) { afficherErreur('Aucun identifiant.'); return; }
-      etat.postId = id;
-      chargerPost(id);
+    radios.forEach(function(r) {
+      if (r.checked) {
+        selected = r;
+        reponseChoisie = r.value;
+      }
     });
 
-    // ===== CHARGER =====
-    function chargerPost(id) {
-      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
-        .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
-        .then(function(data) {
-          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
-          etat.post = data.post;
-          preparerSlides(etat.post);
-          afficherSlides();
-        })
-        .catch(function(error) { afficherErreur(error.message); });
-    }
+    choixQcm.push(reponseChoisie);
 
-    // ===== NOUVEAU PARSER SIMPLIFIÉ =====
-    function preparerSlides(post) {
-      var slides = [];
-      var contenu = post.contenu || '';
-      var quiz = post.quiz || '';
-      var questionOuverte = post.question_ouverte || '';
-      var retenir = post.retenir || '';
-
-      // === 1. SLIDES DU CONTENU (séparés par \n\n) ===
-      var blocs = contenu.split(/\n\s*\n/);
-      blocs.forEach(function(bloc) {
-        var texte = bloc.trim();
-        if (texte) {
-          slides.push({ type: 'slide', contenu: texte });
-        }
-      });
-
-      // === 2. QUIZ ===
-      if (quiz && quiz.trim() !== '') {
-        // Parser le quiz format: "Question? V. Réponse1 F. Mauvaise1 F. Mauvaise2"
-        var lignesQuiz = quiz.split('\n');
-        lignesQuiz.forEach(function(ligne) {
-          var q = ligne.trim();
-          if (!q) return;
-          
-          var reponses = [];
-          var parties = q.split(/\s+[RV]\.\s+/);
-          var question = parties[0] || 'Question';
-          
-          // Extraire les réponses
-          var matchs = q.match(/\s+([RV])\.\s+([^RV]*?)(?=\s+[RV]\.\s+|$)/g);
-          if (matchs) {
-            matchs.forEach(function(m) {
-              var type = m.trim().substring(0, 1);
-              var texte = m.replace(/^[RV]\.\s*/, '').trim();
-              if (texte) {
-                reponses.push({
-                  texte: texte,
-                  correct: type === 'V'
-                });
-              }
-            });
-          }
-          
-          if (reponses.length > 0) {
-            slides.push({
-              type: 'quiz',
-              question: question.trim(),
-              reponses: reponses,
-              index: slides.length
-            });
-          }
+    if (selected) {
+      var isCorrect = selected.getAttribute('data-correct') === 'true';
+      if (isCorrect) {
+        correct++;
+        feedback.className = 'quiz-feedback correct';
+        feedback.textContent = '✓ Bonne réponse.';
+        labels.forEach(function(l) {
+          var r = l.querySelector('input[type="radio"]');
+          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
         });
-      }
-
-      // === 3. QUESTION OUVERTE ===
-      if (questionOuverte && questionOuverte.trim() !== '') {
-        var qs = questionOuverte.split('\n');
-        qs.forEach(function(q) {
-          var texte = q.trim();
-          if (texte) {
-            slides.push({ type: 'open', question: texte, index: slides.length });
-          }
-        });
-      }
-
-      // === 4. MÉMO ===
-      if (retenir && retenir.trim() !== '') {
-        var mots = retenir.split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-        if (mots.length > 0) {
-          slides.push({ type: 'retenir', mots: mots });
-        }
-      }
-
-      etat.slides = slides;
-    }
-
-    // ===== AFFICHER LES SLIDES =====
-    function afficherSlides() {
-      var container = document.getElementById('slidesContainer');
-      var post = etat.post;
-
-      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
-      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
-      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
-
-      if (etat.slides.length === 0) {
-        container.innerHTML = '<div class="lecture-error"><div class="icone">📖</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
-        return;
-      }
-
-      var html = '';
-
-      etat.slides.forEach(function(slide, index) {
-        var activeClass = index === 0 ? ' active' : '';
-        html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
-        html += '<div class="slide-content';
-
-        if (slide.type === 'quiz') html += ' quiz-content';
-        else if (slide.type === 'open') html += ' open-content';
-        else if (slide.type === 'retenir') html += ' retenir-content';
-
-        html += '">';
-
-        if (slide.type === 'slide') {
-          var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
-          html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-        }
-
-        if (slide.type === 'quiz') {
-          html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
-          html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
-          var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
-          slide.reponses.forEach(function(rep, ri) {
-            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
-            html += '<span class="lettre">' + lettres[ri] + '</span>';
-            html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
-            html += '<span class="result-icon"></span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
-          html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
-          html += '</div>';
-          html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
-        }
-
-        if (slide.type === 'open') {
-          html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
-          html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
-          html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
-          html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
-        }
-
-        if (slide.type === 'retenir') {
-          html += '<div class="retenir-label">📌 À retenir</div>';
-          html += '<div class="retenir-mots">';
-          slide.mots.forEach(function(mot) {
-            if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-          });
-          html += '</div>';
-          html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-          html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
-        }
-
-        html += '</div>';
-        html += '</div>';
-      });
-
-      container.innerHTML = html;
-
-      // Gestion des événements de navigation
-      container.addEventListener('click', function(e) {
-        var target = e.target;
-        if (target.closest('.quiz-reponse') ||
-            target.closest('.btn-continuer') ||
-            target.closest('.btn-envoyer-reponse') ||
-            target.closest('textarea') ||
-            target.closest('.btn-fermer-slide')) {
-          return;
-        }
-
-        var rect = container.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        var width = rect.width;
-
-        if (x < width * 0.2) {
-          slidePrecedente();
-        } else {
-          slideSuivante();
-        }
-      });
-
-      var scrollTimeout = null;
-      container.addEventListener('wheel', function(e) {
-        e.preventDefault();
-        if (scrollTimeout) return;
-        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
-
-        if (e.deltaY > 0) {
-          slideSuivante();
-        } else {
-          slidePrecedente();
-        }
-      }, { passive: false });
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-          e.preventDefault();
-          slideSuivante();
-        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-          e.preventDefault();
-          slidePrecedente();
-        }
-      });
-
-      document.getElementById('btnFermer').addEventListener('click', function() {
-        fermerLiseuse();
-      });
-
-      recupererStatutExistant();
-      mettreAJourPagination();
-    }
-
-    // ===== NAVIGATION =====
-    function slideSuivante() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex >= etat.slides.length - 1) return;
-
-      var slide = etat.slides[etat.currentIndex];
-      if (slide.type === 'quiz') {
-        var reponse = etat.reponsesQuiz[slide.index];
-        if (!reponse) return;
-        var btn = document.getElementById('btnContinuer-' + slide.index);
-        if (!btn || !btn.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'open') {
-        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
-        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
-      }
-
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
-
-      if (current) current.classList.remove('active');
-      if (next) next.classList.add('active');
-
-      etat.currentIndex++;
-      mettreAJourPagination();
-
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
-    }
-
-    function slidePrecedente() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex <= 0) return;
-
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
-
-      if (current) current.classList.remove('active');
-      if (prev) prev.classList.add('active');
-
-      etat.currentIndex--;
-      mettreAJourPagination();
-
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
-    }
-
-    function mettreAJourPagination() {
-      var pagination = document.getElementById('pagination');
-      if (pagination) {
-        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
-      }
-    }
-
-    // ===== QUIZ =====
-    function selectionnerReponse(event, quizIndex, reponseIndex) {
-      event.stopPropagation();
-
-      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
-      if (!slide) return;
-      if (etat.reponsesQuiz[quizIndex]) return;
-
-      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
-      if (!slideEl) return;
-
-      var reponses = slideEl.querySelectorAll('.quiz-reponse');
-      var reponse = slide.reponses[reponseIndex];
-
-      reponses.forEach(function(el, idx) {
-        el.classList.remove('selectionnee');
-        if (idx === reponseIndex) el.classList.add('selectionnee');
-      });
-
-      etat.reponsesQuiz[quizIndex] = { reponseIndex: reponseIndex, correct: reponse.correct };
-
-      setTimeout(function() {
-        afficherFeedbackQuiz(quizIndex);
-      }, 300);
-    }
-
-    function afficherFeedbackQuiz(quizIndex) {
-      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
-      if (!slide) return;
-
-      var reponseData = etat.reponsesQuiz[quizIndex];
-      if (!reponseData) return;
-
-      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
-      if (!slideEl) return;
-
-      var reponses = slideEl.querySelectorAll('.quiz-reponse');
-      var feedback = document.getElementById('quizFeedback-' + quizIndex);
-      var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
-      var btnContinuer = document.getElementById('btnContinuer-' + quizIndex);
-
-      reponses.forEach(function(el, idx) {
-        el.classList.remove('correcte', 'incorrecte');
-        var icon = el.querySelector('.result-icon');
-        if (idx === reponseData.reponseIndex) {
-          if (reponseData.correct) { el.classList.add('correcte'); icon.textContent = '✓'; }
-          else { el.classList.add('incorrecte'); icon.textContent = '✗'; }
-        } else if (slide.reponses[idx] && slide.reponses[idx].correct) {
-          el.classList.add('correcte');
-          icon.textContent = '✓';
-        } else {
-          icon.textContent = '';
-        }
-      });
-
-      if (reponseData.correct) {
-        bonneReponse.textContent = '✓ Bonne réponse !';
-        bonneReponse.className = 'bonne-reponse';
       } else {
-        var bonne = slide.reponses.find(function(r) { return r.correct; });
-        bonneReponse.textContent = '✗ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
-        bonneReponse.className = 'mauvaise-reponse';
-      }
-
-      feedback.classList.add('visible');
-
-      setTimeout(function() {
-        btnContinuer.classList.add('visible');
-      }, 400);
-
-      verifierQuizComplets();
-    }
-
-    function verifierQuizComplets() {
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      var tousRepondus = quizSlides.every(function(q) {
-        return etat.reponsesQuiz[q.index] !== undefined;
-      });
-
-      if (!tousRepondus) return;
-
-      var totalBonnes = 0, totalQuestions = 0;
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
-      });
-
-      etat.totalBonnes = totalBonnes;
-      etat.totalQuestions = totalQuestions;
-
-      var seuil = Math.ceil(totalQuestions / 2);
-      etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
-      if (totalQuestions === 0) etat.statutFinal = 'en-attente';
-
-      mettreAJourBadge();
-      sauvegarderQuiz();
-    }
-
-    function mettreAJourBadge() {
-      var badge = document.getElementById('badgeStatut');
-      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
-      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
-      else { badge.textContent = '⏳ En cours'; badge.className = 'badge-statut en-attente'; }
-    }
-
-    function sauvegarderQuiz() {
-      if (!etat.postId) return;
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var choixQcm = '';
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) {
-          if (choixQcm) choixQcm += '|';
-          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
-        }
-      });
-
-      var url = SCRIPT_URL + '?action=saveQuiz' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Quiz') +
-        '&choixQcm=' + encodeURIComponent(choixQcm) +
-        '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
-        '&total=' + encodeURIComponent(etat.totalQuestions);
-
-      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.success) console.log('✓ Quiz sauvegardé');
-      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
-    }
-
-    // ===== QUESTION OUVERTE =====
-    function envoyerReponseOuverte(event, index) {
-      if (event) event.stopPropagation();
-
-      var textarea = document.getElementById('openReponse-' + index);
-      if (!textarea) return;
-      var reponse = textarea.value.trim();
-      if (!reponse) { alert('Veuillez écrire une réponse.'); return; }
-
-      var btn = textarea.parentElement.querySelector('.btn-envoyer-reponse');
-      btn.disabled = true;
-      btn.textContent = 'Envoi...';
-
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveReponseOuverte' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&reponseOuverte=' + encodeURIComponent(reponse);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var confirmation = document.getElementById('openConfirmation-' + index);
-          var btnContinuer = document.getElementById('btnContinuerOpen-' + index);
-          if (data.success) {
-            confirmation.classList.add('visible');
-            textarea.disabled = true;
-            btn.textContent = '✓ Envoyé';
-            setTimeout(function() {
-              btnContinuer.classList.add('visible');
-            }, 400);
-          } else {
-            alert('Erreur : ' + (data.message || 'Impossible d\'envoyer.'));
-            btn.disabled = false;
-            btn.textContent = 'Envoyer la réponse';
-          }
-        })
-        .catch(function(e) {
-          alert('Erreur réseau.');
-          btn.disabled = false;
-          btn.textContent = 'Envoyer la réponse';
+        feedback.className = 'quiz-feedback incorrect';
+        feedback.textContent = '✗ Réessayez, relisez le texte.';
+        selected.closest('label').classList.add('incorrect');
+        labels.forEach(function(l) {
+          var r = l.querySelector('input[type="radio"]');
+          if (r && r.getAttribute('data-correct') === 'true') l.classList.add('correct');
         });
+      }
+    } else {
+      toutesRepondues = false;
+      feedback.className = 'quiz-feedback incorrect';
+      feedback.textContent = 'Sélectionnez une réponse.';
     }
+  });
 
-    // ===== UTILITAIRES =====
-    function recupererStatutExistant() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.reponses) {
-            var reponse = data.reponses.find(function(r) { return r.articleId === etat.postId; });
-            if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
-              var seuil = Math.ceil(reponse.total / 2);
-              if (reponse.bonnes >= seuil) {
-                etat.statutFinal = 'valide';
-                etat.totalBonnes = reponse.bonnes;
-                etat.totalQuestions = reponse.total;
-                mettreAJourBadge();
-              }
-            }
-          }
-        })
-        .catch(function(e) { console.error('Erreur récupération statut:', e); });
+  var resultDiv = document.getElementById('quiz-result');
+  resultDiv.style.display = 'block';
+  document.getElementById('quiz-score').textContent = correct;
+  document.getElementById('quiz-total').textContent = total;
+
+  var msg = document.getElementById('quiz-message');
+  if (!toutesRepondues) {
+    msg.textContent = 'Répondez à toutes les questions.';
+    msg.style.color = '#b8956a';
+    return;
+  }
+
+  quizVerrouille = true;
+  questions.forEach(function(q) {
+    q.classList.add('verrouille');
+    var radios = q.querySelectorAll('input[type="radio"]');
+    radios.forEach(function(r) { r.disabled = true; });
+  });
+
+  quizData.choixQcm = choixQcm;
+  quizData.bonnes = correct;
+  quizData.total = total;
+
+  if (correct === total) {
+    msg.textContent = 'Parfait !';
+    msg.style.color = '#2d6a4f';
+    quizValide = true;
+    
+    sauvegarderQuiz();
+    
+    updateSlides();
+    setTimeout(function() {
+      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+    }, 1200);
+  } else if (correct >= Math.ceil(total / 2)) {
+    msg.textContent = 'Pas mal ! Relisez les passages qui vous ont posé problème.';
+    msg.style.color = '#b8956a';
+    quizValide = true;
+    
+    sauvegarderQuiz();
+    
+    updateSlides();
+    setTimeout(function() {
+      if (slideIndex < slidesData.length - 1) { slideIndex++; updateSlides(); }
+    }, 1200);
+  } else {
+    msg.textContent = 'Prenez le temps de relire la méditation.';
+    msg.style.color = '#c62828';
+  }
+}
+
+// ============================================================
+// ÉCOUTE DES RADIOS (TON CODE EXISTANT)
+// ============================================================
+document.addEventListener('change', function(e) {
+  if (e.target && e.target.type === 'radio' && e.target.name && e.target.name.indexOf('q') === 0) {
+    var questions = document.querySelectorAll('.quiz-question:not(.verrouille)');
+    var toutesRepondues = true;
+    questions.forEach(function(q) {
+      var radios = q.querySelectorAll('input[type="radio"]');
+      var repondu = false;
+      radios.forEach(function(r) { if (r.checked) repondu = true; });
+      if (!repondu) toutesRepondues = false;
+    });
+    if (toutesRepondues && questions.length > 0) {
+      setTimeout(verifierQuizAuto, 400);
     }
+  }
+});
 
-    function fermerLiseuse() {
-      window.location.href = '/medit/mes-textes.html';
+// ============================================================
+// SWIPE TACTILE (TON CODE EXISTANT)
+// ============================================================
+var touchStartX = 0;
+var touchEndX = 0;
+
+document.addEventListener('touchstart', function(e) {
+  touchStartX = e.changedTouches[0].screenX;
+}, { passive: true });
+
+document.addEventListener('touchend', function(e) {
+  touchEndX = e.changedTouches[0].screenX;
+  var diff = touchStartX - touchEndX;
+  if (Math.abs(diff) > 50) {
+    if (diff > 0) {
+      slideSuivant();
+    } else {
+      slidePrecedent();
     }
+  }
+}, { passive: true });
 
-    function afficherErreur(message) {
-      document.getElementById('slidesContainer').innerHTML = `
-        <div class="lecture-error">
-          <div class="icone">📖</div>
-          <h2>Texte introuvable</h2>
-          <p>${message || 'Le texte n\'existe pas.'}</p>
-          <a href="/medit/mes-textes.html" class="btn-retour">← Retour</a>
-        </div>
-      `;
-    }
+// ============================================================
+// CLAVIER (TON CODE EXISTANT)
+// ============================================================
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { e.preventDefault(); slideSuivant(); }
+  else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { e.preventDefault(); slidePrecedent(); }
+});
 
-    window.selectionnerReponse = selectionnerReponse;
-    window.envoyerReponseOuverte = envoyerReponseOuverte;
-    window.slideSuivante = slideSuivante;
-    window.slidePrecedente = slidePrecedente;
-    window.fermerLiseuse = fermerLiseuse;
-  </script>
+// ============================================================
+// INIT
+// ============================================================
+function demarrer() {
+  var id = localStorage.getItem('etudiant_id');
+  if (!id) {
+    window.location.href = '/medit/index.html';
+    return;
+  }
+  chargerArticle();
+}
 
-</body>
-</html>
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', demarrer);
+} else {
+  demarrer();
+}
