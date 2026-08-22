@@ -11,7 +11,6 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* TRANSITION DE PAGE FLUIDE - 0.8s */
     .slide-wrapper {
       opacity: 0;
       transition: opacity 0.8s ease-in-out;
@@ -33,7 +32,6 @@
       overflow: hidden;
     }
 
-    /* PAGINATION */
     .pagination-text {
       text-align: center;
       margin-top: 24px;
@@ -43,12 +41,296 @@
       color: var(--text-primary, #e0e0e0);
       padding: 4px 0;
     }
+
+    .slide-content {
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 20px 24px;
+      font-family: 'Merriweather', serif;
+      font-size: 18px;
+      line-height: 1.8;
+      color: var(--text-primary, #e0e0e0);
+    }
+
+    .slide-content p {
+      margin-bottom: 1.2em;
+    }
+
+    .slide-content.quiz-content,
+    .slide-content.open-content,
+    .slide-content.retenir-content {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .quiz-question {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 20px;
+    }
+
+    .quiz-reponse {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .quiz-reponse:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .quiz-reponse .lettre {
+      font-weight: 700;
+      color: var(--accent-color, #4CAF50);
+    }
+
+    .quiz-reponse.correcte {
+      border-color: #4CAF50;
+      background: rgba(76,175,80,0.15);
+    }
+
+    .quiz-reponse.incorrecte {
+      border-color: #f44336;
+      background: rgba(244,67,54,0.15);
+    }
+
+    .quiz-reponse.selectionnee {
+      border-color: #FFC107;
+      background: rgba(255,193,7,0.1);
+    }
+
+    .result-icon {
+      margin-left: auto;
+      font-size: 20px;
+    }
+
+    .quiz-feedback {
+      margin-top: 16px;
+      padding: 12px 16px;
+      border-radius: 8px;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .quiz-feedback.visible {
+      opacity: 1;
+    }
+
+    .bonne-reponse {
+      color: #4CAF50;
+    }
+
+    .mauvaise-reponse {
+      color: #f44336;
+    }
+
+    .btn-continuer,
+    .btn-envoyer-reponse {
+      display: none;
+      margin-top: 16px;
+      padding: 10px 24px;
+      background: var(--accent-color, #4CAF50);
+      color: #fff;
+      border: none;
+      border-radius: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: opacity 0.3s;
+    }
+
+    .btn-continuer.visible,
+    .btn-envoyer-reponse.visible {
+      display: inline-block;
+    }
+
+    .btn-envoyer-reponse {
+      display: inline-block;
+    }
+
+    .btn-envoyer-reponse:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .open-question-text {
+      font-size: 19px;
+      font-weight: 500;
+      margin-bottom: 16px;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 120px;
+      padding: 12px 16px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      color: var(--text-primary, #e0e0e0);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      resize: vertical;
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: var(--accent-color, #4CAF50);
+    }
+
+    textarea:disabled {
+      opacity: 0.5;
+    }
+
+    .reponse-confirmation {
+      margin-top: 12px;
+      color: #4CAF50;
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .reponse-confirmation.visible {
+      opacity: 1;
+    }
+
+    .retenir-label {
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+
+    .retenir-mots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+
+    .retenir-mot {
+      padding: 8px 16px;
+      background: rgba(76,175,80,0.15);
+      border: 1px solid rgba(76,175,80,0.3);
+      border-radius: 20px;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--accent-color, #4CAF50);
+    }
+
+    .btn-fermer-slide {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: transparent;
+      border: 1px solid var(--border-color, #333);
+      border-radius: 6px;
+      color: var(--text-primary, #e0e0e0);
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .btn-fermer-slide:hover {
+      background: rgba(255,255,255,0.05);
+    }
+
+    .lecture-error {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      text-align: center;
+      padding: 40px;
+    }
+
+    .lecture-error .icone {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+
+    .lecture-error h2 {
+      margin-bottom: 8px;
+    }
+
+    .lecture-error .btn-retour {
+      margin-top: 16px;
+      padding: 10px 24px;
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      text-decoration: none;
+    }
+
+    /* HEADER LECTURE */
+    .lecture-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--border-color, #222);
+    }
+
+    .meta-left .cat-niveau {
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-secondary, #888);
+    }
+
+    .meta-left .titre {
+      font-size: 20px;
+      font-weight: 600;
+      font-family: 'Inter', sans-serif;
+      margin-top: 4px;
+    }
+
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .badge-statut {
+      padding: 4px 12px;
+      border-radius: 12px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      font-weight: 500;
+    }
+
+    .badge-statut.valide {
+      background: rgba(76,175,80,0.2);
+      color: #4CAF50;
+    }
+
+    .badge-statut.non-valide {
+      background: rgba(244,67,54,0.2);
+      color: #f44336;
+    }
+
+    .badge-statut.en-attente {
+      background: rgba(255,193,7,0.2);
+      color: #FFC107;
+    }
+
+    .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-primary, #e0e0e0);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 0 4px;
+    }
+
+    .btn-close:hover {
+      color: #fff;
+    }
   </style>
 
 </head>
 <body>
 
-  <!-- HEADER -->
   <header class="lecture-header">
     <div class="meta-left">
       <div class="cat-niveau">
@@ -62,7 +344,6 @@
     </div>
   </header>
 
-  <!-- SLIDES -->
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
       <div class="spinner"></div>
@@ -70,7 +351,6 @@
     </div>
   </div>
 
-  <!-- PAGINATION -->
   <div class="pagination-text" id="pagination">1 / 1</div>
 
   <script>
@@ -110,116 +390,78 @@
         .catch(function(error) { afficherErreur(error.message); });
     }
 
-    // ===== PARSER =====
-    function parserContenu(texte) {
-      var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
-      if (!texte) return result;
-
-      texte = texte.replace(/\s*\|\s*/g, ' ');
-      texte = texte.replace(/\|\s*$/gm, '');
-      texte = texte.replace(/^\s*\|\s*/gm, '');
-      texte = texte.replace(/\s{2,}/g, ' ');
-
-      var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
-      var indices = [];
-
-      for (var p = 0; p < patterns.length; p++) {
-        var pos = texte.indexOf(patterns[p]);
-        while (pos !== -1) {
-          indices.push({ pos: pos, pattern: patterns[p] });
-          pos = texte.indexOf(patterns[p], pos + 1);
-        }
-      }
-
-      indices.sort(function(a, b) { return a.pos - b.pos; });
-
-      var elements = [];
-      for (var i = 0; i < indices.length; i++) {
-        var start = indices[i].pos;
-        var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
-        var element = texte.substring(start, end).trim();
-        if (element) elements.push(element);
-      }
-
-      var quizCourant = null;
-
-      for (var i = 0; i < elements.length; i++) {
-        var ligne = elements[i].trim();
-        if (!ligne) continue;
-
-        if (ligne.startsWith('-s-')) {
-          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
-          continue;
-        }
-
-        if (ligne.startsWith('-q-')) {
-          if (quizCourant && quizCourant.reponses.length > 0) {
-            result.quizs.push(quizCourant);
-          }
-          quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-          continue;
-        }
-
-        if (ligne.startsWith('-v-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
-          }
-          continue;
-        }
-
-        if (ligne.startsWith('-f-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
-          }
-          continue;
-        }
-
-        if (ligne.startsWith('-qs-')) {
-          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
-          continue;
-        }
-
-        if (ligne.startsWith('-r-')) {
-          var retenirText = ligne.replace('-r-', '').trim();
-          if (retenirText) {
-            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
-            result.retenir = mots.filter(function(m) { return m.length > 0; });
-          }
-          continue;
-        }
-
-        if (ligne.startsWith('-i-')) {
-          continue;
-        }
-      }
-
-      if (quizCourant && quizCourant.reponses.length > 0) {
-        result.quizs.push(quizCourant);
-      }
-
-      return result;
-    }
-
-    // ===== PRÉPARER LES SLIDES =====
+    // ===== NOUVEAU PARSER SIMPLIFIÉ =====
     function preparerSlides(post) {
       var slides = [];
       var contenu = post.contenu || '';
-      var parsed = parserContenu(contenu);
+      var quiz = post.quiz || '';
+      var questionOuverte = post.question_ouverte || '';
+      var retenir = post.retenir || '';
 
-      parsed.slides.forEach(function(s) {
-        slides.push({ type: 'slide', contenu: s.contenu });
+      // === 1. SLIDES DU CONTENU (séparés par \n\n) ===
+      var blocs = contenu.split(/\n\s*\n/);
+      blocs.forEach(function(bloc) {
+        var texte = bloc.trim();
+        if (texte) {
+          slides.push({ type: 'slide', contenu: texte });
+        }
       });
 
-      parsed.quizs.forEach(function(q) {
-        slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
-      });
+      // === 2. QUIZ ===
+      if (quiz && quiz.trim() !== '') {
+        // Parser le quiz format: "Question? V. Réponse1 F. Mauvaise1 F. Mauvaise2"
+        var lignesQuiz = quiz.split('\n');
+        lignesQuiz.forEach(function(ligne) {
+          var q = ligne.trim();
+          if (!q) return;
+          
+          var reponses = [];
+          var parties = q.split(/\s+[RV]\.\s+/);
+          var question = parties[0] || 'Question';
+          
+          // Extraire les réponses
+          var matchs = q.match(/\s+([RV])\.\s+([^RV]*?)(?=\s+[RV]\.\s+|$)/g);
+          if (matchs) {
+            matchs.forEach(function(m) {
+              var type = m.trim().substring(0, 1);
+              var texte = m.replace(/^[RV]\.\s*/, '').trim();
+              if (texte) {
+                reponses.push({
+                  texte: texte,
+                  correct: type === 'V'
+                });
+              }
+            });
+          }
+          
+          if (reponses.length > 0) {
+            slides.push({
+              type: 'quiz',
+              question: question.trim(),
+              reponses: reponses,
+              index: slides.length
+            });
+          }
+        });
+      }
 
-      parsed.openQuestions.forEach(function(q) {
-        slides.push({ type: 'open', question: q, index: slides.length });
-      });
+      // === 3. QUESTION OUVERTE ===
+      if (questionOuverte && questionOuverte.trim() !== '') {
+        var qs = questionOuverte.split('\n');
+        qs.forEach(function(q) {
+          var texte = q.trim();
+          if (texte) {
+            slides.push({ type: 'open', question: texte, index: slides.length });
+          }
+        });
+      }
 
-      if (parsed.retenir && parsed.retenir.length > 0) {
-        slides.push({ type: 'retenir', mots: parsed.retenir });
+      // === 4. MÉMO ===
+      if (retenir && retenir.trim() !== '') {
+        var mots = retenir.split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+        if (mots.length > 0) {
+          slides.push({ type: 'retenir', mots: mots });
+        }
       }
 
       etat.slides = slides;
@@ -300,7 +542,7 @@
 
       container.innerHTML = html;
 
-      // Gestion des événements
+      // Gestion des événements de navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -353,7 +595,7 @@
       mettreAJourPagination();
     }
 
-    // ===== NAVIGATION AVEC TRANSITION FLUIDE =====
+    // ===== NAVIGATION =====
     function slideSuivante() {
       if (etat.enTransition) return;
       if (etat.currentIndex >= etat.slides.length - 1) return;
