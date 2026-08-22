@@ -1,31 +1,1614 @@
-<!-- header.html -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-left">
-      <div class="header-logo">
-        <a href="/medit/index.html">
-          <span style="font-size:28px;vertical-align:middle;margin-right:8px;">❏✎</span>
-          <strong>Qiraat</strong> <i>lecture</i>
-        </a>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Administration - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text();
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="deconnecter(); return false;">Se déconnecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+      localStorage.setItem('theme', mode);
+    }
+
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'sombre') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        localStorage.removeItem('etudiant_nom');
+        window.location.href = '/medit/index.html';
+      }
+    }
+  </script>
+
+  <div class="page">
+
+    <h1>Administration</h1>
+    <p class="sous-titre-page">Gérez vos textes : ajoutez, modifiez ou supprimez les méditations.</p>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Textes disponibles :</span>
+        <span class="nombre" id="totalPosts">0</span>
+      </div>
+      <div class="stat-item" style="justify-content:flex-end;">
+        <button class="btn-ajout" onclick="ouvrirModal()" style="background:transparent;border:1px solid var(--border-color);padding:6px 20px;font-family:inherit;font-size:14px;cursor:pointer;transition:0.15s;color:var(--text-primary);">
+          + Ajouter
+        </button>
       </div>
     </div>
-    <nav class="header-nav" id="headerNav">
-      <a href="/medit/edit.html" class="header-link">Write</a>
-      <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
-      <a href="/medit/mes-annotations.html" class="header-link">Mes annotations</a>
-      <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
-      <button onclick="deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
-    </nav>
-  </div>
-</header>
 
-<script>
-function deconnecter() {
-  if (confirm('Se déconnecter ?')) {
-    localStorage.removeItem('etudiant_id');
-    localStorage.removeItem('etudiant_nom');
-    localStorage.removeItem('etudiant_niveau');
-    window.location.href = '/medit/index.html';
-  }
-}
-</script>
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des textes...</p>
+      </div>
+      
+      <!-- Conteneur pour les sous-tabs (catégories) -->
+      <div id="sousTabsContainer"></div>
+      
+      <!-- Conteneur pour la grille des posts -->
+      <div id="grilleContainer"></div>
+    </div>
+
+    <div class="devise">
+      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <style>
+    /* ============================================================
+       STYLES ADMIN - SUR LE MODÈLE DE mes-textes.html
+       ============================================================ */
+
+    .stats-ligne {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+      margin-bottom: 20px;
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #555);
+    }
+
+    .stat-item .nombre {
+      font-weight: 600;
+      color: var(--text-primary, #1a1a1a);
+      font-size: 18px;
+    }
+
+    .btn-ajout {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      padding: 6px 20px;
+      font-family: inherit;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+      color: var(--text-primary, #1a1a1a);
+    }
+    .btn-ajout:hover {
+      background: var(--bg-hover, #f0f0f0);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    /* === SOUS-TABS (CATÉGORIES) === */
+    .sous-tabs-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 16px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+    }
+
+    .sous-tab-btn {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 4px 14px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .sous-tab-btn:hover {
+      background: var(--bg-hover, #f0f0f0);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .sous-tab-btn.active {
+      background: var(--bg-active, #e8e8e8);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .sous-tab-btn .compteur-sous-tab {
+      background: var(--bg-badge, #e8e8e8);
+      color: var(--text-secondary, #555);
+      padding: 0 8px;
+      border-radius: 4px;
+      font-size: 11px;
+    }
+
+    .sous-tab-btn.active .compteur-sous-tab {
+      background: var(--bg-badge-active, #ccc);
+    }
+
+    /* === GRILLE DES POSTS (comme mes-textes) === */
+    .grille {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+    }
+
+    .carte-post {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 16px;
+      border: 1px solid var(--border-color, #e0e0e0);
+      background: var(--bg-card, #ffffff);
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .carte-post:hover {
+      border-color: var(--text-primary, #1a1a1a);
+      background: var(--bg-hover, #f7f7f7);
+    }
+
+    .carte-post .ordres {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+
+    .carte-post .ordres button {
+      background: transparent;
+      border: 1px solid var(--border-color, #ddd);
+      color: var(--text-secondary, #888);
+      width: 24px;
+      height: 24px;
+      cursor: pointer;
+      font-size: 11px;
+      transition: 0.15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 0;
+      line-height: 1;
+    }
+
+    .carte-post .ordres button:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .carte-post .ordres button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .carte-post .ordres button:disabled:hover {
+      background: transparent;
+      color: var(--text-secondary, #888);
+      border-color: var(--border-color, #ddd);
+    }
+
+    .carte-post .infos {
+      flex: 1;
+      min-width: 0;
+      cursor: pointer;
+    }
+
+    .carte-post .infos .titre {
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-weight: 600;
+      font-size: 17px;
+      color: var(--text-primary, #1a1a1a);
+      display: block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .carte-post .infos .meta {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 8px 12px;
+      margin-top: 4px;
+    }
+
+    .carte-post .infos .meta .badge-icone {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
+      background: var(--bg-badge, #f0f0f0);
+      padding: 2px 10px;
+      border-radius: 4px;
+    }
+
+    .carte-post .infos .meta .niveau-badge {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-primary, #1a1a1a);
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      padding: 2px 10px;
+      border-radius: 4px;
+    }
+
+    .carte-post .statut {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+
+    .carte-post .statut .btn-supprimer-admin {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary, #888);
+      font-size: 18px;
+      cursor: pointer;
+      padding: 0 4px;
+      transition: color 0.15s;
+      line-height: 1;
+    }
+
+    .carte-post .statut .btn-supprimer-admin:hover {
+      color: #b34a4a;
+    }
+
+    /* === VIDE === */
+    .vide {
+      text-align: center;
+      padding: 60px 20px;
+      border: 1px solid var(--border-color, #e0e0e0);
+    }
+    .vide .icone {
+      font-size: 48px;
+      display: block;
+      margin-bottom: 12px;
+    }
+    .vide h2 {
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-weight: 400;
+      color: var(--text-primary, #1a1a1a);
+      font-size: 22px;
+      margin: 0 0 4px 0;
+    }
+    .vide p {
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-secondary, #555);
+      font-size: 15px;
+      margin: 0;
+    }
+
+    /* === MODALE PLEIN ÉCRAN (identique à l'ancienne) === */
+    .modal-fullscreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: var(--bg, #ffffff);
+      z-index: 1000;
+      display: none;
+      flex-direction: column;
+      padding: 12px 16px;
+      box-sizing: border-box;
+      overflow-y: auto;
+    }
+    .modal-fullscreen.visible {
+      display: flex;
+    }
+    .modal-fullscreen .modal-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--border-color, #e0e0e0);
+      flex-shrink: 0;
+      margin-bottom: 12px;
+    }
+    .modal-fullscreen .modal-header .input-titre {
+      flex: 1;
+      border: none;
+      background: transparent;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text-primary, #1a1a1a);
+      outline: none;
+      padding: 4px 0;
+    }
+    .modal-fullscreen .modal-header .input-titre::placeholder {
+      color: var(--text-muted, #aaa);
+    }
+    .modal-fullscreen .modal-header .btn-enregistrer {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 4px 18px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: 0.15s;
+      flex-shrink: 0;
+    }
+    .modal-fullscreen .modal-header .btn-enregistrer:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .modal-fullscreen .modal-header .btn-enregistrer:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .modal-fullscreen .modal-header .btn-close {
+      background: none;
+      border: none;
+      color: var(--text-secondary, #888);
+      font-size: 26px;
+      cursor: pointer;
+      padding: 0 4px;
+      flex-shrink: 0;
+    }
+    .modal-fullscreen .modal-header .btn-close:hover {
+      color: var(--text-primary, #1a1a1a);
+    }
+
+    /* Métadonnées */
+    .meta-row {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      flex-shrink: 0;
+      margin-bottom: 12px;
+      align-items: center;
+    }
+    .meta-row .meta-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .meta-row .meta-group label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .meta-row .meta-group select,
+    .meta-row .meta-group input {
+      background: var(--bg, #fff);
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-primary, #1a1a1a);
+      padding: 4px 8px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      border-radius: 0;
+      outline: none;
+      min-width: 90px;
+    }
+    .meta-row .meta-group select:focus,
+    .meta-row .meta-group input:focus {
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    .niveaux {
+      display: flex;
+      gap: 4px;
+    }
+    .niveaux .btn-niveau {
+      width: 32px;
+      height: 32px;
+      border: 1px solid var(--border-color, #ccc);
+      background: transparent;
+      color: var(--text-secondary, #555);
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      transition: 0.15s;
+    }
+    .niveaux .btn-niveau:hover {
+      background: var(--bg-hover, #f0f0f0);
+    }
+    .niveaux .btn-niveau.active {
+      background: var(--bg-active, #e8e8e8);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+
+    /* Textarea */
+    .textarea-wrap {
+      flex: 1;
+      min-height: 150px;
+      margin-bottom: 10px;
+    }
+    .textarea-wrap textarea {
+      width: 100%;
+      height: 100%;
+      min-height: 200px;
+      border: 1px solid var(--border-color, #e0e0e0);
+      background: var(--bg, #fff);
+      color: var(--text-primary, #1a1a1a);
+      padding: 12px;
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 17px;
+      line-height: 2;
+      resize: vertical;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .textarea-wrap textarea:focus {
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .textarea-wrap .compteur {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-muted, #aaa);
+      text-align: right;
+      padding: 2px 0;
+    }
+
+    /* Champs */
+    .champs-section {
+      flex-shrink: 0;
+      border-top: 1px solid var(--border-color, #e0e0e0);
+      padding-top: 10px;
+      margin-bottom: 10px;
+    }
+    .champs-section .champs-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .champs-section .champs-header .champs-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #555);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+    }
+    .champs-section .champs-header .btn-ajout-champ {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 2px 14px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: 0.15s;
+      position: relative;
+    }
+    .champs-section .champs-header .btn-ajout-champ:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .champs-section .champs-header .btn-ajout-champ .dropdown {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--bg, #fff);
+      border: 1px solid var(--border-color, #ccc);
+      min-width: 180px;
+      z-index: 10;
+      margin-top: 2px;
+    }
+    .champs-section .champs-header .btn-ajout-champ .dropdown.open {
+      display: block;
+    }
+    .champs-section .champs-header .btn-ajout-champ .dropdown button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      background: transparent;
+      border: none;
+      padding: 6px 16px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #555);
+      cursor: pointer;
+      transition: background 0.15s;
+    }
+    .champs-section .champs-header .btn-ajout-champ .dropdown button:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+    }
+
+    /* Champ item */
+    .champ-item {
+      border: 1px solid var(--border-color, #e0e0e0);
+      padding: 8px 12px;
+      margin-bottom: 6px;
+      background: var(--bg-card, #fff);
+    }
+    .champ-item .champ-type {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted, #aaa);
+      text-transform: uppercase;
+      letter-spacing: 0.3px;
+      display: block;
+      margin-bottom: 4px;
+    }
+    .champ-item .champ-contenu {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .champ-item .champ-contenu input[type="text"] {
+      border: none;
+      border-bottom: 1px solid var(--border-light, #e8e8e8);
+      background: transparent;
+      color: var(--text-primary, #1a1a1a);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 16px;
+      padding: 2px 0;
+      outline: none;
+      width: 100%;
+    }
+    .champ-item .champ-contenu input[type="text"]:focus {
+      border-bottom-color: var(--text-primary, #1a1a1a);
+    }
+    .champ-item .champ-contenu .reponses {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding-left: 12px;
+      margin-top: 4px;
+    }
+    .champ-item .champ-contenu .reponse-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .champ-item .champ-contenu .reponse-row input[type="text"] {
+      flex: 1;
+      border: none;
+      border-bottom: 1px solid var(--border-light, #e8e8e8);
+      background: transparent;
+      color: var(--text-primary, #1a1a1a);
+      font-family: 'Segoe UI', 'Roboto', sans-serif;
+      font-size: 15px;
+      padding: 2px 0;
+      outline: none;
+    }
+    .champ-item .champ-contenu .reponse-row input[type="text"]:focus {
+      border-bottom-color: var(--text-primary, #1a1a1a);
+    }
+    .champ-item .champ-contenu .reponse-row .vf {
+      display: flex;
+      gap: 2px;
+      flex-shrink: 0;
+    }
+    .champ-item .champ-contenu .reponse-row .vf button {
+      width: 26px;
+      height: 26px;
+      border: 1px solid var(--border-color, #ccc);
+      background: transparent;
+      color: var(--text-secondary, #555);
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .champ-item .champ-contenu .reponse-row .vf button:hover {
+      background: var(--bg-hover, #f0f0f0);
+    }
+    .champ-item .champ-contenu .reponse-row .vf button.active-v {
+      background: var(--bg-active, #e0e0e0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .champ-item .champ-contenu .reponse-row .vf button.active-f {
+      background: var(--bg-active, #e0e0e0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep {
+      background: none;
+      border: none;
+      color: var(--text-muted, #aaa);
+      cursor: pointer;
+      font-size: 15px;
+      padding: 0 2px;
+    }
+    .champ-item .champ-contenu .reponse-row .btn-suppr-rep:hover {
+      color: #b34a4a;
+    }
+    .champ-item .champ-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .champ-item .champ-actions button {
+      background: transparent;
+      border: 1px solid var(--border-color, #ccc);
+      color: var(--text-secondary, #555);
+      padding: 2px 12px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+    .champ-item .champ-actions button:hover {
+      background: var(--bg-hover, #f0f0f0);
+      color: var(--text-primary, #1a1a1a);
+      border-color: var(--text-primary, #1a1a1a);
+    }
+    .champ-item .champ-actions .btn-suppr-champ:hover {
+      color: #b34a4a;
+      border-color: #b34a4a;
+    }
+
+    .msg {
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      padding: 4px 0;
+      display: none;
+    }
+    .msg.success { color: #2c7a4a; display: block; }
+    .msg.error { color: #b34a4a; display: block; }
+
+    @media (max-width: 600px) {
+      .carte-post {
+        flex-wrap: wrap;
+        padding: 10px 12px;
+      }
+      .carte-post .ordres {
+        flex-direction: row;
+        order: 3;
+        width: 100%;
+        justify-content: flex-end;
+        margin-top: 4px;
+      }
+      .carte-post .ordres button {
+        width: 28px;
+        height: 28px;
+      }
+      .carte-post .infos .titre {
+        font-size: 15px;
+        white-space: normal;
+      }
+      .carte-post .statut {
+        order: 2;
+      }
+      .stats-ligne {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .stat-item:last-child {
+        justify-content: flex-start;
+      }
+      .modal-fullscreen .modal-header .input-titre {
+        font-size: 17px;
+      }
+      .meta-row {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .meta-row .meta-group {
+        flex-wrap: wrap;
+      }
+      .sous-tabs-container {
+        gap: 4px;
+      }
+      .sous-tab-btn {
+        font-size: 12px;
+        padding: 3px 10px;
+      }
+    }
+  </style>
+
+  <!-- ===== MODALE ===== -->
+  <div class="modal-fullscreen" id="modalTexte">
+
+    <!-- HEADER -->
+    <div class="modal-header">
+      <input type="text" class="input-titre" id="inputTitre" placeholder="Titre de l'article..." />
+      <button class="btn-enregistrer" id="btnEnregistrer" onclick="enregistrer()">Enregistrer</button>
+      <button class="btn-close" onclick="fermerModal()">✕</button>
+    </div>
+
+    <!-- Métadonnées -->
+    <div class="meta-row">
+      <div class="meta-group">
+        <label>Catégorie</label>
+        <select id="inputCategorie">
+          <option value="Foi">Foi</option>
+          <option value="Rappels divers">Rappels divers</option>
+          <option value="Sourate">Sourate</option>
+          <option value="Hadith">Hadith</option>
+          <option value="Meditation">Méditation</option>
+          <option value="Invocation">Invocation</option>
+          <option value="Histoire">Histoire</option>
+          <option value="Morale">Morale</option>
+          <option value="Autre">Autre</option>
+        </select>
+      </div>
+      <div class="meta-group">
+        <label>Niveau</label>
+        <div class="niveaux">
+          <button type="button" class="btn-niveau active" data-niveau="1" onclick="setNiveau(1)">1</button>
+          <button type="button" class="btn-niveau" data-niveau="2" onclick="setNiveau(2)">2</button>
+          <button type="button" class="btn-niveau" data-niveau="3" onclick="setNiveau(3)">3</button>
+        </div>
+        <input type="hidden" id="inputNiveau" value="1" />
+      </div>
+    </div>
+
+    <!-- TEXTAREA -->
+    <div class="textarea-wrap">
+      <textarea id="inputContenu" placeholder="Écrivez votre texte ici..." oninput="mettreAJourCompteur()"></textarea>
+      <div class="compteur" id="compteurMots">0 mots</div>
+    </div>
+
+    <!-- CHAMPS -->
+    <div class="champs-section">
+      <div class="champs-header">
+        <span class="champs-label">Champs</span>
+        <button class="btn-ajout-champ" id="btnAjoutChamp" onclick="toggleDropdown()">
+          + Ajouter
+          <div class="dropdown" id="dropdownMenu">
+            <button onclick="ajouterChamp('quiz')">Quiz</button>
+            <button onclick="ajouterChamp('open')">Question ouverte</button>
+            <button onclick="ajouterChamp('retenir')">Retenir</button>
+            <button onclick="ajouterChamp('info')">Info</button>
+          </div>
+        </button>
+      </div>
+      <div id="champsListe"></div>
+    </div>
+
+    <div id="messageTexte" class="msg"></div>
+
+  </div>
+
+  <!-- ===== SCRIPTS ===== -->
+  <script>
+    // ============================================================
+    // ÉTAT
+    // ============================================================
+    var tousLesPosts = [];
+    var modeEdition = false;
+    var postIdEdit = null;
+    var niveauActuel = 1;
+    var champsAjoutes = [];
+    var dropdownOpen = false;
+    var categorieActuelle = 'toutes';
+
+    // ============================================================
+    // CHARGER
+    // ============================================================
+    function chargerPosts() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id || id !== 'admin') {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      DataManager.charger()
+        .then(function(data) {
+          tousLesPosts = data.posts || [];
+          tousLesPosts.forEach(function(p) {
+            if (!p.statut) p.statut = 'publie';
+            if (!p.date) p.date = new Date().toISOString();
+            if (p.ordre === undefined) p.ordre = 99999;
+          });
+          afficherListe();
+        })
+        .catch(function(error) {
+          console.error('Erreur:', error);
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            tousLesPosts = cache.posts || [];
+            tousLesPosts.forEach(function(p) {
+              if (p.ordre === undefined) p.ordre = 99999;
+            });
+            afficherListe();
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('grilleContainer').innerHTML = `
+              <div class="vide">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();" 
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border-color);cursor:pointer;color:var(--text-primary);font-family:inherit;">
+                  Réessayer
+                </button>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHER LISTE AVEC CATÉGORIES ET ORDRE
+    // ============================================================
+    function afficherListe() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('totalPosts').textContent = tousLesPosts.length;
+
+      if (tousLesPosts.length === 0) {
+        document.getElementById('grilleContainer').innerHTML = `
+          <div class="vide">
+            <span class="icone">📖</span>
+            <h2>Aucun texte</h2>
+            <p>Cliquez sur "Ajouter" pour commencer.</p>
+          </div>
+        `;
+        document.getElementById('sousTabsContainer').innerHTML = '';
+        return;
+      }
+
+      // Extraire toutes les catégories uniques
+      var categories = {};
+      tousLesPosts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(post);
+      });
+      
+      var categoriesTriees = Object.keys(categories).sort();
+
+      // Afficher les sous-tabs
+      afficherSousTabs(categoriesTriees, categories);
+
+      // Afficher les posts pour la catégorie sélectionnée
+      afficherPostsParCategorie(categorieActuelle);
+    }
+
+    // ============================================================
+    // AFFICHER SOUS-TABS (CATÉGORIES)
+    // ============================================================
+    function afficherSousTabs(categoriesTriees, categories) {
+      var container = document.getElementById('sousTabsContainer');
+      
+      var totalTous = 0;
+      categoriesTriees.forEach(function(cat) {
+        totalTous += categories[cat].length;
+      });
+
+      var html = '<div class="sous-tabs-container">';
+      
+      // Bouton "Toutes"
+      html += `
+        <button class="sous-tab-btn ${categorieActuelle === 'toutes' ? 'active' : ''}" 
+                onclick="switchCategorie('toutes')">
+          Toutes
+          <span class="compteur-sous-tab">${totalTous}</span>
+        </button>
+      `;
+
+      // Boutons par catégorie
+      categoriesTriees.forEach(function(cat) {
+        var count = categories[cat].length;
+        html += `
+          <button class="sous-tab-btn ${categorieActuelle === cat ? 'active' : ''}" 
+                  onclick="switchCategorie('${cat}')">
+            ${cat}
+            <span class="compteur-sous-tab">${count}</span>
+          </button>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // CHANGER DE CATÉGORIE
+    // ============================================================
+    function switchCategorie(categorie) {
+      categorieActuelle = categorie;
+      
+      // Mettre à jour les boutons
+      document.querySelectorAll('.sous-tab-btn').forEach(function(btn) {
+        btn.classList.remove('active');
+      });
+      document.querySelectorAll('.sous-tab-btn').forEach(function(btn) {
+        if (btn.textContent.trim().startsWith(categorie === 'toutes' ? 'Toutes' : categorie)) {
+          btn.classList.add('active');
+        }
+      });
+      
+      afficherPostsParCategorie(categorie);
+    }
+
+    // ============================================================
+    // AFFICHER POSTS PAR CATÉGORIE
+    // ============================================================
+    function afficherPostsParCategorie(categorie) {
+      var container = document.getElementById('grilleContainer');
+      
+      var postsFiltres = [];
+      
+      tousLesPosts.forEach(function(post) {
+        var catPost = post.categorie || 'Sans catégorie';
+        if (categorie === 'toutes' || catPost === categorie) {
+          postsFiltres.push(post);
+        }
+      });
+
+      // Trier par ordre puis par date
+      postsFiltres.sort(function(a, b) {
+        var ordreA = a.ordre !== undefined ? a.ordre : 99999;
+        var ordreB = b.ordre !== undefined ? b.ordre : 99999;
+        if (ordreA !== ordreB) return ordreA - ordreB;
+        var dateA = a.date ? new Date(a.date) : new Date(0);
+        var dateB = b.date ? new Date(b.date) : new Date(0);
+        return dateB - dateA;
+      });
+
+      if (postsFiltres.length === 0) {
+        container.innerHTML = `
+          <div class="vide" style="padding:30px 20px;">
+            <span class="icone" style="font-size:32px;">📭</span>
+            <h2 style="font-size:18px;">Aucun texte</h2>
+            <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="grille">';
+
+      for (var i = 0; i < postsFiltres.length; i++) {
+        var post = postsFiltres[i];
+        var date = post.date ? new Date(post.date) : null;
+        var dateStr = date ? date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+        var mots = post.mots || 0;
+        var catPost = post.categorie || 'Sans catégorie';
+        var niveau = post.niveau || 0;
+
+        html += `
+          <div class="carte-post" data-postid="${post.id}">
+            <div class="ordres">
+              <button onclick="deplacerPost('${post.id}', 'haut', '${categorie}')" ${i === 0 ? 'disabled' : ''}>▲</button>
+              <button onclick="deplacerPost('${post.id}', 'bas', '${categorie}')" ${i === postsFiltres.length - 1 ? 'disabled' : ''}>▼</button>
+            </div>
+            <div class="infos" onclick="modifierPost('${post.id}')">
+              <span class="titre">${post.titre || 'Sans titre'}</span>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${niveau}</span>
+                <span class="badge-icone">${catPost}</span>
+                <span class="badge-icone">${mots} mots</span>
+                <span class="badge-icone">${dateStr}</span>
+              </div>
+            </div>
+            <div class="statut" onclick="event.stopPropagation();">
+              <button class="btn-supprimer-admin" onclick="supprimerPost('${post.id}')" title="Supprimer">✕</button>
+            </div>
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DÉPLACER UN POST (HAUT / BAS)
+    // ============================================================
+    function deplacerPost(postId, direction, categorie) {
+      // Trouver le post dans tousLesPosts
+      var postIndex = -1;
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        if (tousLesPosts[i].id === postId) {
+          postIndex = i;
+          break;
+        }
+      }
+      
+      if (postIndex === -1) return;
+
+      // Récupérer les posts de la même catégorie
+      var catPost = tousLesPosts[postIndex].categorie || 'Sans catégorie';
+      var postsMemeCategorie = [];
+      var indexDansCategorie = -1;
+
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var p = tousLesPosts[i];
+        var pCat = p.categorie || 'Sans catégorie';
+        if (pCat === catPost) {
+          postsMemeCategorie.push(p);
+          if (p.id === postId) {
+            indexDansCategorie = postsMemeCategorie.length - 1;
+          }
+        }
+      }
+
+      // Calculer la nouvelle position
+      var newIndex = indexDansCategorie + (direction === 'haut' ? -1 : 1);
+      if (newIndex < 0 || newIndex >= postsMemeCategorie.length) return;
+
+      // Échanger dans le tableau de la catégorie
+      var temp = postsMemeCategorie[newIndex];
+      postsMemeCategorie[newIndex] = postsMemeCategorie[indexDansCategorie];
+      postsMemeCategorie[indexDansCategorie] = temp;
+
+      // Réattribuer les ordres
+      var positionsMap = {};
+      for (var i = 0; i < postsMemeCategorie.length; i++) {
+        positionsMap[postsMemeCategorie[i].id] = i;
+      }
+
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var id = tousLesPosts[i].id;
+        if (positionsMap[id] !== undefined) {
+          tousLesPosts[i].ordre = positionsMap[id];
+        }
+      }
+
+      // Sauvegarder l'ordre
+      sauvegarderOrdre(catPost);
+    }
+
+    // ============================================================
+    // SAUVEGARDER L'ORDRE DANS LE SHEET
+    // ============================================================
+    function sauvegarderOrdre(categorie) {
+      // Récupérer tous les posts de la catégorie
+      var catPosts = [];
+      for (var i = 0; i < tousLesPosts.length; i++) {
+        var p = tousLesPosts[i];
+        var pCat = p.categorie || 'Sans catégorie';
+        if (pCat === categorie) {
+          catPosts.push(p);
+        }
+      }
+
+      // Créer un objet avec l'ordre de chaque post
+      var ordres = {};
+      for (var i = 0; i < catPosts.length; i++) {
+        ordres[catPosts[i].id] = i;
+      }
+
+      // Envoyer l'ordre au serveur
+      var url = CONFIG.SCRIPT_URL + '?action=updateOrder&categorie=' + encodeURIComponent(categorie);
+      for (var id in ordres) {
+        url += '&ordre_' + encodeURIComponent(id) + '=' + encodeURIComponent(ordres[id]);
+      }
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            console.log('Ordre sauvegardé');
+            afficherPostsParCategorie(categorieActuelle);
+          } else {
+            throw new Error(data.message || 'Erreur');
+          }
+        })
+        .catch(function(err) {
+          console.error('Erreur lors de la sauvegarde de l\'ordre:', err);
+          chargerPosts();
+        });
+    }
+
+    // ============================================================
+    // MODALE
+    // ============================================================
+    function ouvrirModal() {
+      modeEdition = false;
+      postIdEdit = null;
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+      document.getElementById('inputTitre').value = '';
+      document.getElementById('inputContenu').value = '';
+      document.getElementById('messageTexte').className = 'msg';
+      document.getElementById('messageTexte').textContent = '';
+      champsAjoutes = [];
+      afficherChamps();
+      mettreAJourCompteur();
+      setNiveau(1);
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('inputTitre').focus();
+    }
+
+    function fermerModal() {
+      document.getElementById('modalTexte').classList.remove('visible');
+    }
+
+    // ============================================================
+    // NIVEAU
+    // ============================================================
+    function setNiveau(n) {
+      niveauActuel = n;
+      document.querySelectorAll('.btn-niveau').forEach(function(btn) {
+        btn.classList.remove('active');
+        if (parseInt(btn.dataset.niveau) === n) btn.classList.add('active');
+      });
+      document.getElementById('inputNiveau').value = n;
+    }
+
+    // ============================================================
+    // COMPTEUR
+    // ============================================================
+    function mettreAJourCompteur() {
+      var texte = document.getElementById('inputContenu').value || '';
+      var mots = texte.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+      document.getElementById('compteurMots').textContent = mots + ' mots';
+    }
+
+    // ============================================================
+    // DROPDOWN
+    // ============================================================
+    function toggleDropdown() {
+      dropdownOpen = !dropdownOpen;
+      document.getElementById('dropdownMenu').classList.toggle('open');
+    }
+
+    document.addEventListener('click', function(e) {
+      var btn = document.getElementById('btnAjoutChamp');
+      if (btn && !btn.contains(e.target)) {
+        document.getElementById('dropdownMenu').classList.remove('open');
+        dropdownOpen = false;
+      }
+    });
+
+    // ============================================================
+    // AJOUTER / SUPPRIMER CHAMP
+    // ============================================================
+    function ajouterChamp(type) {
+      dropdownOpen = false;
+      document.getElementById('dropdownMenu').classList.remove('open');
+
+      var labels = {
+        quiz: 'Quiz',
+        open: 'Question ouverte',
+        retenir: 'Retenir',
+        info: 'Info'
+      };
+
+      var nouveau = {
+        type: type,
+        label: labels[type] || type,
+        contenu: '',
+        reponses: []
+      };
+
+      if (type === 'quiz') {
+        nouveau.reponses = [
+          { texte: '', correct: true },
+          { texte: '', correct: false }
+        ];
+      }
+
+      champsAjoutes.push(nouveau);
+      afficherChamps();
+    }
+
+    function supprimerChamp(index) {
+      champsAjoutes.splice(index, 1);
+      afficherChamps();
+    }
+
+    // ============================================================
+    // AFFICHER CHAMPS
+    // ============================================================
+    function afficherChamps() {
+      var container = document.getElementById('champsListe');
+
+      if (champsAjoutes.length === 0) {
+        container.innerHTML = '';
+        return;
+      }
+
+      var html = '';
+      for (var i = 0; i < champsAjoutes.length; i++) {
+        var champ = champsAjoutes[i];
+        html += '<div class="champ-item">';
+        html += '<span class="champ-type">' + champ.label + '</span>';
+        html += '<div class="champ-contenu">';
+
+        if (champ.type === 'quiz') {
+          html += '<input type="text" placeholder="Question du quiz..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="reponses" id="reponses-' + i + '">';
+          for (var r = 0; r < champ.reponses.length; r++) {
+            var rep = champ.reponses[r];
+            var vClass = rep.correct ? 'active-v' : '';
+            var fClass = !rep.correct ? 'active-f' : '';
+            html += '<div class="reponse-row">';
+            html += '<input type="text" placeholder="Réponse ' + (r + 1) + '" value="' + (rep.texte || '') + '" onchange="champsAjoutes[' + i + '].reponses[' + r + '].texte = this.value" />';
+            html += '<div class="vf">';
+            html += '<button class="' + vClass + '" onclick="setVrai(' + i + ',' + r + ')">V</button>';
+            html += '<button class="' + fClass + '" onclick="setFaux(' + i + ',' + r + ')">F</button>';
+            html += '</div>';
+            if (champ.reponses.length > 2) {
+              html += '<button class="btn-suppr-rep" onclick="supprimerReponse(' + i + ',' + r + ')">✕</button>';
+            }
+            html += '</div>';
+          }
+          html += '</div>';
+          html += '<div class="champ-actions">';
+          html += '<button onclick="ajouterReponse(' + i + ')">+ Réponse</button>';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        } else if (champ.type === 'open') {
+          html += '<input type="text" placeholder="Question ouverte..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        } else if (champ.type === 'retenir') {
+          html += '<input type="text" class="champ-retenir" placeholder="Mots-clés séparés par des virgules..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        } else if (champ.type === 'info') {
+          html += '<input type="text" placeholder="Information..." value="' + (champ.contenu || '') + '" onchange="champsAjoutes[' + i + '].contenu = this.value" />';
+          html += '<div class="champ-actions">';
+          html += '<button class="btn-suppr-champ" onclick="supprimerChamp(' + i + ')">Supprimer</button>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+        html += '</div>';
+      }
+
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // QUIZ - RÉPONSES
+    // ============================================================
+    function ajouterReponse(index) {
+      champsAjoutes[index].reponses.push({ texte: '', correct: false });
+      afficherChamps();
+    }
+
+    function supprimerReponse(index, repIndex) {
+      if (champsAjoutes[index].reponses.length <= 2) return;
+      champsAjoutes[index].reponses.splice(repIndex, 1);
+      afficherChamps();
+    }
+
+    function setVrai(index, repIndex) {
+      var reponses = champsAjoutes[index].reponses;
+      for (var i = 0; i < reponses.length; i++) {
+        reponses[i].correct = (i === repIndex);
+      }
+      afficherChamps();
+    }
+
+    function setFaux(index, repIndex) {
+      champsAjoutes[index].reponses[repIndex].correct = false;
+      afficherChamps();
+    }
+
+    window.ajouterReponse = ajouterReponse;
+    window.supprimerReponse = supprimerReponse;
+    window.setVrai = setVrai;
+    window.setFaux = setFaux;
+
+    // ============================================================
+    // ENREGISTRER
+    // ============================================================
+    function enregistrer() {
+      var titre = document.getElementById('inputTitre').value.trim();
+      var contenu = document.getElementById('inputContenu').value.trim();
+      var categorie = document.getElementById('inputCategorie').value;
+      var niveau = niveauActuel;
+      var msg = document.getElementById('messageTexte');
+
+      if (!titre) { msg.className = 'msg error'; msg.textContent = 'Veuillez saisir un titre'; return; }
+      if (!contenu) { msg.className = 'msg error'; msg.textContent = 'Veuillez écrire du contenu'; return; }
+
+      var mots = contenu.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+
+      var colonnes = ['-s- ' + contenu];
+      for (var i = 0; i < champsAjoutes.length; i++) {
+        var champ = champsAjoutes[i];
+        if (champ.type === 'quiz') {
+          if (!champ.contenu.trim()) continue;
+          colonnes.push('-q- ' + champ.contenu);
+          for (var r = 0; r < champ.reponses.length; r++) {
+            var rep = champ.reponses[r];
+            if (!rep.texte.trim()) continue;
+            var prefix = rep.correct ? '-v- ' : '-f- ';
+            colonnes.push(prefix + rep.texte);
+          }
+        } else if (champ.type === 'open') {
+          if (!champ.contenu.trim()) continue;
+          colonnes.push('-qs- ' + champ.contenu);
+        } else if (champ.type === 'retenir') {
+          if (!champ.contenu.trim()) continue;
+          colonnes.push('-r- ' + champ.contenu);
+        } else if (champ.type === 'info') {
+          if (!champ.contenu.trim()) continue;
+          colonnes.push('-i- ' + champ.contenu);
+        }
+      }
+
+      var contenuFinal = colonnes.join(' | ');
+
+      var btn = document.getElementById('btnEnregistrer');
+      btn.disabled = true;
+      btn.textContent = '...';
+      msg.className = 'msg';
+      msg.textContent = '';
+
+      var maintenant = new Date().toISOString();
+
+      if (modeEdition && postIdEdit) {
+        var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+          '&id=' + encodeURIComponent(postIdEdit) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent('publie') +
+          '&mots=' + encodeURIComponent(mots) +
+          '&dateModif=' + encodeURIComponent(maintenant);
+
+        var parts = contenuFinal.split(' | ');
+        for (var i = 0; i < parts.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(parts[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              msg.className = 'msg success';
+              msg.textContent = 'Texte mis à jour';
+              btn.disabled = false;
+              btn.textContent = 'Enregistrer';
+              setTimeout(function() { fermerModal(); chargerPosts(); }, 500);
+            } else {
+              throw new Error(data.message || 'Erreur');
+            }
+          })
+          .catch(function(err) {
+            msg.className = 'msg error';
+            msg.textContent = 'Erreur : ' + err.message;
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+          });
+      } else {
+        var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+          '&titre=' + encodeURIComponent(titre) +
+          '&niveau=' + encodeURIComponent(niveau) +
+          '&categorie=' + encodeURIComponent(categorie) +
+          '&statut=' + encodeURIComponent('publie') +
+          '&mots=' + encodeURIComponent(mots) +
+          '&date=' + encodeURIComponent(new Date().toISOString().slice(0, 10));
+
+        var parts = contenuFinal.split(' | ');
+        for (var i = 0; i < parts.length; i++) {
+          url += '&col' + (i + 1) + '=' + encodeURIComponent(parts[i]);
+        }
+
+        fetch(url)
+          .then(function(r) { return r.json(); })
+          .then(function(data) {
+            if (data.success) {
+              msg.className = 'msg success';
+              msg.textContent = 'Texte ajouté';
+              btn.disabled = false;
+              btn.textContent = 'Enregistrer';
+              // Recharger pour avoir l'ordre
+              setTimeout(function() { fermerModal(); chargerPosts(); }, 500);
+            } else {
+              throw new Error(data.message || 'Erreur');
+            }
+          })
+          .catch(function(err) {
+            msg.className = 'msg error';
+            msg.textContent = 'Erreur : ' + err.message;
+            btn.disabled = false;
+            btn.textContent = 'Enregistrer';
+          });
+      }
+    }
+
+    // ============================================================
+    // MODIFIER
+    // ============================================================
+    function modifierPost(postId) {
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) return;
+
+      modeEdition = true;
+      postIdEdit = postId;
+
+      document.getElementById('btnEnregistrer').textContent = 'Enregistrer';
+      document.getElementById('inputTitre').value = post.titre || '';
+      if (post.niveau) setNiveau(parseInt(post.niveau));
+
+      var select = document.getElementById('inputCategorie');
+      for (var i = 0; i < select.options.length; i++) {
+        if (select.options[i].value === post.categorie) {
+          select.selectedIndex = i;
+          break;
+        }
+      }
+
+      var contenu = '';
+      var champs = [];
+
+      if (post.contenu) {
+        var colonnes = post.contenu.split(' | ');
+        for (var i = 0; i < colonnes.length; i++) {
+          var ligne = colonnes[i].trim();
+          if (!ligne) continue;
+
+          if (ligne.startsWith('-s-')) {
+            contenu = ligne.replace('-s-', '').trim();
+          } else if (ligne.startsWith('-q-')) {
+            var qText = ligne.replace('-q-', '').trim();
+            var reponses = [];
+            for (var j = i + 1; j < colonnes.length; j++) {
+              var next = colonnes[j].trim();
+              if (next.startsWith('-v-')) {
+                reponses.push({ texte: next.replace('-v-', '').trim(), correct: true });
+                i = j;
+              } else if (next.startsWith('-f-')) {
+                reponses.push({ texte: next.replace('-f-', '').trim(), correct: false });
+                i = j;
+              } else {
+                break;
+              }
+            }
+            if (reponses.length < 2) {
+              reponses.push({ texte: '', correct: true });
+              reponses.push({ texte: '', correct: false });
+            }
+            champs.push({ type: 'quiz', label: 'Quiz', contenu: qText, reponses: reponses });
+          } else if (ligne.startsWith('-qs-')) {
+            champs.push({ type: 'open', label: 'Question ouverte', contenu: ligne.replace('-qs-', '').trim(), reponses: [] });
+          } else if (ligne.startsWith('-r-')) {
+            champs.push({ type: 'retenir', label: 'Retenir', contenu: ligne.replace('-r-', '').trim(), reponses: [] });
+          } else if (ligne.startsWith('-i-')) {
+            champs.push({ type: 'info', label: 'Info', contenu: ligne.replace('-i-', '').trim(), reponses: [] });
+          }
+        }
+      }
+
+      document.getElementById('inputContenu').value = contenu;
+      champsAjoutes = champs;
+      afficherChamps();
+      mettreAJourCompteur();
+
+      document.getElementById('modalTexte').classList.add('visible');
+      document.getElementById('messageTexte').className = 'msg';
+      document.getElementById('messageTexte').textContent = '';
+    }
+
+    // ============================================================
+    // SUPPRIMER
+    // ============================================================
+    function supprimerPost(postId) {
+      if (!confirm('Supprimer ce texte définitivement ?')) return;
+      DataManager.supprimerPost(postId)
+        .then(function() { chargerPosts(); })
+        .catch(function(err) { alert('Erreur : ' + err.message); });
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    function demarrer() {
+      chargerPosts();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+
+    // Exposer les fonctions globales
+    window.ouvrirModal = ouvrirModal;
+    window.fermerModal = fermerModal;
+    window.setNiveau = setNiveau;
+    window.ajouterChamp = ajouterChamp;
+    window.supprimerChamp = supprimerChamp;
+    window.toggleDropdown = toggleDropdown;
+    window.enregistrer = enregistrer;
+    window.modifierPost = modifierPost;
+    window.supprimerPost = supprimerPost;
+    window.mettreAJourCompteur = mettreAJourCompteur;
+    window.switchCategorie = switchCategorie;
+    window.deplacerPost = deplacerPost;
+    window.sauvegarderOrdre = sauvegarderOrdre;
+  </script>
+
+</body>
+</html>
