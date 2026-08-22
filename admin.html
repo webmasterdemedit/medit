@@ -171,6 +171,11 @@
       border-color: #b34a4a;
     }
 
+    .carte-post .actions .btn-editer:hover {
+      color: #2d6a4f;
+      border-color: #2d6a4f;
+    }
+
     .vide {
       text-align: center;
       padding: 60px 20px;
@@ -379,7 +384,7 @@
         if (post.hasQuestion) nbQuestions++;
 
         html += `
-          <div class="carte-post">
+          <div class="carte-post" onclick="window.location.href='/medit/edit.html?id=${post.id}'">
             <div class="infos">
               <span class="titre">${post.titre || 'Sans titre'}</span>
               <span class="meta">
@@ -391,8 +396,8 @@
                 <span class="badge-icone">${nbQuestions} question${nbQuestions > 1 ? 's' : ''}</span>
               </span>
             </div>
-            <div class="actions">
-              <a href="/medit/edit.html?id=${post.id}">Modifier</a>
+            <div class="actions" onclick="event.stopPropagation();">
+              <button class="btn-editer" onclick="ouvrirEditeur('${post.id}')">Modifier</button>
               <button class="btn-supprimer" onclick="supprimerPost('${post.id}')">Supprimer</button>
             </div>
           </div>
@@ -401,6 +406,10 @@
 
       html += '</div>';
       container.innerHTML = html;
+    }
+
+    function ouvrirEditeur(postId) {
+      window.location.href = '/medit/edit.html?id=' + postId;
     }
 
     function supprimerPost(postId) {
@@ -415,6 +424,7 @@
     });
 
     window.supprimerPost = supprimerPost;
+    window.ouvrirEditeur = ouvrirEditeur;
   </script>
 
 </body>
