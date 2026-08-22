@@ -44,6 +44,7 @@
       cursor: pointer;
       transition: all 0.15s;
       text-decoration: none;
+      border-radius: 4px;
     }
 
     .admin-header .btn-ajout:hover {
@@ -55,23 +56,25 @@
     .post-list {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .post-item {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 14px;
+      padding: 14px 16px;
       border: 1px solid var(--border);
       background: var(--bg);
       cursor: pointer;
-      transition: border-color 0.15s;
-      gap: 8px;
+      transition: border-color 0.15s, background 0.15s;
+      gap: 12px;
+      border-radius: 6px;
     }
 
     .post-item:hover {
       border-color: var(--border-hover);
+      background: var(--bg-hover);
     }
 
     .post-item .post-info {
@@ -87,30 +90,57 @@
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
+      font-weight: 500;
     }
 
     .post-item .post-info .meta {
       font-family: var(--font-sans);
-      font-size: 12px;
+      font-size: 13px;
       color: var(--text-secondary);
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+      margin-top: 4px;
     }
 
     .post-item .post-info .meta .statut {
       display: inline-block;
-      padding: 0 8px;
+      padding: 0 10px;
       border: 1px solid var(--border);
-      font-size: 10px;
+      font-size: 11px;
       font-family: var(--font-sans);
       color: var(--text-secondary);
+      border-radius: 12px;
+      line-height: 20px;
     }
 
     .post-item .post-info .meta .statut.publie {
-      color: var(--text);
+      color: #2d6a4f;
+      border-color: #2d6a4f;
+      background: rgba(45, 106, 79, 0.08);
+    }
+
+    .post-item .post-info .meta .statut.brouillon {
+      color: #b34a4a;
+      border-color: #b34a4a;
+      background: rgba(179, 74, 74, 0.08);
+    }
+
+    .post-item .post-info .meta .badge-icone {
+      display: inline-block;
+      padding: 0 10px;
+      border: 1px solid var(--border);
+      font-size: 11px;
+      font-family: var(--font-sans);
+      color: var(--text-secondary);
+      border-radius: 12px;
+      line-height: 20px;
     }
 
     .post-item .post-actions {
       display: flex;
-      gap: 4px;
+      gap: 6px;
       flex-shrink: 0;
     }
 
@@ -119,12 +149,14 @@
       background: transparent;
       border: 1px solid var(--border);
       color: var(--text-secondary);
-      padding: 2px 10px;
+      padding: 4px 14px;
       font-family: var(--font-sans);
-      font-size: 11px;
+      font-size: 12px;
       cursor: pointer;
       transition: all 0.15s;
       text-decoration: none;
+      border-radius: 4px;
+      line-height: 22px;
     }
 
     .post-item .post-actions a:hover,
@@ -141,28 +173,29 @@
 
     .vide {
       text-align: center;
-      padding: 40px 20px;
+      padding: 60px 20px;
       border: 1px solid var(--border);
+      border-radius: 8px;
     }
 
     .vide .icone {
-      font-size: 32px;
+      font-size: 48px;
       display: block;
-      margin-bottom: 8px;
+      margin-bottom: 12px;
     }
 
     .vide h2 {
       font-family: var(--font-serif);
       font-weight: 400;
       color: var(--text);
-      font-size: 18px;
-      margin: 0 0 4px 0;
+      font-size: 20px;
+      margin: 0 0 6px 0;
     }
 
     .vide p {
       font-family: var(--font-sans);
       color: var(--text-secondary);
-      font-size: 13px;
+      font-size: 14px;
       margin: 0;
     }
 
@@ -170,9 +203,11 @@
       .admin-container { padding: 10px; }
       .admin-header h1 { font-size: 17px; }
       .admin-header .btn-ajout { font-size: 12px; padding: 4px 12px; }
-      .post-item { padding: 8px 10px; flex-wrap: wrap; }
+      .post-item { padding: 10px 12px; flex-wrap: wrap; }
       .post-item .post-info .titre { font-size: 14px; }
-      .post-item .post-info .meta { font-size: 11px; }
+      .post-item .post-info .meta { font-size: 11px; gap: 4px; }
+      .post-item .post-actions a,
+      .post-item .post-actions button { font-size: 11px; padding: 2px 10px; }
     }
   </style>
 
@@ -252,14 +287,21 @@
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
         var mots = post.mots || 0;
 
+        var nbQuestions = 0;
+        if (post.hasQuiz) nbQuestions++;
+        if (post.hasQuestion) nbQuestions++;
+
         html += `
           <div class="post-item">
             <div class="post-info">
               <span class="titre">${post.titre || 'Sans titre'}</span>
               <span class="meta">
-                ${post.categorie || 'Sans catégorie'} · Niveau ${post.niveau || 0} · ${dateStr}
+                <span class="badge-icone">${post.categorie || 'Sans catégorie'}</span>
+                <span class="badge-icone">Niveau ${post.niveau || 0}</span>
+                <span class="badge-icone">${dateStr}</span>
                 <span class="statut ${statutClass}">${statutLabel}</span>
-                · ${mots} mots
+                <span class="badge-icone">${mots} mots</span>
+                <span class="badge-icone">${nbQuestions} question${nbQuestions > 1 ? 's' : ''}</span>
               </span>
             </div>
             <div class="post-actions">
