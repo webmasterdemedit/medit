@@ -10,10 +10,10 @@
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
-    /* Styles admin supplémentaires */
+    /* Styles admin spécifiques - garder le même look que mes-textes */
     .admin-actions {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       align-items: center;
     }
     .btn-ordre {
@@ -25,8 +25,9 @@
       font-size: 14px;
       color: var(--text-secondary);
       transition: all 0.2s;
+      line-height: 1.4;
     }
-    .btn-ordre:hover {
+    .btn-ordre:hover:not(:disabled) {
       background: var(--bg-hover);
       color: var(--text-primary);
     }
@@ -34,35 +35,37 @@
       opacity: 0.3;
       cursor: not-allowed;
     }
-    .btn-editer {
+    .btn-actions {
       background: transparent;
       border: 1px solid var(--border-color);
       border-radius: 4px;
-      padding: 4px 12px;
+      padding: 2px 8px;
       cursor: pointer;
       font-size: 13px;
       color: var(--text-secondary);
       transition: all 0.2s;
+      line-height: 1.4;
     }
-    .btn-editer:hover {
+    .btn-actions:hover {
       background: var(--bg-hover);
       color: var(--text-primary);
     }
-    .btn-supprimer {
+    .btn-supprimer-admin {
       background: transparent;
       border: 1px solid #e74c3c;
       border-radius: 4px;
-      padding: 4px 12px;
+      padding: 2px 8px;
       cursor: pointer;
       font-size: 13px;
       color: #e74c3c;
       transition: all 0.2s;
+      line-height: 1.4;
     }
-    .btn-supprimer:hover {
+    .btn-supprimer-admin:hover {
       background: #e74c3c;
       color: #fff;
     }
-    .btn-ajouter {
+    .btn-ajouter-admin {
       background: var(--accent-color);
       border: none;
       border-radius: 30px;
@@ -74,8 +77,14 @@
       transition: all 0.2s;
       margin-bottom: 20px;
     }
-    .btn-ajouter:hover {
+    .btn-ajouter-admin:hover {
       opacity: 0.85;
+    }
+    .categorie-titre {
+      margin: 24px 0 12px 0;
+      font-size: 20px;
+      font-weight: 400;
+      color: var(--text-primary);
     }
     .carte-post-admin {
       display: flex;
@@ -93,6 +102,7 @@
     }
     .carte-post-admin .infos {
       flex: 1;
+      min-width: 0;
     }
     .carte-post-admin .titre {
       font-weight: 500;
@@ -103,6 +113,9 @@
       font-size: 13px;
       color: var(--text-secondary);
       margin-top: 2px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
     }
     .carte-post-admin .statut-badge {
       font-size: 12px;
@@ -121,8 +134,10 @@
     }
     .actions-droite {
       display: flex;
-      gap: 6px;
+      gap: 4px;
       align-items: center;
+      flex-shrink: 0;
+      margin-left: 12px;
     }
     .vide-admin {
       text-align: center;
@@ -252,7 +267,7 @@
     <h1>Administration</h1>
     <p class="sous-titre-page">Gérez vos méditations : ajoutez, modifiez, réorganisez.</p>
 
-    <button class="btn-ajouter" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
+    <button class="btn-ajouter-admin" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
 
     <div id="contenu-admin">
       <div class="loader" id="loader">
@@ -337,9 +352,6 @@
         return;
       }
 
-      // Vérifier si l'utilisateur est admin (tu peux adapter)
-      // Pour l'instant, on suppose que tout utilisateur connecté est admin
-
       DataManager.charger()
         .then(function(data) {
           postsAdmin = data.posts || [];
@@ -371,6 +383,17 @@
       var container = document.getElementById('contenu-admin');
       document.getElementById('loader').style.display = 'none';
 
+      if (postsAdmin.length === 0) {
+        container.innerHTML = `
+          <div class="vide-admin">
+            <span class="icone">📭</span>
+            <h2>Aucun texte</h2>
+            <p>Cliquez sur "Ajouter un texte" pour créer votre première méditation.</p>
+          </div>
+        `;
+        return;
+      }
+
       // Grouper par catégorie
       categoriesGroupes = {};
       postsAdmin.forEach(function(post) {
@@ -383,21 +406,8 @@
 
       var html = '';
 
-      if (postsAdmin.length === 0) {
-        html = `
-          <div class="vide-admin">
-            <span class="icone">📭</span>
-            <h2>Aucun texte</h2>
-            <p>Cliquez sur "Ajouter un texte" pour créer votre première méditation.</p>
-          </div>
-        `;
-        container.innerHTML = html;
-        return;
-      }
-
       categoriesTriees.forEach(function(cat) {
-        html += `<h2 style="margin:24px 0 12px 0;font-size:20px;font-weight:400;color:var(--text-primary);">${cat}</h2>`;
-        html += `<div class="categorie-group">`;
+        html += `<h2 class="categorie-titre">${cat}</h2>`;
 
         categoriesGroupes[cat].forEach(function(post, index) {
           var total = categoriesGroupes[cat].length;
@@ -422,14 +432,12 @@
                   <button class="btn-ordre" onclick="deplacerPost('${post.id}', 'up')" ${estHaut ? 'disabled' : ''}>⬆</button>
                   <button class="btn-ordre" onclick="deplacerPost('${post.id}', 'down')" ${estBas ? 'disabled' : ''}>⬇</button>
                 </div>
-                <button class="btn-editer" onclick="editerPost('${post.id}')">✎</button>
-                <button class="btn-supprimer" onclick="demanderSuppression('${post.id}')">✕</button>
+                <button class="btn-actions" onclick="editerPost('${post.id}')">✎</button>
+                <button class="btn-supprimer-admin" onclick="demanderSuppression('${post.id}')">✕</button>
               </div>
             </div>
           `;
         });
-
-        html += `</div>`;
       });
 
       container.innerHTML = html;
@@ -466,8 +474,7 @@
       });
       postsAdmin = updatedPosts;
 
-      // Sauvegarder l'ordre (tu peux implémenter une sauvegarde si besoin)
-      // Pour l'instant, on rafraîchit l'affichage
+      // Rafraîchir l'affichage
       afficherPostsAdmin();
     }
 
@@ -478,7 +485,6 @@
       var post = postsAdmin.find(function(p) { return p.id === id; });
       if (!post) return;
 
-      // Ouvrir le modal en mode édition
       if (typeof ouvrirModalTexteInterne === 'function') {
         ouvrirModalTexteInterne(post);
       } else {
@@ -507,11 +513,10 @@
     function confirmerSuppression() {
       if (!idASupprimer) return;
 
-      // Appeler DataManager pour supprimer
       DataManager.supprimerPost(idASupprimer)
         .then(function() {
           fermerConfirm();
-          chargerAdmin(); // Rafraîchir
+          chargerAdmin();
         })
         .catch(function(err) {
           alert('Erreur lors de la suppression : ' + err.message);
