@@ -7,543 +7,8 @@
   <title>Administration</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⚙</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { height: 100%; background: #121212; }
-    body {
-      font-family: 'Inter', sans-serif;
-      letter-spacing: 0.2px;
-      display: flex;
-      flex-direction: column;
-      background: #121212;
-      color: #e8e0d8;
-      overflow-y: auto;
-    }
-    a { text-decoration: none; color: inherit; }
-
-    /* ===== PAGE ===== */
-    .page { max-width: 1000px; margin: 0 auto; padding: 24px 20px 40px; flex: 1 0 auto; width: 100%; overflow-y: auto; }
-
-    /* ===== HEADER ADMIN ===== */
-    .header-admin {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 24px; padding-bottom: 16px;
-      border-bottom: 1px solid #2a2a2a;
-      flex-wrap: wrap; gap: 10px;
-    }
-    .header-admin h1 {
-      font-size: 28px; font-weight: 400;
-      font-family: 'Merriweather', 'Georgia', serif;
-      color: #e8e0d8;
-    }
-    .header-admin .header-actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
-    .header-admin .btn-ajout {
-      padding: 8px 20px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #e8e0d8;
-      font-family: 'Inter', sans-serif; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .header-admin .btn-ajout:hover { background: #1e1e1e; }
-    .header-admin .btn-export-all {
-      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .header-admin .btn-export-all:hover { background: #1e1e1e; color: #e8e0d8; }
-    .header-admin .btn-importer-header {
-      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .header-admin .btn-importer-header:hover { background: #1e1e1e; color: #e8e0d8; }
-    .header-admin .btn-categories {
-      padding: 8px 18px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif; white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .header-admin .btn-categories:hover { background: #1e1e1e; color: #e8e0d8; }
-
-    /* ===== STATS ===== */
-    .stats-ligne {
-      display: flex; flex-wrap: wrap; align-items: center;
-      gap: 8px 20px; border-radius: 4px;
-      padding: 14px 24px; margin-bottom: 24px;
-      border: 1px solid #2a2a2a; background: #1a1a1a;
-    }
-    .stats-ligne .stat-item { display: flex; align-items: baseline; gap: 4px; font-size: 13px; color: #6b6b6b; }
-    .stats-ligne .stat-item .nombre { font-size: 22px; font-weight: 600; color: #e8e0d8; font-family: 'Merriweather', serif; }
-    .stats-ligne .sep { color: #2a2a2a; font-size: 18px; }
-
-    /* ===== SEARCH ===== */
-    .search-bar {
-      display: flex; gap: 10px; align-items: center;
-      margin-bottom: 16px; padding: 8px 16px;
-      border: 1px solid #2a2a2a; border-radius: 30px;
-      background: #1a1a1a;
-    }
-    .search-bar input {
-      flex: 1; border: none; background: transparent;
-      font-size: 14px; font-family: 'Inter', sans-serif;
-      color: #e8e0d8; outline: none; padding: 6px 0;
-    }
-    .search-bar input::placeholder { color: #4a4a4a; }
-    .search-bar .search-icon { color: #4a4a4a; font-size: 16px; }
-
-    /* ===== FILTRES ===== */
-    .filtres-container { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; padding: 4px 0; }
-    .filtre-cat-btn {
-      padding: 6px 18px; background: transparent;
-      border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; color: #6b6b6b;
-      cursor: pointer; font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .filtre-cat-btn:hover { background: #1e1e1e; color: #e8e0d8; }
-    .filtre-cat-btn.active { background: #2a2a2a; color: #e8e0d8; border-color: #2a2a2a; }
-    .filtre-cat-btn .compteur-cat { display: inline-block; font-size: 11px; font-weight: 600; margin-left: 4px; }
-    .filtre-cat-btn.active .compteur-cat { color: #e8e0d8; }
-    .filtre-cat-btn .btn-del-cat { background: transparent; border: none; color: inherit; cursor: pointer; font-size: 11px; margin-left: 4px; opacity: 0.6; }
-    .filtre-cat-btn .btn-del-cat:hover { opacity: 1; }
-
-    /* ===== TABS ===== */
-    .tabs-container {
-      display: flex; flex-wrap: wrap; gap: 4px;
-      margin-bottom: 24px; padding: 4px 0;
-      border-bottom: 1px solid #2a2a2a;
-    }
-    .tab-btn {
-      padding: 10px 28px; background: transparent;
-      border: none; border-bottom: 2px solid transparent;
-      font-size: 15px; font-weight: 500;
-      color: #6b6b6b; cursor: pointer;
-      font-family: 'Inter', sans-serif; border-radius: 0;
-      transition: all 0.2s;
-    }
-    .tab-btn:hover { color: #e8e0d8; background: transparent; }
-    .tab-btn.active { color: #e8e0d8; border-bottom-color: #e8e0d8; font-weight: 600; }
-    .tab-btn .compteur-tab {
-      display: inline-block; background: #1e1e1e; color: #6b6b6b;
-      font-size: 11px; font-weight: 600; padding: 0 10px;
-      border-radius: 30px; margin-left: 6px; line-height: 20px;
-    }
-    .tab-btn.active .compteur-tab { background: #1e1e1e; color: #e8e0d8; }
-
-    /* ===== GRILLE ===== */
-    .grille { display: flex; flex-direction: column; gap: 10px; }
-
-    /* ===== CARTE POST ===== */
-    .carte-post {
-      border-radius: 4px; padding: 20px 28px;
-      display: grid; grid-template-columns: 1fr auto;
-      align-items: center; gap: 16px;
-      border: 1px solid #2a2a2a;
-      background: #161616;
-      cursor: pointer;
-      transition: border-color 0.2s;
-    }
-    .carte-post:hover { border-color: #3a3a3a; }
-    .carte-post .infos { display: flex; flex-direction: column; gap: 4px; pointer-events: none; }
-    .carte-post .titre {
-      font-size: 17px; font-weight: 400;
-      font-family: 'Merriweather', 'Georgia', serif;
-      color: #e8e0d8;
-    }
-    .carte-post .meta {
-      font-size: 12px; color: #6b6b6b;
-      display: flex; flex-wrap: wrap; align-items: center; gap: 8px;
-    }
-    .carte-post .meta .badge {
-      padding: 1px 10px; border-radius: 30px;
-      font-size: 11px; font-weight: 500;
-      display: inline-block; background: #1e1e1e; color: #6b6b6b;
-    }
-    .carte-post .meta .badge.publie { color: #e8e0d8; }
-    .carte-post .meta .badge.brouillon { color: #6b6b6b; }
-    .carte-post .meta .stat-lecture { font-size: 11px; color: #6b6b6b; }
-    .carte-post .meta .stat-lecture .ok { color: #7ab893; }
-    .carte-post .meta .stat-lecture .ko { color: #6b6b6b; }
-    .carte-post .meta .info-badge {
-      padding: 1px 8px; border-radius: 4px;
-      font-size: 10px; font-weight: 500;
-      display: inline-block; background: #1e1e1e; color: #6b6b6b;
-    }
-
-    .carte-post .apercu-rapide {
-      padding: 10px 14px; margin-top: 6px; border-radius: 4px;
-      font-size: 13px; font-style: italic; line-height: 1.6;
-      background: #1a1a1a; color: #c8c0b8;
-      pointer-events: none;
-    }
-
-    .carte-post .actions { display: flex; gap: 8px; flex-wrap: wrap; pointer-events: auto; }
-    .carte-post .actions button {
-      padding: 6px 14px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 12px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .carte-post .actions button:hover { background: #1e1e1e; color: #e8e0d8; }
-    .carte-post .actions .btn-supprimer:hover { color: #c87a7a; }
-
-    .carte-post.dragging { opacity: 0.4; }
-    .carte-post.drag-over { border: 2px dashed #3a3a3a; background: #1a1a1a; }
-    .carte-post .drag-handle { cursor: grab; color: #3a3a3a; font-size: 16px; margin-right: 8px; user-select: none; }
-    .carte-post .drag-handle:hover { color: #6b6b6b; }
-    .carte-post .ordre-badge {
-      display: inline-block; background: #1e1e1e; color: #6b6b6b;
-      font-size: 11px; font-weight: 600; padding: 0 10px;
-      border-radius: 30px; line-height: 20px;
-    }
-
-    /* ===== LOADER ===== */
-    .loader { text-align: center; padding: 60px 20px; color: #6b6b6b; }
-    .loader .spinner {
-      display: inline-block; width: 32px; height: 32px;
-      border: 3px solid #2a2a2a; border-top-color: #6b6b6b;
-      border-radius: 50%; animation: spin 0.8s linear infinite;
-      margin-bottom: 12px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* ===== VIDE ===== */
-    .vide {
-      text-align: center; padding: 60px 20px;
-      border: 1px solid #2a2a2a; border-radius: 4px;
-      background: #161616;
-    }
-    .vide .icone { font-size: 48px; display: block; margin-bottom: 12px; opacity: 0.4; }
-    .vide h2 { font-size: 20px; font-weight: 400; font-family: 'Merriweather', serif; color: #e8e0d8; margin-bottom: 4px; }
-    .vide p { color: #6b6b6b; font-size: 15px; }
-
-    /* ===== MODAL ===== */
-    .modal-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 9999; display: none;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.6);
-    }
-    .modal-overlay.visible { display: flex; }
-
-    .modal-contenu {
-      background: #161616; border: 1px solid #2a2a2a; border-radius: 4px;
-      max-width: 500px; width: 95%; max-height: 90vh; overflow-y: auto;
-      padding: 28px 32px;
-      font-family: 'Inter', sans-serif;
-      position: relative;
-    }
-    .modal-contenu .modal-close {
-      position: absolute; top: 10px; right: 14px;
-      background: transparent; border: none;
-      font-size: 22px; color: #6b6b6b; cursor: pointer; line-height: 1;
-    }
-    .modal-contenu .modal-close:hover { color: #e8e0d8; }
-    .modal-contenu h3 {
-      font-size: 24px; font-weight: 400;
-      font-family: 'Merriweather', serif;
-      color: #e8e0d8; margin-bottom: 16px;
-    }
-    .modal-contenu .cat-item {
-      display: flex; justify-content: space-between; align-items: center;
-      padding: 8px 0; border-bottom: 1px solid #2a2a2a;
-    }
-    .modal-contenu .cat-item:last-child { border-bottom: none; }
-    .modal-contenu .cat-item .cat-name { font-size: 14px; color: #e8e0d8; }
-    .modal-contenu .cat-item .cat-actions { display: flex; gap: 6px; }
-    .modal-contenu .cat-item .cat-actions button {
-      padding: 2px 10px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 11px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif;
-    }
-    .modal-contenu .cat-item .cat-actions button:hover { background: #1e1e1e; color: #e8e0d8; }
-    .modal-contenu .ajout-cat { display: flex; gap: 8px; margin-top: 12px; }
-    .modal-contenu .ajout-cat input {
-      flex: 1; padding: 6px 10px; border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 13px; font-family: 'Inter', sans-serif;
-      background: #1a1a1a; color: #e8e0d8;
-    }
-    .modal-contenu .ajout-cat button {
-      padding: 6px 16px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #e8e0d8;
-      font-family: 'Inter', sans-serif;
-    }
-    .modal-contenu .ajout-cat button:hover { background: #1e1e1e; }
-
-    /* ===== MODAL AJOUT POST ===== */
-    .modal-contenu.ajout-post { max-width: 800px; }
-
-    .row-compact {
-      display: flex; flex-wrap: wrap; gap: 8px 12px;
-      align-items: center; margin-bottom: 16px;
-    }
-    .row-compact input, .row-compact select {
-      padding: 6px 10px; border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 13px; font-family: 'Inter', sans-serif;
-      background: #1a1a1a; color: #e8e0d8;
-    }
-    .row-compact input[type="date"] { width: auto; }
-    .row-compact input[type="text"] { flex: 1; min-width: 120px; }
-    .row-compact select { width: auto; }
-
-    /* ===== SECTIONS MODAL ===== */
-    .section-block {
-      background: #1a1a1a;
-      border: 1px solid #2a2a2a;
-      border-radius: 4px;
-      padding: 12px 16px;
-      margin-bottom: 12px;
-    }
-    .section-block .section-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 6px;
-    }
-    .section-block .section-header .section-label {
-      font-size: 11px; font-weight: 500; text-transform: uppercase;
-      letter-spacing: 0.5px; color: #6b6b6b;
-      font-family: 'Inter', sans-serif;
-    }
-    .section-block .section-header .btn-add-section {
-      padding: 2px 12px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 11px; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .section-block .section-header .btn-add-section:hover { background: #1e1e1e; color: #e8e0d8; }
-
-    .slides-list { margin: 4px 0; min-height: 20px; }
-    .slide-item {
-      padding: 4px 0; border-bottom: 1px solid #2a2a2a;
-      color: #e8e0d8; font-family: 'Merriweather', serif;
-      font-size: 14px; line-height: 1.5;
-      cursor: grab; display: flex; align-items: center; justify-content: space-between;
-    }
-    .slide-item:last-child { border-bottom: none; }
-    .slide-item.dragging { opacity: 0.4; }
-    .slide-item.drag-over { border-bottom: 2px solid #4a6a5a; }
-    .slide-item .slide-handle { color: #3a3a3a; font-size: 14px; margin-right: 8px; cursor: grab; }
-    .slide-item .slide-placeholder { color: #4a4a4a; font-style: italic; }
-    .slide-item .slide-texte { flex: 1; cursor: pointer; }
-    .slide-item .btn-del-slide { background: transparent; border: none; color: #6b6b6b; cursor: pointer; font-size: 13px; }
-    .slide-item .btn-del-slide:hover { color: #c87a7a; }
-    .slide-item.idee .slide-texte { font-style: italic; color: #6b6b6b; }
-
-    .btn-composer {
-      padding: 4px 14px; background: transparent;
-      border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 12px; cursor: pointer;
-      color: #6b6b6b; font-family: 'Inter', sans-serif;
-      margin-top: 4px;
-      transition: all 0.2s;
-    }
-    .btn-composer:hover { background: #1e1e1e; color: #e8e0d8; }
-
-    /* ===== QUIZ ===== */
-    .quiz-list { margin: 4px 0; }
-    .quiz-item {
-      padding: 8px 0; border-bottom: 1px solid #2a2a2a;
-      font-size: 14px; color: #e8e0d8; position: relative;
-    }
-    .quiz-item:last-child { border-bottom: none; }
-    .quiz-item .q-text {
-      width: 100%; padding: 4px 0; border: none;
-      background: transparent; font-size: 14px;
-      font-family: 'Merriweather', serif;
-      color: #e8e0d8;
-    }
-    .quiz-item .q-text:focus { outline: none; }
-    .quiz-item .quiz-reponses {
-      display: flex; flex-wrap: wrap; gap: 4px 8px;
-      padding: 2px 0; align-items: center;
-    }
-    .quiz-item .quiz-reponses input {
-      flex: 1; min-width: 60px; padding: 2px 6px;
-      border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 13px; background: #1a1a1a; color: #e8e0d8;
-    }
-    .quiz-item .vf-group { display: flex; gap: 2px; }
-    .quiz-item .vf-btn {
-      padding: 2px 10px; border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 11px; font-weight: 500; cursor: pointer;
-      background: transparent; color: #6b6b6b;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .quiz-item .vf-btn.active { background: #2a2a2a; color: #e8e0d8; border-color: #2a2a2a; }
-    .quiz-item .vf-btn:hover { background: #1e1e1e; }
-    .quiz-item .btn-del-quiz {
-      background: transparent; border: none;
-      color: #6b6b6b; cursor: pointer; font-size: 13px;
-      position: absolute; top: 4px; right: 0;
-    }
-    .quiz-item .btn-del-quiz:hover { color: #c87a7a; }
-
-    /* ===== QUESTIONS OUVERTES ===== */
-    .open-questions-list { margin: 4px 0; }
-    .open-question-item {
-      padding: 4px 0; border-bottom: 1px solid #2a2a2a; position: relative;
-    }
-    .open-question-item:last-child { border-bottom: none; }
-    .open-question-item input {
-      width: calc(100% - 30px); padding: 4px 0; border: none;
-      background: transparent; font-size: 14px;
-      font-family: 'Merriweather', serif;
-      color: #e8e0d8;
-    }
-    .open-question-item input:focus { outline: none; }
-    .open-question-item .btn-del-open {
-      background: transparent; border: none;
-      color: #6b6b6b; cursor: pointer; font-size: 13px;
-      position: absolute; top: 4px; right: 0;
-    }
-    .open-question-item .btn-del-open:hover { color: #c87a7a; }
-
-    /* ===== RETENIR ===== */
-    .retenir-container { margin: 4px 0; }
-    .retenir-champs {
-      display: none; gap: 8px; flex-wrap: wrap; margin-top: 4px;
-    }
-    .retenir-champs.open { display: flex; }
-    .retenir-champs input {
-      flex: 1; min-width: 60px; padding: 4px 8px;
-      border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 13px; background: #1a1a1a; color: #e8e0d8;
-    }
-
-    /* ===== INFOS ===== */
-    .infos-list { margin: 4px 0; }
-    .info-item {
-      padding: 4px 0; border-bottom: 1px solid #2a2a2a; position: relative;
-    }
-    .info-item:last-child { border-bottom: none; }
-    .info-item input {
-      width: calc(100% - 30px); padding: 4px 0; border: none;
-      background: transparent; font-size: 14px;
-      font-family: 'Merriweather', serif;
-      color: #e8e0d8;
-    }
-    .info-item input:focus { outline: none; }
-    .info-item .btn-del-info {
-      background: transparent; border: none;
-      color: #6b6b6b; cursor: pointer; font-size: 13px;
-      position: absolute; top: 4px; right: 0;
-    }
-    .info-item .btn-del-info:hover { color: #c87a7a; }
-
-    /* ===== BTN GROUPE ===== */
-    .btn-groupe {
-      display: flex; align-items: center; gap: 12px;
-      margin-top: 16px; flex-wrap: wrap;
-      border-top: 1px solid #2a2a2a; padding-top: 16px;
-    }
-    .btn-groupe .btn {
-      padding: 8px 24px; border-radius: 30px; font-size: 14px; font-weight: 500;
-      cursor: pointer; font-family: 'Inter', sans-serif;
-      border: 1px solid #2a2a2a; background: transparent; color: #c8c0b8;
-      transition: all 0.2s;
-    }
-    .btn-groupe .btn:hover { background: #1e1e1e; }
-    .btn-groupe .btn-annuler { color: #6b6b6b; }
-    .btn-groupe .btn-brouillon { color: #6b6b6b; }
-    .btn-groupe .btn-brouillon.active { background: #2a2a2a; color: #e8e0d8; border-color: #2a2a2a; }
-    .btn-groupe .chrono { font-size: 13px; color: #6b6b6b; font-family: 'Courier New', monospace; margin-left: auto; }
-    .btn-groupe .auto-save-indicator { font-size: 12px; color: #6b6b6b; display: none; }
-    .btn-groupe .auto-save-indicator.visible { display: inline; }
-    .btn-groupe .auto-save-indicator.saved { color: #7ab893; }
-    .btn-groupe .auto-save-indicator.saving { color: #c8b87a; }
-
-    /* ===== MESSAGE ===== */
-    .message { margin-top: 12px; font-size: 14px; text-align: center; padding: 8px 12px; border-radius: 4px; display: none; }
-    .message.success { display: block; color: #7ab893; background: #1a2a1e; }
-    .message.error { display: block; color: #c87a7a; background: #2a1a1a; }
-
-    /* ===== COMPOSEUR ===== */
-    .composer-overlay {
-      position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-      z-index: 99999; display: none;
-      align-items: center; justify-content: center;
-      background: rgba(0,0,0,0.7);
-    }
-    .composer-overlay.visible { display: flex; }
-    .composer-content {
-      background: #161616; border: 1px solid #2a2a2a;
-      max-width: 90%; width: 800px; height: 80vh;
-      padding: 40px 50px; position: relative;
-      font-family: 'Merriweather', serif;
-      border-radius: 4px;
-    }
-    .composer-content .composer-close {
-      position: absolute; top: 12px; right: 18px;
-      background: transparent; border: none;
-      font-size: 28px; color: #6b6b6b; cursor: pointer; line-height: 1;
-    }
-    .composer-content .composer-close:hover { color: #e8e0d8; }
-    .composer-content textarea {
-      width: 100%; height: calc(100% - 70px);
-      border: none; background: transparent;
-      font-size: 26px; font-family: 'Merriweather', serif;
-      color: #e8e0d8; resize: none; padding: 10px 0;
-      line-height: 1.8; outline: none;
-    }
-    .composer-content textarea::placeholder { color: #4a4a4a; font-style: italic; }
-    .composer-content .composer-actions {
-      display: flex; gap: 12px; margin-top: 8px;
-      justify-content: flex-end; padding-top: 12px;
-    }
-    .composer-content .composer-actions button {
-      padding: 6px 24px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #c8c0b8;
-      font-family: 'Inter', sans-serif;
-      transition: all 0.2s;
-    }
-    .composer-content .composer-actions button:hover { background: #1e1e1e; color: #e8e0d8; }
-
-    /* ===== NOUVELLE CATÉGORIE ===== */
-    .nouvelle-cat-container {
-      display: flex; gap: 8px; align-items: center;
-      margin-bottom: 16px;
-    }
-    .nouvelle-cat-container input {
-      flex: 1; padding: 6px 10px; border: 1px solid #2a2a2a; border-radius: 4px;
-      font-size: 13px; font-family: 'Inter', sans-serif;
-      background: #1a1a1a; color: #e8e0d8;
-    }
-    .nouvelle-cat-container button {
-      padding: 6px 16px; border: 1px solid #2a2a2a; border-radius: 30px;
-      font-size: 13px; cursor: pointer;
-      background: transparent; color: #c8c0b8;
-      font-family: 'Inter', sans-serif;
-      white-space: nowrap;
-      transition: all 0.2s;
-    }
-    .nouvelle-cat-container button:hover { background: #1e1e1e; }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 640px) {
-      .carte-post { grid-template-columns: 1fr; gap: 8px; }
-      .carte-post .actions { justify-content: flex-start; }
-      .modal-contenu.ajout-post { padding: 16px; }
-      .row-compact { flex-direction: column; align-items: stretch; }
-      .row-compact input[type="date"] { width: 100%; }
-      .btn-groupe { flex-direction: column; align-items: stretch; }
-      .btn-groupe .btn { text-align: center; }
-      .composer-content { padding: 20px; }
-      .composer-content textarea { font-size: 20px; height: calc(100% - 80px); }
-      .header-admin { flex-direction: column; align-items: stretch; }
-      .header-admin .header-actions { justify-content: center; }
-      .section-block { padding: 10px 12px; }
-    }
-  </style>
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
 </head>
 <body>
 
@@ -553,9 +18,7 @@
       .then(function(response) { return response.text(); })
       .then(function(data) {
         document.getElementById('header-container').innerHTML = data;
-        if (typeof mettreAJourHeader === 'function') {
-          mettreAJourHeader();
-        }
+        if (typeof mettreAJourHeader === 'function') mettreAJourHeader();
       })
       .catch(function(error) {
         console.error('Erreur chargement header:', error);
@@ -566,20 +29,19 @@
   <div class="page">
 
     <div class="header-admin">
-      <h1>⚙ Administration</h1>
+      <h1> Administration</h1>
       <div class="header-actions">
-        <button class="btn-importer-header" onclick="importerTexte()">📥 Importer</button>
+        <button class="btn-importer-header" onclick="importerTexte()">⬆ Importer</button>
         <input type="file" id="fileInput" accept=".txt" style="display:none;" onchange="importerFichier(event)">
-        <button class="btn-export-all" onclick="exporterTout()">📤 Exporter tout</button>
-        <button class="btn-categories" onclick="ouvrirModalCategories()">🏷️ Catégories</button>
-        <button class="btn-ajout" onclick="ouvrirModalTexte()">+ Ajouter un texte</button>
+        <button class="btn-export-all" onclick="exporterTout()">🡻 Exporter tout</button>
+        <button class="btn-ajout" onclick="ouvrirModalTexte()">╋ Ajouter un texte</button>
       </div>
     </div>
 
     <div class="stats-ligne" id="statsLigne">
       <div class="stat-item"><span>Total :</span><span class="nombre" id="totalPosts">0</span></div>
       <span class="sep">|</span>
-      <div class="stat-item"><span>Publiés :</span><span class="nombre" id="publiesPosts">0</span></div>
+      <div class="stat-item"><span>Publies :</span><span class="nombre" id="publiesPosts">0</span></div>
       <span class="sep">|</span>
       <div class="stat-item"><span>Brouillons :</span><span class="nombre" id="brouillonsPosts">0</span></div>
       <span class="sep">|</span>
@@ -587,7 +49,7 @@
     </div>
 
     <div class="search-bar">
-      <span class="search-icon">🔍</span>
+      <span class="search-icon"> </span>
       <input type="text" id="searchInput" placeholder="Rechercher un texte par titre..." oninput="appliquerRecherche()">
     </div>
 
@@ -597,7 +59,7 @@
 
     <div class="tabs-container" id="tabsContainer">
       <button class="tab-btn active" data-tab="tous" onclick="switchTab('tous')">Tous <span class="compteur-tab" id="compteurTous">0</span></button>
-      <button class="tab-btn" data-tab="publies" onclick="switchTab('publies')">Publiés <span class="compteur-tab" id="compteurPublies">0</span></button>
+      <button class="tab-btn" data-tab="publies" onclick="switchTab('publies')">Publies <span class="compteur-tab" id="compteurPublies">0</span></button>
       <button class="tab-btn" data-tab="brouillons" onclick="switchTab('brouillons')">Brouillons <span class="compteur-tab" id="compteurBrouillons">0</span></button>
     </div>
 
@@ -610,35 +72,34 @@
 
   </div>
 
-  <!-- MODAL CATÉGORIES -->
+  <!-- MODAL CATEGORIES -->
   <div id="modalCategories" class="modal-overlay">
     <div class="modal-contenu">
-      <button class="modal-close" onclick="fermerModalCategories()">✕</button>
-      <h3>🏷️ Gérer les catégories</h3>
+      <button class="modal-close" onclick="fermerModalCategories()">X</button>
+      <h3> Gerer les categories</h3>
       <div id="listeCategories"></div>
-      <div class="ajout-cat">
-        <input type="text" id="newCatInput" placeholder="Nouvelle catégorie...">
-        <button onclick="ajouterCategorie()">+ Ajouter</button>
-      </div>
     </div>
   </div>
 
   <!-- MODAL TEXTE -->
   <div id="modalTexte" class="modal-overlay">
     <div class="modal-contenu ajout-post">
-      <button class="modal-close" onclick="fermerModalTexte()">✕</button>
-      <h3 id="modalTitre">Texte</h3>
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;">
+        <input type="text" id="inputTitre" placeholder="Titre" style="flex:1;font-size:20px;font-weight:700;border:none;background:transparent;color:var(--text-primary);outline:none;padding:4px 0;">
+        <button class="modal-close" onclick="fermerModalTexte()" style="margin-left:12px;">X</button>
+      </div>
 
       <form id="formTexte" onsubmit="return false;">
         <input type="hidden" id="editId" value="">
 
         <div class="row-compact">
           <input type="date" id="inputDate">
-          <input type="text" id="inputTitre" placeholder="Titre">
-          <select id="inputNiveau"></select>
-          <div class="nouvelle-cat-container">
-            <input type="text" id="inputNouvelleCategorie" placeholder="Nouvelle catégorie...">
-            <button type="button" onclick="ajouterNouvelleCategorie()">+ Ajouter</button>
+          <!-- NIVEAUX - Boutons ronds 1 a 3 -->
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:12px;color:var(--text-muted);margin-right:4px;">Nv</span>
+            <button type="button" class="btn-niveau" data-niveau="1" onclick="setNiveau(1)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">1</button>
+            <button type="button" class="btn-niveau" data-niveau="2" onclick="setNiveau(2)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">2</button>
+            <button type="button" class="btn-niveau" data-niveau="3" onclick="setNiveau(3)" style="width:28px;height:28px;border-radius:50%;border:2px solid var(--border-color);background:transparent;color:var(--text-secondary);cursor:pointer;font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;transition:all 0.2s;">3</button>
           </div>
           <select id="inputCategorie"></select>
         </div>
@@ -647,10 +108,7 @@
         <div class="section-block">
           <div class="section-header">
             <span class="section-label">Slides</span>
-            <div>
-              <button type="button" class="btn-add-section" onclick="ajouterSlide()">+ slide</button>
-              <button type="button" class="btn-add-section" onclick="ouvrirComposeur()" style="margin-left:4px;">✎ composer</button>
-            </div>
+            <button type="button" class="btn-add-section" onclick="ouvrirComposeur()" style="font-size:13px;"> composer</button>
           </div>
           <div class="slides-list" id="slidesList"></div>
         </div>
@@ -676,8 +134,8 @@
         <!-- RETENIR -->
         <div class="section-block">
           <div class="section-header">
-            <span class="section-label">À retenir</span>
-            <button type="button" class="btn-add-section" onclick="toggleRetenir()">+ mémo</button>
+            <span class="section-label">A retenir</span>
+            <button type="button" class="btn-add-section" onclick="toggleRetenir()">+ memo</button>
           </div>
           <div class="retenir-container">
             <div class="retenir-champs" id="retenirChamps">
@@ -698,12 +156,11 @@
         </div>
 
         <div class="btn-groupe">
+          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon" style="border:none;background:transparent;padding:8px 12px;">Brouillon</button>
           <span style="flex:1;"></span>
           <span class="chrono" id="chronoDisplay">00:00</span>
-          <span class="auto-save-indicator" id="autoSaveIndicator">💾 Sauvegardé</span>
+          <span class="auto-save-indicator" id="autoSaveIndicator"> Sauvegarde</span>
           <button type="button" onclick="enregistrerTexte()" class="btn" id="btnEnregistrer">Ajouter</button>
-          <button type="button" onclick="fermerModalTexte()" class="btn btn-annuler">Annuler</button>
-          <button type="button" onclick="toggleBrouillon()" class="btn btn-brouillon" id="btnBrouillon">Brouillon</button>
         </div>
 
         <div id="messageTexte" class="message"></div>
@@ -712,17 +169,20 @@
   </div>
 
   <!-- COMPOSEUR -->
-  <div id="composeurOverlay" class="composer-overlay">
-    <div class="composer-content" id="composerContent">
-      <button class="composer-close" onclick="fermerComposeur()">✕</button>
-      <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..."></textarea>
-      <div class="composer-actions">
-        <button onclick="validerComposeur()">✓ Valider</button>
-        <button onclick="validerComposeurIdee()">💡 Idée</button>
-        <button onclick="fermerComposeur()">Annuler</button>
+<div id="composeurOverlay" class="composer-overlay">
+  <div class="composer-content">
+    <div class="composer-header">
+      <button onclick="renvoyerSlide()" class="btn-composer">Scinder</button>
+      <div style="display:flex;align-items:center;gap:8px;">
+        <button onclick="chercherDMF()" class="btn-composer">DMF</button>
+        <button onclick="validerComposeur()" class="btn-composer ok">OK</button>
+        <button onclick="validerComposeurIdee()" class="btn-composer">Argument</button>
+        <button onclick="fermerComposeur()" class="composer-close">X</button>
       </div>
     </div>
+    <textarea id="composeurTextarea" placeholder="Écrivez votre slide ici..." spellcheck="true" lang="fr"></textarea>
   </div>
+</div>
 
   <div id="footer-container"></div>
 
@@ -742,7 +202,7 @@
 
   <script>
     // ============================================================
-    // ADMIN
+    // ADMIN - CODE COMPLET
     // ============================================================
 
     var tousLesPosts = [];
@@ -768,13 +228,9 @@
 
     var composeurIndex = -1;
     var retenirOpen = false;
-
-    var dragIndexPost = null;
-    var dragCategorieActuelle = '';
-
-    // ============================================================
-    // CHRONO
-    // ============================================================
+    var niveauActuel = 1;
+    
+    // === CHRONO ===
     function startChrono() {
       chronoSeconds = 0;
       updateChronoDisplay();
@@ -798,9 +254,24 @@
       document.getElementById('chronoDisplay').textContent = mins + ':' + secs;
     }
 
-    // ============================================================
-    // SAUVEGARDE AUTOMATIQUE
-    // ============================================================
+    // === NIVEAU ===
+    function setNiveau(n) {
+  niveauActuel = n;
+  document.querySelectorAll('.btn-niveau').forEach(function(btn) {
+    btn.style.borderColor = 'var(--border-color)';
+    btn.style.background = 'transparent';
+    btn.style.color = 'var(--text-secondary)';
+    if (parseInt(btn.dataset.niveau) === n) {
+      btn.style.borderColor = 'var(--border-color)';
+      btn.style.background = '#2a2a2a';
+      btn.style.color = 'var(--text-primary)';
+    }
+  });
+}
+
+    
+
+    // === AUTO-SAVE ===
     function demarrerAutoSave() {
       if (autoSaveInterval) clearInterval(autoSaveInterval);
       autoSaveInterval = setInterval(function() {
@@ -819,7 +290,7 @@
 
     function sauvegarderAuto() {
       var indicator = document.getElementById('autoSaveIndicator');
-      indicator.textContent = '💾 Sauvegarde...';
+      indicator.textContent = ' Sauvegarde...';
       indicator.className = 'auto-save-indicator visible saving';
       
       var data = {
@@ -834,20 +305,20 @@
         retenir3: document.getElementById('retenir3').value,
         titre: document.getElementById('inputTitre').value,
         date: document.getElementById('inputDate').value,
-        niveau: document.getElementById('inputNiveau').value,
+        niveau: niveauActuel,
         categorie: document.getElementById('inputCategorie').value,
         timestamp: Date.now()
       };
       
       try {
         localStorage.setItem('admin_auto_save', JSON.stringify(data));
-        indicator.textContent = '💾 Sauvegardé';
+        indicator.textContent = ' Sauvegarde';
         indicator.className = 'auto-save-indicator visible saved';
         setTimeout(function() {
           indicator.className = 'auto-save-indicator visible';
         }, 2000);
       } catch(e) {
-        indicator.textContent = '⚠️ Erreur';
+        indicator.textContent = ' Erreur';
         indicator.className = 'auto-save-indicator visible';
       }
     }
@@ -863,21 +334,18 @@
           return;
         }
         
-        if (confirm('💾 Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
-          slidesData = data.slidesData || [''];
-          slidesIdee = data.slidesIdee || [false];
-          quizData = data.quizData || [{ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] }];
-          openQuestionsData = data.openQuestionsData || [''];
-          infosData = data.infosData || [''];
+        if (confirm(' Une sauvegarde automatique de ' + Math.round(age) + ' min existe. Voulez-vous la restaurer ?')) {
+          slidesData = data.slidesData || [];
+          slidesIdee = data.slidesIdee || [];
+          quizData = data.quizData || [];
+          openQuestionsData = data.openQuestionsData || [];
+          infosData = data.infosData || [];
           retenirOpen = data.retenirOpen || false;
           
           document.getElementById('inputTitre').value = data.titre || '';
           document.getElementById('inputDate').value = data.date || '';
           if (data.niveau) {
-            var sn = document.getElementById('inputNiveau');
-            for (var i = 0; i < sn.options.length; i++) {
-              if (sn.options[i].value == data.niveau) { sn.selectedIndex = i; break; }
-            }
+            setNiveau(data.niveau);
           }
           if (data.categorie) {
             var sc = document.getElementById('inputCategorie');
@@ -899,7 +367,7 @@
           afficherInfos();
           
           localStorage.removeItem('admin_auto_save');
-          document.getElementById('autoSaveIndicator').textContent = '💾 Restauré';
+          document.getElementById('autoSaveIndicator').textContent = ' Restaure';
           document.getElementById('autoSaveIndicator').className = 'auto-save-indicator visible saved';
           setTimeout(function() {
             document.getElementById('autoSaveIndicator').className = 'auto-save-indicator';
@@ -910,21 +378,8 @@
       }
     }
 
-    // ============================================================
-    // CHARGER NIVEAUX ET CATÉGORIES
-    // ============================================================
+    // === CHARGER NIVEAUX ET CATEGORIES ===
     function chargerNiveauxEtCategories() {
-      var urlNiveaux = CONFIG.SCRIPT_URL + '?action=getNiveaux';
-      fetch(urlNiveaux)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            niveauxData = data.niveaux || [];
-            remplirSelectNiveaux();
-          }
-        })
-        .catch(function(e) { console.error('Erreur niveaux:', e); });
-
       var urlCategories = CONFIG.SCRIPT_URL + '?action=getLabels';
       fetch(urlCategories)
         .then(function(r) { return r.json(); })
@@ -934,34 +389,14 @@
             remplirSelectCategories();
           }
         })
-        .catch(function(e) { console.error('Erreur catégories:', e); });
-    }
-
-    function remplirSelectNiveaux() {
-      var select = document.getElementById('inputNiveau');
-      select.innerHTML = '';
-      if (niveauxData.length === 0) {
-        for (var i = 1; i <= 12; i++) {
-          var opt = document.createElement('option');
-          opt.value = i;
-          opt.textContent = 'Nvx ' + i;
-          select.appendChild(opt);
-        }
-      } else {
-        niveauxData.forEach(function(n) {
-          var opt = document.createElement('option');
-          opt.value = n.valeur;
-          opt.textContent = 'Nvx ' + n.valeur + (n.description ? ' - ' + n.description : '');
-          select.appendChild(opt);
-        });
-      }
+        .catch(function(e) { console.error('Erreur categories:', e); });
     }
 
     function remplirSelectCategories() {
       var select = document.getElementById('inputCategorie');
       select.innerHTML = '';
       if (categoriesData.length === 0) {
-        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Méditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
+        var defaults = ['Foi', 'Rappels divers', 'Sourate', 'Hadith', 'Meditation', 'Invocation', 'Histoire', 'Morale', 'Autre'];
         defaults.forEach(function(c) {
           var opt = document.createElement('option');
           opt.value = c;
@@ -978,41 +413,7 @@
       }
     }
 
-    // ============================================================
-    // NOUVELLE CATÉGORIE DANS LE POPUP
-    // ============================================================
-    function ajouterNouvelleCategorie() {
-      var input = document.getElementById('inputNouvelleCategorie');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            remplirSelectCategories();
-            var select = document.getElementById('inputCategorie');
-            for (var i = 0; i < select.options.length; i++) {
-              if (select.options[i].value === cat) {
-                select.selectedIndex = i;
-                break;
-              }
-            }
-            alert('✅ Catégorie "' + cat + '" ajoutée !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    // ============================================================
-    // CHARGEMENT ADMIN
-    // ============================================================
+    // === CHARGEMENT ADMIN ===
     function chargerAdmin() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) { 
@@ -1054,18 +455,16 @@
           if (loader) loader.style.display = 'none';
           document.getElementById('contenu').innerHTML = `
             <div class="vide">
-              <span class="icone">⚠️</span>
+              <span class="icone"> </span>
               <h2>Erreur de chargement</h2>
-              <p>${error.message || 'Vérifiez votre connexion.'}</p>
-              <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid #2a2a2a;border-radius:30px;cursor:pointer;color:#e8e0d8;">Réessayer</button>
+              <p>${error.message || 'Verifiez votre connexion.'}</p>
+              <button onclick="location.reload();" style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border-color);border-radius:30px;cursor:pointer;color:var(--text-primary);">Reessayer</button>
             </div>
           `;
         });
     }
 
-    // ============================================================
-    // AFFICHER ADMIN
-    // ============================================================
+    // === AFFICHER ADMIN ===
     function afficherAdmin() {
       var loader = document.getElementById('loader');
       if (loader) {
@@ -1095,9 +494,7 @@
       afficherPosts(postsFiltres);
     }
 
-    // ============================================================
-    // FILTRER POSTS
-    // ============================================================
+    // === FILTRER POSTS ===
     function filtrerPosts() {
       var resultats = [];
       
@@ -1124,45 +521,40 @@
       return resultats;
     }
 
-    // ============================================================
-    // RECHERCHE
-    // ============================================================
     function appliquerRecherche() {
       rechercheActuelle = document.getElementById('searchInput').value;
       afficherAdmin();
     }
 
-    // ============================================================
-    // AFFICHER POSTS
-    // ============================================================
+    // === AFFICHER POSTS ===
     function afficherPosts(posts) {
       var container = document.getElementById('contenu');
 
       if (posts.length === 0) {
         container.innerHTML = `
           <div class="vide">
-            <span class="icone">📭</span>
+            <span class="icone"> </span>
             <h2>Aucun texte</h2>
-            <p>Aucun texte ne correspond à vos critères.</p>
+            <p>Aucun texte ne correspond a vos criteres.</p>
           </div>
         `;
         return;
       }
 
+      // Trier du plus recent au plus ancien
       posts.sort(function(a, b) {
-        return (a.ordre || 999) - (b.ordre || 999);
+        var dateA = a.date ? new Date(a.date) : new Date(0);
+        var dateB = b.date ? new Date(b.date) : new Date(0);
+        return dateB - dateA;
       });
 
       var html = '<div class="grille">';
 
       posts.forEach(function(post, index) {
-        var statutLabel = post.statut === 'publie' ? 'Publié' : 'Brouillon';
+        var statutLabel = post.statut === 'publie' ? 'Publie' : 'Brouillon';
         var statutClass = post.statut === 'publie' ? 'publie' : 'brouillon';
         var estPublie = post.statut === 'publie';
         
-        var ordreHtml = post.ordre ? '<span class="ordre-badge">#' + post.ordre + '</span>' : '';
-        
-        // Statistiques de lecture
         var lectures = toutesLesReponses.filter(function(r) { return r.articleId === post.id; });
         var nbLectures = lectures.length;
         var nbQuiz = lectures.filter(function(r) { return r.bonnes > 0 || r.total > 0; }).length;
@@ -1170,13 +562,12 @@
         
         var statsHtml = '';
         if (nbLectures > 0) {
-          statsHtml = '<span class="stat-lecture">📖 ' + nbLectures + ' lectures' +
-            (nbQuiz > 0 ? ' | 🧪 ' + nbQuiz + ' quiz' : '') +
-            (nbReponses > 0 ? ' | ✏️ ' + nbReponses + ' réponses' : '') +
+          statsHtml = '<span class="stat-lecture"> ' + nbLectures + ' lectures' +
+            (nbQuiz > 0 ? ' |  ' + nbQuiz + ' quiz' : '') +
+            (nbReponses > 0 ? ' |  ' + nbReponses + ' reponses' : '') +
             '</span>';
         }
 
-        // === INFOS ===
         var nbSlides = post.contenu ? post.contenu.split('-s-').length - 1 : 0;
         var hasQuiz = post.contenu && post.contenu.includes('-q-');
         var hasQuestion = post.contenu && post.contenu.includes('-qs-');
@@ -1185,32 +576,30 @@
         var mots = post.mots || 0;
         
         var infoBadges = '';
-        infoBadges += '<span class="info-badge">📄 ' + nbSlides + ' slides</span>';
-        if (hasQuiz) infoBadges += '<span class="info-badge">🧪 Quiz</span>';
-        if (hasQuestion) infoBadges += '<span class="info-badge">✏️ Q. ouverte</span>';
-        if (hasRetenir) infoBadges += '<span class="info-badge">📌 Mémo</span>';
-        if (hasInfo) infoBadges += '<span class="info-badge">ℹ️ Infos</span>';
-        if (mots > 0) infoBadges += '<span class="info-badge">📝 ' + mots + ' mots</span>';
+        infoBadges += '<span class="info-badge"> ' + nbSlides + ' slides</span>';
+        if (hasQuiz) infoBadges += '<span class="info-badge"> Quiz</span>';
+        if (hasQuestion) infoBadges += '<span class="info-badge"> Q. ouverte</span>';
+        if (hasRetenir) infoBadges += '<span class="info-badge"> Memo</span>';
+        if (hasInfo) infoBadges += '<span class="info-badge"> Infos</span>';
+        if (mots > 0) infoBadges += '<span class="info-badge"> ' + mots + ' mots</span>';
         
-        // Date : afficher la colonne B (date) en priorité, sinon la colonne H (dateModif)
         var dateCreation = post.date ? new Date(post.date) : null;
         var dateModif = post.dateModif ? new Date(post.dateModif) : null;
         var dateStr = '';
         if (dateCreation) {
-          dateStr = 'Créé le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+          dateStr = 'Cree le ' + dateCreation.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' a ' + dateCreation.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         } else if (dateModif) {
-          dateStr = 'Modifié le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+          dateStr = 'Modifie le ' + dateModif.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' }) + ' a ' + dateModif.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
         }
         var versionsStr = post.versions ? ' v' + post.versions : '';
 
-        // === APERÇU NETTOYÉ (sans -s-) ===
         var apercuHtml = '';
         if (post.contenu) {
           var apercu = post.contenu.replace(/-s-/g, '').trim();
-          if (apercu.length > 150) apercu = apercu.substring(0, 150) + '...';
+          if (apercu.length > 200) apercu = apercu.substring(0, 200) + '...';
           if (apercu.trim()) {
             apercuHtml = `
-              <div class="apercu-rapide">
+              <div class="apercu-rapide" style="width:100%;">
                 ${apercu}
               </div>
             `;
@@ -1218,17 +607,15 @@
         }
 
         html += `
-          <div class="carte-post" data-id="${post.id}" data-index="${index}" data-categorie="${post.categorie || 'Sans catégorie'}" onclick="modifierPost('${post.id}')">
-            <div class="infos">
+          <div class="carte-post" data-id="${post.id}" onclick="modifierPost('${post.id}')">
+            <div class="infos" style="width:100%;">
               <div class="titre">
-                <span class="drag-handle" onclick="event.stopPropagation(); event.preventDefault();">⠿</span>
                 ${post.titre || 'Sans titre'}
-                ${ordreHtml}
-                <span style="font-size:11px;color:#4a4a4a;font-weight:400;margin-left:8px;">${dateStr}${versionsStr}</span>
+                <span style="font-size:11px;color:var(--text-muted);font-weight:400;margin-left:8px;">${dateStr}${versionsStr}</span>
               </div>
               <div class="meta">
                 <span>Niveau ${post.niveau || 0}</span>
-                <span>${post.categorie || 'Sans catégorie'}</span>
+                <span>${post.categorie || 'Sans categorie'}</span>
                 <span class="badge ${statutClass}">${statutLabel}</span>
                 ${infoBadges}
                 ${statsHtml}
@@ -1236,9 +623,9 @@
               ${apercuHtml}
             </div>
             <div class="actions">
-              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')">📤 Exporter</button>
+              <button class="btn-exporter" onclick="event.stopPropagation(); exporterPost('${post.id}')"> ⬇ Exporter</button>
               <button class="${estPublie ? 'btn-statut-brouillon' : 'btn-statut-publier'}" onclick="event.stopPropagation(); ${estPublie ? 'changerStatut(\'' + post.id + '\', \'brouillon\')' : 'changerStatut(\'' + post.id + '\', \'publie\')'}">${estPublie ? 'Passer en brouillon' : 'Publier'}</button>
-              <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">✕</button>
+              <button class="btn-supprimer" onclick="event.stopPropagation(); supprimerPost('${post.id}')">X</button>
             </div>
           </div>
         `;
@@ -1246,131 +633,9 @@
 
       html += '</div>';
       container.innerHTML = html;
-      
-      initDragDropPosts();
     }
 
-    // ============================================================
-    // DRAG & DROP POUR RÉORGANISER LES ARTICLES
-    // ============================================================
-    function initDragDropPosts() {
-      var items = document.querySelectorAll('.carte-post[data-id]');
-      items.forEach(function(item) {
-        item.setAttribute('draggable', 'true');
-        
-        item.addEventListener('dragstart', function(e) {
-          dragIndexPost = parseInt(this.dataset.index);
-          dragCategorieActuelle = this.dataset.categorie;
-          this.classList.add('dragging');
-          e.dataTransfer.effectAllowed = 'move';
-        });
-        
-        item.addEventListener('dragend', function(e) {
-          this.classList.remove('dragging');
-          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
-            el.classList.remove('drag-over');
-          });
-        });
-        
-        item.addEventListener('dragover', function(e) {
-          e.preventDefault();
-          e.dataTransfer.dropEffect = 'move';
-          document.querySelectorAll('.carte-post.drag-over').forEach(function(el) {
-            el.classList.remove('drag-over');
-          });
-          if (this.dataset.categorie === dragCategorieActuelle) {
-            this.classList.add('drag-over');
-          }
-        });
-        
-        item.addEventListener('dragleave', function(e) {
-          this.classList.remove('drag-over');
-        });
-        
-        item.addEventListener('drop', function(e) {
-          e.preventDefault();
-          this.classList.remove('drag-over');
-          var targetIndex = parseInt(this.dataset.index);
-          
-          if (this.dataset.categorie !== dragCategorieActuelle) {
-            alert('Impossible de déplacer un article dans une autre catégorie.');
-            return;
-          }
-          
-          if (dragIndexPost !== null && dragIndexPost !== targetIndex) {
-            var postsCategorie = tousLesPosts.filter(function(p) {
-              return p.categorie === dragCategorieActuelle;
-            });
-            postsCategorie.sort(function(a, b) {
-              return (a.ordre || 999) - (b.ordre || 999);
-            });
-            
-            var draggedPost = postsCategorie[dragIndexPost];
-            var targetPost = postsCategorie[targetIndex];
-            var tempOrdre = draggedPost.ordre || (dragIndexPost + 1);
-            draggedPost.ordre = targetPost.ordre || (targetIndex + 1);
-            targetPost.ordre = tempOrdre;
-            
-            sauvegarderOrdresCategorie(dragCategorieActuelle);
-          }
-        });
-      });
-    }
-
-    // ============================================================
-    // SAUVEGARDER L'ORDRE DES ARTICLES D'UNE CATÉGORIE
-    // ============================================================
-    function sauvegarderOrdresCategorie(categorie) {
-      var postsCategorie = tousLesPosts.filter(function(p) {
-        return p.categorie === categorie;
-      });
-      postsCategorie.sort(function(a, b) {
-        return (a.ordre || 999) - (b.ordre || 999);
-      });
-      
-      postsCategorie.forEach(function(p, index) {
-        p.ordre = index + 1;
-      });
-      
-      var url = CONFIG.SCRIPT_URL + '?action=updateOrdres';
-      postsCategorie.forEach(function(p) {
-        url += '&id[]=' + encodeURIComponent(p.id) + '&ordre[]=' + encodeURIComponent(p.ordre);
-      });
-      
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            console.log('✅ Ordres sauvegardés pour la catégorie "' + categorie + '"');
-            mettreAJourBadgesOrdre();
-          } else {
-            console.error('❌ Erreur sauvegarde ordres:', data.message);
-          }
-        })
-        .catch(function(e) {
-          console.error('❌ Erreur:', e);
-        });
-    }
-
-    // ============================================================
-    // METTRE À JOUR LES BADGES D'ORDRE
-    // ============================================================
-    function mettreAJourBadgesOrdre() {
-      document.querySelectorAll('.carte-post[data-id]').forEach(function(el) {
-        var id = el.dataset.id;
-        var post = tousLesPosts.find(function(p) { return p.id === id; });
-        if (post) {
-          var badge = el.querySelector('.ordre-badge');
-          if (badge) {
-            badge.textContent = '#' + (post.ordre || '');
-          }
-        }
-      });
-    }
-
-    // ============================================================
-    // SWITCH TAB
-    // ============================================================
+    // === SWITCH TAB ===
     function switchTab(tab) {
       ongletActuel = tab;
       
@@ -1384,9 +649,7 @@
       afficherAdmin();
     }
 
-    // ============================================================
-    // FILTRER PAR CATÉGORIE
-    // ============================================================
+    // === FILTRER PAR CATEGORIE ===
     function filtrerParCategorie(cat) {
       categorieActuelle = cat;
       
@@ -1400,14 +663,12 @@
       afficherAdmin();
     }
 
-    // ============================================================
-    // GÉNÉRER FILTRES CATÉGORIES
-    // ============================================================
+    // === GENERER FILTRES CATEGORIES ===
     function genererFiltresCategories() {
       var cats = {};
       
       tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
+        var cat = post.categorie || 'Sans categorie';
         if (!cats[cat]) cats[cat] = 0;
         cats[cat]++;
       });
@@ -1421,18 +682,13 @@
       categoriesTriees.forEach(function(cat) {
         var count = cats[cat];
         var activeClass = (categorieActuelle === cat) ? ' active' : '';
-        var isDefault = categoriesData.indexOf(cat) === -1 && cat !== 'Sans catégorie';
-        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span>' +
-          (isDefault ? ' <span class="btn-del-cat" onclick="event.stopPropagation(); supprimerCategorie(\'' + cat + '\')">✕</span>' : '') +
-          '</button>';
+        html += '<button class="filtre-cat-btn' + activeClass + '" data-cat="' + cat + '" onclick="filtrerParCategorie(\'' + cat + '\')">' + cat + ' <span class="compteur-cat">' + count + '</span></button>';
       });
       
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // GESTION DES CATÉGORIES
-    // ============================================================
+    // === GESTION DES CATEGORIES ===
     function ouvrirModalCategories() {
       var modal = document.getElementById('modalCategories');
       modal.classList.add('visible');
@@ -1449,21 +705,16 @@
       
       var cats = {};
       tousLesPosts.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
+        var cat = post.categorie || 'Sans categorie';
         if (!cats[cat]) cats[cat] = 0;
         cats[cat]++;
       });
       
       var sorted = Object.keys(cats).sort();
       sorted.forEach(function(cat) {
-        var isDefault = categoriesData.indexOf(cat) !== -1 || cat === 'Sans catégorie';
         html += `
           <div class="cat-item">
             <span class="cat-name">${cat} (${cats[cat]} articles)</span>
-            <div class="cat-actions">
-              ${!isDefault ? '<button class="btn-del-cat-modal" onclick="supprimerCategorie(\'' + cat + '\')">✕ Supprimer</button>' : ''}
-              <button onclick="renommerCategorie(\'' + cat + '\')">✏️ Renommer</button>
-            </div>
           </div>
         `;
       });
@@ -1471,100 +722,10 @@
       container.innerHTML = html;
     }
 
-    function ajouterCategorie() {
-      var input = document.getElementById('newCatInput');
-      var cat = input.value.trim();
-      if (!cat) { alert('Veuillez saisir un nom de catégorie.'); return; }
-      if (categoriesData.indexOf(cat) !== -1) { alert('Cette catégorie existe déjà.'); return; }
-      
-      categoriesData.push(cat);
-      var url = CONFIG.SCRIPT_URL + '?action=addLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            input.value = '';
-            afficherListeCategories();
-            remplirSelectCategories();
-            alert('✅ Catégorie ajoutée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function supprimerCategorie(cat) {
-      if (cat === 'Sans catégorie') { alert('Impossible de supprimer la catégorie "Sans catégorie".'); return; }
-      if (!confirm('Supprimer la catégorie "' + cat + '" ? Les articles seront reassignés à "Sans catégorie".')) return;
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === cat) p.categorie = 'Sans catégorie';
-      });
-      
-      var index = categoriesData.indexOf(cat);
-      if (index !== -1) categoriesData.splice(index, 1);
-      
-      var url = CONFIG.SCRIPT_URL + '?action=deleteLabel&label=' + encodeURIComponent(cat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie supprimée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    function renommerCategorie(oldCat) {
-      var newCat = prompt('Nouveau nom pour "' + oldCat + '" :');
-      if (!newCat || newCat.trim() === '') return;
-      newCat = newCat.trim();
-      if (categoriesData.indexOf(newCat) !== -1 && newCat !== oldCat) {
-        alert('Cette catégorie existe déjà.');
-        return;
-      }
-      
-      tousLesPosts.forEach(function(p) {
-        if (p.categorie === oldCat) p.categorie = newCat;
-      });
-      
-      var index = categoriesData.indexOf(oldCat);
-      if (index !== -1) {
-        categoriesData[index] = newCat;
-      }
-      
-      var url = CONFIG.SCRIPT_URL + '?action=renameLabel&old=' + encodeURIComponent(oldCat) + '&new=' + encodeURIComponent(newCat);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            afficherAdmin();
-            if (document.getElementById('modalCategories').classList.contains('visible')) {
-              afficherListeCategories();
-            }
-            remplirSelectCategories();
-            alert('✅ Catégorie renommée avec succès !');
-          } else {
-            alert('❌ Erreur : ' + data.message);
-          }
-        })
-        .catch(function(e) { alert('❌ Erreur : ' + e.message); });
-    }
-
-    // ============================================================
-    // EXPORTER TOUT
-    // ============================================================
+    // === EXPORTER TOUT ===
     function exporterTout() {
       if (tousLesPosts.length === 0) {
-        alert('Aucun article à exporter.');
+        alert('Aucun article a exporter.');
         return;
       }
       
@@ -1583,7 +744,6 @@
             mots: p.mots,
             hasQuiz: p.hasQuiz,
             hasQuestion: p.hasQuestion,
-            ordre: p.ordre || 0,
             versions: p.versions || 1,
             dateModif: p.dateModif || ''
           };
@@ -1601,16 +761,13 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      alert('✅ Exportation de ' + tousLesPosts.length + ' articles terminée !');
+      alert(' Exportation de ' + tousLesPosts.length + ' articles terminee !');
     }
 
-    // ============================================================
-    // MODAL TEXTE
-    // ============================================================
+    // === MODAL TEXTE ===
     function ouvrirModalTexte() {
       modeEdition = false;
       estBrouillon = false;
-      document.getElementById('modalTitre').textContent = 'Texte';
       document.getElementById('btnEnregistrer').textContent = 'Ajouter';
       document.getElementById('editId').value = '';
       document.getElementById('btnBrouillon').classList.remove('active');
@@ -1633,16 +790,11 @@
       document.getElementById('retenir1').value = '';
       document.getElementById('retenir2').value = '';
       document.getElementById('retenir3').value = '';
-      document.getElementById('inputNouvelleCategorie').value = '';
       document.getElementById('messageTexte').style.display = 'none';
+      setNiveau(1);
 
-      var selectNiveau = document.getElementById('inputNiveau');
-      if (selectNiveau.options.length > 0) selectNiveau.selectedIndex = 0;
       var selectCategorie = document.getElementById('inputCategorie');
       if (selectCategorie.options.length > 0) selectCategorie.selectedIndex = 0;
-
-      slidesData.push('');
-      slidesIdee.push(false);
 
       afficherSlides();
       afficherQuiz();
@@ -1663,9 +815,7 @@
       localStorage.removeItem('admin_auto_save');
     }
 
-    // ============================================================
-    // SLIDES
-    // ============================================================
+    // === SLIDES ===
     var dragIndex = null;
 
     function initDragDrop() {
@@ -1680,6 +830,7 @@
           document.querySelectorAll('.slide-item.drag-over').forEach(function(el) {
             el.classList.remove('drag-over');
           });
+          sauvegarderOrdreSlides();
         });
         item.addEventListener('dragover', function(e) {
           e.preventDefault();
@@ -1706,48 +857,132 @@
       });
     }
 
-    function ajouterSlide() {
-      slidesData.push('');
-      slidesIdee.push(false);
-      afficherSlides();
+    function sauvegarderOrdreSlides() {
+      var postId = document.getElementById('editId').value;
+      if (!postId) return;
+      
+      var post = tousLesPosts.find(function(p) { return p.id === postId; });
+      if (!post) return;
+      
+      var colonnes = [];
+      
+      slidesData.forEach(function(slide, index) {
+        if (!slidesIdee[index]) {
+          colonnes.push('-s- ' + slide);
+        }
+      });
+      
+      quizData.forEach(function(q) {
+        if (q.question.trim() || q.reponses.some(function(r) { return r.texte.trim(); })) {
+          colonnes.push('-q- ' + q.question);
+          q.reponses.forEach(function(r) {
+            colonnes.push((r.correct ? '-v- ' : '-f- ') + r.texte);
+          });
+        }
+      });
+      
+      openQuestionsData.forEach(function(q) {
+        if (q.trim()) {
+          colonnes.push('-qs- ' + q);
+        }
+      });
+      
+      var r1 = document.getElementById('retenir1').value.trim();
+      var r2 = document.getElementById('retenir2').value.trim();
+      var r3 = document.getElementById('retenir3').value.trim();
+      var retenir = [r1, r2, r3].filter(function(m) { return m.length > 0; }).join(', ');
+      if (retenir) {
+        colonnes.push('-r- ' + retenir);
+      }
+      
+      infosData.forEach(function(info) {
+        if (info.trim()) {
+          colonnes.push('-i- ' + info);
+        }
+      });
+      
+      var url = CONFIG.SCRIPT_URL + '?action=updatePostCols' +
+        '&id=' + encodeURIComponent(postId) +
+        '&titre=' + encodeURIComponent(post.titre || '') +
+        '&niveau=' + encodeURIComponent(post.niveau || 0) +
+        '&categorie=' + encodeURIComponent(post.categorie || '') +
+        '&statut=' + encodeURIComponent(post.statut || 'publie') +
+        '&versions=' + encodeURIComponent(post.versions || 1) +
+        '&dateModif=' + encodeURIComponent(new Date().toISOString());
+      
+      for (var i = 0; i < colonnes.length; i++) {
+        url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
+      }
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            if (post) {
+              post.contenu = colonnes.join(' | ');
+            }
+            var indicator = document.getElementById('autoSaveIndicator');
+            indicator.textContent = ' Ordre sauvegarde';
+            indicator.className = 'auto-save-indicator visible saved';
+            setTimeout(function() {
+              indicator.className = 'auto-save-indicator visible';
+            }, 2000);
+          } else {
+            console.error('Erreur sauvegarde ordre:', data.message);
+          }
+        })
+        .catch(function(e) {
+          console.error('Erreur:', e);
+        });
     }
 
     function supprimerSlide(index) {
       slidesData.splice(index, 1);
       slidesIdee.splice(index, 1);
-      if (slidesData.length === 0) {
-        slidesData.push('');
-        slidesIdee.push(false);
-      }
       afficherSlides();
     }
 
-    function afficherSlides() {
-      var container = document.getElementById('slidesList');
-      if (slidesData.length === 0) {
-        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune slide</div>';
-        return;
-      }
-      var html = '';
-      slidesData.forEach(function(slide, index) {
-        var preview = slide.length > 60 ? slide.substring(0, 60) + '...' : slide;
-        var ideeClass = slidesIdee[index] ? 'idee' : '';
-        var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
-        html += `
-          <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
-            <span class="slide-handle">⠿</span>
-            <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
-            <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">✕</button>
-          </div>
-        `;
-      });
-      container.innerHTML = html;
-      initDragDrop();
-    }
+  function afficherSlides() {
+  var container = document.getElementById('slidesList');
+  if (slidesData.length === 0) {
+    container.innerHTML = '';
+    return;
+  }
+  var html = '';
+  
+  // Compteur total de mots (optionnel)
+  var totalMots = 0;
+  for (var i = 0; i < slidesData.length; i++) {
+    var motsSlide = slidesData[i].split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+    totalMots += motsSlide;
+  }
+  
+  slidesData.forEach(function(slide, index) {
+    var preview = slide;
+    var ideeClass = slidesIdee[index] ? 'idee' : '';
+    var displayText = preview || '<span class="slide-placeholder">Slide vide</span>';
+    
+    // COMPTEUR DE MOTS POUR CETTE SLIDE
+    var mots = slide.split(/\s+/).filter(function(m) { return m.length > 0; }).length;
+    
+    html += `
+      <div class="slide-item ${ideeClass}" draggable="true" data-index="${index}">
+        <span class="slide-handle"> </span>
+        <span class="slide-texte" onclick="ouvrirComposeur(${index})">${displayText}</span>
+        <span style="font-family:var(--font-sans);font-size:14px;color:var(--text-primary);font-weight:600;flex-shrink:0;min-width:24px;text-align:center;user-select:none;margin-left:6px;">${mots}</span>
+        <button class="btn-del-slide" onclick="event.stopPropagation(); supprimerSlide(${index})">X</button>
+      </div>
+    `;
+  });
+  
+  // Ajout du total en haut
+  var compteurHtml = '<div style="font-family:var(--font-sans);font-size:11px;color:var(--text-muted);padding:2px 0 4px 0;border-bottom:0.5px solid var(--border-light);margin-bottom:4px;user-select:none;"> ' + totalMots + ' mots</div>';
+  
+  container.innerHTML = compteurHtml + html;
+  initDragDrop();
+}
 
-    // ============================================================
-    // COMPOSEUR
-    // ============================================================
+    // === COMPOSEUR ===
     function ouvrirComposeur(index) {
       composeurIndex = (index !== undefined) ? index : -1;
       var textarea = document.getElementById('composeurTextarea');
@@ -1766,7 +1001,7 @@
 
     function validerComposeur() {
       var texte = document.getElementById('composeurTextarea').value.trim();
-      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+      if (!texte) { alert('Veuillez ecrire du contenu.'); return; }
 
       if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
         slidesData[composeurIndex] = texte;
@@ -1781,7 +1016,7 @@
 
     function validerComposeurIdee() {
       var texte = document.getElementById('composeurTextarea').value.trim();
-      if (!texte) { alert('Veuillez écrire du contenu.'); return; }
+      if (!texte) { alert('Veuillez ecrire du contenu.'); return; }
 
       if (composeurIndex >= 0 && composeurIndex < slidesData.length) {
         slidesData[composeurIndex] = texte;
@@ -1794,9 +1029,49 @@
       afficherSlides();
     }
 
-    // ============================================================
-    // RETENIR
-    // ============================================================
+    // === RENVOYER SLIDE ===
+    function renvoyerSlide() {
+  var textarea = document.getElementById('composeurTextarea');
+  var texte = textarea.value;
+  var cursorPos = textarea.selectionStart;
+  
+  if (cursorPos === 0) {
+    alert('Placez le curseur a l\'endroit ou vous voulez couper le texte.');
+    return;
+  }
+  
+  var debut = texte.substring(0, cursorPos).trim();
+  var fin = texte.substring(cursorPos).trim();
+  
+  if (!fin) {
+    alert('Il n\'y a pas de texte a renvoyer apres le curseur.');
+    return;
+  }
+  
+  // Pour une nouvelle slide ou une slide existante
+  if (composeurIndex === -1) {
+    // Nouvelle slide : créer deux slides
+    slidesData.push(debut);
+    slidesIdee.push(false);
+    slidesData.push(fin);
+    slidesIdee.push(false);
+  } else {
+    // Slide existante : remplacer la slide actuelle par 'debut'
+    // et inserer 'fin' juste apres
+    slidesData[composeurIndex] = debut;
+    slidesIdee[composeurIndex] = slidesIdee[composeurIndex] || false;
+    
+    // Inserer la nouvelle slide juste apres
+    var newSlideIndex = composeurIndex + 1;
+    slidesData.splice(newSlideIndex, 0, fin);
+    slidesIdee.splice(newSlideIndex, 0, false);
+  }
+  
+  afficherSlides();
+  fermerComposeur();
+}
+
+    // === RETENIR ===
     function toggleRetenir() {
       retenirOpen = !retenirOpen;
       var container = document.getElementById('retenirChamps');
@@ -1807,9 +1082,7 @@
       }
     }
 
-    // ============================================================
-    // QUIZ - AVEC AUTO-INVERSION V/F
-    // ============================================================
+    // === QUIZ ===
     function ajouterQuestion() {
       quizData.push({
         question: '',
@@ -1823,9 +1096,6 @@
 
     function supprimerQuestion(index) {
       quizData.splice(index, 1);
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
       afficherQuiz();
     }
 
@@ -1836,9 +1106,6 @@
 
     function supprimerReponse(quizIndex, repIndex) {
       quizData[quizIndex].reponses.splice(repIndex, 1);
-      if (quizData[quizIndex].reponses.length === 0) {
-        quizData[quizIndex].reponses.push({ texte: '', correct: true });
-      }
       afficherQuiz();
     }
 
@@ -1846,7 +1113,6 @@
       var q = quizData[quizIndex];
       q.reponses[repIndex].correct = estVrai;
       
-      // Auto-inversion : si on met une réponse à Vrai, les autres passent à Faux
       if (estVrai) {
         for (var i = 0; i < q.reponses.length; i++) {
           if (i !== repIndex) {
@@ -1860,7 +1126,7 @@
     function afficherQuiz() {
       var container = document.getElementById('quizList');
       if (quizData.length === 0) {
-        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucun quiz</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1874,29 +1140,27 @@
         q.reponses.forEach(function(r, ri) {
           var lettre = String.fromCharCode(65 + ri);
           html += `
-            <input type="text" placeholder="Réponse ${lettre}" value="${r.texte}" 
+            <input type="text" placeholder="Reponse ${lettre}" value="${r.texte}" 
                    style="flex:1;min-width:60px;" 
                    onchange="quizData[${qi}].reponses[${ri}].texte = this.value">
             <div class="vf-group">
               <button class="vf-btn ${r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, true)">V</button>
               <button class="vf-btn ${!r.correct ? 'active' : ''}" onclick="setVraiFaux(${qi}, ${ri}, false)">F</button>
             </div>
-            <button class="btn-del-quiz" onclick="supprimerReponse(${qi}, ${ri})">✕</button>
+            <button class="btn-del-quiz" onclick="supprimerReponse(${qi}, ${ri})">X</button>
           `;
         });
         html += `
             </div>
-            <button class="btn-add-section" onclick="ajouterReponse(${qi})" style="font-size:11px;padding:2px 10px;border:1px solid #2a2a2a;border-radius:30px;background:transparent;color:#6b6b6b;cursor:pointer;">+ réponse</button>
-            <button class="btn-del-quiz" onclick="supprimerQuestion(${qi})">✕</button>
+            <button class="btn-add-section" onclick="ajouterReponse(${qi})" style="font-size:11px;padding:2px 10px;border:1px solid var(--border-color);border-radius:30px;background:transparent;color:var(--text-secondary);cursor:pointer;">+ reponse</button>
+            <button class="btn-del-quiz" onclick="supprimerQuestion(${qi})">X</button>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // QUESTIONS OUVERTES
-    // ============================================================
+    // === QUESTIONS OUVERTES ===
     function ajouterQuestionOuverte() {
       openQuestionsData.push('');
       afficherOpenQuestions();
@@ -1904,14 +1168,13 @@
 
     function supprimerQuestionOuverte(index) {
       openQuestionsData.splice(index, 1);
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
       afficherOpenQuestions();
     }
 
     function afficherOpenQuestions() {
       var container = document.getElementById('openQuestionsList');
       if (openQuestionsData.length === 0) {
-        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune question ouverte</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1920,16 +1183,14 @@
           <div class="open-question-item">
             <input type="text" placeholder="Question ouverte..." value="${q}" 
                    onchange="openQuestionsData[${qi}] = this.value">
-            <button class="btn-del-open" onclick="supprimerQuestionOuverte(${qi})">✕</button>
+            <button class="btn-del-open" onclick="supprimerQuestionOuverte(${qi})">X</button>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // INFOS
-    // ============================================================
+    // === INFOS ===
     function ajouterInfo() {
       infosData.push('');
       afficherInfos();
@@ -1937,14 +1198,13 @@
 
     function supprimerInfo(index) {
       infosData.splice(index, 1);
-      if (infosData.length === 0) infosData.push('');
       afficherInfos();
     }
 
     function afficherInfos() {
       var container = document.getElementById('infosList');
       if (infosData.length === 0) {
-        container.innerHTML = '<div style="color:#4a4a4a;font-style:italic;padding:4px 0;">Aucune info</div>';
+        container.innerHTML = '';
         return;
       }
       var html = '';
@@ -1953,30 +1213,26 @@
           <div class="info-item">
             <input type="text" placeholder="Info..." value="${info}" 
                    onchange="infosData[${ii}] = this.value">
-            <button class="btn-del-info" onclick="supprimerInfo(${ii})">✕</button>
+            <button class="btn-del-info" onclick="supprimerInfo(${ii})">X</button>
           </div>
         `;
       });
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // BROUILLON
-    // ============================================================
+    // === BROUILLON ===
     function toggleBrouillon() {
       estBrouillon = !estBrouillon;
       var btn = document.getElementById('btnBrouillon');
       btn.classList.toggle('active');
-      btn.textContent = estBrouillon ? '✓ Brouillon' : 'Brouillon';
+      btn.textContent = estBrouillon ? ' Brouillon' : 'Brouillon';
     }
 
-    // ============================================================
-    // ENREGISTRER
-    // ============================================================
+    // === ENREGISTRER ===
     function enregistrerTexte() {
       var id = document.getElementById('editId').value;
       var titre = document.getElementById('inputTitre').value.trim();
-      var niveau = document.getElementById('inputNiveau').value;
+      var niveau = niveauActuel;
       var categorie = document.getElementById('inputCategorie').value;
       var statut = estBrouillon ? 'brouillon' : 'publie';
       var msg = document.getElementById('messageTexte');
@@ -2045,12 +1301,10 @@
           '&versions=' + encodeURIComponent(version) +
           '&dateModif=' + encodeURIComponent(maintenant);
 
-        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
         }
 
-        // Ajouter la date de création personnalisée (colonne B)
         if (dateCreation) {
           url += '&date=' + encodeURIComponent(dateCreation);
         }
@@ -2059,8 +1313,8 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post mis à jour ! (v' + version + ')', 'success');
-              btn.textContent = 'Mettre à jour';
+              afficherMsgTexte(' Post mis a jour ! (v' + version + ')', 'success');
+              btn.textContent = 'Mettre a jour';
               btn.disabled = false;
               fermerModalTexte();
               chargerAdmin();
@@ -2069,8 +1323,8 @@
             }
           })
           .catch(function(err) {
-            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
-            btn.textContent = 'Mettre à jour';
+            afficherMsgTexte(' Erreur : ' + err.message, 'error');
+            btn.textContent = 'Mettre a jour';
             btn.disabled = false;
           });
       } else {
@@ -2081,12 +1335,10 @@
           '&statut=' + encodeURIComponent(statut) +
           '&versions=' + encodeURIComponent(1);
 
-        // Ajouter la date de création personnalisée (colonne B)
         if (dateCreation) {
           url += '&date=' + encodeURIComponent(dateCreation);
         }
 
-        // Ajouter les colonnes dynamiques
         for (var i = 0; i < colonnes.length; i++) {
           url += '&col' + (i + 1) + '=' + encodeURIComponent(colonnes[i]);
         }
@@ -2095,17 +1347,17 @@
           .then(function(r) { return r.json(); })
           .then(function(data) {
             if (data.success) {
-              afficherMsgTexte('✅ Post ajouté !', 'success');
+              afficherMsgTexte(' Post ajoute !', 'success');
               btn.textContent = 'Ajouter';
               btn.disabled = false;
               fermerModalTexte();
               chargerAdmin();
             } else {
-              throw new Error(data.message || 'Erreur lors de la création');
+              throw new Error(data.message || 'Erreur lors de la creation');
             }
           })
           .catch(function(err) {
-            afficherMsgTexte('❌ Erreur : ' + err.message, 'error');
+            afficherMsgTexte(' Erreur : ' + err.message, 'error');
             btn.textContent = 'Ajouter';
             btn.disabled = false;
           });
@@ -2119,20 +1371,16 @@
       msg.style.display = 'block';
     }
 
-    // ============================================================
-    // MODIFIER POST
-    // ============================================================
+    // === MODIFIER POST ===
     function modifierPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
       if (!post) { alert('Post introuvable'); return; }
 
       modeEdition = true;
       estBrouillon = post.statut === 'brouillon';
-      document.getElementById('modalTitre').textContent = 'Texte';
-      document.getElementById('btnEnregistrer').textContent = 'Mettre à jour';
+      document.getElementById('btnEnregistrer').textContent = 'Mettre a jour';
       document.getElementById('editId').value = postId;
 
-      // Pré-remplir la date avec la date de création (colonne B)
       if (post.date) {
         var d = new Date(post.date);
         if (!isNaN(d.getTime())) {
@@ -2141,18 +1389,14 @@
           var dd = String(d.getDate()).padStart(2, '0');
           document.getElementById('inputDate').removeAttribute('readonly');
           document.getElementById('inputDate').value = y + '-' + m + '-' + dd;
-document.getElementById('inputDate').setAttribute('readonly', true);
+          document.getElementById('inputDate').setAttribute('readonly', true);
         }
       }
 
       document.getElementById('inputTitre').value = post.titre || '';
-
-      var selectNiveau = document.getElementById('inputNiveau');
-      for (var i = 0; i < selectNiveau.options.length; i++) {
-        if (selectNiveau.options[i].value == post.niveau) {
-          selectNiveau.selectedIndex = i;
-          break;
-        }
+      
+      if (post.niveau) {
+        setNiveau(post.niveau);
       }
 
       var selectCategorie = document.getElementById('inputCategorie');
@@ -2166,7 +1410,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       var btnBrouillon = document.getElementById('btnBrouillon');
       if (estBrouillon) {
         btnBrouillon.classList.add('active');
-        btnBrouillon.textContent = '✓ Brouillon';
+        btnBrouillon.textContent = ' Brouillon';
       } else {
         btnBrouillon.classList.remove('active');
         btnBrouillon.textContent = 'Brouillon';
@@ -2226,13 +1470,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
         }
       }
 
-      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
-      if (infosData.length === 0) infosData.push('');
-
       afficherSlides();
       afficherQuiz();
       afficherOpenQuestions();
@@ -2245,16 +1482,14 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       startChrono();
     }
 
-        // ============================================================
-    // EXPORTER POST
-    // ============================================================
+    // === EXPORTER POST ===
     function exporterPost(postId) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
       if (!post) { alert('Post introuvable'); return; }
 
       var contenu = '';
       contenu += 'Nvx: ' + (post.niveau || 0) + '\n';
-      contenu += 'Cat: ' + (post.categorie || 'Sans catégorie') + '\n\n';
+      contenu += 'Cat: ' + (post.categorie || 'Sans categorie') + '\n\n';
 
       if (post.contenu) {
         var lignes = post.contenu.split(' | ');
@@ -2265,7 +1500,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
           var ligne = lignes[i].trim();
           if (!ligne) continue;
 
-          // --- SLIDES ---
           if (ligne.startsWith('-s-')) {
             if (!firstSection) {
               contenu += '\n';
@@ -2273,17 +1507,13 @@ document.getElementById('inputDate').setAttribute('readonly', true);
             contenu += ligne + '\n';
             firstSection = false;
           }
-
-          // --- QUIZ ---
           else if (ligne.startsWith('-q-')) {
             if (quizEnCours) {
-              // Fermer le quiz précédent
               quizEnCours.reponses.forEach(function(r) {
                 contenu += r + '\n';
               });
               contenu += '\n';
             }
-            // Ajouter une ligne vide avant le quiz (sauf si c'est le premier élément)
             if (!firstSection) {
               contenu += '\n';
             }
@@ -2295,7 +1525,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
             if (quizEnCours) {
               quizEnCours.reponses.push(ligne);
             } else {
-              // Si une réponse arrive sans question, on la traite normalement
               if (!firstSection) {
                 contenu += '\n';
               }
@@ -2303,26 +1532,20 @@ document.getElementById('inputDate').setAttribute('readonly', true);
               firstSection = false;
             }
           }
-
-          // --- QUESTIONS OUVERTES ---
           else if (ligne.startsWith('-qs-')) {
             if (quizEnCours) {
-              // Fermer le quiz en cours
               quizEnCours.reponses.forEach(function(r) {
                 contenu += r + '\n';
               });
               quizEnCours = null;
               contenu += '\n';
             }
-            // Ajouter une ligne vide avant la question ouverte
             if (!firstSection) {
               contenu += '\n';
             }
             contenu += ligne + '\n';
             firstSection = false;
           }
-
-          // --- RETENIR ---
           else if (ligne.startsWith('-r-')) {
             if (quizEnCours) {
               quizEnCours.reponses.forEach(function(r) {
@@ -2331,15 +1554,12 @@ document.getElementById('inputDate').setAttribute('readonly', true);
               quizEnCours = null;
               contenu += '\n';
             }
-            // Ajouter une ligne vide avant retenir
             if (!firstSection) {
               contenu += '\n';
             }
             contenu += ligne + '\n';
             firstSection = false;
           }
-
-          // --- INFOS ---
           else if (ligne.startsWith('-i-')) {
             if (quizEnCours) {
               quizEnCours.reponses.forEach(function(r) {
@@ -2354,8 +1574,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
             contenu += ligne + '\n';
             firstSection = false;
           }
-
-          // --- AUTRE (cas où une ligne ne commence par aucun code connu) ---
           else {
             if (quizEnCours) {
               quizEnCours.reponses.forEach(function(r) {
@@ -2372,14 +1590,12 @@ document.getElementById('inputDate').setAttribute('readonly', true);
           }
         }
 
-        // Fermer le dernier quiz s'il existe
         if (quizEnCours) {
           quizEnCours.reponses.forEach(function(r) {
             contenu += r + '\n';
           });
         }
 
-        // Supprimer les sauts de ligne en trop à la fin
         contenu = contenu.replace(/\n{3,}$/, '\n\n');
 
       } else {
@@ -2397,9 +1613,7 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       URL.revokeObjectURL(url);
     }
 
-    // ============================================================
-    // IMPORTER (maintenant en dehors du popup)
-    // ============================================================
+    // === IMPORTER ===
     function importerTexte() {
       document.getElementById('fileInput').click();
     }
@@ -2417,9 +1631,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       reader.readAsText(file, 'UTF-8');
     }
 
-    // ============================================================
-    // PARSER CONTENU (IMPORT)
-    // ============================================================
     function parserContenu(contenu) {
       slidesData = [];
       slidesIdee = [];
@@ -2483,13 +1694,6 @@ document.getElementById('inputDate').setAttribute('readonly', true);
         }
       }
 
-      if (slidesData.length === 0) { slidesData.push(''); slidesIdee.push(false); }
-      if (quizData.length === 0) {
-        quizData.push({ question: '', reponses: [{ texte: '', correct: true }, { texte: '', correct: false }] });
-      }
-      if (openQuestionsData.length === 0) openQuestionsData.push('');
-      if (infosData.length === 0) infosData.push('');
-
       afficherSlides();
       afficherQuiz();
       afficherOpenQuestions();
@@ -2498,11 +1702,9 @@ document.getElementById('inputDate').setAttribute('readonly', true);
       document.getElementById('messageTexte').style.display = 'none';
     }
 
-    // ============================================================
-    // SUPPRIMER POST
-    // ============================================================
+    // === SUPPRIMER POST ===
     function supprimerPost(postId) {
-      if (!confirm('Supprimer ce texte définitivement ?')) return;
+      if (!confirm('Supprimer ce texte definitivement ?')) return;
 
       var btn = document.querySelector('.btn-supprimer');
       btn.textContent = '...';
@@ -2510,18 +1712,17 @@ document.getElementById('inputDate').setAttribute('readonly', true);
 
       DataManager.supprimerPost(postId)
         .then(function() {
-          alert('✅ Post supprimé avec succès !');
+          alert(' Post supprime avec succes !');
           chargerAdmin();
         })
         .catch(function(err) {
-          alert('❌ Erreur : ' + err.message);
-          btn.textContent = '✕';
+          alert(' Erreur : ' + err.message);
+          btn.textContent = 'X';
           btn.disabled = false;
         });
     }
-        // ============================================================
-    // CHANGER LE STATUT D'UN POST
-    // ============================================================
+
+    // === CHANGER LE STATUT ===
     function changerStatut(postId, nouveauStatut) {
       var post = tousLesPosts.find(function(p) { return p.id === postId; });
       if (!post) { alert('Post introuvable'); return; }
@@ -2548,20 +1749,40 @@ document.getElementById('inputDate').setAttribute('readonly', true);
           if (data.success) {
             chargerAdmin();
           } else {
-            alert('❌ Erreur : ' + data.message);
+            alert(' Erreur : ' + data.message);
           }
         })
         .catch(function(e) {
-          alert('❌ Erreur : ' + e.message);
+          alert(' Erreur : ' + e.message);
         });
     }
 
-    // ============================================================
-    // INIT
-    // ============================================================
+    function chercherDMF() {
+  var textarea = document.getElementById('composeurTextarea');
+  var selection = textarea.value.substring(textarea.selectionStart, textarea.selectionEnd).trim();
+  if (!selection) {
+    alert('Sélectionnez un mot dans le texte.');
+    return;
+  }
+  var mot = selection.split(' ')[0].toUpperCase();
+  var url = 'http://zeus.atilf.fr/scripts/dmfX.exe?LEM=' + mot + ';MENU=menu_dmf;AFFICHAGE=2;SANS_MENU;ISIS=isis_dmfsmart.txt;XMODE=STELLa;FERMER';
+  window.open(url, '_blank');
+}
+
+    // === INIT ===
     function demarrer() {
       chargerAdmin();
     }
+
+    // Raccourci Ctrl+Entree pour valider le composeur
+    document.addEventListener('keydown', function(e) {
+      if (document.getElementById('composeurOverlay').classList.contains('visible')) {
+        if (e.ctrlKey && e.key === 'Enter') {
+          e.preventDefault();
+          validerComposeur();
+        }
+      }
+    });
 
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', demarrer);
@@ -2572,3 +1793,4 @@ document.getElementById('inputDate').setAttribute('readonly', true);
 
 </body>
 </html>
+```
