@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Mes textes - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>❏</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+</head>
+<body>
+
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text();
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+      localStorage.setItem('theme', mode);
+    }
+
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'sombre') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+
+    function ouvrirConnexion() {
+      window.location.href = '/medit/index.html';
+    }
+
+    function ouvrirInscription() {
+      window.location.href = '/medit/index.html';
+    }
+  </script>
+
+  <div class="page">
+
+    <h1>Mes textes</h1>
+    <p class="sous-titre-page">Retrouvez ici toutes les méditations à lire et celles que vous avez déjà validées.</p>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Textes disponibles :</span>
+        <span class="nombre" id="totalPosts">0</span>
+      </div>
+    </div>
+
+    <div class="tabs-container" id="tabsContainer"></div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Vos textes vont s'afficher ici dans un instant...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // mes-textes.html - Logique principale
+    // ============================================================
+
+    var toutesLesReponses = {};
+    var postsData = [];
+    var niveauEtudiant = 0;
+    var ongletActuel = 'a-lire';
+
+    function deconnecter() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_niveau');
+        localStorage.removeItem('etudiant_nom');
+        window.location.href = '/medit/index.html';
+      }
+    }
+
+    function ouvrirAnnotations(articleId, titre) {
+      var reponse = toutesLesReponses[articleId] || null;
+      var annotations = reponse ? reponse.annotations : '';
+
+      var modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modalAnnotations';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotations();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Annotations</div>';
+
+      if (annotations && annotations.trim() !== '') {
+        var parts = annotations.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split(':');
+          if (kv.length === 2) {
+            var slideNum = kv[0].replace('slide', '');
+            var texte = kv[1];
+            html += '<div class="modal-annotation">';
+            html += '<strong>Slide ' + slideNum + '</strong>';
+            html += texte;
+            html += '</div>';
+          }
+        }
+      } else {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
+      }
+
+      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+      html += '</div>';
+
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
+    }
+
+    function fermerAnnotations() {
+      var modal = document.getElementById('modalAnnotations');
+      if (modal) modal.remove();
+    }
+
+    function chargerTableauDeBord() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+
+      DataManager.charger()
+        .then(function(data) {
+          niveauEtudiant = data.niveau || 0;
+          postsData = data.posts || [];
+
+          toutesLesReponses = {};
+          if (data.reponses) {
+            data.reponses.forEach(function(r) {
+              toutesLesReponses[r.articleId] = r;
+            });
+          }
+
+          document.getElementById('totalPosts').textContent = postsData.length;
+
+          if (postsData.length === 0) {
+            afficherVide();
+          } else {
+            afficherAvecOnglets(postsData);
+          }
+        })
+        .catch(function() {
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            niveauEtudiant = cache.niveau || 0;
+            postsData = cache.posts || [];
+            document.getElementById('totalPosts').textContent = postsData.length;
+            afficherAvecOnglets(postsData);
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('contenu').innerHTML = `
+              <div class="vide">
+                <span class="icone">⚠️</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();" 
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border-color);border-radius:4px;cursor:pointer;color:var(--text-primary);">
+                  Réessayer
+                </button>
+              </div>
+            `;
+          }
+        });
+    }
+
+    function estPostLu(post) {
+      var reponse = toutesLesReponses[post.id];
+      if (!reponse) return false;
+      var bonnes = reponse.bonnes || 0;
+      var total = reponse.total || 0;
+      if (total === 1 && bonnes === 1) return true;
+      if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
+      return false;
+    }
+
+    function afficherAvecOnglets(posts) {
+      var contenu = document.getElementById('contenu');
+      document.getElementById('loader').style.display = 'none';
+
+      var total = posts.length;
+      var valides = 0;
+      var aFaire = 0;
+
+      posts.forEach(function(post) {
+        if (estPostLu(post)) {
+          valides++;
+        } else {
+          aFaire++;
+        }
+      });
+
+      var categories = {};
+      posts.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(post);
+      });
+      var categoriesTriees = Object.keys(categories).sort();
+
+      var tabsHtml = `
+        <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
+          À lire
+          <span class="compteur-tab">${aFaire}</span>
+        </button>
+        <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
+          Lus
+          <span class="compteur-tab">${valides}</span>
+        </button>
+      `;
+      document.getElementById('tabsContainer').innerHTML = tabsHtml;
+
+      contenu.innerHTML = `
+        <div id="contenu-onglet">
+          <div class="loader" style="display:none;"><div class="spinner"></div></div>
+        </div>
+      `;
+
+      afficherOnglet('a-lire', categoriesTriees, categories);
+    }
+
+    function afficherOnglet(onglet, categoriesTriees, categories) {
+      var container = document.getElementById('contenu-onglet');
+      if (!container) return;
+
+      var html = '';
+      html += `<div class="sous-tabs-container" id="sous-tabs">`;
+
+      var totalPosts = 0;
+      categoriesTriees.forEach(function(cat) {
+        categories[cat].forEach(function(post) {
+          if (onglet === 'a-lire' && !estPostLu(post)) totalPosts++;
+          if (onglet === 'lus' && estPostLu(post)) totalPosts++;
+        });
+      });
+      html += `
+        <button class="sous-tab-btn active" data-sous-tab="toutes" onclick="switchCategorie('toutes')">
+          Toutes
+          <span class="compteur-sous-tab">${totalPosts}</span>
+        </button>
+      `;
+
+      categoriesTriees.forEach(function(cat) {
+        var count = 0;
+        categories[cat].forEach(function(post) {
+          if (onglet === 'a-lire' && !estPostLu(post)) count++;
+          if (onglet === 'lus' && estPostLu(post)) count++;
+        });
+        if (count > 0) {
+          html += `
+            <button class="sous-tab-btn" data-sous-tab="${cat}" onclick="switchCategorie('${cat}')">
+              ${cat}
+              <span class="compteur-sous-tab">${count}</span>
+            </button>
+          `;
+        }
+      });
+
+      html += `</div>`;
+      html += `<div id="sous-contenu"></div>`;
+
+      container.innerHTML = html;
+
+      var postsFiltres = filtrerPosts(onglet, 'toutes');
+      afficherPosts(postsFiltres);
+    }
+
+    function switchOnglet(onglet) {
+      ongletActuel = onglet;
+
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.tab === onglet) {
+          el.classList.add('active');
+        }
+      });
+
+      var categories = {};
+      postsData.forEach(function(post) {
+        var cat = post.categorie || 'Sans catégorie';
+        if (!categories[cat]) categories[cat] = [];
+        categories[cat].push(post);
+      });
+      var categoriesTriees = Object.keys(categories).sort();
+
+      afficherOnglet(onglet, categoriesTriees, categories);
+    }
+
+    function switchCategorie(categorie) {
+      var container = document.getElementById('sous-tabs');
+      if (container) {
+        container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
+          el.classList.remove('active');
+          var cat = el.dataset.sousTab;
+          if (cat === categorie) {
+            el.classList.add('active');
+          }
+        });
+      }
+
+      var postsFiltres = filtrerPosts(ongletActuel, categorie);
+      afficherPosts(postsFiltres);
+    }
+
+    function filtrerPosts(onglet, categorie) {
+      var resultats = [];
+
+      postsData.forEach(function(post) {
+        var estLu = estPostLu(post);
+        if (onglet === 'a-lire' && estLu) return;
+        if (onglet === 'lus' && !estLu) return;
+
+        var catPost = post.categorie || 'Sans catégorie';
+        if (categorie !== 'toutes' && catPost !== categorie) return;
+
+        resultats.push(post);
+      });
+
+      return resultats;
+    }
+
+    function afficherPosts(posts) {
+      var container = document.getElementById('sous-contenu');
+      if (!container) return;
+
+      if (posts.length === 0) {
+        container.innerHTML = `
+          <div class="vide" style="padding:30px 20px;">
+            <span class="icone" style="font-size:32px;">📭</span>
+            <h2 style="font-size:18px;">Aucun texte</h2>
+            <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="grille">';
+
+      posts.forEach(function(post) {
+        var reponse = toutesLesReponses[post.id] || null;
+        var dateValidation = '';
+        var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        if (reponse) {
+          var bonnes = reponse.bonnes || 0;
+          var total = reponse.total || 0;
+          dateValidation = reponse.date || '';
+          retenir = reponse.retenir || '';
+
+          if (total === 1 && bonnes === 1) {
+            estLu = true;
+            estValide = true;
+          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estValide = true;
+          }
+        }
+
+        var hasQuiz = post.hasQuiz || false;
+        var hasQuestion = post.hasQuestion || false;
+        var mots = post.mots || 0;
+
+        var nbQuestions = 0;
+        if (hasQuiz) nbQuestions++;
+        if (hasQuestion) nbQuestions++;
+
+        var metaHtml = '';
+
+        if (ongletActuel === 'a-lire') {
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
+        } else {
+          var resultatHtml = '';
+          var questionHtml = '';
+          var annoteHtml = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var total = reponse.total || 0;
+            if (total > 0) {
+              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+            }
+
+            var reponseOuverte = reponse.reponseOuverte || '';
+            if (reponseOuverte && reponseOuverte.trim() !== '') {
+              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
+            } else if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+
+            var annotations = reponse.annotations || '';
+            if (annotations && annotations.trim() !== '') {
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+            } else {
+              annoteHtml = '<span class="badge-icone">Non annoté</span>';
+            }
+          } else {
+            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+            if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+            annoteHtml = '<span class="badge-icone">Non annoté</span>';
+          }
+
+          metaHtml = resultatHtml + questionHtml + annoteHtml;
+        }
+
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label visible">Lu le</span>';
+            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre visible">
+              <strong>À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        html += `
+          <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
+            <div class="infos">
+              <div class="titre">${post.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${post.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+          </div>
+        `;
+      });
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function afficherVide() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('contenu').innerHTML = `
+        <div class="vide">
+          <span class="icone">📭</span>
+          <h2>Aucune méditation disponible</h2>
+          <p>De nouvelles méditations seront ajoutées prochainement.</p>
+          <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+        </div>
+      `;
+      document.getElementById('tabsContainer').innerHTML = '';
+    }
+
+    function demarrer() {
+      chargerTableauDeBord();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
