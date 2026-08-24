@@ -188,6 +188,64 @@ var DataManager = {
         return '';
     },
 
+    // ============================================================
+    // NOUVELLES MÉTHODES - DONNÉES DE LA FEUILLE "Inscrits"
+    // ============================================================
+
+    getDateInscription: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return null;
+        var cache = this.getCacheForce(id);
+        if (cache && cache.dateInscription) {
+            return cache.dateInscription;
+        }
+        return null;
+    },
+
+    getContact: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        var cache = this.getCacheForce(id);
+        if (cache && cache.contact) {
+            return cache.contact;
+        }
+        return '';
+    },
+
+    getMessagePerso: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        var cache = this.getCacheForce(id);
+        if (cache && cache.messagePerso) {
+            return cache.messagePerso;
+        }
+        return '';
+    },
+
+    getDisciplines: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        var cache = this.getCacheForce(id);
+        if (cache && cache.disciplines) {
+            return cache.disciplines;
+        }
+        return '';
+    },
+
+    getMdp: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        var cache = this.getCacheForce(id);
+        if (cache && cache.mdp) {
+            return cache.mdp;
+        }
+        return '';
+    },
+
+    // ============================================================
+    // FIN NOUVELLES MÉTHODES
+    // ============================================================
+
     getAnnotations: function(articleId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
@@ -468,6 +526,32 @@ function getNiveauEtudiant() {
 function getDescriptionNiveau() {
     return DataManager.getDescriptionNiveau();
 }
+
+// ============================================================
+// NOUVELLES FONCTIONS UTILITAIRES
+// ============================================================
+
+function getDateInscription() {
+    return DataManager.getDateInscription();
+}
+
+function getContact() {
+    return DataManager.getContact();
+}
+
+function getMessagePerso() {
+    return DataManager.getMessagePerso();
+}
+
+function getDisciplines() {
+    return DataManager.getDisciplines();
+}
+
+function getMdp() {
+    return DataManager.getMdp();
+}
+
+// ============================================================
 
 function getAnnotations(articleId) {
     return DataManager.getAnnotations(articleId);
