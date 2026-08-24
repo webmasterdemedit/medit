@@ -128,6 +128,43 @@
     var niveauEtudiant = 0;
     var categorieActuelle = 'toutes';
 
+    // ============================================================
+    // GESTION DE L'URL
+    // ============================================================
+    function getCategorieFromURL() {
+      var params = new URLSearchParams(window.location.search);
+      var cat = params.get('cat');
+      return cat || 'toutes';
+    }
+
+    function mettreAJourURL(categorie) {
+      var newUrl = window.location.pathname + '?cat=' + encodeURIComponent(categorie);
+      history.pushState({ categorie: categorie }, '', newUrl);
+    }
+
+    // Écouter le retour arrière (bouton précédent/suivant du navigateur)
+    window.addEventListener('popstate', function(event) {
+      if (event.state && event.state.categorie) {
+        var categorie = event.state.categorie;
+        categorieActuelle = categorie;
+        mettreAJourOngletsActifs(categorie);
+        var postsFiltres = filtrerPosts(categorie);
+        afficherPosts(postsFiltres);
+      }
+    });
+
+    function mettreAJourOngletsActifs(categorie) {
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.cat === categorie) {
+          el.classList.add('active');
+        }
+      });
+    }
+    // ============================================================
+    // FIN GESTION URL
+    // ============================================================
+
     function deconnecter() {
       if (confirm('Se déconnecter ?')) {
         localStorage.removeItem('etudiant_id');
@@ -182,10 +219,8 @@
     }
 
     function estPostLu(post) {
-      // Chercher par ID d'abord
       var reponse = toutesLesReponses[post.id];
       
-      // Fallback: chercher par titre si ID ne correspond pas
       if (!reponse) {
         for (var key in toutesLesReponses) {
           if (toutesLesReponses[key].titre === post.titre) {
@@ -207,10 +242,7 @@
     }
 
     function estPostAccessible(posts, index) {
-      // Premier post toujours accessible
       if (index === 0) return true;
-      
-      // Vérifier si le post précédent est validé
       var postPrecedent = posts[index - 1];
       return estPostLu(postPrecedent);
     }
@@ -239,7 +271,8 @@
           if (postsData.length === 0) {
             afficherVide();
           } else {
-            afficherCategories(postsData);
+            var categorieInitiale = getCategorieFromURL();
+            afficherCategories(postsData, categorieInitiale);
           }
         })
         .catch(function() {
@@ -248,7 +281,8 @@
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
             document.getElementById('totalPosts').textContent = postsData.length;
-            afficherCategories(postsData);
+            var categorieInitiale = getCategorieFromURL();
+            afficherCategories(postsData, categorieInitiale);
           } else {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('contenu').innerHTML = `
@@ -266,11 +300,10 @@
         });
     }
 
-    function afficherCategories(posts) {
+    function afficherCategories(posts, categorieActive) {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
 
-      // Compter les posts par catégorie
       var categories = {};
       var totalPosts = 0;
       
@@ -283,22 +316,19 @@
       
       var categoriesTriees = Object.keys(categories).sort();
 
-      // Générer les onglets de catégories (style exact des anciens "À lire"/"Lus")
       var tabsHtml = '';
       
-      // Onglet "Toutes"
       tabsHtml += `
-        <button class="tab-btn active" data-cat="toutes" onclick="switchCategorie('toutes')">
+        <button class="tab-btn ${categorieActive === 'toutes' ? 'active' : ''}" data-cat="toutes" onclick="switchCategorie('toutes')">
           Toutes
           <span class="compteur-tab">${totalPosts}</span>
         </button>
       `;
       
-      // Onglets par catégorie
       categoriesTriees.forEach(function(cat) {
         var count = categories[cat].length;
         tabsHtml += `
-          <button class="tab-btn" data-cat="${cat}" onclick="switchCategorie('${cat}')">
+          <button class="tab-btn ${categorieActive === cat ? 'active' : ''}" data-cat="${cat}" onclick="switchCategorie('${cat}')">
             ${cat}
             <span class="compteur-tab">${count}</span>
           </button>
@@ -307,13 +337,13 @@
       
       document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
-      // Afficher les posts de la première catégorie (Toutes)
-      var postsFiltres = filtrerPosts('toutes');
+      var postsFiltres = filtrerPosts(categorieActive);
       afficherPosts(postsFiltres);
     }
 
     function switchCategorie(categorie) {
       categorieActuelle = categorie;
+      mettreAJourURL(categorie);
 
       document.querySelectorAll('.tab-btn').forEach(function(el) {
         el.classList.remove('active');
@@ -335,7 +365,6 @@
         resultats.push(post);
       });
 
-      // Tri alphabétique par titre
       resultats.sort(function(a, b) {
         return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
       });
@@ -364,7 +393,6 @@
         var post = posts[i];
         var reponse = toutesLesReponses[post.id];
         
-        // Fallback par titre
         if (!reponse) {
           for (var key in toutesLesReponses) {
             if (toutesLesReponses[key].titre === post.titre) {
@@ -385,15 +413,16 @@
           dateValidation = reponse.date || '';
           retenir = reponse.retenir || '';
 
+          // ✅ CORRECTION ICI : estLu doit être true quand le quiz est réussi
           if (total === 1 && bonnes === 1) {
             estLu = true;
             estValide = true;
           } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estLu = true;  // ← LIGNE AJOUTÉE
             estValide = true;
           }
         }
 
-        // Vérifier si le post est accessible (blocage séquentiel)
         var estAccessible = estPostAccessible(posts, i);
         var estBloque = !estAccessible;
 
@@ -407,7 +436,7 @@
 
         var metaHtml = '';
 
-        // Si le post est lu, afficher les infos de validation (comme avant dans l'onglet "Lus")
+        // Si le post est lu, afficher les infos de validation
         if (estLu) {
           var resultatHtml = '';
           var questionHtml = '';
@@ -443,7 +472,6 @@
 
           metaHtml = resultatHtml + questionHtml + annoteHtml;
         } else {
-          // Si non lu, afficher le nombre de questions
           metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
         }
 
@@ -476,7 +504,6 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-        // Style de la carte selon blocage
         var carteStyle = '';
         var iconeCadenas = '';
         var onclickAction = '';
