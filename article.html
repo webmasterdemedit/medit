@@ -644,135 +644,179 @@
     // PARSEUR - AVEC ORDRE ET CARTES ANKI
     // ============================================================
     function parserContenu(texte) {
-      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
-      if (!texte) return result;
-      texte = texte.replace(/\s*\|\s*/g, ' ');
-      texte = texte.replace(/\|\s*$/gm, '');
-      texte = texte.replace(/^\s*\|\s*/gm, '');
-      texte = texte.replace(/\s{2,}/g, ' ');
+  var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
+  if (!texte) return result;
+  
+  // Nettoyer le texte
+  texte = texte.replace(/\s*\|\s*/g, ' ');
+  texte = texte.replace(/\|\s*$/gm, '');
+  texte = texte.replace(/^\s*\|\s*/gm, '');
+  texte = texte.replace(/\s{2,}/g, ' ');
 
-      var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-', '-o-', '-cr-', '-cv-'];
-      var indices = [];
-      for (var p = 0; p < patterns.length; p++) {
-        var pos = texte.indexOf(patterns[p]);
-        while (pos !== -1) {
-          indices.push({ pos: pos, pattern: patterns[p] });
-          pos = texte.indexOf(patterns[p], pos + 1);
-        }
+  // Découper par espaces pour trouver les marqueurs
+  var mots = texte.split(' ');
+  var elements = [];
+  var current = '';
+  
+  for (var i = 0; i < mots.length; i++) {
+    var mot = mots[i];
+    // Si c'est un marqueur, on commence un nouvel élément
+    if (mot.startsWith('-s-') || mot.startsWith('-q-') || mot.startsWith('-v-') || 
+        mot.startsWith('-f-') || mot.startsWith('-qs-') || mot.startsWith('-r-') || 
+        mot.startsWith('-i-') || mot.startsWith('-o-') || mot.startsWith('-cr-') || 
+        mot.startsWith('-cv-') || mot.match(/^-\d+-/)) {
+      if (current) {
+        elements.push(current.trim());
       }
-      indices.sort(function(a, b) { return a.pos - b.pos; });
+      current = mot;
+    } else {
+      current += ' ' + mot;
+    }
+  }
+  if (current) {
+    elements.push(current.trim());
+  }
 
-      var elements = [];
-      for (var i = 0; i < indices.length; i++) {
-        var start = indices[i].pos;
-        var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
-        var element = texte.substring(start, end).trim();
-        if (element) elements.push(element);
+  var quizCourant = null;
+  var ordreEnCours = false;
+  var ordreElements = [];
+  var carteRecto = null;
+
+  for (var i = 0; i < elements.length; i++) {
+    var ligne = elements[i].trim();
+    if (!ligne) continue;
+
+    // === SLIDE ===
+    if (ligne.startsWith('-s-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
       }
+      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+      continue;
+    }
 
-      var quizCourant = null;
-      var ordreEnCours = null;
-      var ordreElements = [];
-      var carteRecto = null;
-
-      for (var i = 0; i < elements.length; i++) {
-        var ligne = elements[i].trim();
-        if (!ligne) continue;
-
-        // === SLIDE ===
-        if (ligne.startsWith('-s-')) {
-          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
-          continue;
-        }
-
-        // === QUIZ QCM ===
-        if (ligne.startsWith('-q-')) {
-          if (quizCourant && quizCourant.reponses.length > 0) {
-            result.quizs.push(quizCourant);
-          }
-          quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-          continue;
-        }
-        if (ligne.startsWith('-v-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
-          }
-          continue;
-        }
-        if (ligne.startsWith('-f-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
-          }
-          continue;
-        }
-
-        // === QUESTION OUVERTE ===
-        if (ligne.startsWith('-qs-')) {
-          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
-          continue;
-        }
-
-        // === ORDRE (-o-) ===
-        if (ligne.startsWith('-o-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-          }
-          ordreEnCours = true;
-          ordreElements = [];
-          continue;
-        }
-
-        // Éléments d'ordre (-1-, -2-, -3-, ...)
-        if (ligne.match(/^-\d+-/)) {
-          if (ordreEnCours) {
-            ordreElements.push(ligne);
-          }
-          continue;
-        }
-
-        // === CARTES ANKI ===
-        if (ligne.startsWith('-cr-')) {
-          carteRecto = ligne.replace('-cr-', '').trim() || 'Question';
-          continue;
-        }
-        if (ligne.startsWith('-cv-')) {
-          if (carteRecto !== null) {
-            var verso = ligne.replace('-cv-', '').trim() || 'Réponse';
-            result.cartes.push({ recto: carteRecto, verso: verso });
-            carteRecto = null;
-          }
-          continue;
-        }
-
-        // === RETENIR ===
-        if (ligne.startsWith('-r-')) {
-          var retenirText = ligne.replace('-r-', '').trim();
-          if (retenirText) {
-            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
-            result.retenir = mots.filter(function(m) { return m.length > 0; });
-          }
-          continue;
-        }
-
-        // === INFORMATION ===
-        if (ligne.startsWith('-i-')) {
-          continue;
-        }
+    // === QUIZ QCM ===
+    if (ligne.startsWith('-q-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
       }
-
-      // Fin des quiz
       if (quizCourant && quizCourant.reponses.length > 0) {
         result.quizs.push(quizCourant);
       }
-
-      // Fin de l'ordre
-      if (ordreEnCours && ordreElements.length > 0) {
-        result.ordres.push({ elements: ordreElements.slice() });
+      quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+      continue;
+    }
+    if (ligne.startsWith('-v-')) {
+      if (quizCourant) {
+        quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
       }
-
-      return result;
+      continue;
+    }
+    if (ligne.startsWith('-f-')) {
+      if (quizCourant) {
+        quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
+      }
+      continue;
     }
 
+    // === QUESTION OUVERTE ===
+    if (ligne.startsWith('-qs-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
+      continue;
+    }
+
+    // === ORDRE (-o-) ===
+    if (ligne.startsWith('-o-')) {
+      // Vider l'ordre précédent
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+      }
+      ordreEnCours = true;
+      ordreElements = [];
+      continue;
+    }
+
+    // Éléments d'ordre (-1-, -2-, -3-, ...)
+    if (ligne.match(/^-\d+-/)) {
+      if (ordreEnCours) {
+        ordreElements.push(ligne);
+      }
+      continue;
+    }
+
+    // === CARTES ANKI ===
+    if (ligne.startsWith('-cr-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      carteRecto = ligne.replace('-cr-', '').trim() || 'Question';
+      continue;
+    }
+    if (ligne.startsWith('-cv-')) {
+      if (carteRecto !== null) {
+        var verso = ligne.replace('-cv-', '').trim() || 'Réponse';
+        result.cartes.push({ recto: carteRecto, verso: verso });
+        carteRecto = null;
+      }
+      continue;
+    }
+
+    // === RETENIR ===
+    if (ligne.startsWith('-r-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      var retenirText = ligne.replace('-r-', '').trim();
+      if (retenirText) {
+        var mots2 = retenirText.split(',').map(function(m) { return m.trim(); });
+        result.retenir = mots2.filter(function(m) { return m.length > 0; });
+      }
+      continue;
+    }
+
+    // === INFORMATION ===
+    if (ligne.startsWith('-i-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      continue;
+    }
+  }
+
+  // Fin des quiz
+  if (quizCourant && quizCourant.reponses.length > 0) {
+    result.quizs.push(quizCourant);
+  }
+
+  // Fin de l'ordre
+  if (ordreEnCours && ordreElements.length > 0) {
+    result.ordres.push({ elements: ordreElements.slice() });
+  }
+
+  return result;
+}
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
