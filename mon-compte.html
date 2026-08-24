@@ -36,8 +36,9 @@
 
     .champ-compte .label {
       font-size: 14px;
-      min-width: 140px;
+      min-width: 160px;
       color: var(--text-secondary);
+      flex-shrink: 0;
     }
 
     .champ-compte .valeur {
@@ -291,7 +292,7 @@
       color: var(--text-secondary);
     }
 
-    /* === ONGLETS (hérités du thème via structure.css) === */
+    /* === ONGLETS === */
     .tabs-compte {
       display: flex;
       gap: 4px;
@@ -332,6 +333,12 @@
       display: block;
     }
 
+    .ligne-separatrice {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 16px 0;
+    }
+
     /* === RESPONSIVE === */
     @media (max-width: 640px) {
       .carte-compte { padding: 18px 16px; }
@@ -344,6 +351,7 @@
       .stat-card .nombre { font-size: 22px; }
       .histo-item { flex-wrap: wrap; gap: 4px; }
       .histo-item .detail { flex-wrap: wrap; }
+      .champ-compte .label { min-width: 120px; }
     }
   </style>
 </head>
@@ -439,6 +447,12 @@
     var descriptionNiveau = '';
     var identifiant = '';
 
+    // Données de la feuille Inscrits
+    var dateInscription = '';
+    var contact = '';
+    var disciplines = '';
+    var messagePerso = '';
+
     // ============================================================
     // GESTION DE L'URL POUR LES ONGLETS
     // ============================================================
@@ -453,11 +467,10 @@
       history.pushState({ tab: tab }, '', newUrl);
     }
 
-    // Écouter le retour arrière (bouton précédent/suivant du navigateur)
     window.addEventListener('popstate', function(event) {
       if (event.state && event.state.tab) {
         var tab = event.state.tab;
-        activerOnglet(tab, false); // false = ne pas mettre à jour l'URL (déjà fait par popstate)
+        activerOnglet(tab, false);
       }
     });
 
@@ -468,29 +481,24 @@
       activerOnglet(tabId, true);
     }
 
-    function activerOnglet(tabId, mettreAJour = true) {
-      // Cacher tous les contenus
+    function activerOnglet(tabId, mettreAJour) {
       document.querySelectorAll('.tab-content-compte').forEach(function(el) {
         el.classList.remove('active');
       });
 
-      // Désactiver tous les onglets
       document.querySelectorAll('.tab-compte').forEach(function(el) {
         el.classList.remove('active');
       });
 
-      // Afficher le contenu sélectionné
       var content = document.getElementById('tab-' + tabId);
       if (content) content.classList.add('active');
 
-      // Activer l'onglet
       document.querySelectorAll('.tab-compte').forEach(function(el) {
         if (el.dataset.tab === tabId) {
           el.classList.add('active');
         }
       });
 
-      // Mettre à jour l'URL si demandé
       if (mettreAJour) {
         mettreAJourURL(tabId);
       }
@@ -512,13 +520,17 @@
           niveauEtudiant = data.niveau || 0;
           toutesLesReponses = data.reponses || [];
           descriptionNiveau = data.description || 'Aucune description.';
-          
-          // Afficher le contenu
+
+          // Récupérer les données de la feuille Inscrits
+          dateInscription = data.dateInscription || 'Non renseignée';
+          contact = data.contact || 'Non renseigné';
+          disciplines = data.disciplines || 'Non renseigné';
+          messagePerso = data.messagePerso || 'Aucun message';
+
           afficherProfil();
           afficherActivite();
           afficherHistorique();
 
-          // Activer l'onglet depuis l'URL
           var tabFromURL = getTabFromURL();
           activerOnglet(tabFromURL, false);
         })
@@ -528,6 +540,12 @@
             niveauEtudiant = cache.niveau || 0;
             toutesLesReponses = cache.reponses || [];
             descriptionNiveau = cache.description || 'Aucune description.';
+
+            dateInscription = cache.dateInscription || 'Non renseignée';
+            contact = cache.contact || 'Non renseigné';
+            disciplines = cache.disciplines || 'Non renseigné';
+            messagePerso = cache.messagePerso || 'Aucun message';
+
             afficherProfil();
             afficherActivite();
             afficherHistorique();
@@ -549,20 +567,92 @@
     }
 
     // ============================================================
-    // AFFICHER PROFIL
+    // FORMATER UNE DATE
+    // ============================================================
+    function formaterDate(dateStr) {
+      if (!dateStr || dateStr === 'Non renseignée') return dateStr;
+      try {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return dateStr;
+        return d.toLocaleDateString('fr-FR', {
+          day: '2-digit',
+          month: 'long',
+          year: 'numeric'
+        });
+      } catch(e) {
+        return dateStr;
+      }
+    }
+
+    // ============================================================
+    // AFFICHER PROFIL - AVEC TOUTES LES DONNÉES
     // ============================================================
     function afficherProfil() {
+      var dateFormatee = formaterDate(dateInscription);
+
       var html = '';
 
+      // === IDENTIFIANT ===
       html += `
         <div class="champ-compte">
           <span class="label">Identifiant</span>
           <span class="valeur">${identifiant}</span>
         </div>
+      `;
+
+      // === CONTACT (email ou téléphone) ===
+      if (contact && contact !== 'Non renseigné') {
+        html += `
+          <div class="champ-compte">
+            <span class="label">Contact</span>
+            <span class="valeur">${contact}</span>
+          </div>
+        `;
+      }
+
+      // === DISCIPLINES ===
+      if (disciplines && disciplines !== 'Non renseigné') {
+        html += `
+          <div class="champ-compte">
+            <span class="label">Disciplines</span>
+            <span class="valeur">${disciplines}</span>
+          </div>
+        `;
+      }
+
+      // === DATE D'INSCRIPTION ===
+      html += `
+        <div class="champ-compte">
+          <span class="label">Date d'inscription</span>
+          <span class="valeur">${dateFormatee}</span>
+        </div>
+      `;
+
+      // === MESSAGE PERSONNEL ===
+      if (messagePerso && messagePerso !== 'Aucun message') {
+        html += `
+          <div class="champ-compte" style="flex-direction:column;align-items:flex-start;gap:6px;padding:12px 0;">
+            <span class="label" style="min-width:auto;">Message personnel</span>
+            <span class="valeur" style="text-align:left;max-width:100%;width:100%;font-style:italic;font-weight:400;color:var(--text-secondary);">
+              "${messagePerso}"
+            </span>
+          </div>
+        `;
+      }
+
+      // === SÉPARATEUR ===
+      html += `<hr class="ligne-separatrice">`;
+
+      // === TEXTES DISPONIBLES ===
+      html += `
         <div class="champ-compte">
           <span class="label">Textes disponibles</span>
           <span class="valeur">${DataManager.posts ? DataManager.posts.length : '—'}</span>
         </div>
+      `;
+
+      // === NIVEAU ===
+      html += `
         <div class="niveau-section">
           <div class="niveau-titre">Votre niveau actuel</div>
           <div class="niveau-valeur">
@@ -639,6 +729,9 @@
             <span class="nombre">${taux}%</span>
             <span class="label">Taux de réussite</span>
           </div>
+        </div>
+        <div style="text-align:center;margin-top:8px;font-size:13px;color:var(--text-secondary);">
+          Temps total passé : ${tempsFormate}
         </div>
       `;
 
@@ -750,6 +843,11 @@
           niveauEtudiant = data.niveau || 0;
           toutesLesReponses = data.reponses || [];
           descriptionNiveau = data.description || 'Aucune description.';
+
+          dateInscription = data.dateInscription || 'Non renseignée';
+          contact = data.contact || 'Non renseigné';
+          disciplines = data.disciplines || 'Non renseigné';
+          messagePerso = data.messagePerso || 'Aucun message';
 
           afficherProfil();
           afficherActivite();
