@@ -1,286 +1,985 @@
-/* ============================================================
-   THEME - LISEUSE NOIR & BLANC ABSOLU
-   Avec mode sombre automatique
-   ============================================================ */
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#121212" />
+  <title>Lecture</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
 
-:root {
-  --bg: #ffffff;
-  --bg-hover: #f5f5f5;
-  --bg-active: #e8e8e8;
-  --text: #111111;
-  --text-secondary: #444444;
-  --text-muted: #777777;
-  --border: #cccccc;
-  --border-hover: #aaaaaa;
-  --font-serif: Georgia, 'Times New Roman', serif;
-  --font-sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
-}
+  <style>
+    .slide-wrapper {
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+    }
+    .slide-wrapper.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .slides-container {
+      position: relative;
+      overflow: hidden;
+      height: 70vh;
+      max-height: 600px;
+      min-height: 300px;
+      border-radius: 0;
+      background: var(--bg);
+      margin-bottom: 16px;
+    }
+    .slide-content {
+      padding: 40px 50px;
+      height: 100%;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      text-align: justify;
+      word-wrap: break-word;
+    }
+    .slide-content p {
+      margin: 0 0 12px 0;
+      line-height: 1.8;
+      font-family: 'Merriweather', serif;
+      font-weight: 300;
+      text-align: justify;
+    }
+    .pagination-text {
+      text-align: center;
+      margin-top: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      color: var(--text-secondary);
+    }
+    .note-toggle {
+      position: absolute;
+      bottom: 16px;
+      left: 16px;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-secondary);
+      z-index: 10;
+      transition: all 0.2s;
+    }
+    .note-toggle:hover {
+      color: var(--text);
+    }
+    .note-toggle.active {
+      color: var(--text);
+    }
+    .note-area {
+      position: absolute;
+      bottom: 60px;
+      left: 16px;
+      right: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      display: none;
+      z-index: 10;
+    }
+    .note-area.visible {
+      display: block;
+    }
+    .note-area textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      resize: vertical;
+      min-height: 60px;
+      max-height: 120px;
+      outline: none;
+      padding: 4px 0;
+    }
+    .note-area textarea::placeholder {
+      color: var(--text-muted);
+    }
+    .note-area .note-indicator {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+      font-family: 'Inter', sans-serif;
+    }
+    .note-area .note-indicator.saved {
+      color: var(--text);
+    }
+    .quiz-content .quiz-question {
+      font-size: 20px;
+      font-weight: 500;
+      margin-bottom: 24px;
+      font-family: 'Inter', sans-serif;
+      text-align: left;
+    }
+    .quiz-reponses {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .quiz-reponse {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .quiz-reponse:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+    }
+    .quiz-reponse .lettre {
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 24px;
+    }
+    .quiz-reponse .result-icon {
+      margin-left: auto;
+      font-size: 18px;
+    }
+    .quiz-reponse.correcte {
+      border-color: var(--text);
+      background: var(--bg-active);
+    }
+    .quiz-reponse.incorrecte {
+      border-color: var(--border-hover);
+      background: var(--bg-hover);
+    }
+    .quiz-reponse.selectionnee {
+      border-color: var(--text);
+      background: var(--bg-active);
+    }
+    .quiz-feedback {
+      margin-top: 16px;
+      padding: 12px 16px;
+      display: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .quiz-feedback.visible {
+      display: block;
+    }
+    .bonne-reponse {
+      color: var(--text);
+    }
+    .mauvaise-reponse {
+      color: var(--text-secondary);
+    }
+    .btn-continuer {
+      margin-top: 20px;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: none;
+      align-self: center;
+    }
+    .btn-continuer.visible {
+      display: inline-block;
+    }
+    .btn-continuer:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .btn-fermer-slide {
+      margin-top: 12px;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+      align-self: center;
+    }
+    .btn-fermer-slide:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .open-content .open-question-text {
+      font-size: 18px;
+      font-weight: 500;
+      margin-bottom: 16px;
+      font-family: 'Inter', sans-serif;
+      text-align: left;
+    }
+    .open-content textarea {
+      width: 100%;
+      min-height: 100px;
+      padding: 12px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      resize: vertical;
+      outline: none;
+    }
+    .open-content textarea:focus {
+      border-color: var(--text);
+    }
+    .btn-envoyer-reponse {
+      margin-top: 12px;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: flex-start;
+    }
+    .btn-envoyer-reponse:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .btn-envoyer-reponse:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .reponse-confirmation {
+      margin-top: 12px;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      display: none;
+    }
+    .reponse-confirmation.visible {
+      display: block;
+    }
+    .retenir-content .retenir-label {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+    }
+    .retenir-mots {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+    }
+    .retenir-mot {
+      background: var(--bg-hover);
+      color: var(--text);
+      padding: 8px 20px;
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+    }
+    .lecture-error {
+      text-align: center;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    .lecture-error .icone {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .lecture-error h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .lecture-error p {
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .btn-retour {
+      display: inline-block;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-retour:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .lecture-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 12px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-secondary);
+    }
+    .lecture-loader .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .slide-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .slide-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slide-content::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
+    .slide-content::-webkit-scrollbar-thumb:hover {
+      background: var(--border-hover);
+    }
+  </style>
+</head>
+<body>
 
-/* ===== MODE SOMBRE AUTO ===== */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --bg-hover: #2a2a2a;
-    --bg-active: #333333;
-    --text: #e8e8e8;
-    --text-secondary: #aaaaaa;
-    --text-muted: #777777;
-    --border: #3d3d3d;
-    --border-hover: #555555;
-  }
-}
+  <header class="lecture-header">
+    <div class="meta-left">
+      <div class="cat-niveau">
+        <span id="metaCategorie">—</span> · <span id="metaNiveau">Niveau —</span>
+      </div>
+      <div class="titre" id="metaTitre">Chargement...</div>
+    </div>
+    <div class="actions">
+      <span class="badge-statut" id="badgeStatut"></span>
+      <button class="btn-close" id="btnFermer">✕</button>
+    </div>
+  </header>
 
-/* ===== BASE ===== */
-html, body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-serif);
-  font-size: 18px;
-  line-height: 1.7;
-  margin: 0;
-  padding: 0;
-}
+  <div class="slides-container" id="slidesContainer">
+    <div class="lecture-loader" id="lectureLoader">
+      <div class="spinner"></div>
+      <span>Chargement...</span>
+    </div>
+  </div>
 
-/* ===== TOUT EN BLANC ===== */
-body * {
-  background: var(--bg);
-  color: var(--text);
-  border-color: var(--border);
-}
+  <div class="pagination-text" id="pagination">1 / 1</div>
 
-/* ===== BORDURES CARRÉES ===== */
-.carte-post, .modal-content, .search-bar, .tabs-container, 
-.section-block, .composer-content, .annotation-box,
-.stats, .hero, .vide, .presentation-card, .methode-card,
-.blog-article, .post-footer, .header-admin, .filtres-container {
-  border: 1px solid var(--border);
-  border-radius: 0 !important;
-  box-shadow: none !important;
-}
+  <script>
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
 
-/* ===== TYPOGRAPHIE ===== */
-h1, h2, h3, h4, p, .titre, .hero .logo, .blog-article h1,
-.presentation-titre, .methode-titre, .carte-post .titre,
-.modal-content h2, .header-admin h1 {
-  color: var(--text);
-  font-family: var(--font-serif);
-}
+    var etat = {
+      postId: null,
+      post: null,
+      slides: [],
+      currentIndex: 0,
+      reponsesQuiz: {},
+      totalBonnes: 0,
+      totalQuestions: 0,
+      statutFinal: null,
+      enTransition: false,
+      notes: {}
+    };
 
-.meta, .badge, .post-label, .tab-btn, .stat-item,
-.footer-copy, .header-link, .description, .sous-titre,
-.ordre-badge, .methode-num, .slide-num, .page-num {
-  color: var(--text-secondary);
-  font-family: var(--font-sans);
-}
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+      if (!id) { afficherErreur('Aucun identifiant.'); return; }
+      etat.postId = id;
+      chargerPost(id);
+    });
 
-/* ===== HEADER & FOOTER ===== */
-.site-header, .lecture-header, .site-footer {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
-}
-.site-footer {
-  border-top: 1px solid var(--border);
-}
+    function chargerPost(id) {
+      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
+        .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
+        .then(function(data) {
+          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
+          etat.post = data.post;
+          preparerSlides(etat.post);
+          recupererNotes();
+          afficherSlides();
+        })
+        .catch(function(error) { afficherErreur(error.message); });
+    }
 
-/* ===== LIENS ===== */
-a, .header-link, .carte-post .titre a {
-  color: var(--text);
-  text-decoration: none;
-  border-bottom: 1px solid transparent;
-}
-a:hover, .header-link:hover, .carte-post .titre a:hover {
-  border-bottom-color: var(--text);
-}
+    function recupererNotes() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.articleId === etat.postId; });
+            if (reponse && reponse.annotations) {
+              var parts = reponse.annotations.split('|');
+              for (var i = 0; i < parts.length; i++) {
+                var kv = parts[i].split(':');
+                if (kv.length === 2 && kv[0].startsWith('slide')) {
+                  var slideNum = parseInt(kv[0].replace('slide', ''));
+                  etat.notes[slideNum] = kv[1];
+                }
+              }
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur récupération notes:', e); });
+    }
 
-/* ===== BOUTONS ===== */
-.btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer,
-.btn-ajout, .btn-export-all, .btn-categories, .carte-post .btn-lire,
-.btn-composer, .btn-add, .btn-groupe .btn, .btn-retour, .btn-footer,
-.filtre-cat-btn, .tab-btn, .resultat-actions button, .btn-add-section {
-  background: transparent;
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: 0 !important;
-  font-family: var(--font-sans);
-  padding: 6px 16px;
-  transition: all 0.15s;
-}
-.btn-entrer:hover, .btn-submit:hover, .btn-nav:hover,
-.btn-primary:hover, .btn-fermer:hover, .btn-ajout:hover,
-.btn-export-all:hover, .btn-categories:hover, .carte-post .btn-lire:hover,
-.btn-composer:hover, .btn-add:hover, .btn-groupe .btn:hover,
-.btn-retour:hover, .btn-footer:hover, .filtre-cat-btn:hover,
-.tab-btn:hover, .resultat-actions button:hover, .btn-add-section:hover {
-  background: var(--bg-hover);
-  color: var(--text);
-  border-color: var(--border-hover);
-}
-.btn-groupe .btn-brouillon.active {
-  background: var(--bg-active);
-  color: var(--text);
-}
+    function parserContenu(texte) {
+      var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
+      if (!texte) return result;
+      texte = texte.replace(/\s*\|\s*/g, ' ');
+      texte = texte.replace(/\|\s*$/gm, '');
+      texte = texte.replace(/^\s*\|\s*/gm, '');
+      texte = texte.replace(/\s{2,}/g, ' ');
+      var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
+      var indices = [];
+      for (var p = 0; p < patterns.length; p++) {
+        var pos = texte.indexOf(patterns[p]);
+        while (pos !== -1) {
+          indices.push({ pos: pos, pattern: patterns[p] });
+          pos = texte.indexOf(patterns[p], pos + 1);
+        }
+      }
+      indices.sort(function(a, b) { return a.pos - b.pos; });
+      var elements = [];
+      for (var i = 0; i < indices.length; i++) {
+        var start = indices[i].pos;
+        var end = (i + 1 < indices.length) ? indices[i + 1].pos : texte.length;
+        var element = texte.substring(start, end).trim();
+        if (element) elements.push(element);
+      }
+      var quizCourant = null;
+      for (var i = 0; i < elements.length; i++) {
+        var ligne = elements[i].trim();
+        if (!ligne) continue;
+        if (ligne.startsWith('-s-')) {
+          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+          continue;
+        }
+        if (ligne.startsWith('-q-')) {
+          if (quizCourant && quizCourant.reponses.length > 0) {
+            result.quizs.push(quizCourant);
+          }
+          quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+          continue;
+        }
+        if (ligne.startsWith('-v-')) {
+          if (quizCourant) {
+            quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
+          }
+          continue;
+        }
+        if (ligne.startsWith('-f-')) {
+          if (quizCourant) {
+            quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
+          }
+          continue;
+        }
+        if (ligne.startsWith('-qs-')) {
+          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
+          continue;
+        }
+        if (ligne.startsWith('-r-')) {
+          var retenirText = ligne.replace('-r-', '').trim();
+          if (retenirText) {
+            var mots = retenirText.split(',').map(function(m) { return m.trim(); });
+            result.retenir = mots.filter(function(m) { return m.length > 0; });
+          }
+          continue;
+        }
+        if (ligne.startsWith('-i-')) {
+          continue;
+        }
+      }
+      if (quizCourant && quizCourant.reponses.length > 0) {
+        result.quizs.push(quizCourant);
+      }
+      return result;
+    }
 
-/* ===== BADGES ===== */
-.badge, .badge.valide, .badge.lu, .badge.a-faire, .badge.non-vu,
-.post-label {
-  background: var(--bg-hover);
-  color: var(--text-secondary);
-  border: 1px solid var(--border);
-  border-radius: 0 !important;
-  padding: 2px 12px;
-  font-family: var(--font-sans);
-  font-size: 0.8em;
-}
+    function preparerSlides(post) {
+      var slides = [];
+      var contenu = post.contenu || '';
+      var parsed = parserContenu(contenu);
+      parsed.slides.forEach(function(s) {
+        slides.push({ type: 'slide', contenu: s.contenu });
+      });
+      parsed.quizs.forEach(function(q) {
+        slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
+      });
+      parsed.openQuestions.forEach(function(q) {
+        slides.push({ type: 'open', question: q, index: slides.length });
+      });
+      if (parsed.retenir && parsed.retenir.length > 0) {
+        slides.push({ type: 'retenir', mots: parsed.retenir });
+      }
+      etat.slides = slides;
+    }
 
-/* ===== FILTRES & ONGLETS ===== */
-.filtre-cat-btn, .tab-btn {
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
-  color: var(--text-secondary);
-  padding: 6px 0;
-  margin-right: 20px;
-}
-.filtre-cat-btn:hover, .tab-btn:hover {
-  color: var(--text);
-}
-.filtre-cat-btn.active, .tab-btn.active {
-  color: var(--text);
-  border-bottom-color: var(--text);
-}
-.tabs-container {
-  border-bottom: 1px solid var(--border);
-}
+    function ajusterTaillePolice(slideContent) {
+      if (!slideContent) return;
+      var text = slideContent.textContent || '';
+      var length = text.length;
+      var fontSize = 20;
+      if (length > 500) fontSize = 17;
+      if (length > 800) fontSize = 15;
+      if (length > 1200) fontSize = 13;
+      if (length > 1800) fontSize = 12;
+      slideContent.style.fontSize = fontSize + 'px';
+      slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
+    }
 
-/* ===== MODALES ===== */
-.modal-overlay {
-  background: rgba(0,0,0,0.2);
-}
-.modal-content {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  box-shadow: none !important;
-}
+    function afficherSlides() {
+      var container = document.getElementById('slidesContainer');
+      var post = etat.post;
+      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
+      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
+      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+      if (etat.slides.length === 0) {
+        container.innerHTML = '<div class="lecture-error"><div class="icone">📖</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
+        return;
+      }
+      var html = '';
+      etat.slides.forEach(function(slide, index) {
+        var activeClass = index === 0 ? ' active' : '';
+        html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
+        html += '<div class="slide-content';
+        if (slide.type === 'quiz') html += ' quiz-content';
+        else if (slide.type === 'open') html += ' open-content';
+        else if (slide.type === 'retenir') html += ' retenir-content';
+        html += '" id="slideContent-' + index + '">';
+        if (slide.type === 'slide') {
+          var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
+          html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
+        }
+        if (slide.type === 'quiz') {
+          html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
+          html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
+          var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+          slide.reponses.forEach(function(rep, ri) {
+            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
+            html += '<span class="lettre">' + lettres[ri] + '</span>';
+            html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
+            html += '<span class="result-icon"></span>';
+            html += '</div>';
+          });
+          html += '</div>';
+          html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
+          html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
+          html += '</div>';
+          html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+        }
+        if (slide.type === 'open') {
+          html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
+          html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
+          html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
+          html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+        }
+        if (slide.type === 'retenir') {
+          html += '<div class="retenir-label">📌 À retenir</div>';
+          html += '<div class="retenir-mots">';
+          slide.mots.forEach(function(mot) {
+            if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+          });
+          html += '</div>';
+          html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+          html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+        }
+        html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✏️</div>';
+        html += '<div class="note-area" id="noteArea-' + index + '">';
+        html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
+        html += '<div class="note-indicator" id="noteIndicator-' + index + '">💾 Enregistrement automatique</div>';
+        html += '</div>';
+        html += '</div>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+      etat.slides.forEach(function(slide, index) {
+        var content = document.getElementById('slideContent-' + index);
+        if (content && slide.type === 'slide') {
+          ajusterTaillePolice(content);
+        }
+      });
+      for (var slideNum in etat.notes) {
+        var textarea = document.getElementById('noteText-' + slideNum);
+        if (textarea) {
+          textarea.value = etat.notes[slideNum];
+          var indicator = document.getElementById('noteIndicator-' + slideNum);
+          if (indicator) {
+            indicator.textContent = '✓ Note chargée';
+            indicator.className = 'note-indicator saved';
+          }
+        }
+      }
+      container.addEventListener('click', function(e) {
+        var target = e.target;
+        if (target.closest('.quiz-reponse') ||
+            target.closest('.btn-continuer') ||
+            target.closest('.btn-envoyer-reponse') ||
+            target.closest('textarea') ||
+            target.closest('.btn-fermer-slide') ||
+            target.closest('.note-toggle') ||
+            target.closest('.note-area')) {
+          return;
+        }
+        var rect = container.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var width = rect.width;
+        if (x < width * 0.2) {
+          slidePrecedente();
+        } else {
+          slideSuivante();
+        }
+      });
+      var scrollTimeout = null;
+      container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
+        if (e.deltaY > 0) {
+          slideSuivante();
+        } else {
+          slidePrecedente();
+        }
+      }, { passive: false });
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          slideSuivante();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          slidePrecedente();
+        }
+      });
+      document.getElementById('btnFermer').addEventListener('click', function() {
+        fermerLiseuse();
+      });
+      recupererStatutExistant();
+      mettreAJourPagination();
+    }
 
-/* ===== FORMULAIRES ===== */
-input, textarea, select, .search-bar input {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 0 !important;
-  padding: 8px 12px;
-  font-family: var(--font-sans);
-}
-input:focus, textarea:focus, select:focus {
-  border-color: var(--text);
-  outline: none;
-}
+    function toggleNote(index) {
+      var area = document.getElementById('noteArea-' + index);
+      var toggle = document.getElementById('noteToggle-' + index);
+      if (!area) return;
+      if (area.classList.contains('visible')) {
+        area.classList.remove('visible');
+        toggle.classList.remove('active');
+      } else {
+        area.classList.add('visible');
+        toggle.classList.add('active');
+        var textarea = document.getElementById('noteText-' + index);
+        if (textarea) textarea.focus();
+      }
+    }
 
-/* ===== CARTES ===== */
-.carte-post {
-  background: var(--bg);
-  border: 1px solid var(--border);
-}
-.carte-post:hover {
-  border-color: var(--border-hover);
-}
+    var timers = {};
 
-/* ===== LECTURE MODE - LE CŒUR ===== */
-.slides-container {
-  background: var(--bg);
-}
-.slide-content {
-  color: var(--text);
-  font-family: var(--font-serif);
-  font-size: 22px;
-  line-height: 2.2;
-  max-width: 700px;
-  margin: 0 auto;
-  padding: 20px 0;
-  text-align: justify;
-}
-.slide-content p {
-  margin-bottom: 1.5em;
-}
-.slide-content .slide-idee {
-  color: var(--text-secondary);
-  border-left: 2px solid var(--border);
-  padding-left: 20px;
-  font-style: italic;
-}
+    function autoSaveNote(index) {
+      if (timers[index]) clearTimeout(timers[index]);
+      var indicator = document.getElementById('noteIndicator-' + index);
+      if (indicator) {
+        indicator.textContent = '⏳ Enregistrement...';
+        indicator.className = 'note-indicator';
+      }
+      timers[index] = setTimeout(function() {
+        sauvegarderNote(index);
+      }, 2000);
+    }
 
-/* ===== QUIZ EN NOIR & BLANC ===== */
-.slide-content .quiz-question {
-  font-size: 20px;
-  margin-bottom: 20px;
-}
-.slide-content .quiz-reponse {
-  background: var(--bg);
-  border: 1px solid var(--border);
-  color: var(--text);
-  border-radius: 0 !important;
-  padding: 12px 18px;
-  cursor: pointer;
-  transition: all 0.15s;
-}
-.slide-content .quiz-reponse:hover {
-  background: var(--bg-hover);
-}
-.slide-content .quiz-reponse.selectionnee {
-  border-color: var(--text);
-  background: var(--bg-active);
-}
-.slide-content .quiz-reponse.correcte {
-  border-color: var(--text);
-  background: var(--bg-active);
-}
-.slide-content .quiz-reponse.incorrecte {
-  border-color: var(--text);
-  background: var(--bg-hover);
-}
-.slide-content .quiz-feedback .bonne-reponse,
-.slide-content .quiz-feedback .mauvaise-reponse {
-  color: var(--text);
-}
+    function sauvegarderNote(index) {
+      var textarea = document.getElementById('noteText-' + index);
+      if (!textarea) return;
+      var note = textarea.value.trim();
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&slide=' + encodeURIComponent(index) +
+        '&annotation=' + encodeURIComponent(note);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            if (data.success) {
+              indicator.textContent = '✓ Note sauvegardée';
+              indicator.className = 'note-indicator saved';
+              etat.notes[index] = note;
+            } else {
+              indicator.textContent = '⚠️ Erreur de sauvegarde';
+              indicator.className = 'note-indicator';
+            }
+          }
+        })
+        .catch(function() {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            indicator.textContent = '⚠️ Erreur réseau';
+            indicator.className = 'note-indicator';
+          }
+        });
+    }
 
-/* ===== PAGINATION ===== */
-.pagination {
-  color: var(--text-muted);
-  border: 1px solid var(--border);
-  font-family: var(--font-sans);
-  font-size: 13px;
-  padding: 6px 16px;
-}
+    function slideSuivante() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex >= etat.slides.length - 1) return;
+      var slide = etat.slides[etat.currentIndex];
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) return;
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (!btn || !btn.classList.contains('visible')) return;
+      }
+      if (slide.type === 'open') {
+        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
+        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
+      }
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
+      if (current) current.classList.remove('active');
+      if (next) next.classList.add('active');
+      etat.currentIndex++;
+      mettreAJourPagination();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
 
-/* ===== SCROLLBAR ===== */
-::-webkit-scrollbar-track {
-  background: var(--bg);
-}
-::-webkit-scrollbar-thumb {
-  background: var(--border);
-}
-::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
-}
+    function slidePrecedente() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex <= 0) return;
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
+      if (current) current.classList.remove('active');
+      if (prev) prev.classList.add('active');
+      etat.currentIndex--;
+      mettreAJourPagination();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
 
-/* ===== RESPONSIVE ===== */
-@media (max-width: 768px) {
-  body { font-size: 16px; }
-  .slide-content {
-    font-size: 19px;
-    line-height: 2;
-    padding: 10px 0;
-  }
-  .slide-content .quiz-question { font-size: 17px; }
-  .slide-content .quiz-reponse { font-size: 14px; padding: 10px 14px; }
-}
+    function mettreAJourPagination() {
+      var pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
+      }
+    }
 
-@media (max-width: 550px) {
-  body { font-size: 14px; }
-  .slide-content {
-    font-size: 17px;
-    line-height: 1.9;
-  }
-  .slide-content .quiz-question { font-size: 15px; }
-  .slide-content .quiz-reponse { font-size: 13px; padding: 8px 12px; }
-}
+    function selectionnerReponse(event, quizIndex, reponseIndex) {
+      event.stopPropagation();
+      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
+      if (!slide) return;
+      if (etat.reponsesQuiz[quizIndex]) return;
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      if (!slideEl) return;
+      var reponses = slideEl.querySelectorAll('.quiz-reponse');
+      var reponse = slide.reponses[reponseIndex];
+      reponses.forEach(function(el, idx) {
+        el.classList.remove('selectionnee');
+        if (idx === reponseIndex) el.classList.add('selectionnee');
+      });
+      etat.reponsesQuiz[quizIndex] = { reponseIndex: reponseIndex, correct: reponse.correct };
+      setTimeout(function() {
+        afficherFeedbackQuiz(quizIndex);
+      }, 300);
+    }
+
+    function afficherFeedbackQuiz(quizIndex) {
+      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
+      if (!slide) return;
+      var reponseData = etat.reponsesQuiz[quizIndex];
+      if (!reponseData) return;
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      if (!slideEl) return;
+      var reponses = slideEl.querySelectorAll('.quiz-reponse');
+      var feedback = document.getElementById('quizFeedback-' + quizIndex);
+      var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
+      var btnContinuer = document.getElementById('btnContinuer-' + quizIndex);
+      reponses.forEach(function(el, idx) {
+        el.classList.remove('correcte', 'incorrecte');
+        var icon = el.querySelector('.result-icon');
+        if (idx === reponseData.reponseIndex) {
+          if (reponseData.correct) { el.classList.add('correcte'); icon.textContent = '✓'; }
+          else { el.classList.add('incorrecte'); icon.textContent = '✗'; }
+        } else if (slide.reponses[idx] && slide.reponses[idx].correct) {
+          el.classList.add('correcte');
+          icon.textContent = '✓';
+        } else {
+          icon.textContent = '';
+        }
+      });
+      if (reponseData.correct) {
+        bonneReponse.textContent = '✓ Bonne réponse !';
+        bonneReponse.className = 'bonne-reponse';
+      } else {
+        var bonne = slide.reponses.find(function(r) { return r.correct; });
+        bonneReponse.textContent = '✗ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
+        bonneReponse.className = 'mauvaise-reponse';
+      }
+      feedback.classList.add('visible');
+      setTimeout(function() {
+        btnContinuer.classList.add('visible');
+      }, 400);
+      verifierQuizComplets();
+    }
+
+    function verifierQuizComplets() {
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      var tousRepondus = quizSlides.every(function(q) {
+        return etat.reponsesQuiz[q.index] !== undefined;
+      });
+      if (!tousRepondus) return;
+      var totalBonnes = 0, totalQuestions = 0;
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
+      });
+      etat.totalBonnes = totalBonnes;
+      etat.totalQuestions = totalQuestions;
+      var seuil = Math.ceil(totalQuestions / 2);
+      etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
+      if (totalQuestions === 0) etat.statutFinal = 'en-attente';
+      mettreAJourBadge();
+      sauvegarderQuiz();
+    }
+
+    function mettreAJourBadge() {
+      var badge = document.getElementById('badgeStatut');
+      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
+      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
+      else { badge.textContent = '⏳ En cours'; badge.className = 'badge-statut en-attente'; }
+    }
+
+    function sauvegarderQuiz() {
+      if (!etat.postId) return;
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var choixQcm = '';
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          if (choixQcm) choixQcm += '|';
+          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
+        }
+      });
+      var url = SCRIPT_URL + '?action=saveQuiz' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&titre=' + encodeURIComponent(etat.post.titre || 'Quiz') +
+        '&choixQcm=' + encodeURIComponent(choixQcm) +
+        '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
+        '&total=' + encodeURIComponent(etat.totalQuestions);
+      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) console.log('✓ Quiz sauvegardé');
+      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
+    }
+
+    function envoyerReponseOuverte(event, index) {
+      if (event) event.stopPropagation();
+      var textarea = document.getElementById('openReponse-' + index);
+      if (!textarea) return;
+      var reponse = textarea.value.trim();
+      if (!reponse) { alert('Veuillez écrire une réponse.'); return; }
+      var btn = textarea.parentElement.querySelector('.btn-envoyer-reponse');
+      btn.disabled = true;
+      btn.textContent = 'Envoi...';
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveReponseOuverte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&reponseOuverte=' + encodeURIComponent(reponse);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var confirmation = document.getElementById('openConfirmation-' + index);
+          var btnContinuer = document.getElementById('btnContinuerOpen-' + index);
+          if (data.success) {
+            confirmation.classList.add('visible');
+            textarea.disabled = true;
+            btn.textContent = '✓ Envoyé';
+            setTimeout(function() {
+              btnContinuer.classList.add('visible');
+            }, 400);
+          } else {
+            alert('Erreur : ' + (data.message || 'Impossible d\'envoyer.'));
+            btn.disabled = false;
+            btn.textContent = 'Envoyer la réponse';
+          }
+        })
+        .catch(function(e) {
+          alert('Erreur réseau.');
+          btn.disabled = false;
+          btn.textContent = 'Envoyer la réponse';
+        });
+    }
+
+    function recupererStatutExistant() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.articleId === etat.postId; });
+            if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
+              var seuil = Math.ceil(reponse.total / 2);
+              if (reponse.bonnes >= seuil) {
+                etat.statutFinal = 'valide';
+                etat.totalBonnes = reponse.bonnes;
+                etat.totalQuestions = reponse.total;
+                mettreAJourBadge();
+              }
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur récupération statut:', e); });
+    }
+
+    function fermerLiseuse() {
+      window.location.href = '/medit/mes-textes.html';
+    }
+
+    function afficherErreur(message) {
+      document.getElementById('slidesContainer').innerHTML = `
+        <div class="lecture-error">
+          <div class="icone">📖</div>
+          <h2>Texte introuvable</h2>
+          <p>${message || 'Le texte n\'existe pas.'}</p>
+          <a href="/medit/mes-textes.html" class="btn-retour">← Retour</a>
+        </div>
+      `;
+    }
+
+    window.selectionnerReponse = selectionnerReponse;
+    window.envoyerReponseOuverte = envoyerReponseOuverte;
+    window.slideSuivante = slideSuivante;
+    window.slidePrecedente = slidePrecedente;
+    window.fermerLiseuse = fermerLiseuse;
+    window.toggleNote = toggleNote;
+    window.autoSaveNote = autoSaveNote;
+  </script>
+</body>
+</html>
