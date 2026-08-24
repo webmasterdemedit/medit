@@ -358,6 +358,196 @@
     .slide-content::-webkit-scrollbar-thumb:hover {
       background: var(--border-hover);
     }
+
+    /* ============================================================
+       STYLES POUR L'ORDRE
+       ============================================================ */
+    .ordre-content .ordre-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 16px 0;
+    }
+    .ordre-content .ordre-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-hover);
+      cursor: default;
+    }
+    .ordre-content .ordre-item .ordre-num {
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 28px;
+      font-size: 13px;
+    }
+    .ordre-content .ordre-item .ordre-texte {
+      flex: 1;
+      font-family: 'Merriweather', serif;
+      font-size: 16px;
+    }
+    .ordre-content .ordre-item .ordre-boutons {
+      display: flex;
+      gap: 4px;
+    }
+    .ordre-content .ordre-item .ordre-boutons button {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      padding: 2px 10px;
+      font-size: 14px;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .ordre-content .ordre-item .ordre-boutons button:hover {
+      background: var(--bg-active);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .ordre-content .ordre-item .ordre-boutons button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .ordre-content .btn-valider-ordre {
+      margin-top: 16px;
+      padding: 10px 32px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      align-self: center;
+    }
+    .ordre-content .btn-valider-ordre:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .ordre-content .btn-valider-ordre:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .ordre-content .ordre-resultat {
+      margin-top: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      text-align: center;
+    }
+    .ordre-content .ordre-resultat.correct {
+      color: var(--text);
+    }
+    .ordre-content .ordre-resultat.incorrect {
+      color: var(--text-secondary);
+    }
+
+    /* ============================================================
+       STYLES POUR LES CARTES ANKI
+       ============================================================ */
+    .carte-content .carte-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 500px;
+      margin: 0 auto 16px auto;
+      cursor: pointer;
+      min-height: 180px;
+    }
+    .carte-content .carte-inner {
+      position: relative;
+      width: 100%;
+      min-height: 180px;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .carte-content .carte-inner.retournee {
+      transform: rotateY(180deg);
+    }
+    .carte-content .carte-face {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      min-height: 180px;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 30px 24px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      text-align: center;
+      font-family: 'Merriweather', serif;
+      font-size: 18px;
+      line-height: 1.8;
+      box-sizing: border-box;
+    }
+    .carte-content .carte-face.carte-recto {
+      transform: rotateY(0deg);
+    }
+    .carte-content .carte-face.carte-verso {
+      transform: rotateY(180deg);
+    }
+    .carte-content .carte-indicateur {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 12px;
+    }
+    .carte-content .carte-boutons {
+      display: none;
+      gap: 12px;
+      justify-content: center;
+      margin-top: 8px;
+      flex-wrap: wrap;
+    }
+    .carte-content .carte-boutons.visible {
+      display: flex;
+    }
+    .carte-content .carte-boutons button {
+      padding: 10px 28px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .carte-content .carte-boutons button:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .carte-content .carte-boutons button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+    .carte-content .carte-boutons .btn-trouve {
+      border-color: var(--text);
+      color: var(--text);
+    }
+    .carte-content .carte-boutons .btn-trouve:hover {
+      background: var(--bg-active);
+    }
+    .carte-content .carte-resultat {
+      margin-top: 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+    .carte-content .carte-progression {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
   </style>
 </head>
 <body>
@@ -397,7 +587,14 @@
       totalQuestions: 0,
       statutFinal: null,
       enTransition: false,
-      notes: {}
+      notes: {},
+      // Pour l'ordre
+      ordreValide: {},
+      // Pour les cartes
+      cartesResultats: {},
+      cartesTotal: 0,
+      cartesBonnes: 0,
+      carteCourante: null
     };
 
     document.addEventListener('DOMContentLoaded', function() {
@@ -443,14 +640,18 @@
         .catch(function(e) { console.error('Erreur récupération notes:', e); });
     }
 
+    // ============================================================
+    // PARSEUR - AVEC ORDRE ET CARTES ANKI
+    // ============================================================
     function parserContenu(texte) {
-      var result = { slides: [], quizs: [], openQuestions: [], retenir: [] };
+      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
       if (!texte) return result;
       texte = texte.replace(/\s*\|\s*/g, ' ');
       texte = texte.replace(/\|\s*$/gm, '');
       texte = texte.replace(/^\s*\|\s*/gm, '');
       texte = texte.replace(/\s{2,}/g, ' ');
-      var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-'];
+
+      var patterns = ['-s-', '-q-', '-v-', '-f-', '-qs-', '-r-', '-i-', '-o-', '-cr-', '-cv-'];
       var indices = [];
       for (var p = 0; p < patterns.length; p++) {
         var pos = texte.indexOf(patterns[p]);
@@ -460,6 +661,7 @@
         }
       }
       indices.sort(function(a, b) { return a.pos - b.pos; });
+
       var elements = [];
       for (var i = 0; i < indices.length; i++) {
         var start = indices[i].pos;
@@ -467,14 +669,23 @@
         var element = texte.substring(start, end).trim();
         if (element) elements.push(element);
       }
+
       var quizCourant = null;
+      var ordreEnCours = null;
+      var ordreElements = [];
+      var carteRecto = null;
+
       for (var i = 0; i < elements.length; i++) {
         var ligne = elements[i].trim();
         if (!ligne) continue;
+
+        // === SLIDE ===
         if (ligne.startsWith('-s-')) {
           result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
           continue;
         }
+
+        // === QUIZ QCM ===
         if (ligne.startsWith('-q-')) {
           if (quizCourant && quizCourant.reponses.length > 0) {
             result.quizs.push(quizCourant);
@@ -494,10 +705,46 @@
           }
           continue;
         }
+
+        // === QUESTION OUVERTE ===
         if (ligne.startsWith('-qs-')) {
           result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
           continue;
         }
+
+        // === ORDRE (-o-) ===
+        if (ligne.startsWith('-o-')) {
+          if (ordreEnCours && ordreElements.length > 0) {
+            result.ordres.push({ elements: ordreElements.slice() });
+          }
+          ordreEnCours = true;
+          ordreElements = [];
+          continue;
+        }
+
+        // Éléments d'ordre (-1-, -2-, -3-, ...)
+        if (ligne.match(/^-\d+-/)) {
+          if (ordreEnCours) {
+            ordreElements.push(ligne);
+          }
+          continue;
+        }
+
+        // === CARTES ANKI ===
+        if (ligne.startsWith('-cr-')) {
+          carteRecto = ligne.replace('-cr-', '').trim() || 'Question';
+          continue;
+        }
+        if (ligne.startsWith('-cv-')) {
+          if (carteRecto !== null) {
+            var verso = ligne.replace('-cv-', '').trim() || 'Réponse';
+            result.cartes.push({ recto: carteRecto, verso: verso });
+            carteRecto = null;
+          }
+          continue;
+        }
+
+        // === RETENIR ===
         if (ligne.startsWith('-r-')) {
           var retenirText = ligne.replace('-r-', '').trim();
           if (retenirText) {
@@ -506,32 +753,58 @@
           }
           continue;
         }
+
+        // === INFORMATION ===
         if (ligne.startsWith('-i-')) {
           continue;
         }
       }
+
+      // Fin des quiz
       if (quizCourant && quizCourant.reponses.length > 0) {
         result.quizs.push(quizCourant);
       }
+
+      // Fin de l'ordre
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+      }
+
       return result;
     }
 
+    // ============================================================
+    // PRÉPARER LES SLIDES
+    // ============================================================
     function preparerSlides(post) {
       var slides = [];
       var contenu = post.contenu || '';
       var parsed = parserContenu(contenu);
+
       parsed.slides.forEach(function(s) {
         slides.push({ type: 'slide', contenu: s.contenu });
       });
+
       parsed.quizs.forEach(function(q) {
         slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
       });
+
       parsed.openQuestions.forEach(function(q) {
         slides.push({ type: 'open', question: q, index: slides.length });
       });
+
+      parsed.ordres.forEach(function(o) {
+        slides.push({ type: 'ordre', elements: o.elements, index: slides.length });
+      });
+
+      parsed.cartes.forEach(function(c) {
+        slides.push({ type: 'carte', recto: c.recto, verso: c.verso, index: slides.length });
+      });
+
       if (parsed.retenir && parsed.retenir.length > 0) {
         slides.push({ type: 'retenir', mots: parsed.retenir });
       }
+
       etat.slides = slides;
     }
 
@@ -548,16 +821,21 @@
       slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
     }
 
+    // ============================================================
+    // AFFICHER LES SLIDES
+    // ============================================================
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
       document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
       document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
       document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+
       if (etat.slides.length === 0) {
         container.innerHTML = '<div class="lecture-error"><div class="icone">📖</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
         return;
       }
+
       var html = '';
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
@@ -566,60 +844,49 @@
         if (slide.type === 'quiz') html += ' quiz-content';
         else if (slide.type === 'open') html += ' open-content';
         else if (slide.type === 'retenir') html += ' retenir-content';
+        else if (slide.type === 'ordre') html += ' ordre-content';
+        else if (slide.type === 'carte') html += ' carte-content';
         html += '" id="slideContent-' + index + '">';
+
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
         }
+
         if (slide.type === 'quiz') {
-          html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
-          html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
-          var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
-          slide.reponses.forEach(function(rep, ri) {
-            html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
-            html += '<span class="lettre">' + lettres[ri] + '</span>';
-            html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
-            html += '<span class="result-icon"></span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
-          html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
-          html += '</div>';
-          html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+          html += afficherQuiz(slide);
         }
+
         if (slide.type === 'open') {
-          html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
-          html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-          html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
-          html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
-          html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+          html += afficherOpen(slide);
         }
+
+        if (slide.type === 'ordre') {
+          html += afficherOrdre(slide, index);
+        }
+
+        if (slide.type === 'carte') {
+          html += afficherCarte(slide, index);
+        }
+
         if (slide.type === 'retenir') {
-          html += '<div class="retenir-label">♡ À retenir</div>';
-          html += '<div class="retenir-mots">';
-          slide.mots.forEach(function(mot) {
-            if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-          });
-          html += '</div>';
-          html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-          html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+          html += afficherRetenir(slide);
         }
+
+        // Note toggle
         html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
         html += '<div class="note-area" id="noteArea-' + index + '">';
         html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
         html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
         html += '</div>';
+
         html += '</div>';
         html += '</div>';
       });
+
       container.innerHTML = html;
-      etat.slides.forEach(function(slide, index) {
-        var content = document.getElementById('slideContent-' + index);
-        if (content && slide.type === 'slide') {
-          ajusterTaillePolice(content);
-        }
-      });
+
+      // Restaurer les notes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -631,6 +898,8 @@
           }
         }
       }
+
+      // Navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -639,7 +908,11 @@
             target.closest('textarea') ||
             target.closest('.btn-fermer-slide') ||
             target.closest('.note-toggle') ||
-            target.closest('.note-area')) {
+            target.closest('.note-area') ||
+            target.closest('.ordre-item') ||
+            target.closest('.btn-valider-ordre') ||
+            target.closest('.carte-container') ||
+            target.closest('.carte-boutons')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -651,6 +924,7 @@
           slideSuivante();
         }
       });
+
       var scrollTimeout = null;
       container.addEventListener('wheel', function(e) {
         e.preventDefault();
@@ -662,6 +936,7 @@
           slidePrecedente();
         }
       }, { passive: false });
+
       document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
@@ -671,124 +946,342 @@
           slidePrecedente();
         }
       });
+
       document.getElementById('btnFermer').addEventListener('click', function() {
         fermerLiseuse();
       });
+
       recupererStatutExistant();
       mettreAJourPagination();
     }
 
-    function toggleNote(index) {
-      var area = document.getElementById('noteArea-' + index);
-      var toggle = document.getElementById('noteToggle-' + index);
-      if (!area) return;
-      if (area.classList.contains('visible')) {
-        area.classList.remove('visible');
-        toggle.classList.remove('active');
+    // ============================================================
+    // AFFICHER QUIZ
+    // ============================================================
+    function afficherQuiz(slide) {
+      var html = '';
+      html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
+      html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      slide.reponses.forEach(function(rep, ri) {
+        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
+        html += '<span class="lettre">' + lettres[ri] + '</span>';
+        html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
+        html += '<span class="result-icon"></span>';
+        html += '</div>';
+      });
+      html += '</div>';
+      html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
+      html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
+      html += '</div>';
+      html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+      return html;
+    }
+
+    // ============================================================
+    // AFFICHER QUESTION OUVERTE
+    // ============================================================
+    function afficherOpen(slide) {
+      var html = '';
+      html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
+      html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
+      html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
+      html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+      return html;
+    }
+
+    // ============================================================
+    // AFFICHER RETENIR
+    // ============================================================
+    function afficherRetenir(slide) {
+      var html = '';
+      html += '<div class="retenir-label">♡ À retenir</div>';
+      html += '<div class="retenir-mots">';
+      slide.mots.forEach(function(mot) {
+        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+      });
+      html += '</div>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+      return html;
+    }
+
+    // ============================================================
+    // AFFICHER ORDRE (NOUVEAU)
+    // ============================================================
+    function afficherOrdre(slide, index) {
+      var elements = slide.elements || [];
+      // Mélanger les éléments
+      var shuffled = elements.slice();
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = temp;
+      }
+
+      var html = '';
+      html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">Remettez dans l\'ordre</h3>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Utilisez les boutons ↑↓ pour réorganiser les éléments.</p>';
+      html += '<div class="ordre-list" id="ordre-list-' + index + '">';
+
+      for (var i = 0; i < shuffled.length; i++) {
+        var num = shuffled[i].match(/^-(\d+)-/);
+        var numValue = num ? num[1] : (i + 1);
+        var texte = shuffled[i].replace(/^-\d+-/, '').trim();
+        html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
+        html += '<span class="ordre-num">#' + (i + 1) + '</span>';
+        html += '<span class="ordre-texte">' + texte + '</span>';
+        html += '<div class="ordre-boutons">';
+        html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
+        html += '<button onclick="deplacerOrdre(this, 1, ' + index + ')" ' + (i === shuffled.length - 1 ? 'disabled' : '') + '>↓</button>';
+        html += '</div>';
+        html += '</div>';
+      }
+
+      html += '</div>';
+      html += '<button class="btn-valider-ordre" id="btnValiderOrdre-' + index + '" onclick="validerOrdre(' + index + ')">Valider l\'ordre</button>';
+      html += '<div class="ordre-resultat" id="ordreResultat-' + index + '"></div>';
+      html += '<button class="btn-continuer" id="btnContinuerOrdre-' + index + '" onclick="slideSuivante()">Continuer →</button>';
+
+      etat.ordreValide[index] = false;
+      return html;
+    }
+
+    // ============================================================
+    // DÉPLACER DANS L'ORDRE
+    // ============================================================
+    function deplacerOrdre(btn, direction, index) {
+      var item = btn.closest('.ordre-item');
+      var list = item.closest('.ordre-list');
+      var items = list.querySelectorAll('.ordre-item');
+      var currentIdx = Array.from(items).indexOf(item);
+      var newIdx = currentIdx + direction;
+
+      if (newIdx < 0 || newIdx >= items.length) return;
+
+      // Mettre à jour le DOM
+      if (direction < 0) {
+        list.insertBefore(item, items[newIdx]);
       } else {
-        area.classList.add('visible');
-        toggle.classList.add('active');
-        var textarea = document.getElementById('noteText-' + index);
-        if (textarea) textarea.focus();
+        list.insertBefore(items[newIdx], item);
+      }
+
+      // Mettre à jour les numéros d'affichage
+      var allItems = list.querySelectorAll('.ordre-item');
+      allItems.forEach(function(el, idx) {
+        var numSpan = el.querySelector('.ordre-num');
+        if (numSpan) numSpan.textContent = '#' + (idx + 1);
+        // Mettre à jour les boutons
+        var upBtn = el.querySelector('.ordre-boutons button:first-child');
+        var downBtn = el.querySelector('.ordre-boutons button:last-child');
+        if (upBtn) upBtn.disabled = (idx === 0);
+        if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
+      });
+
+      // Cacher les résultats précédents
+      var resultat = document.getElementById('ordreResultat-' + index);
+      if (resultat) {
+        resultat.textContent = '';
+        resultat.className = 'ordre-resultat';
+      }
+      etat.ordreValide[index] = false;
+      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+      if (btnContinuer) btnContinuer.classList.remove('visible');
+    }
+
+    // ============================================================
+    // VALIDER L'ORDRE
+    // ============================================================
+    function validerOrdre(index) {
+      var list = document.getElementById('ordre-list-' + index);
+      if (!list) return;
+      var items = list.querySelectorAll('.ordre-item');
+      var ordreDonne = [];
+      var ordreAttendu = [];
+
+      items.forEach(function(el) {
+        ordreDonne.push(parseInt(el.dataset.num));
+        ordreAttendu.push(parseInt(el.dataset.num));
+      });
+
+      ordreAttendu.sort(function(a, b) { return a - b; });
+
+      var correct = true;
+      for (var i = 0; i < ordreDonne.length; i++) {
+        if (ordreDonne[i] !== ordreAttendu[i]) {
+          correct = false;
+          break;
+        }
+      }
+
+      var resultat = document.getElementById('ordreResultat-' + index);
+      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+      var btnValider = document.getElementById('btnValiderOrdre-' + index);
+
+      if (correct) {
+        resultat.textContent = '✅ Tous les éléments sont bien placés !';
+        resultat.className = 'ordre-resultat correct';
+        etat.ordreValide[index] = true;
+        // Sauvegarder
+        sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
+        if (btnContinuer) btnContinuer.classList.add('visible');
+        if (btnValider) btnValider.disabled = true;
+      } else {
+        resultat.textContent = '❌ L\'ordre n\'est pas correct. Réessayez.';
+        resultat.className = 'ordre-resultat incorrect';
+        etat.ordreValide[index] = false;
+        // Sauvegarder l'échec
+        sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
       }
     }
 
-    var timers = {};
-
-    function autoSaveNote(index) {
-      if (timers[index]) clearTimeout(timers[index]);
-      var indicator = document.getElementById('noteIndicator-' + index);
-      if (indicator) {
-        indicator.textContent = '⏳ Enregistrement...';
-        indicator.className = 'note-indicator';
-      }
-      timers[index] = setTimeout(function() {
-        sauvegarderNote(index);
-      }, 2000);
-    }
-
-    function sauvegarderNote(index) {
-      var textarea = document.getElementById('noteText-' + index);
-      if (!textarea) return;
-      var note = textarea.value.trim();
+    // ============================================================
+    // SAUVEGARDER L'ORDRE
+    // ============================================================
+    function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveAnnotation' +
+      var url = SCRIPT_URL + '?action=saveOrdre' +
         '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(etat.postId) +
-        '&slide=' + encodeURIComponent(index) +
-        '&annotation=' + encodeURIComponent(note);
+        '&titre=' + encodeURIComponent(etat.post.titre || 'Ordre') +
+        '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            if (data.success) {
-              indicator.textContent = '✓ Note sauvegardée';
-              indicator.className = 'note-indicator saved';
-              etat.notes[index] = note;
-            } else {
-              indicator.textContent = '⚠️ Erreur de sauvegarde';
-              indicator.className = 'note-indicator';
-            }
-          }
+          if (data.success) console.log('✓ Ordre sauvegardé');
         })
-        .catch(function() {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            indicator.textContent = '⚠️ Erreur réseau';
-            indicator.className = 'note-indicator';
-          }
-        });
+        .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
-    function slideSuivante() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex >= etat.slides.length - 1) return;
-      var slide = etat.slides[etat.currentIndex];
-      if (slide.type === 'quiz') {
-        var reponse = etat.reponsesQuiz[slide.index];
-        if (!reponse) return;
-        var btn = document.getElementById('btnContinuer-' + slide.index);
-        if (!btn || !btn.classList.contains('visible')) return;
-      }
-      if (slide.type === 'open') {
-        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
-        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
-      }
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
-      if (current) current.classList.remove('active');
-      if (next) next.classList.add('active');
-      etat.currentIndex++;
-      mettreAJourPagination();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
+    // ============================================================
+    // AFFICHER CARTE ANKI (NOUVEAU)
+    // ============================================================
+    function afficherCarte(slide, index) {
+      var html = '';
+      html += '<div class="carte-indicateur">Cliquez sur la carte pour la retourner</div>';
+      html += '<div class="carte-container" id="carteContainer-' + index + '" onclick="retournerCarte(' + index + ')">';
+      html += '<div class="carte-inner" id="carteInner-' + index + '">';
+      html += '<div class="carte-face carte-recto">' + (slide.recto || 'Question') + '</div>';
+      html += '<div class="carte-face carte-verso">' + (slide.verso || 'Réponse') + '</div>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="carte-boutons" id="carteBoutons-' + index + '">';
+      html += '<button class="btn-trouve" onclick="carteTrouve(' + index + ')">✅ J\'ai trouvé</button>';
+      html += '<button onclick="cartePasTrouve(' + index + ')">❌ Je n\'ai pas trouvé</button>';
+      html += '</div>';
+      html += '<div class="carte-resultat" id="carteResultat-' + index + '"></div>';
+      html += '<div class="carte-progression" id="carteProgression-' + index + '"></div>';
+      html += '<button class="btn-continuer" id="btnContinuerCarte-' + index + '" onclick="slideSuivante()">Continuer →</button>';
+
+      etat.cartesResultats[index] = null;
+      return html;
     }
 
-    function slidePrecedente() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex <= 0) return;
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
-      if (current) current.classList.remove('active');
-      if (prev) prev.classList.add('active');
-      etat.currentIndex--;
-      mettreAJourPagination();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
+    // ============================================================
+    // RETOURNER UNE CARTE
+    // ============================================================
+    function retournerCarte(index) {
+      var inner = document.getElementById('carteInner-' + index);
+      if (!inner) return;
+      if (inner.classList.contains('retournee')) return;
+
+      inner.classList.add('retournee');
+      var boutons = document.getElementById('carteBoutons-' + index);
+      if (boutons) boutons.classList.add('visible');
     }
 
-    function mettreAJourPagination() {
-      var pagination = document.getElementById('pagination');
-      if (pagination) {
-        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
-      }
+    // ============================================================
+    // CARTE TROUVÉE
+    // ============================================================
+    function carteTrouve(index) {
+      var resultat = document.getElementById('carteResultat-' + index);
+      var boutons = document.getElementById('carteBoutons-' + index);
+      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
+
+      if (etat.cartesResultats[index] !== null) return;
+
+      etat.cartesResultats[index] = true;
+      etat.cartesBonnes++;
+      etat.cartesTotal++;
+
+      resultat.textContent = '✅ Bien joué !';
+      resultat.style.color = 'var(--text)';
+      if (boutons) boutons.classList.remove('visible');
+      if (btnContinuer) btnContinuer.classList.add('visible');
+
+      sauvegarderCarte(index);
     }
 
+    // ============================================================
+    // CARTE PAS TROUVÉE
+    // ============================================================
+    function cartePasTrouve(index) {
+      var resultat = document.getElementById('carteResultat-' + index);
+      var boutons = document.getElementById('carteBoutons-' + index);
+      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
+
+      if (etat.cartesResultats[index] !== null) return;
+
+      etat.cartesResultats[index] = false;
+      etat.cartesTotal++;
+
+      resultat.textContent = '❌ Pas de problème, retenez bien la réponse.';
+      resultat.style.color = 'var(--text-secondary)';
+      if (boutons) boutons.classList.remove('visible');
+      if (btnContinuer) btnContinuer.classList.add('visible');
+
+      sauvegarderCarte(index);
+    }
+
+    // ============================================================
+    // SAUVEGARDER LES CARTES
+    // ============================================================
+    function sauvegarderCarte(index) {
+      // Compter toutes les cartes du slide
+      var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
+      if (!slide) return;
+
+      // Récupérer toutes les cartes de ce slide (une seule pour l'instant)
+      var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
+      var totalCartes = toutesLesCartes.length;
+
+      // Construire la chaîne des résultats
+      var resultats = [];
+      toutesLesCartes.forEach(function(c) {
+        if (etat.cartesResultats[c.index] === true) resultats.push('1');
+        else if (etat.cartesResultats[c.index] === false) resultats.push('0');
+        else resultats.push('?');
+      });
+
+      var cartesStr = resultats.join(',');
+      var bonnes = etat.cartesBonnes;
+      var total = etat.cartesTotal;
+
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveCarte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&titre=' + encodeURIComponent(etat.post.titre || 'Cartes') +
+        '&cartes=' + encodeURIComponent(cartesStr) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) console.log('✓ Cartes sauvegardées');
+        })
+        .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
+    }
+
+    // ============================================================
+    // FONCTIONS QUIZ (existantes)
+    // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
@@ -898,6 +1391,9 @@
       }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
+    // ============================================================
+    // QUESTION OUVERTE
+    // ============================================================
     function envoyerReponseOuverte(event, index) {
       if (event) event.stopPropagation();
       var textarea = document.getElementById('openReponse-' + index);
@@ -937,6 +1433,9 @@
         });
     }
 
+    // ============================================================
+    // RÉCUPÉRER STATUT EXISTANT
+    // ============================================================
     function recupererStatutExistant() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
@@ -958,6 +1457,141 @@
         .catch(function(e) { console.error('Erreur récupération statut:', e); });
     }
 
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function slideSuivante() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex >= etat.slides.length - 1) return;
+
+      var slide = etat.slides[etat.currentIndex];
+
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) return;
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (!btn || !btn.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'open') {
+        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
+        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'ordre') {
+        if (!etat.ordreValide[slide.index]) return;
+        var btnOrdre = document.getElementById('btnContinuerOrdre-' + slide.index);
+        if (!btnOrdre || !btnOrdre.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'carte') {
+        var btnCarte = document.getElementById('btnContinuerCarte-' + slide.index);
+        if (!btnCarte || !btnCarte.classList.contains('visible')) return;
+      }
+
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
+      if (current) current.classList.remove('active');
+      if (next) next.classList.add('active');
+      etat.currentIndex++;
+      mettreAJourPagination();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
+
+    function slidePrecedente() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex <= 0) return;
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
+      if (current) current.classList.remove('active');
+      if (prev) prev.classList.add('active');
+      etat.currentIndex--;
+      mettreAJourPagination();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
+
+    function mettreAJourPagination() {
+      var pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
+      }
+    }
+
+    // ============================================================
+    // NOTES
+    // ============================================================
+    function toggleNote(index) {
+      var area = document.getElementById('noteArea-' + index);
+      var toggle = document.getElementById('noteToggle-' + index);
+      if (!area) return;
+      if (area.classList.contains('visible')) {
+        area.classList.remove('visible');
+        toggle.classList.remove('active');
+      } else {
+        area.classList.add('visible');
+        toggle.classList.add('active');
+        var textarea = document.getElementById('noteText-' + index);
+        if (textarea) textarea.focus();
+      }
+    }
+
+    var timers = {};
+
+    function autoSaveNote(index) {
+      if (timers[index]) clearTimeout(timers[index]);
+      var indicator = document.getElementById('noteIndicator-' + index);
+      if (indicator) {
+        indicator.textContent = '⏳ Enregistrement...';
+        indicator.className = 'note-indicator';
+      }
+      timers[index] = setTimeout(function() {
+        sauvegarderNote(index);
+      }, 2000);
+    }
+
+    function sauvegarderNote(index) {
+      var textarea = document.getElementById('noteText-' + index);
+      if (!textarea) return;
+      var note = textarea.value.trim();
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&slide=' + encodeURIComponent(index) +
+        '&annotation=' + encodeURIComponent(note);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            if (data.success) {
+              indicator.textContent = '✓ Note sauvegardée';
+              indicator.className = 'note-indicator saved';
+              etat.notes[index] = note;
+            } else {
+              indicator.textContent = '⚠️ Erreur de sauvegarde';
+              indicator.className = 'note-indicator';
+            }
+          }
+        })
+        .catch(function() {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            indicator.textContent = '⚠️ Erreur réseau';
+            indicator.className = 'note-indicator';
+          }
+        });
+    }
+
+    // ============================================================
+    // FERMER
+    // ============================================================
     function fermerLiseuse() {
       window.location.href = '/medit/mes-textes.html';
     }
@@ -973,6 +1607,9 @@
       `;
     }
 
+    // ============================================================
+    // EXPOSER LES FONCTIONS GLOBALEMENT
+    // ============================================================
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
     window.slideSuivante = slideSuivante;
@@ -980,6 +1617,11 @@
     window.fermerLiseuse = fermerLiseuse;
     window.toggleNote = toggleNote;
     window.autoSaveNote = autoSaveNote;
+    window.deplacerOrdre = deplacerOrdre;
+    window.validerOrdre = validerOrdre;
+    window.retournerCarte = retournerCarte;
+    window.carteTrouve = carteTrouve;
+    window.cartePasTrouve = cartePasTrouve;
   </script>
 </body>
 </html>
