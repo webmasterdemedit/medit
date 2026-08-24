@@ -27,7 +27,7 @@
     }
     .slides-container {
       position: relative;
-      overflow: hidden;
+      overflow-y: auto;
       height: 70vh;
       max-height: 600px;
       min-height: 300px;
@@ -37,8 +37,7 @@
     }
     .slide-content {
       padding: 40px 50px;
-      height: 100%;
-      overflow-y: auto;
+      min-height: 100%;
       display: flex;
       flex-direction: column;
       justify-content: center;
@@ -437,6 +436,7 @@
                   etat.notes[slideNum] = kv[1];
                 }
               }
+              console.log('📝 Notes chargées:', etat.notes);
             }
           }
         })
@@ -535,19 +535,6 @@
       etat.slides = slides;
     }
 
-    function ajusterTaillePolice(slideContent) {
-      if (!slideContent) return;
-      var text = slideContent.textContent || '';
-      var length = text.length;
-      var fontSize = 20;
-      if (length > 500) fontSize = 17;
-      if (length > 800) fontSize = 15;
-      if (length > 1200) fontSize = 13;
-      if (length > 1800) fontSize = 12;
-      slideContent.style.fontSize = fontSize + 'px';
-      slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
-    }
-
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
@@ -561,6 +548,7 @@
       var html = '';
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
+        var isLast = index === etat.slides.length - 1;
         html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
         html += '<div class="slide-content';
         if (slide.type === 'quiz') html += ' quiz-content';
@@ -587,6 +575,9 @@
           html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
           html += '</div>';
           html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+          if (isLast) {
+            html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+          }
         }
         if (slide.type === 'open') {
           html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
@@ -594,6 +585,9 @@
           html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
           html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
           html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+          if (isLast) {
+            html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+          }
         }
         if (slide.type === 'retenir') {
           html += '<div class="retenir-label">📌 À retenir</div>';
@@ -614,12 +608,7 @@
         html += '</div>';
       });
       container.innerHTML = html;
-      etat.slides.forEach(function(slide, index) {
-        var content = document.getElementById('slideContent-' + index);
-        if (content && slide.type === 'slide') {
-          ajusterTaillePolice(content);
-        }
-      });
+      // Restaurer les notes existantes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -631,37 +620,7 @@
           }
         }
       }
-      container.addEventListener('click', function(e) {
-        var target = e.target;
-        if (target.closest('.quiz-reponse') ||
-            target.closest('.btn-continuer') ||
-            target.closest('.btn-envoyer-reponse') ||
-            target.closest('textarea') ||
-            target.closest('.btn-fermer-slide') ||
-            target.closest('.note-toggle') ||
-            target.closest('.note-area')) {
-          return;
-        }
-        var rect = container.getBoundingClientRect();
-        var x = e.clientX - rect.left;
-        var width = rect.width;
-        if (x < width * 0.2) {
-          slidePrecedente();
-        } else {
-          slideSuivante();
-        }
-      });
-      var scrollTimeout = null;
-      container.addEventListener('wheel', function(e) {
-        e.preventDefault();
-        if (scrollTimeout) return;
-        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
-        if (e.deltaY > 0) {
-          slideSuivante();
-        } else {
-          slidePrecedente();
-        }
-      }, { passive: false });
+      // Navigation clavier
       document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
