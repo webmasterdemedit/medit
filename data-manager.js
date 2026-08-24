@@ -189,7 +189,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // NOUVELLES MÉTHODES - DONNÉES DE LA FEUILLE "Inscrits"
+    // DONNÉES DE LA FEUILLE "Inscrits"
     // ============================================================
 
     getDateInscription: function() {
@@ -243,7 +243,55 @@ var DataManager = {
     },
 
     // ============================================================
-    // FIN NOUVELLES MÉTHODES
+    // MESSAGERIE
+    // ============================================================
+
+    envoyerMessage: function(sujet, message) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var email = DataManager.getContact() || '';
+
+        var url = CONFIG.SCRIPT_URL + '?action=sendMessage' +
+            '&nom=' + encodeURIComponent(id) +
+            '&email=' + encodeURIComponent(email) +
+            '&sujet=' + encodeURIComponent(sujet) +
+            '&message=' + encodeURIComponent(message);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de l\'envoi');
+                }
+            });
+    },
+
+    getMessages: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=getMessages&nom=' + encodeURIComponent(id);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data.messages || [];
+                } else {
+                    throw new Error(data.message || 'Erreur de chargement des messages');
+                }
+            });
+    },
+
+    // ============================================================
+    // ANNOTATIONS & QUIZ
     // ============================================================
 
     getAnnotations: function(articleId) {
@@ -290,18 +338,17 @@ var DataManager = {
     },
 
     // ============================================================
-    // AJOUTER UN POST - CHAQUE ÉLÉMENT DANS SA PROPRE COLONNE
+    // GESTION DES POSTS
     // ============================================================
+
     ajouterPost: function(titre, niveau, categorie, contenu, question) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
         }
 
-        // Découper le contenu séparé par " | "
         var elements = contenu.split(' | ');
         
-        // Préparer les paramètres pour chaque colonne
         var params = {
             titre: titre,
             niveau: niveau,
@@ -309,20 +356,17 @@ var DataManager = {
             question: question || ''
         };
 
-        // Ajouter chaque élément comme paramètre séparé
         for (var i = 0; i < elements.length; i++) {
             var key = 'col' + (i + 1);
             params[key] = elements[i] || '';
         }
 
-        // Construire l'URL
         var url = CONFIG.SCRIPT_URL + '?action=addPost' +
             '&titre=' + encodeURIComponent(params.titre) +
             '&niveau=' + encodeURIComponent(params.niveau) +
             '&categorie=' + encodeURIComponent(params.categorie) +
             '&question=' + encodeURIComponent(params.question);
 
-        // Ajouter les colonnes
         for (var i = 0; i < elements.length; i++) {
             var key = 'col' + (i + 1);
             url += '&' + key + '=' + encodeURIComponent(params[key] || '');
@@ -340,9 +384,6 @@ var DataManager = {
             });
     },
 
-    // ============================================================
-    // MODIFIER UN POST
-    // ============================================================
     modifierPost: function(id, titre, niveau, categorie, contenu, question, statut) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
@@ -370,9 +411,6 @@ var DataManager = {
             });
     },
 
-    // ============================================================
-    // SUPPRIMER UN POST
-    // ============================================================
     supprimerPost: function(id) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
@@ -394,8 +432,9 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDER UNE ANNOTATION
+    // SAUVEGARDES
     // ============================================================
+
     sauvegarderAnnotation: function(articleId, slide, annotation) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -420,9 +459,6 @@ var DataManager = {
             });
     },
 
-    // ============================================================
-    // SAUVEGARDER UNE RÉPONSE OUVERTE
-    // ============================================================
     sauvegarderReponseOuverte: function(articleId, reponse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -446,9 +482,6 @@ var DataManager = {
             });
     },
 
-    // ============================================================
-    // SAUVEGARDER UN QUIZ
-    // ============================================================
     sauvegarderQuiz: function(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -476,9 +509,6 @@ var DataManager = {
             });
     },
 
-    // ============================================================
-    // SAUVEGARDER UNE LECTURE
-    // ============================================================
     sauvegarderLecture: function(articleId, titre) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -504,7 +534,7 @@ var DataManager = {
 };
 
 // ============================================================
-// FONCTIONS UTILITAIRES
+// FONCTIONS UTILITAIRES GLOBALES
 // ============================================================
 
 function chargerDonnees(force) {
@@ -527,10 +557,6 @@ function getDescriptionNiveau() {
     return DataManager.getDescriptionNiveau();
 }
 
-// ============================================================
-// NOUVELLES FONCTIONS UTILITAIRES
-// ============================================================
-
 function getDateInscription() {
     return DataManager.getDateInscription();
 }
@@ -551,7 +577,13 @@ function getMdp() {
     return DataManager.getMdp();
 }
 
-// ============================================================
+function envoyerMessage(sujet, message) {
+    return DataManager.envoyerMessage(sujet, message);
+}
+
+function getMessages() {
+    return DataManager.getMessages();
+}
 
 function getAnnotations(articleId) {
     return DataManager.getAnnotations(articleId);
