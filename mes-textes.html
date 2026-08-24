@@ -127,6 +127,7 @@
     var postsData = [];
     var niveauEtudiant = 0;
     var ongletActuel = 'a-lire';
+    var categorieActuelle = 'toutes';
 
     function deconnecter() {
       if (confirm('Se déconnecter ?')) {
@@ -181,6 +182,40 @@
       if (modal) modal.remove();
     }
 
+    function estPostLu(post) {
+      // Chercher par ID d'abord
+      var reponse = toutesLesReponses[post.id];
+      
+      // Fallback: chercher par titre si ID ne correspond pas
+      if (!reponse) {
+        for (var key in toutesLesReponses) {
+          if (toutesLesReponses[key].titre === post.titre) {
+            reponse = toutesLesReponses[key];
+            break;
+          }
+        }
+      }
+      
+      if (!reponse) return false;
+      
+      var bonnes = parseInt(reponse.bonnes) || 0;
+      var total = parseInt(reponse.total) || 0;
+      
+      if (total === 1 && bonnes === 1) return true;
+      if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
+      
+      return false;
+    }
+
+    function estPostAccessible(posts, index) {
+      // Premier post toujours accessible
+      if (index === 0) return true;
+      
+      // Vérifier si le post précédent est validé
+      var postPrecedent = posts[index - 1];
+      return estPostLu(postPrecedent);
+    }
+
     function chargerTableauDeBord() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -232,16 +267,6 @@
         });
     }
 
-    function estPostLu(post) {
-  var reponse = toutesLesReponses[post.id] || null; // puis ajoute un fallback : si pas trouvé, cherche par titre if (!reponse) {   for (var key in toutesLesReponses) {     if (toutesLesReponses[key].titre === post.titre) {       reponse = toutesLesReponses[key];       break;     }   } }
-  if (!reponse) return false;
-  var bonnes = parseInt(reponse.bonnes) || 0;
-  var total = parseInt(reponse.total) || 0;
-  if (total === 1 && bonnes === 1) return true;
-  if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
-  return false;
-}
-
     function afficherAvecOnglets(posts) {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
@@ -292,8 +317,9 @@
       if (!container) return;
 
       var html = '';
-      html += `<div class="sous-tabs-container" id="sous-tabs">`;
+      html += `<div class="tags-container" id="sous-tabs" style="display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;">`;
 
+      // Compter total pour la catégorie "Toutes"
       var totalPosts = 0;
       categoriesTriees.forEach(function(cat) {
         categories[cat].forEach(function(post) {
@@ -301,10 +327,11 @@
           if (onglet === 'lus' && estPostLu(post)) totalPosts++;
         });
       });
+
       html += `
-        <button class="sous-tab-btn active" data-sous-tab="toutes" onclick="switchCategorie('toutes')">
+        <button class="tag-btn active" data-sous-tab="toutes" onclick="switchCategorie('toutes')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-card);cursor:pointer;transition:all 0.2s;">
           Toutes
-          <span class="compteur-sous-tab">${totalPosts}</span>
+          <span class="compteur-sous-tab" style="background:var(--primary);color:white;border-radius:10px;padding:0 8px;font-size:12px;margin-left:6px;">${totalPosts}</span>
         </button>
       `;
 
@@ -316,9 +343,9 @@
         });
         if (count > 0) {
           html += `
-            <button class="sous-tab-btn" data-sous-tab="${cat}" onclick="switchCategorie('${cat}')">
+            <button class="tag-btn" data-sous-tab="${cat}" onclick="switchCategorie('${cat}')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-card);cursor:pointer;transition:all 0.2s;">
               ${cat}
-              <span class="compteur-sous-tab">${count}</span>
+              <span class="compteur-sous-tab" style="background:var(--primary);color:white;border-radius:10px;padding:0 8px;font-size:12px;margin-left:6px;">${count}</span>
             </button>
           `;
         }
@@ -328,6 +355,30 @@
       html += `<div id="sous-contenu"></div>`;
 
       container.innerHTML = html;
+
+      // Marquer le bouton actif
+      var btns = container.querySelectorAll('.tag-btn');
+      btns.forEach(function(btn) {
+        btn.onmouseover = function() {
+          if (!this.classList.contains('active')) {
+            this.style.borderColor = 'var(--primary)';
+            this.style.transform = 'translateY(-2px)';
+            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+          }
+        };
+        btn.onmouseout = function() {
+          if (!this.classList.contains('active')) {
+            this.style.borderColor = 'var(--border-color)';
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = 'none';
+          }
+        };
+        if (btn.dataset.sousTab === 'toutes') {
+          btn.style.background = 'var(--primary)';
+          btn.style.color = 'white';
+          btn.style.borderColor = 'var(--primary)';
+        }
+      });
 
       var postsFiltres = filtrerPosts(onglet, 'toutes');
       afficherPosts(postsFiltres);
@@ -355,12 +406,20 @@
     }
 
     function switchCategorie(categorie) {
+      categorieActuelle = categorie;
+      
       var container = document.getElementById('sous-tabs');
       if (container) {
-        container.querySelectorAll('.sous-tab-btn').forEach(function(el) {
+        container.querySelectorAll('.tag-btn').forEach(function(el) {
+          el.style.background = 'var(--bg-card)';
+          el.style.color = 'var(--text-primary)';
+          el.style.borderColor = 'var(--border-color)';
           el.classList.remove('active');
-          var cat = el.dataset.sousTab;
-          if (cat === categorie) {
+          
+          if (el.dataset.sousTab === categorie) {
+            el.style.background = 'var(--primary)';
+            el.style.color = 'white';
+            el.style.borderColor = 'var(--primary)';
             el.classList.add('active');
           }
         });
@@ -384,6 +443,11 @@
         resultats.push(post);
       });
 
+      // Tri alphabétique par titre
+      resultats.sort(function(a, b) {
+        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+      });
+
       return resultats;
     }
 
@@ -404,26 +468,42 @@
 
       var html = '<div class="grille">';
 
-      posts.forEach(function(post) {
-        var reponse = toutesLesReponses[post.id] || null;
+      for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
+        var reponse = toutesLesReponses[post.id];
+        
+        // Fallback par titre
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === post.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
+        
         var dateValidation = '';
         var retenir = '';
         var estLu = false;
         var estValide = false;
 
         if (reponse) {
-  var bonnes = parseInt(reponse.bonnes) || 0;   // ← parseInt ajouté
-  var total = parseInt(reponse.total) || 0;     // ← parseInt ajouté
-  dateValidation = reponse.date || '';
-  retenir = reponse.retenir || '';
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          dateValidation = reponse.date || '';
+          retenir = reponse.retenir || '';
 
-  if (total === 1 && bonnes === 1) {
-    estLu = true;
-    estValide = true;
-  } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-    estValide = true;
-  }
-}
+          if (total === 1 && bonnes === 1) {
+            estLu = true;
+            estValide = true;
+          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estValide = true;
+          }
+        }
+
+        // Vérifier si le post est accessible (blocage séquentiel)
+        var estAccessible = estPostAccessible(posts, i);
+        var estBloque = !estAccessible && ongletActuel === 'a-lire';
 
         var hasQuiz = post.hasQuiz || false;
         var hasQuestion = post.hasQuestion || false;
@@ -502,10 +582,23 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
+        // Style de la carte selon blocage
+        var carteStyle = '';
+        var iconeCadenas = '';
+        var onclickAction = '';
+        
+        if (estBloque) {
+          carteStyle = 'style="opacity:0.6;cursor:not-allowed;"';
+          iconeCadenas = '🔒 ';
+          onclickAction = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
+        } else {
+          onclickAction = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+        }
+
         html += `
-          <div class="carte-post" onclick="window.location.href='/medit/article.html?id=${post.id}'">
+          <div class="carte-post" ${carteStyle} ${onclickAction}>
             <div class="infos">
-              <div class="titre">${post.titre}</div>
+              <div class="titre">${iconeCadenas}${post.titre}</div>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${post.niveau}</span>
                 ${metaHtml}
@@ -519,7 +612,7 @@
             </div>
           </div>
         `;
-      });
+      }
 
       html += '</div>';
       container.innerHTML = html;
