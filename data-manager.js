@@ -291,6 +291,68 @@ var DataManager = {
     },
 
     // ============================================================
+    // SAUVEGARDER ORDRE (NOUVEAU)
+    // ============================================================
+
+    sauvegarderOrdre: function(articleId, titre, ordreDonne, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde de l\'ordre');
+                }
+            });
+    },
+
+    // ============================================================
+    // SAUVEGARDER CARTES ANKI (NOUVEAU)
+    // ============================================================
+
+    sauvegarderCarte: function(articleId, titre, cartes, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&articleId=' + encodeURIComponent(articleId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&cartes=' + encodeURIComponent(cartes) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la sauvegarde des cartes');
+                }
+            });
+    },
+
+    // ============================================================
     // ANNOTATIONS & QUIZ
     // ============================================================
 
@@ -583,6 +645,14 @@ function envoyerMessage(sujet, message) {
 
 function getMessages() {
     return DataManager.getMessages();
+}
+
+function sauvegarderOrdre(articleId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderOrdre(articleId, titre, ordreDonne, bonnes, total, tempsPasse);
+}
+
+function sauvegarderCarte(articleId, titre, cartes, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderCarte(articleId, titre, cartes, bonnes, total, tempsPasse);
 }
 
 function getAnnotations(articleId) {
