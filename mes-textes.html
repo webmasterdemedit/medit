@@ -126,7 +126,6 @@
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
-    var ongletActuel = 'a-lire';
     var categorieActuelle = 'toutes';
 
     function deconnecter() {
@@ -240,7 +239,7 @@
           if (postsData.length === 0) {
             afficherVide();
           } else {
-            afficherAvecOnglets(postsData);
+            afficherCategories(postsData);
           }
         })
         .catch(function() {
@@ -249,7 +248,7 @@
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
             document.getElementById('totalPosts').textContent = postsData.length;
-            afficherAvecOnglets(postsData);
+            afficherCategories(postsData);
           } else {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('contenu').innerHTML = `
@@ -267,179 +266,72 @@
         });
     }
 
-    function afficherAvecOnglets(posts) {
+    function afficherCategories(posts) {
       var contenu = document.getElementById('contenu');
       document.getElementById('loader').style.display = 'none';
 
-      var total = posts.length;
-      var valides = 0;
-      var aFaire = 0;
-
-      posts.forEach(function(post) {
-        if (estPostLu(post)) {
-          valides++;
-        } else {
-          aFaire++;
-        }
-      });
-
+      // Compter les posts par catégorie
       var categories = {};
+      var totalPosts = 0;
+      
       posts.forEach(function(post) {
         var cat = post.categorie || 'Sans catégorie';
         if (!categories[cat]) categories[cat] = [];
         categories[cat].push(post);
+        totalPosts++;
       });
+      
       var categoriesTriees = Object.keys(categories).sort();
 
-      var tabsHtml = `
-        <button class="tab-btn active" data-tab="a-lire" onclick="switchOnglet('a-lire')">
-          À lire
-          <span class="compteur-tab">${aFaire}</span>
-        </button>
-        <button class="tab-btn" data-tab="lus" onclick="switchOnglet('lus')">
-          Lus
-          <span class="compteur-tab">${valides}</span>
+      // Générer les onglets de catégories (style exact des anciens "À lire"/"Lus")
+      var tabsHtml = '';
+      
+      // Onglet "Toutes"
+      tabsHtml += `
+        <button class="tab-btn active" data-cat="toutes" onclick="switchCategorie('toutes')">
+          Toutes
+          <span class="compteur-tab">${totalPosts}</span>
         </button>
       `;
+      
+      // Onglets par catégorie
+      categoriesTriees.forEach(function(cat) {
+        var count = categories[cat].length;
+        tabsHtml += `
+          <button class="tab-btn" data-cat="${cat}" onclick="switchCategorie('${cat}')">
+            ${cat}
+            <span class="compteur-tab">${count}</span>
+          </button>
+        `;
+      });
+      
       document.getElementById('tabsContainer').innerHTML = tabsHtml;
 
-      contenu.innerHTML = `
-        <div id="contenu-onglet">
-          <div class="loader" style="display:none;"><div class="spinner"></div></div>
-        </div>
-      `;
-
-      afficherOnglet('a-lire', categoriesTriees, categories);
-    }
-
-    function afficherOnglet(onglet, categoriesTriees, categories) {
-      var container = document.getElementById('contenu-onglet');
-      if (!container) return;
-
-      var html = '';
-      html += `<div class="tags-container" id="sous-tabs" style="display:flex;flex-wrap:wrap;gap:10px;margin:16px 0;">`;
-
-      // Compter total pour la catégorie "Toutes"
-      var totalPosts = 0;
-      categoriesTriees.forEach(function(cat) {
-        categories[cat].forEach(function(post) {
-          if (onglet === 'a-lire' && !estPostLu(post)) totalPosts++;
-          if (onglet === 'lus' && estPostLu(post)) totalPosts++;
-        });
-      });
-
-      html += `
-        <button class="tag-btn active" data-sous-tab="toutes" onclick="switchCategorie('toutes')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-card);cursor:pointer;transition:all 0.2s;">
-          Toutes
-          <span class="compteur-sous-tab" style="background:var(--primary);color:white;border-radius:10px;padding:0 8px;font-size:12px;margin-left:6px;">${totalPosts}</span>
-        </button>
-      `;
-
-      categoriesTriees.forEach(function(cat) {
-        var count = 0;
-        categories[cat].forEach(function(post) {
-          if (onglet === 'a-lire' && !estPostLu(post)) count++;
-          if (onglet === 'lus' && estPostLu(post)) count++;
-        });
-        if (count > 0) {
-          html += `
-            <button class="tag-btn" data-sous-tab="${cat}" onclick="switchCategorie('${cat}')" style="padding:8px 16px;border:1px solid var(--border-color);border-radius:6px;background:var(--bg-card);cursor:pointer;transition:all 0.2s;">
-              ${cat}
-              <span class="compteur-sous-tab" style="background:var(--primary);color:white;border-radius:10px;padding:0 8px;font-size:12px;margin-left:6px;">${count}</span>
-            </button>
-          `;
-        }
-      });
-
-      html += `</div>`;
-      html += `<div id="sous-contenu"></div>`;
-
-      container.innerHTML = html;
-
-      // Marquer le bouton actif
-      var btns = container.querySelectorAll('.tag-btn');
-      btns.forEach(function(btn) {
-        btn.onmouseover = function() {
-          if (!this.classList.contains('active')) {
-            this.style.borderColor = 'var(--primary)';
-            this.style.transform = 'translateY(-2px)';
-            this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
-          }
-        };
-        btn.onmouseout = function() {
-          if (!this.classList.contains('active')) {
-            this.style.borderColor = 'var(--border-color)';
-            this.style.transform = 'translateY(0)';
-            this.style.boxShadow = 'none';
-          }
-        };
-        if (btn.dataset.sousTab === 'toutes') {
-          btn.style.background = 'var(--primary)';
-          btn.style.color = 'white';
-          btn.style.borderColor = 'var(--primary)';
-        }
-      });
-
-      var postsFiltres = filtrerPosts(onglet, 'toutes');
+      // Afficher les posts de la première catégorie (Toutes)
+      var postsFiltres = filtrerPosts('toutes');
       afficherPosts(postsFiltres);
-    }
-
-    function switchOnglet(onglet) {
-      ongletActuel = onglet;
-
-      document.querySelectorAll('.tab-btn').forEach(function(el) {
-        el.classList.remove('active');
-        if (el.dataset.tab === onglet) {
-          el.classList.add('active');
-        }
-      });
-
-      var categories = {};
-      postsData.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) categories[cat] = [];
-        categories[cat].push(post);
-      });
-      var categoriesTriees = Object.keys(categories).sort();
-
-      afficherOnglet(onglet, categoriesTriees, categories);
     }
 
     function switchCategorie(categorie) {
       categorieActuelle = categorie;
-      
-      var container = document.getElementById('sous-tabs');
-      if (container) {
-        container.querySelectorAll('.tag-btn').forEach(function(el) {
-          el.style.background = 'var(--bg-card)';
-          el.style.color = 'var(--text-primary)';
-          el.style.borderColor = 'var(--border-color)';
-          el.classList.remove('active');
-          
-          if (el.dataset.sousTab === categorie) {
-            el.style.background = 'var(--primary)';
-            el.style.color = 'white';
-            el.style.borderColor = 'var(--primary)';
-            el.classList.add('active');
-          }
-        });
-      }
 
-      var postsFiltres = filtrerPosts(ongletActuel, categorie);
+      document.querySelectorAll('.tab-btn').forEach(function(el) {
+        el.classList.remove('active');
+        if (el.dataset.cat === categorie) {
+          el.classList.add('active');
+        }
+      });
+
+      var postsFiltres = filtrerPosts(categorie);
       afficherPosts(postsFiltres);
     }
 
-    function filtrerPosts(onglet, categorie) {
+    function filtrerPosts(categorie) {
       var resultats = [];
 
       postsData.forEach(function(post) {
-        var estLu = estPostLu(post);
-        if (onglet === 'a-lire' && estLu) return;
-        if (onglet === 'lus' && !estLu) return;
-
         var catPost = post.categorie || 'Sans catégorie';
         if (categorie !== 'toutes' && catPost !== categorie) return;
-
         resultats.push(post);
       });
 
@@ -452,7 +344,7 @@
     }
 
     function afficherPosts(posts) {
-      var container = document.getElementById('sous-contenu');
+      var container = document.getElementById('contenu');
       if (!container) return;
 
       if (posts.length === 0) {
@@ -503,7 +395,7 @@
 
         // Vérifier si le post est accessible (blocage séquentiel)
         var estAccessible = estPostAccessible(posts, i);
-        var estBloque = !estAccessible && ongletActuel === 'a-lire';
+        var estBloque = !estAccessible;
 
         var hasQuiz = post.hasQuiz || false;
         var hasQuestion = post.hasQuestion || false;
@@ -515,9 +407,8 @@
 
         var metaHtml = '';
 
-        if (ongletActuel === 'a-lire') {
-          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
-        } else {
+        // Si le post est lu, afficher les infos de validation
+        if (estLu) {
           var resultatHtml = '';
           var questionHtml = '';
           var annoteHtml = '';
@@ -551,6 +442,9 @@
           }
 
           metaHtml = resultatHtml + questionHtml + annoteHtml;
+        } else {
+          // Si non lu, afficher le nombre de questions
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
         }
 
         var dateHtml = '';
