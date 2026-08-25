@@ -10,7 +10,6 @@
       </div>
     </div>
     <nav class="header-nav" id="headerNav">
-      <!-- Admin : visible uniquement si connecté en tant qu'admin -->
       <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
       <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
@@ -29,12 +28,19 @@ function deconnecter() {
   }
 }
 
-// Afficher le lien Admin seulement si l'utilisateur est admin
-document.addEventListener('DOMContentLoaded', function() {
+// Fonction globale pour mettre à jour l'affichage du header
+window.mettreAJourHeader = function() {
   var id = localStorage.getItem('etudiant_id');
   var adminLink = document.getElementById('adminLink');
   if (id === 'admin' && adminLink) {
     adminLink.style.display = 'inline-block';
   }
-});
+};
+
+// Exécuter immédiatement si le DOM est chargé, sinon attendre
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', window.mettreAJourHeader);
+} else {
+  window.mettreAJourHeader();
+}
 </script>
