@@ -169,8 +169,6 @@
       padding: 12px 16px;
       display: none;
       font-family: 'Inter', sans-serif;
-      background: var(--bg-hover);
-      border-radius: 4px;
     }
     .quiz-feedback.visible {
       display: block;
@@ -590,7 +588,9 @@
       statutFinal: null,
       enTransition: false,
       notes: {},
+      // Pour l'ordre
       ordreValide: {},
+      // Pour les cartes
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
@@ -644,210 +644,212 @@
     // PARSEUR - AVEC ORDRE ET CARTES ANKI
     // ============================================================
     function parserContenu(texte) {
-      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
-      if (!texte) return result;
-      
-      texte = texte.replace(/\s*\|\s*/g, ' ');
-      texte = texte.replace(/\|\s*$/gm, '');
-      texte = texte.replace(/^\s*\|\s*/gm, '');
-      texte = texte.replace(/\s{2,}/g, ' ');
+  var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
+  if (!texte) return result;
+  
+  // Nettoyer le texte
+  texte = texte.replace(/\s*\|\s*/g, ' ');
+  texte = texte.replace(/\|\s*$/gm, '');
+  texte = texte.replace(/^\s*\|\s*/gm, '');
+  texte = texte.replace(/\s{2,}/g, ' ');
 
-      var mots = texte.split(' ');
-      var elements = [];
-      var current = '';
-      
-      for (var i = 0; i < mots.length; i++) {
-        var mot = mots[i];
-        if (mot.startsWith('-s-') || mot.startsWith('-q-') || mot.startsWith('-v-') || 
-            mot.startsWith('-f-') || mot.startsWith('-qs-') || mot.startsWith('-r-') || 
-            mot.startsWith('-i-') || mot.startsWith('-o-') || mot.startsWith('-cr-') || 
-            mot.startsWith('-cv-') || mot.match(/^-\d+-/)) {
-          if (current) {
-            elements.push(current.trim());
-          }
-          current = mot;
-        } else {
-          current += ' ' + mot;
-        }
-      }
+  // Découper par espaces pour trouver les marqueurs
+  var mots = texte.split(' ');
+  var elements = [];
+  var current = '';
+  
+  for (var i = 0; i < mots.length; i++) {
+    var mot = mots[i];
+    // Si c'est un marqueur, on commence un nouvel élément
+    if (mot.startsWith('-s-') || mot.startsWith('-q-') || mot.startsWith('-v-') || 
+        mot.startsWith('-f-') || mot.startsWith('-qs-') || mot.startsWith('-r-') || 
+        mot.startsWith('-i-') || mot.startsWith('-o-') || mot.startsWith('-cr-') || 
+        mot.startsWith('-cv-') || mot.match(/^-\d+-/)) {
       if (current) {
         elements.push(current.trim());
       }
+      current = mot;
+    } else {
+      current += ' ' + mot;
+    }
+  }
+  if (current) {
+    elements.push(current.trim());
+  }
 
-      var quizCourant = null;
-      var ordreEnCours = false;
-      var ordreElements = [];
-      var carteRecto = null;
+  var quizCourant = null;
+  var ordreEnCours = false;
+  var ordreElements = [];
+  var carteRecto = null;
 
-      for (var i = 0; i < elements.length; i++) {
-        var ligne = elements[i].trim();
-        if (!ligne) continue;
+  for (var i = 0; i < elements.length; i++) {
+    var ligne = elements[i].trim();
+    if (!ligne) continue;
 
-        // === SLIDE ===
-        if (ligne.startsWith('-s-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
-          continue;
-        }
-
-        // === QUIZ QCM ===
-        if (ligne.startsWith('-q-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          if (quizCourant && quizCourant.reponses.length > 0) {
-            result.quizs.push(quizCourant);
-          }
-          quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-          continue;
-        }
-        if (ligne.startsWith('-v-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
-          }
-          continue;
-        }
-        if (ligne.startsWith('-f-')) {
-          if (quizCourant) {
-            quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
-          }
-          continue;
-        }
-
-        // === QUESTION OUVERTE ===
-        if (ligne.startsWith('-qs-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
-          continue;
-        }
-
-        // === ORDRE (-o-) ===
-        if (ligne.startsWith('-o-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-          }
-          ordreEnCours = true;
-          ordreElements = [];
-          continue;
-        }
-
-        // Éléments d'ordre (-1-, -2-, -3-, ...)
-        if (ligne.match(/^-\d+-/)) {
-          if (ordreEnCours) {
-            ordreElements.push(ligne);
-          }
-          continue;
-        }
-
-        // === CARTES ANKI ===
-        if (ligne.startsWith('-cr-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          carteRecto = ligne.replace('-cr-', '').trim() || 'Question';
-          continue;
-        }
-        if (ligne.startsWith('-cv-')) {
-          if (carteRecto !== null) {
-            var verso = ligne.replace('-cv-', '').trim() || 'Réponse';
-            result.cartes.push({ recto: carteRecto, verso: verso });
-            carteRecto = null;
-          }
-          continue;
-        }
-
-        // === RETENIR ===
-        if (ligne.startsWith('-r-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          var retenirText = ligne.replace('-r-', '').trim();
-          if (retenirText) {
-            var mots2 = retenirText.split(',').map(function(m) { return m.trim(); });
-            result.retenir = mots2.filter(function(m) { return m.length > 0; });
-          }
-          continue;
-        }
-
-        // === INFORMATION ===
-        if (ligne.startsWith('-i-')) {
-          if (ordreEnCours && ordreElements.length > 0) {
-            result.ordres.push({ elements: ordreElements.slice() });
-            ordreElements = [];
-            ordreEnCours = false;
-          }
-          continue;
-        }
+    // === SLIDE ===
+    if (ligne.startsWith('-s-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
       }
+      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+      continue;
+    }
 
+    // === QUIZ QCM ===
+    if (ligne.startsWith('-q-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
       if (quizCourant && quizCourant.reponses.length > 0) {
         result.quizs.push(quizCourant);
       }
-
-      if (ordreEnCours && ordreElements.length > 0) {
-        result.ordres.push({ elements: ordreElements.slice() });
+      quizCourant = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+      continue;
+    }
+    if (ligne.startsWith('-v-')) {
+      if (quizCourant) {
+        quizCourant.reponses.push({ texte: ligne.replace('-v-', '').trim() || 'Vrai', correct: true });
       }
-
-      return result;
+      continue;
+    }
+    if (ligne.startsWith('-f-')) {
+      if (quizCourant) {
+        quizCourant.reponses.push({ texte: ligne.replace('-f-', '').trim() || 'Faux', correct: false });
+      }
+      continue;
     }
 
+    // === QUESTION OUVERTE ===
+    if (ligne.startsWith('-qs-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      result.openQuestions.push(ligne.replace('-qs-', '').trim() || 'Question ouverte');
+      continue;
+    }
+
+    // === ORDRE (-o-) ===
+    if (ligne.startsWith('-o-')) {
+      // Vider l'ordre précédent
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+      }
+      ordreEnCours = true;
+      ordreElements = [];
+      continue;
+    }
+
+    // Éléments d'ordre (-1-, -2-, -3-, ...)
+    if (ligne.match(/^-\d+-/)) {
+      if (ordreEnCours) {
+        ordreElements.push(ligne);
+      }
+      continue;
+    }
+
+    // === CARTES ANKI ===
+    if (ligne.startsWith('-cr-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      carteRecto = ligne.replace('-cr-', '').trim() || 'Question';
+      continue;
+    }
+    if (ligne.startsWith('-cv-')) {
+      if (carteRecto !== null) {
+        var verso = ligne.replace('-cv-', '').trim() || 'Réponse';
+        result.cartes.push({ recto: carteRecto, verso: verso });
+        carteRecto = null;
+      }
+      continue;
+    }
+
+    // === RETENIR ===
+    if (ligne.startsWith('-r-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      var retenirText = ligne.replace('-r-', '').trim();
+      if (retenirText) {
+        var mots2 = retenirText.split(',').map(function(m) { return m.trim(); });
+        result.retenir = mots2.filter(function(m) { return m.length > 0; });
+      }
+      continue;
+    }
+
+    // === INFORMATION ===
+    if (ligne.startsWith('-i-')) {
+      // Vider l'ordre en cours
+      if (ordreEnCours && ordreElements.length > 0) {
+        result.ordres.push({ elements: ordreElements.slice() });
+        ordreElements = [];
+        ordreEnCours = false;
+      }
+      continue;
+    }
+  }
+
+  // Fin des quiz
+  if (quizCourant && quizCourant.reponses.length > 0) {
+    result.quizs.push(quizCourant);
+  }
+
+  // Fin de l'ordre
+  if (ordreEnCours && ordreElements.length > 0) {
+    result.ordres.push({ elements: ordreElements.slice() });
+  }
+
+  return result;
+}
     // ============================================================
-    // PRÉPARER LES SLIDES - RESPECTE L'ORDRE DU SHEET
+    // PRÉPARER LES SLIDES
     // ============================================================
     function preparerSlides(post) {
       var slides = [];
       var contenu = post.contenu || '';
       var parsed = parserContenu(contenu);
-      
-      // Créer un tableau avec TOUS les éléments dans l'ordre d'apparition
-      var tousLesElements = [];
-      
-      // Ajouter les slides
+
       parsed.slides.forEach(function(s) {
-        tousLesElements.push({ type: 'slide', contenu: s.contenu });
+        slides.push({ type: 'slide', contenu: s.contenu });
       });
-      
-      // Ajouter les quiz
+
       parsed.quizs.forEach(function(q) {
-        tousLesElements.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: tousLesElements.length });
+        slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
       });
-      
-      // Ajouter les questions ouvertes
+
       parsed.openQuestions.forEach(function(q) {
-        tousLesElements.push({ type: 'open', question: q, index: tousLesElements.length });
+        slides.push({ type: 'open', question: q, index: slides.length });
       });
-      
-      // Ajouter les ordres
+
       parsed.ordres.forEach(function(o) {
-        tousLesElements.push({ type: 'ordre', elements: o.elements, index: tousLesElements.length });
+        slides.push({ type: 'ordre', elements: o.elements, index: slides.length });
       });
-      
-      // Ajouter les cartes
+
       parsed.cartes.forEach(function(c) {
-        tousLesElements.push({ type: 'carte', recto: c.recto, verso: c.verso, index: tousLesElements.length });
+        slides.push({ type: 'carte', recto: c.recto, verso: c.verso, index: slides.length });
       });
-      
-      // Ajouter le retenir (si présent)
+
       if (parsed.retenir && parsed.retenir.length > 0) {
-        tousLesElements.push({ type: 'retenir', mots: parsed.retenir });
+        slides.push({ type: 'retenir', mots: parsed.retenir });
       }
-      
-      etat.slides = tousLesElements;
+
+      etat.slides = slides;
     }
 
     function ajusterTaillePolice(slideContent) {
@@ -928,6 +930,7 @@
 
       container.innerHTML = html;
 
+      // Restaurer les notes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -940,6 +943,7 @@
         }
       }
 
+      // Navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -996,7 +1000,7 @@
     }
 
     // ============================================================
-    // AFFICHER QUIZ - Les réponses restent visibles
+    // AFFICHER QUIZ
     // ============================================================
     function afficherQuiz(slide) {
       var html = '';
@@ -1011,7 +1015,6 @@
         html += '</div>';
       });
       html += '</div>';
-      // Feedback EN DESSOUS des réponses (ne fait pas bouger le bloc)
       html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
       html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
       html += '</div>';
@@ -1049,28 +1052,34 @@
     }
 
     // ============================================================
-    // AFFICHER ORDRE
+    // AFFICHER ORDRE (NOUVEAU)
     // ============================================================
     function afficherOrdre(slide, index) {
       var elements = slide.elements || [];
-      // Garder l'ordre original (on ne mélange plus)
-      var ordered = elements.slice();
+      // Mélanger les éléments
+      var shuffled = elements.slice();
+      for (var i = shuffled.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = shuffled[i];
+        shuffled[i] = shuffled[j];
+        shuffled[j] = temp;
+      }
 
       var html = '';
       html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">Remettez dans l\'ordre</h3>';
       html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Utilisez les boutons ↑↓ pour réorganiser les éléments.</p>';
       html += '<div class="ordre-list" id="ordre-list-' + index + '">';
 
-      for (var i = 0; i < ordered.length; i++) {
-        var num = ordered[i].match(/^-(\d+)-/);
+      for (var i = 0; i < shuffled.length; i++) {
+        var num = shuffled[i].match(/^-(\d+)-/);
         var numValue = num ? num[1] : (i + 1);
-        var texte = ordered[i].replace(/^-\d+-/, '').trim();
+        var texte = shuffled[i].replace(/^-\d+-/, '').trim();
         html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
         html += '<span class="ordre-num">#' + (i + 1) + '</span>';
         html += '<span class="ordre-texte">' + texte + '</span>';
         html += '<div class="ordre-boutons">';
         html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
-        html += '<button onclick="deplacerOrdre(this, 1, ' + index + ')" ' + (i === ordered.length - 1 ? 'disabled' : '') + '>↓</button>';
+        html += '<button onclick="deplacerOrdre(this, 1, ' + index + ')" ' + (i === shuffled.length - 1 ? 'disabled' : '') + '>↓</button>';
         html += '</div>';
         html += '</div>';
       }
@@ -1096,22 +1105,26 @@
 
       if (newIdx < 0 || newIdx >= items.length) return;
 
+      // Mettre à jour le DOM
       if (direction < 0) {
         list.insertBefore(item, items[newIdx]);
       } else {
         list.insertBefore(items[newIdx], item);
       }
 
+      // Mettre à jour les numéros d'affichage
       var allItems = list.querySelectorAll('.ordre-item');
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
         if (numSpan) numSpan.textContent = '#' + (idx + 1);
+        // Mettre à jour les boutons
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
         if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
       });
 
+      // Cacher les résultats précédents
       var resultat = document.getElementById('ordreResultat-' + index);
       if (resultat) {
         resultat.textContent = '';
@@ -1155,6 +1168,7 @@
         resultat.textContent = '✅ Tous les éléments sont bien placés !';
         resultat.className = 'ordre-resultat correct';
         etat.ordreValide[index] = true;
+        // Sauvegarder
         sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
         if (btnContinuer) btnContinuer.classList.add('visible');
         if (btnValider) btnValider.disabled = true;
@@ -1162,6 +1176,7 @@
         resultat.textContent = '❌ L\'ordre n\'est pas correct. Réessayez.';
         resultat.className = 'ordre-resultat incorrect';
         etat.ordreValide[index] = false;
+        // Sauvegarder l'échec
         sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
       }
     }
@@ -1188,7 +1203,7 @@
     }
 
     // ============================================================
-    // AFFICHER CARTE ANKI
+    // AFFICHER CARTE ANKI (NOUVEAU)
     // ============================================================
     function afficherCarte(slide, index) {
       var html = '';
@@ -1271,12 +1286,15 @@
     // SAUVEGARDER LES CARTES
     // ============================================================
     function sauvegarderCarte(index) {
+      // Compter toutes les cartes du slide
       var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
       if (!slide) return;
 
+      // Récupérer toutes les cartes de ce slide (une seule pour l'instant)
       var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
       var totalCartes = toutesLesCartes.length;
 
+      // Construire la chaîne des résultats
       var resultats = [];
       toutesLesCartes.forEach(function(c) {
         if (etat.cartesResultats[c.index] === true) resultats.push('1');
@@ -1306,7 +1324,7 @@
     }
 
     // ============================================================
-    // FONCTIONS QUIZ - Correction sans déplacer le bloc
+    // FONCTIONS QUIZ (existantes)
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -1327,9 +1345,6 @@
       }, 300);
     }
 
-    // ============================================================
-    // AFFICHER FEEDBACK QUIZ - Les réponses restent visibles
-    // ============================================================
     function afficherFeedbackQuiz(quizIndex) {
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
       if (!slide) return;
@@ -1341,19 +1356,12 @@
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
       var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
       var btnContinuer = document.getElementById('btnContinuer-' + quizIndex);
-
-      // NE PAS CACHER LES REPONSES - on garde tout visible
       reponses.forEach(function(el, idx) {
         el.classList.remove('correcte', 'incorrecte');
         var icon = el.querySelector('.result-icon');
         if (idx === reponseData.reponseIndex) {
-          if (reponseData.correct) { 
-            el.classList.add('correcte'); 
-            icon.textContent = '✓'; 
-          } else { 
-            el.classList.add('incorrecte'); 
-            icon.textContent = '✗'; 
-          }
+          if (reponseData.correct) { el.classList.add('correcte'); icon.textContent = '✓'; }
+          else { el.classList.add('incorrecte'); icon.textContent = '✗'; }
         } else if (slide.reponses[idx] && slide.reponses[idx].correct) {
           el.classList.add('correcte');
           icon.textContent = '✓';
@@ -1361,8 +1369,6 @@
           icon.textContent = '';
         }
       });
-
-      // Afficher la correction DANS le feedback (en bas)
       if (reponseData.correct) {
         bonneReponse.textContent = '✓ Bonne réponse !';
         bonneReponse.className = 'bonne-reponse';
@@ -1371,12 +1377,10 @@
         bonneReponse.textContent = '✗ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
         bonneReponse.className = 'mauvaise-reponse';
       }
-
       feedback.classList.add('visible');
       setTimeout(function() {
         btnContinuer.classList.add('visible');
       }, 400);
-
       verifierQuizComplets();
     }
 
