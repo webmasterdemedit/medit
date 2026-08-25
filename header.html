@@ -28,7 +28,17 @@ function deconnecter() {
   }
 }
 
-// Fonction globale pour mettre à jour l'affichage du header
+// Attendre que le DOM soit complètement chargé AVANT de vérifier
+document.addEventListener('DOMContentLoaded', function() {
+  var id = localStorage.getItem('etudiant_id');
+  var adminLink = document.getElementById('adminLink');
+  if (id === 'admin' && adminLink) {
+    adminLink.style.display = 'inline-block';
+  }
+});
+
+// ET aussi après chaque fetch (pour les pages qui chargent le header dynamiquement)
+// On expose une fonction globale que les pages pourront appeler
 window.mettreAJourHeader = function() {
   var id = localStorage.getItem('etudiant_id');
   var adminLink = document.getElementById('adminLink');
@@ -37,10 +47,6 @@ window.mettreAJourHeader = function() {
   }
 };
 
-// Exécuter immédiatement si le DOM est chargé, sinon attendre
-if (document.readyState === 'loading') {
-  document.addEventListener('DOMContentLoaded', window.mettreAJourHeader);
-} else {
-  window.mettreAJourHeader();
-}
+// Si une page appelle déjà mettreAJourHeader, ça marchera
+// Sinon, DOMContentLoaded fera le travail
 </script>
