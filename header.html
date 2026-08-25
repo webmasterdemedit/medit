@@ -10,7 +10,7 @@
       </div>
     </div>
     <nav class="header-nav" id="headerNav">
-      <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
+            <a href="/medit/admin.html" class="header-link">Admin</a>
       <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
       <button onclick="deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
@@ -27,26 +27,4 @@ function deconnecter() {
     window.location.href = '/medit/index.html';
   }
 }
-
-// Attendre que le DOM soit complètement chargé AVANT de vérifier
-document.addEventListener('DOMContentLoaded', function() {
-  var id = localStorage.getItem('etudiant_id');
-  var adminLink = document.getElementById('adminLink');
-  if (id === 'admin' && adminLink) {
-    adminLink.style.display = 'inline-block';
-  }
-});
-
-// ET aussi après chaque fetch (pour les pages qui chargent le header dynamiquement)
-// On expose une fonction globale que les pages pourront appeler
-window.mettreAJourHeader = function() {
-  var id = localStorage.getItem('etudiant_id');
-  var adminLink = document.getElementById('adminLink');
-  if (id === 'admin' && adminLink) {
-    adminLink.style.display = 'inline-block';
-  }
-};
-
-// Si une page appelle déjà mettreAJourHeader, ça marchera
-// Sinon, DOMContentLoaded fera le travail
 </script>
