@@ -643,66 +643,61 @@
     // ============================================================
     // PARSEUR - AVEC ORDRE ET CARTES ANKI
     // ============================================================
-    function parserContenu(texte) {
+   function parserContenu(texte) {
   var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
   if (!texte) return result;
 
-  var lignes = texte.split('\n');
-  
-  for (var i = 0; i < lignes.length; i++) {
-    var ligne = lignes[i].trim();
-    if (!ligne) continue;
+  // 🔥 On découpe sur " | " (espace + pipe + espace)
+  var elements = texte.split(' | ');
+
+  var i = 0;
+  while (i < elements.length) {
+    var ligne = elements[i].trim();
+    if (!ligne) { i++; continue; }
 
     // On garde tout dans l'ordre
     if (ligne.startsWith('-s-')) {
       result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+      i++;
     } else if (ligne.startsWith('-q-')) {
-      // On ajoute ici directement tout le quiz
       var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-      // On récupère les réponses qui suivent (on continue à avancer)
-      var j = i + 1;
-      while (j < lignes.length && (lignes[j].trim().startsWith('-v-') || lignes[j].trim().startsWith('-f-'))) {
-        var repLigne = lignes[j].trim();
+      i++;
+      while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
+        var repLigne = elements[i].trim();
         var correct = repLigne.startsWith('-v-');
         var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
         quiz.reponses.push({ texte: texteRep, correct: correct });
-        j++;
+        i++;
       }
-      // On met à jour i pour sauter les réponses déjà traitées
-      i = j - 1;
       result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
     } else if (ligne.startsWith('-qs-')) {
-      // Question ouverte : on la laisse dans l'ordre
       result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
+      i++;
     } else if (ligne.startsWith('-o-')) {
-      // Ordre : on récupère les éléments qui suivent
       var ordreElements = [];
-      var j = i + 1;
-      while (j < lignes.length && lignes[j].trim().match(/^-\d+-/)) {
-        ordreElements.push(lignes[j].trim());
-        j++;
+      i++;
+      while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
+        ordreElements.push(elements[i].trim());
+        i++;
       }
-      i = j - 1;
       result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
     } else if (ligne.startsWith('-cr-')) {
-      // Carte : on récupère le recto et le verso qui suit
       var recto = ligne.replace('-cr-', '').trim() || 'Question';
       var verso = '';
-      if (i + 1 < lignes.length && lignes[i + 1].trim().startsWith('-cv-')) {
-        verso = lignes[i + 1].trim().replace('-cv-', '').trim() || 'Réponse';
-        i++; // on saute le verso
+      i++;
+      if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
+        verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
+        i++;
       }
       result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
     } else if (ligne.startsWith('-r-')) {
-      // Retenir
       var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
       result.slides.push({ type: 'retenir', mots: mots });
+      i++;
     } else if (ligne.startsWith('-i-')) {
-      // Information : on l'ignore ou on la transforme en slide ?
-      // Tu peux décider. Pour l'instant on l'ignore.
+      i++;
     } else {
-      // Si ce n'est pas un marqueur, on le traite comme du texte normal
-      // Mais normalement tu n'auras pas de texte brut
+      i++;
     }
   }
 
