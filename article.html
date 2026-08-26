@@ -36,7 +36,7 @@
       margin-bottom: 16px;
     }
     .slide-content {
-      padding: 40px 50px;
+      padding: 50px 50px 30px 50px;
       height: 100%;
       overflow-y: auto;
       display: flex;
@@ -136,12 +136,9 @@
       padding: 12px 16px;
       border: 1px solid var(--border);
       cursor: pointer;
-      transition: all 0.2s;
+      transition: border-color 0.2s;
       font-family: 'Inter', sans-serif;
-    }
-    .quiz-reponse:hover {
-      background: var(--bg-hover);
-      border-color: var(--border-hover);
+      background: transparent;
     }
     .quiz-reponse .lettre {
       font-weight: 600;
@@ -154,15 +151,12 @@
     }
     .quiz-reponse.correcte {
       border-color: var(--text);
-      background: var(--bg-active);
     }
     .quiz-reponse.incorrecte {
       border-color: var(--border-hover);
-      background: var(--bg-hover);
     }
     .quiz-reponse.selectionnee {
       border-color: var(--text);
-      background: var(--bg-active);
     }
     .quiz-feedback {
       margin-top: 16px;
@@ -360,7 +354,7 @@
     }
 
     /* ============================================================
-       STYLES POUR L'ORDRE
+       STYLES POUR L'ORDRE - DRAG & DROP
        ============================================================ */
     .ordre-content .ordre-list {
       display: flex;
@@ -374,8 +368,22 @@
       gap: 12px;
       padding: 10px 16px;
       border: 1px solid var(--border);
-      background: var(--bg-hover);
-      cursor: default;
+      background: var(--bg);
+      cursor: grab;
+      transition: border-color 0.2s;
+      user-select: none;
+      -webkit-user-select: none;
+    }
+    .ordre-content .ordre-item:active {
+      cursor: grabbing;
+    }
+    .ordre-content .ordre-item.dragging {
+      opacity: 0.5;
+      border-color: var(--text);
+    }
+    .ordre-content .ordre-item.drag-over {
+      border-color: var(--text);
+      border-style: dashed;
     }
     .ordre-content .ordre-item .ordre-num {
       font-weight: 600;
@@ -388,28 +396,14 @@
       font-family: 'Merriweather', serif;
       font-size: 16px;
     }
-    .ordre-content .ordre-item .ordre-boutons {
-      display: flex;
-      gap: 4px;
+    .ordre-content .ordre-item .ordre-grip {
+      color: var(--text-muted);
+      font-size: 18px;
+      cursor: grab;
+      padding: 0 4px;
     }
-    .ordre-content .ordre-item .ordre-boutons button {
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      cursor: pointer;
-      padding: 2px 10px;
-      font-size: 14px;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-    }
-    .ordre-content .ordre-item .ordre-boutons button:hover {
-      background: var(--bg-active);
-      color: var(--text);
-      border-color: var(--border-hover);
-    }
-    .ordre-content .ordre-item .ordre-boutons button:disabled {
-      opacity: 0.3;
-      cursor: not-allowed;
+    .ordre-content .ordre-item .ordre-grip:active {
+      cursor: grabbing;
     }
     .ordre-content .btn-valider-ordre {
       margin-top: 16px;
@@ -550,52 +544,79 @@
     }
 
     /* ============================================================
-       BARRE DE PROGRESSION - points noir/blanc
+       POINTS DE PROGRESSION - UNIQUEMENT POUR LES SLIDES DE TEST
        ============================================================ */
-    .slide-progress {
+    .slide-test .progress-dots {
       display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 16px;
-      background: var(--bg);
+      gap: 5px;
+      justify-content: center;
+      padding-bottom: 12px;
+      margin-bottom: 8px;
       border-bottom: 1px solid var(--border);
-      font-family: 'Inter', sans-serif;
-      font-size: 12px;
-      color: var(--text-secondary);
-      position: sticky;
-      top: 0;
-      z-index: 5;
     }
-    .slide-progress .sp-type {
-      display: flex;
-      align-items: center;
-      gap: 4px;
-      font-size: 13px;
-      letter-spacing: 0.3px;
-    }
-    .slide-progress .sp-dots {
-      display: flex;
-      gap: 4px;
-      margin-left: 12px;
-    }
-    .slide-progress .sp-dot {
-      width: 7px;
-      height: 7px;
+    .slide-test .progress-dots .dot {
+      width: 8px;
+      height: 8px;
       border-radius: 50%;
       background: var(--border);
       transition: background 0.3s ease;
     }
-    .slide-progress .sp-dot.done {
+    .slide-test .progress-dots .dot.done {
       background: var(--text-secondary);
     }
-    .slide-progress .sp-dot.current {
+    .slide-test .progress-dots .dot.current {
       background: var(--text);
     }
-    .slide-progress .sp-counter {
-      margin-left: auto;
-      font-size: 11px;
-      color: var(--text-muted);
-      letter-spacing: 0.2px;
+
+    /* ============================================================
+       RESPONSIVE
+       ============================================================ */
+    @media (max-width: 768px) {
+      .slide-content {
+        padding: 40px 20px 20px 20px;
+      }
+      .slide-test .progress-dots .dot {
+        width: 6px;
+        height: 6px;
+      }
+      .slide-test .progress-dots {
+        gap: 4px;
+        padding-bottom: 10px;
+      }
+      .quiz-content .quiz-question {
+        font-size: 17px;
+      }
+      .carte-content .carte-face {
+        font-size: 15px;
+        padding: 20px 16px;
+        min-height: 140px;
+      }
+      .carte-content .carte-inner {
+        min-height: 140px;
+      }
+      .carte-content .carte-container {
+        min-height: 140px;
+      }
+      .ordre-content .ordre-item .ordre-texte {
+        font-size: 14px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .slide-content {
+        padding: 30px 14px 16px 14px;
+      }
+      .slide-test .progress-dots .dot {
+        width: 5px;
+        height: 5px;
+      }
+      .slide-test .progress-dots {
+        gap: 3px;
+        padding-bottom: 8px;
+      }
+      .quiz-content .quiz-question {
+        font-size: 15px;
+      }
     }
   </style>
 </head>
@@ -613,13 +634,6 @@
       <button class="btn-close" id="btnFermer">✕</button>
     </div>
   </header>
-
-  <!-- BARRE DE PROGRESSION -->
-  <div class="slide-progress" id="slideProgress">
-    <span class="sp-type" id="spType">⬜ Lecture</span>
-    <span class="sp-dots" id="spDots"></span>
-    <span class="sp-counter" id="spCounter">1 / 1</span>
-  </div>
 
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
@@ -695,7 +709,7 @@
     }
 
     function parserContenu(texte) {
-      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
+      var result = { slides: [] };
       if (!texte) return result;
 
       var elements = texte.split(' | ');
@@ -772,6 +786,10 @@
       slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
     }
 
+    function estSlideDeTest(type) {
+      return type === 'quiz' || type === 'open' || type === 'ordre' || type === 'carte';
+    }
+
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
@@ -787,7 +805,8 @@
       var html = '';
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
-        html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
+        var testClass = estSlideDeTest(slide.type) ? ' slide-test' : '';
+        html += '<div class="slide-wrapper' + activeClass + testClass + '" data-index="' + index + '" id="slide-' + index + '">';
         html += '<div class="slide-content';
         if (slide.type === 'quiz') html += ' quiz-content';
         else if (slide.type === 'open') html += ' open-content';
@@ -795,6 +814,11 @@
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
         html += '" id="slideContent-' + index + '">';
+
+        // Points de progression (uniquement pour les slides de test)
+        if (estSlideDeTest(slide.type)) {
+          html += '<div class="progress-dots" id="progressDots-' + index + '"></div>';
+        }
 
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
@@ -958,20 +982,17 @@
 
       var html = '';
       html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">Remettez dans l\'ordre</h3>';
-      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Utilisez les boutons ↑↓ pour réorganiser les éléments.</p>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Glissez-déposez les éléments pour les réorganiser.</p>';
       html += '<div class="ordre-list" id="ordre-list-' + index + '">';
 
       for (var i = 0; i < shuffled.length; i++) {
         var num = shuffled[i].match(/^-(\d+)-/);
         var numValue = num ? num[1] : (i + 1);
         var texte = shuffled[i].replace(/^-\d+-/, '').trim();
-        html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
+        html += '<div class="ordre-item" draggable="true" data-pos="' + i + '" data-num="' + numValue + '">';
         html += '<span class="ordre-num">#' + (i + 1) + '</span>';
         html += '<span class="ordre-texte">' + texte + '</span>';
-        html += '<div class="ordre-boutons">';
-        html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
-        html += '<button onclick="deplacerOrdre(this, 1, ' + index + ')" ' + (i === shuffled.length - 1 ? 'disabled' : '') + '>↓</button>';
-        html += '</div>';
+        html += '<span class="ordre-grip">⠿</span>';
         html += '</div>';
       }
 
@@ -984,31 +1005,80 @@
       return html;
     }
 
-    function deplacerOrdre(btn, direction, index) {
-      var item = btn.closest('.ordre-item');
-      var list = item.closest('.ordre-list');
+    function initDragDrop(index) {
+      var list = document.getElementById('ordre-list-' + index);
+      if (!list) return;
       var items = list.querySelectorAll('.ordre-item');
-      var currentIdx = Array.from(items).indexOf(item);
-      var newIdx = currentIdx + direction;
 
-      if (newIdx < 0 || newIdx >= items.length) return;
+      items.forEach(function(item) {
+        item.addEventListener('dragstart', function(e) {
+          e.dataTransfer.setData('text/plain', item.dataset.pos);
+          setTimeout(function() { item.classList.add('dragging'); }, 0);
+        });
 
-      if (direction < 0) {
-        list.insertBefore(item, items[newIdx]);
-      } else {
-        list.insertBefore(items[newIdx], item);
-      }
+        item.addEventListener('dragend', function(e) {
+          item.classList.remove('dragging');
+          items.forEach(function(el) { el.classList.remove('drag-over'); });
+        });
 
-      var allItems = list.querySelectorAll('.ordre-item');
-      allItems.forEach(function(el, idx) {
-        var numSpan = el.querySelector('.ordre-num');
-        if (numSpan) numSpan.textContent = '#' + (idx + 1);
-        var upBtn = el.querySelector('.ordre-boutons button:first-child');
-        var downBtn = el.querySelector('.ordre-boutons button:last-child');
-        if (upBtn) upBtn.disabled = (idx === 0);
-        if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
+        item.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          var dragging = list.querySelector('.dragging');
+          if (!dragging) return;
+          var rect = item.getBoundingClientRect();
+          var mid = rect.top + rect.height / 2;
+          if (e.clientY < mid) {
+            list.insertBefore(dragging, item);
+          } else {
+            list.insertBefore(dragging, item.nextSibling);
+          }
+          reordonnerListe(list);
+        });
+
+        // Support tactile
+        var grip = item.querySelector('.ordre-grip');
+        if (grip) {
+          var touchStartY = 0;
+          var touchItem = null;
+
+          grip.addEventListener('touchstart', function(e) {
+            touchItem = item;
+            touchStartY = e.touches[0].clientY;
+            item.classList.add('dragging');
+          }, { passive: true });
+
+          grip.addEventListener('touchmove', function(e) {
+            e.preventDefault();
+            if (!touchItem) return;
+            var touchY = e.touches[0].clientY;
+            var itemsList = list.querySelectorAll('.ordre-item:not(.dragging)');
+            var insertBefore = null;
+            itemsList.forEach(function(el) {
+              var rect = el.getBoundingClientRect();
+              var mid = rect.top + rect.height / 2;
+              if (touchY > mid && touchY < rect.bottom + 20) {
+                insertBefore = el.nextSibling;
+              } else if (touchY < mid && touchY > rect.top - 20) {
+                insertBefore = el;
+              }
+            });
+            if (insertBefore !== undefined && insertBefore !== touchItem) {
+              list.insertBefore(touchItem, insertBefore);
+              reordonnerListe(list);
+            }
+          }, { passive: false });
+
+          grip.addEventListener('touchend', function(e) {
+            if (touchItem) {
+              touchItem.classList.remove('dragging');
+              touchItem = null;
+              reordonnerListe(list);
+            }
+          }, { passive: true });
+        }
       });
 
+      // Réinitialiser les résultats
       var resultat = document.getElementById('ordreResultat-' + index);
       if (resultat) {
         resultat.textContent = '';
@@ -1017,6 +1087,17 @@
       etat.ordreValide[index] = false;
       var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
       if (btnContinuer) btnContinuer.classList.remove('visible');
+      var btnValider = document.getElementById('btnValiderOrdre-' + index);
+      if (btnValider) btnValider.disabled = false;
+    }
+
+    function reordonnerListe(list) {
+      var items = list.querySelectorAll('.ordre-item');
+      items.forEach(function(el, idx) {
+        var numSpan = el.querySelector('.ordre-num');
+        if (numSpan) numSpan.textContent = '#' + (idx + 1);
+        el.dataset.pos = idx;
+      });
     }
 
     function validerOrdre(index) {
@@ -1420,35 +1501,23 @@
       var current = etat.currentIndex;
       var slide = etat.slides[current];
 
-      var types = {
-        'slide': '⬜ Lecture',
-        'quiz': '⬜ Quiz',
-        'open': '⬜ Question ouverte',
-        'ordre': '⬜ Ordre',
-        'carte': '⬜ Carte',
-        'retenir': '⬜ À retenir'
-      };
+      // Ne mettre à jour que les slides de test
+      if (!estSlideDeTest(slide.type)) return;
 
-      var typeEl = document.getElementById('spType');
-      var dotsEl = document.getElementById('spDots');
-      var counterEl = document.getElementById('spCounter');
+      var dotsContainer = document.getElementById('progressDots-' + current);
+      if (!dotsContainer) return;
 
-      if (typeEl) typeEl.textContent = types[slide.type] || '⬜ Slide';
-      if (counterEl) counterEl.textContent = (current + 1) + ' / ' + total;
+      dotsContainer.innerHTML = '';
+      var maxDots = Math.min(total, 12);
+      var step = Math.max(1, Math.floor(total / maxDots));
 
-      if (dotsEl) {
-        dotsEl.innerHTML = '';
-        var maxDots = Math.min(total, 12);
-        var step = Math.max(1, Math.floor(total / maxDots));
-
-        for (var i = 0; i < maxDots; i++) {
-          var dot = document.createElement('span');
-          dot.className = 'sp-dot';
-          var slideIndex = i * step;
-          if (slideIndex < current) dot.classList.add('done');
-          else if (slideIndex === current) dot.classList.add('current');
-          dotsEl.appendChild(dot);
-        }
+      for (var i = 0; i < maxDots; i++) {
+        var dot = document.createElement('span');
+        dot.className = 'dot';
+        var slideIndex = i * step;
+        if (slideIndex < current) dot.classList.add('done');
+        else if (slideIndex === current) dot.classList.add('current');
+        dotsContainer.appendChild(dot);
       }
     }
 
@@ -1530,6 +1599,19 @@
       `;
     }
 
+    // Initialiser le drag & drop après le rendu
+    var observer = new MutationObserver(function() {
+      var ordreLists = document.querySelectorAll('.ordre-list');
+      ordreLists.forEach(function(list) {
+        if (!list.dataset.initialized) {
+          list.dataset.initialized = 'true';
+          var index = list.id.replace('ordre-list-', '');
+          initDragDrop(parseInt(index));
+        }
+      });
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
     window.slideSuivante = slideSuivante;
@@ -1537,7 +1619,6 @@
     window.fermerLiseuse = fermerLiseuse;
     window.toggleNote = toggleNote;
     window.autoSaveNote = autoSaveNote;
-    window.deplacerOrdre = deplacerOrdre;
     window.validerOrdre = validerOrdre;
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
