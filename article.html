@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#121212" />
   <title>Lecture</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬜⬜⬜</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
@@ -736,7 +736,7 @@
       document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
 
       if (etat.slides.length === 0) {
-        container.innerHTML = '<div class="lecture-error"><div class="icone">📖</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
+        container.innerHTML = '<div class="lecture-error"><div class="icone">⬜⬜⬜</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
         return;
       }
 
@@ -1075,8 +1075,8 @@
       html += '</div>';
       html += '</div>';
       html += '<div class="carte-boutons" id="carteBoutons-' + index + '">';
-      html += '<button class="btn-trouve" onclick="carteTrouve(' + index + ')">✅ J\'ai trouvé</button>';
-      html += '<button onclick="cartePasTrouve(' + index + ')">❌ Je n\'ai pas trouvé</button>';
+      html += '<button class="btn-trouve" onclick="carteTrouve(' + index + ')">☑ J\'ai trouvé</button>';
+      html += '<button onclick="cartePasTrouve(' + index + ')">◻ Je n\'ai pas trouvé</button>';
       html += '</div>';
       html += '<div class="carte-resultat" id="carteResultat-' + index + '"></div>';
       html += '<div class="carte-progression" id="carteProgression-' + index + '"></div>';
@@ -1113,7 +1113,7 @@
       etat.cartesBonnes++;
       etat.cartesTotal++;
 
-      resultat.textContent = '✅ Bien joué !';
+      resultat.textContent = '☑ Bien joué !';
       resultat.style.color = 'var(--text)';
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
@@ -1134,7 +1134,7 @@
       etat.cartesResultats[index] = false;
       etat.cartesTotal++;
 
-      resultat.textContent = '❌ Pas de problème, retenez bien la réponse.';
+      resultat.textContent = '☹ Pas de problème, retenez bien la réponse.';
       resultat.style.color = 'var(--text-secondary)';
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
@@ -1268,7 +1268,7 @@
       var badge = document.getElementById('badgeStatut');
       if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
       else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
-      else { badge.textContent = '⏳ En cours'; badge.className = 'badge-statut en-attente'; }
+      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
     }
 
     function sauvegarderQuiz() {
@@ -1451,7 +1451,7 @@
       if (timers[index]) clearTimeout(timers[index]);
       var indicator = document.getElementById('noteIndicator-' + index);
       if (indicator) {
-        indicator.textContent = '⏳ Enregistrement...';
+        indicator.textContent = '⏱ Enregistrement...';
         indicator.className = 'note-indicator';
       }
       timers[index] = setTimeout(function() {
@@ -1479,7 +1479,7 @@
               indicator.className = 'note-indicator saved';
               etat.notes[index] = note;
             } else {
-              indicator.textContent = '⚠️ Erreur de sauvegarde';
+              indicator.textContent = '⚠︎ Erreur de sauvegarde';
               indicator.className = 'note-indicator';
             }
           }
@@ -1487,7 +1487,7 @@
         .catch(function() {
           var indicator = document.getElementById('noteIndicator-' + index);
           if (indicator) {
-            indicator.textContent = '⚠️ Erreur réseau';
+            indicator.textContent = '⚠︎ Erreur réseau';
             indicator.className = 'note-indicator';
           }
         });
@@ -1503,7 +1503,7 @@
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
         <div class="lecture-error">
-          <div class="icone">📖</div>
+          <div class="icone">⬜⬜⬜</div>
           <h2>Texte introuvable</h2>
           <p>${message || 'Le texte n\'existe pas.'}</p>
           <a href="/medit/mes-textes.html" class="btn-retour">← Retour</a>
