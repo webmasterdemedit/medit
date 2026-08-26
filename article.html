@@ -820,79 +820,37 @@
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-  function preparerSlides(post) {
-  var slides = [];
-  var contenu = post.contenu || '';
-  var parsed = parserContenu(contenu);
+    function preparerSlides(post) {
+      var slides = [];
+      var contenu = post.contenu || '';
+      var parsed = parserContenu(contenu);
 
-  var tousLesElements = [];
+      parsed.slides.forEach(function(s) {
+        slides.push({ type: 'slide', contenu: s.contenu });
+      });
 
-  parsed.slides.forEach(function(s) {
-    tousLesElements.push({ type: 'slide', contenu: s.contenu });
-  });
+      parsed.quizs.forEach(function(q) {
+        slides.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: slides.length });
+      });
 
-  parsed.quizs.forEach(function(q) {
-    tousLesElements.push({ type: 'quiz', question: q.question, reponses: q.reponses, index: tousLesElements.length });
-  });
+      parsed.openQuestions.forEach(function(q) {
+        slides.push({ type: 'open', question: q, index: slides.length });
+      });
 
-  parsed.openQuestions.forEach(function(q) {
-    tousLesElements.push({ type: 'open', question: q, index: tousLesElements.length });
-  });
+      parsed.ordres.forEach(function(o) {
+        slides.push({ type: 'ordre', elements: o.elements, index: slides.length });
+      });
 
-  parsed.ordres.forEach(function(o) {
-    tousLesElements.push({ type: 'ordre', elements: o.elements, index: tousLesElements.length });
-  });
+      parsed.cartes.forEach(function(c) {
+        slides.push({ type: 'carte', recto: c.recto, verso: c.verso, index: slides.length });
+      });
 
-  parsed.cartes.forEach(function(c) {
-    tousLesElements.push({ type: 'carte', recto: c.recto, verso: c.verso, index: tousLesElements.length });
-  });
-
-  if (parsed.retenir && parsed.retenir.length > 0) {
-    tousLesElements.push({ type: 'retenir', mots: parsed.retenir });
-  }
-
-  var ordreMarqueurs = [];
-  var texte = contenu;
-  
-  // AJOUT : reconnaître -o- comme ordre
-  var marqueurs = texte.match(/-[a-z]+-|-qs-|-cr-|-cv-|-o-|-r-|-i-|-\d+-/g);
-  if (marqueurs) {
-    marqueurs.forEach(function(m) {
-      if (m === '-s-') ordreMarqueurs.push('slide');
-      else if (m === '-q-') ordreMarqueurs.push('quiz');
-      else if (m === '-qs-') ordreMarqueurs.push('open');
-      else if (m === '-o-') ordreMarqueurs.push('ordre');  // <-- AJOUTÉ
-      else if (m === '-cr-') ordreMarqueurs.push('carte');
-      else if (m === '-r-') ordreMarqueurs.push('retenir');
-    });
-  }
-
-  if (ordreMarqueurs.length > 0) {
-    var slidesOrdonnees = [];
-    
-    for (var i = 0; i < ordreMarqueurs.length; i++) {
-      var type = ordreMarqueurs[i];
-      for (var j = 0; j < tousLesElements.length; j++) {
-        if (tousLesElements[j].type === type && slidesOrdonnees.indexOf(tousLesElements[j]) === -1) {
-          slidesOrdonnees.push(tousLesElements[j]);
-          break;
-        }
+      if (parsed.retenir && parsed.retenir.length > 0) {
+        slides.push({ type: 'retenir', mots: parsed.retenir });
       }
+
+      etat.slides = slides;
     }
-    
-    tousLesElements.forEach(function(el) {
-      if (slidesOrdonnees.indexOf(el) === -1) {
-        slidesOrdonnees.push(el);
-      }
-    });
-    
-    slides = slidesOrdonnees;
-  } else {
-    slides = tousLesElements;
-  }
-
-  etat.slides = slides;
-}
 
     function ajusterTaillePolice(slideContent) {
       if (!slideContent) return;
