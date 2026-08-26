@@ -825,10 +825,8 @@
   var contenu = post.contenu || '';
   var parsed = parserContenu(contenu);
 
-  // Créer un tableau avec tous les éléments dans l'ordre du parsing
   var tousLesElements = [];
 
-  // Ajouter chaque type dans l'ordre où ils ont été trouvés par le parseur
   parsed.slides.forEach(function(s) {
     tousLesElements.push({ type: 'slide', contenu: s.contenu });
   });
@@ -853,32 +851,27 @@
     tousLesElements.push({ type: 'retenir', mots: parsed.retenir });
   }
 
-  // Maintenant, on va réorganiser selon l'ordre d'apparition dans le texte original
-  // On va chercher l'ordre des marqueurs dans le contenu original
   var ordreMarqueurs = [];
   var texte = contenu;
   
-  // Extraire tous les marqueurs dans l'ordre
+  // AJOUT : reconnaître -o- comme ordre
   var marqueurs = texte.match(/-[a-z]+-|-qs-|-cr-|-cv-|-o-|-r-|-i-|-\d+-/g);
   if (marqueurs) {
     marqueurs.forEach(function(m) {
       if (m === '-s-') ordreMarqueurs.push('slide');
       else if (m === '-q-') ordreMarqueurs.push('quiz');
       else if (m === '-qs-') ordreMarqueurs.push('open');
-      else if (m === '-o-') ordreMarqueurs.push('ordre');
+      else if (m === '-o-') ordreMarqueurs.push('ordre');  // <-- AJOUTÉ
       else if (m === '-cr-') ordreMarqueurs.push('carte');
       else if (m === '-r-') ordreMarqueurs.push('retenir');
     });
   }
 
-  // Si on a trouvé des marqueurs, on trie les slides selon cet ordre
   if (ordreMarqueurs.length > 0) {
     var slidesOrdonnees = [];
-    var indexMarqueur = 0;
     
     for (var i = 0; i < ordreMarqueurs.length; i++) {
       var type = ordreMarqueurs[i];
-      // Trouver le premier élément de ce type qui n'a pas encore été pris
       for (var j = 0; j < tousLesElements.length; j++) {
         if (tousLesElements[j].type === type && slidesOrdonnees.indexOf(tousLesElements[j]) === -1) {
           slidesOrdonnees.push(tousLesElements[j]);
@@ -887,7 +880,6 @@
       }
     }
     
-    // Ajouter les éléments restants qui n'ont pas été trouvés
     tousLesElements.forEach(function(el) {
       if (slidesOrdonnees.indexOf(el) === -1) {
         slidesOrdonnees.push(el);
@@ -896,7 +888,6 @@
     
     slides = slidesOrdonnees;
   } else {
-    // Fallback : garder l'ordre du parsing
     slides = tousLesElements;
   }
 
