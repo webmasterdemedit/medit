@@ -51,6 +51,7 @@
       font-family: 'Merriweather', serif;
       font-weight: 300;
       text-align: justify;
+      transition: font-size 0.2s ease;
     }
     .pagination-text {
       text-align: center;
@@ -59,6 +60,109 @@
       font-size: 15px;
       color: var(--text-secondary);
     }
+
+    /* ============================================================
+       BARRE DE PROGRESSION DES EXERCICES
+       ============================================================ */
+    .progression-exercices {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+      align-items: center;
+      padding: 8px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      background: var(--bg-hover);
+      border-bottom: 1px solid var(--border);
+      margin-bottom: 8px;
+      flex-wrap: wrap;
+      min-height: 44px;
+      border-radius: 0;
+    }
+
+    .progression-exercices .etape {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      transition: all 0.3s;
+      cursor: default;
+      user-select: none;
+    }
+
+    .progression-exercices .etape .num {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      font-size: 11px;
+      font-weight: 600;
+      background: var(--border);
+      color: var(--text-muted);
+      transition: all 0.3s;
+      flex-shrink: 0;
+    }
+
+    .progression-exercices .etape .label {
+      font-weight: 400;
+      transition: all 0.3s;
+      font-size: 13px;
+    }
+
+    /* Étape courante */
+    .progression-exercices .etape.courante .num {
+      background: var(--text);
+      color: var(--bg);
+      box-shadow: 0 0 0 2px var(--text), 0 0 0 4px var(--bg);
+    }
+
+    .progression-exercices .etape.courante .label {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Étape terminée (validée) */
+    .progression-exercices .etape.terminee .num {
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .progression-exercices .etape.terminee .label {
+      color: var(--text);
+    }
+
+    .progression-exercices .etape.terminee .icone-validation {
+      font-size: 14px;
+    }
+
+    /* Étape en attente (pas encore faite) */
+    .progression-exercices .etape.attente .num {
+      background: var(--border);
+      color: var(--text-muted);
+    }
+
+    .progression-exercices .etape.attente .label {
+      color: var(--text-muted);
+    }
+
+    /* Séparateur entre les étapes */
+    .progression-exercices .separateur {
+      color: var(--border);
+      font-size: 14px;
+      user-select: none;
+    }
+
+    .progression-exercices .etape .icone-validation {
+      font-size: 13px;
+      margin-left: 2px;
+    }
+
+    /* ============================================================ */
+
     .note-toggle {
       position: absolute;
       bottom: 16px;
@@ -565,6 +669,13 @@
     </div>
   </header>
 
+  <!-- ============================================================
+       BARRE DE PROGRESSION DES EXERCICES
+       ============================================================ -->
+  <div class="progression-exercices" id="progressionExercices">
+    <!-- Rempli dynamiquement par JavaScript -->
+  </div>
+
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
       <div class="spinner"></div>
@@ -588,9 +699,7 @@
       statutFinal: null,
       enTransition: false,
       notes: {},
-      // Pour l'ordre
       ordreValide: {},
-      // Pour les cartes
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
@@ -643,75 +752,77 @@
     // ============================================================
     // PARSEUR - AVEC ORDRE ET CARTES ANKI
     // ============================================================
-   function parserContenu(texte) {
-  var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
-  if (!texte) return result;
+    function parserContenu(texte) {
+      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
+      if (!texte) return result;
 
-  // 🔥 On découpe sur " | " (espace + pipe + espace)
-  var elements = texte.split(' | ');
+      var elements = texte.split(' | ');
 
-  var i = 0;
-  while (i < elements.length) {
-    var ligne = elements[i].trim();
-    if (!ligne) { i++; continue; }
+      var i = 0;
+      while (i < elements.length) {
+        var ligne = elements[i].trim();
+        if (!ligne) { i++; continue; }
 
-    // On garde tout dans l'ordre
-    if (ligne.startsWith('-s-')) {
-      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
-      i++;
-    } else if (ligne.startsWith('-q-')) {
-      var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-      i++;
-      while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
-        var repLigne = elements[i].trim();
-        var correct = repLigne.startsWith('-v-');
-        var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
-        quiz.reponses.push({ texte: texteRep, correct: correct });
-        i++;
+        if (ligne.startsWith('-s-')) {
+          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+          i++;
+        } else if (ligne.startsWith('-q-')) {
+          var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+          i++;
+          while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
+            var repLigne = elements[i].trim();
+            var correct = repLigne.startsWith('-v-');
+            var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
+            quiz.reponses.push({ texte: texteRep, correct: correct });
+            i++;
+          }
+          result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
+        } else if (ligne.startsWith('-qs-')) {
+          result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
+          i++;
+        } else if (ligne.startsWith('-o-')) {
+          var ordreElements = [];
+          i++;
+          while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
+            ordreElements.push(elements[i].trim());
+            i++;
+          }
+          result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
+        } else if (ligne.startsWith('-cr-')) {
+          var recto = ligne.replace('-cr-', '').trim() || 'Question';
+          var verso = '';
+          i++;
+          if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
+            verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
+            i++;
+          }
+          result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
+        } else if (ligne.startsWith('-r-')) {
+          var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+          result.slides.push({ type: 'retenir', mots: mots });
+          i++;
+        } else if (ligne.startsWith('-i-')) {
+          i++;
+        } else {
+          i++;
+        }
       }
-      result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
-    } else if (ligne.startsWith('-qs-')) {
-      result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
-      i++;
-    } else if (ligne.startsWith('-o-')) {
-      var ordreElements = [];
-      i++;
-      while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
-        ordreElements.push(elements[i].trim());
-        i++;
-      }
-      result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
-    } else if (ligne.startsWith('-cr-')) {
-      var recto = ligne.replace('-cr-', '').trim() || 'Question';
-      var verso = '';
-      i++;
-      if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
-        verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
-        i++;
-      }
-      result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
-    } else if (ligne.startsWith('-r-')) {
-      var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-      result.slides.push({ type: 'retenir', mots: mots });
-      i++;
-    } else if (ligne.startsWith('-i-')) {
-      i++;
-    } else {
-      i++;
+
+      return result;
     }
-  }
 
-  return result;
-}
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
     function preparerSlides(post) {
-  var contenu = post.contenu || '';
-  var parsed = parserContenu(contenu);
-  etat.slides = parsed.slides; // On prend tout directement
-}
+      var contenu = post.contenu || '';
+      var parsed = parserContenu(contenu);
+      etat.slides = parsed.slides;
+    }
 
+    // ============================================================
+    // ADAPTER LA TAILLE DU TEXTE SELON LA LONGUEUR
+    // ============================================================
     function ajusterTaillePolice(slideContent) {
       if (!slideContent) return;
       var text = slideContent.textContent || '';
@@ -721,6 +832,9 @@
       if (length > 800) fontSize = 15;
       if (length > 1200) fontSize = 13;
       if (length > 1800) fontSize = 12;
+      if (length > 2500) fontSize = 11;
+      // Limites pour ne pas être trop petit ou trop grand
+      fontSize = Math.max(11, Math.min(24, fontSize));
       slideContent.style.fontSize = fontSize + 'px';
       slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
     }
@@ -777,21 +891,28 @@
           html += afficherRetenir(slide);
         }
 
-        // Note toggle
         // Note toggle - UNIQUEMENT sur les slides normaux
-if (slide.type === 'slide') {
-  html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
-  html += '<div class="note-area" id="noteArea-' + index + '">';
-  html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
-  html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
-  html += '</div>';
-}
+        if (slide.type === 'slide') {
+          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
+          html += '<div class="note-area" id="noteArea-' + index + '">';
+          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
+          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
+          html += '</div>';
+        }
 
         html += '</div>';
         html += '</div>';
       });
 
       container.innerHTML = html;
+
+      // Ajuster la taille du texte pour chaque slide
+      etat.slides.forEach(function(slide, index) {
+        var content = document.getElementById('slideContent-' + index);
+        if (content && slide.type === 'slide') {
+          ajusterTaillePolice(content);
+        }
+      });
 
       // Restaurer les notes
       for (var slideNum in etat.notes) {
@@ -860,6 +981,97 @@ if (slide.type === 'slide') {
 
       recupererStatutExistant();
       mettreAJourPagination();
+      mettreAJourProgression();
+    }
+
+    // ============================================================
+    // BARRE DE PROGRESSION DES EXERCICES
+    // ============================================================
+    function mettreAJourProgression() {
+      var container = document.getElementById('progressionExercices');
+      if (!container) return;
+
+      var exercices = [];
+      var typesExercices = ['quiz', 'ordre', 'carte', 'open'];
+
+      etat.slides.forEach(function(slide, index) {
+        if (typesExercices.indexOf(slide.type) !== -1) {
+          exercices.push({
+            index: index,
+            type: slide.type,
+            slide: slide,
+            termine: false
+          });
+        }
+      });
+
+      if (exercices.length === 0) {
+        container.style.display = 'none';
+        return;
+      }
+
+      // Déterminer l'état de chaque exercice
+      exercices.forEach(function(ex) {
+        if (ex.type === 'quiz') {
+          ex.termine = etat.reponsesQuiz[ex.slide.index] !== undefined;
+        } else if (ex.type === 'ordre') {
+          ex.termine = etat.ordreValide[ex.slide.index] === true;
+        } else if (ex.type === 'carte') {
+          ex.termine = etat.cartesResultats[ex.slide.index] !== null;
+        } else if (ex.type === 'open') {
+          var textarea = document.getElementById('openReponse-' + ex.slide.index);
+          ex.termine = textarea ? textarea.disabled : false;
+        }
+      });
+
+      // Trouver l'exercice courant
+      var exerciceCourantIndex = -1;
+      for (var i = 0; i < exercices.length; i++) {
+        if (exercices[i].index === etat.currentIndex) {
+          exerciceCourantIndex = i;
+          break;
+        }
+        // Si on est sur un slide qui n'est pas un exercice, on garde le dernier exercice en cours
+        if (i === exercices.length - 1 && exerciceCourantIndex === -1) {
+          exerciceCourantIndex = i;
+        }
+      }
+
+      var labels = {
+        'quiz': 'Quiz',
+        'ordre': 'Ordre',
+        'carte': 'Carte',
+        'open': 'Question ouverte'
+      };
+
+      var html = '';
+      exercices.forEach(function(ex, idx) {
+        var classe = 'etape';
+        var estCourant = (idx === exerciceCourantIndex);
+
+        if (ex.termine) {
+          classe += ' terminee';
+        } else if (estCourant) {
+          classe += ' courante';
+        } else {
+          classe += ' attente';
+        }
+
+        var numero = idx + 1;
+        var label = labels[ex.type] || ex.type;
+        var icone = ex.termine ? ' ✓' : '';
+
+        html += '<span class="' + classe + '">';
+        html += '<span class="num">' + numero + '</span>';
+        html += '<span class="label">' + label + icone + '</span>';
+        html += '</span>';
+
+        if (idx < exercices.length - 1) {
+          html += '<span class="separateur">›</span>';
+        }
+      });
+
+      container.innerHTML = html;
     }
 
     // ============================================================
@@ -915,11 +1127,10 @@ if (slide.type === 'slide') {
     }
 
     // ============================================================
-    // AFFICHER ORDRE (NOUVEAU)
+    // AFFICHER ORDRE
     // ============================================================
     function afficherOrdre(slide, index) {
       var elements = slide.elements || [];
-      // Mélanger les éléments
       var shuffled = elements.slice();
       for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -968,26 +1179,22 @@ if (slide.type === 'slide') {
 
       if (newIdx < 0 || newIdx >= items.length) return;
 
-      // Mettre à jour le DOM
       if (direction < 0) {
         list.insertBefore(item, items[newIdx]);
       } else {
         list.insertBefore(items[newIdx], item);
       }
 
-      // Mettre à jour les numéros d'affichage
       var allItems = list.querySelectorAll('.ordre-item');
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
         if (numSpan) numSpan.textContent = '#' + (idx + 1);
-        // Mettre à jour les boutons
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
         if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
       });
 
-      // Cacher les résultats précédents
       var resultat = document.getElementById('ordreResultat-' + index);
       if (resultat) {
         resultat.textContent = '';
@@ -1031,7 +1238,6 @@ if (slide.type === 'slide') {
         resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
         resultat.className = 'ordre-resultat correct';
         etat.ordreValide[index] = true;
-        // Sauvegarder
         sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
         if (btnContinuer) btnContinuer.classList.add('visible');
         if (btnValider) btnValider.disabled = true;
@@ -1039,9 +1245,9 @@ if (slide.type === 'slide') {
         resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
         resultat.className = 'ordre-resultat incorrect';
         etat.ordreValide[index] = false;
-        // Sauvegarder l'échec
         sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
       }
+      mettreAJourProgression();
     }
 
     // ============================================================
@@ -1066,7 +1272,7 @@ if (slide.type === 'slide') {
     }
 
     // ============================================================
-    // AFFICHER CARTE ANKI (NOUVEAU)
+    // AFFICHER CARTE ANKI
     // ============================================================
     function afficherCarte(slide, index) {
       var html = '';
@@ -1122,6 +1328,7 @@ if (slide.type === 'slide') {
       if (btnContinuer) btnContinuer.classList.add('visible');
 
       sauvegarderCarte(index);
+      mettreAJourProgression();
     }
 
     // ============================================================
@@ -1143,21 +1350,19 @@ if (slide.type === 'slide') {
       if (btnContinuer) btnContinuer.classList.add('visible');
 
       sauvegarderCarte(index);
+      mettreAJourProgression();
     }
 
     // ============================================================
     // SAUVEGARDER LES CARTES
     // ============================================================
     function sauvegarderCarte(index) {
-      // Compter toutes les cartes du slide
       var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
       if (!slide) return;
 
-      // Récupérer toutes les cartes de ce slide (une seule pour l'instant)
       var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
       var totalCartes = toutesLesCartes.length;
 
-      // Construire la chaîne des résultats
       var resultats = [];
       toutesLesCartes.forEach(function(c) {
         if (etat.cartesResultats[c.index] === true) resultats.push('1');
@@ -1187,7 +1392,7 @@ if (slide.type === 'slide') {
     }
 
     // ============================================================
-    // FONCTIONS QUIZ (existantes)
+    // FONCTIONS QUIZ
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -1245,6 +1450,7 @@ if (slide.type === 'slide') {
         btnContinuer.classList.add('visible');
       }, 400);
       verifierQuizComplets();
+      mettreAJourProgression();
     }
 
     function verifierQuizComplets() {
@@ -1326,6 +1532,7 @@ if (slide.type === 'slide') {
             btn.textContent = '✓ Envoyé';
             setTimeout(function() {
               btnContinuer.classList.add('visible');
+              mettreAJourProgression();
             }, 400);
           } else {
             alert('Erreur : ' + (data.message || 'Impossible d\'envoyer.'));
@@ -1403,6 +1610,7 @@ if (slide.type === 'slide') {
       if (next) next.classList.add('active');
       etat.currentIndex++;
       mettreAJourPagination();
+      mettreAJourProgression();
       setTimeout(function() {
         etat.enTransition = false;
       }, 850);
@@ -1418,6 +1626,7 @@ if (slide.type === 'slide') {
       if (prev) prev.classList.add('active');
       etat.currentIndex--;
       mettreAJourPagination();
+      mettreAJourProgression();
       setTimeout(function() {
         etat.enTransition = false;
       }, 850);
