@@ -548,6 +548,55 @@
       color: var(--text-muted);
       margin-top: 8px;
     }
+
+    /* ============================================================
+       BARRE DE PROGRESSION - points noir/blanc
+       ============================================================ */
+    .slide-progress {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 16px;
+      background: var(--bg);
+      border-bottom: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary);
+      position: sticky;
+      top: 0;
+      z-index: 5;
+    }
+    .slide-progress .sp-type {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 13px;
+      letter-spacing: 0.3px;
+    }
+    .slide-progress .sp-dots {
+      display: flex;
+      gap: 4px;
+      margin-left: 12px;
+    }
+    .slide-progress .sp-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--border);
+      transition: background 0.3s ease;
+    }
+    .slide-progress .sp-dot.done {
+      background: var(--text-secondary);
+    }
+    .slide-progress .sp-dot.current {
+      background: var(--text);
+    }
+    .slide-progress .sp-counter {
+      margin-left: auto;
+      font-size: 11px;
+      color: var(--text-muted);
+      letter-spacing: 0.2px;
+    }
   </style>
 </head>
 <body>
@@ -564,6 +613,13 @@
       <button class="btn-close" id="btnFermer">✕</button>
     </div>
   </header>
+
+  <!-- BARRE DE PROGRESSION -->
+  <div class="slide-progress" id="slideProgress">
+    <span class="sp-type" id="spType">⬜ Lecture</span>
+    <span class="sp-dots" id="spDots"></span>
+    <span class="sp-counter" id="spCounter">1 / 1</span>
+  </div>
 
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
@@ -588,9 +644,7 @@
       statutFinal: null,
       enTransition: false,
       notes: {},
-      // Pour l'ordre
       ordreValide: {},
-      // Pour les cartes
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
@@ -640,77 +694,70 @@
         .catch(function(e) { console.error('Erreur récupération notes:', e); });
     }
 
-    // ============================================================
-    // PARSEUR - AVEC ORDRE ET CARTES ANKI
-    // ============================================================
-   function parserContenu(texte) {
-  var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
-  if (!texte) return result;
+    function parserContenu(texte) {
+      var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
+      if (!texte) return result;
 
-  // 🔥 On découpe sur " | " (espace + pipe + espace)
-  var elements = texte.split(' | ');
+      var elements = texte.split(' | ');
 
-  var i = 0;
-  while (i < elements.length) {
-    var ligne = elements[i].trim();
-    if (!ligne) { i++; continue; }
+      var i = 0;
+      while (i < elements.length) {
+        var ligne = elements[i].trim();
+        if (!ligne) { i++; continue; }
 
-    // On garde tout dans l'ordre
-    if (ligne.startsWith('-s-')) {
-      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
-      i++;
-    } else if (ligne.startsWith('-q-')) {
-      var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-      i++;
-      while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
-        var repLigne = elements[i].trim();
-        var correct = repLigne.startsWith('-v-');
-        var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
-        quiz.reponses.push({ texte: texteRep, correct: correct });
-        i++;
+        if (ligne.startsWith('-s-')) {
+          result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+          i++;
+        } else if (ligne.startsWith('-q-')) {
+          var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+          i++;
+          while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
+            var repLigne = elements[i].trim();
+            var correct = repLigne.startsWith('-v-');
+            var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
+            quiz.reponses.push({ texte: texteRep, correct: correct });
+            i++;
+          }
+          result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
+        } else if (ligne.startsWith('-qs-')) {
+          result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
+          i++;
+        } else if (ligne.startsWith('-o-')) {
+          var ordreElements = [];
+          i++;
+          while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
+            ordreElements.push(elements[i].trim());
+            i++;
+          }
+          result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
+        } else if (ligne.startsWith('-cr-')) {
+          var recto = ligne.replace('-cr-', '').trim() || 'Question';
+          var verso = '';
+          i++;
+          if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
+            verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
+            i++;
+          }
+          result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
+        } else if (ligne.startsWith('-r-')) {
+          var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+          result.slides.push({ type: 'retenir', mots: mots });
+          i++;
+        } else if (ligne.startsWith('-i-')) {
+          i++;
+        } else {
+          i++;
+        }
       }
-      result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
-    } else if (ligne.startsWith('-qs-')) {
-      result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
-      i++;
-    } else if (ligne.startsWith('-o-')) {
-      var ordreElements = [];
-      i++;
-      while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
-        ordreElements.push(elements[i].trim());
-        i++;
-      }
-      result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
-    } else if (ligne.startsWith('-cr-')) {
-      var recto = ligne.replace('-cr-', '').trim() || 'Question';
-      var verso = '';
-      i++;
-      if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
-        verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
-        i++;
-      }
-      result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
-    } else if (ligne.startsWith('-r-')) {
-      var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-      result.slides.push({ type: 'retenir', mots: mots });
-      i++;
-    } else if (ligne.startsWith('-i-')) {
-      i++;
-    } else {
-      i++;
+
+      return result;
     }
-  }
 
-  return result;
-}
-    // ============================================================
-    // PRÉPARER LES SLIDES
-    // ============================================================
     function preparerSlides(post) {
-  var contenu = post.contenu || '';
-  var parsed = parserContenu(contenu);
-  etat.slides = parsed.slides; // On prend tout directement
-}
+      var contenu = post.contenu || '';
+      var parsed = parserContenu(contenu);
+      etat.slides = parsed.slides;
+    }
 
     function ajusterTaillePolice(slideContent) {
       if (!slideContent) return;
@@ -725,9 +772,6 @@
       slideContent.style.lineHeight = (fontSize * 1.8) + 'px';
     }
 
-    // ============================================================
-    // AFFICHER LES SLIDES
-    // ============================================================
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
@@ -777,15 +821,13 @@
           html += afficherRetenir(slide);
         }
 
-        // Note toggle
-        // Note toggle - UNIQUEMENT sur les slides normaux
-if (slide.type === 'slide') {
-  html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
-  html += '<div class="note-area" id="noteArea-' + index + '">';
-  html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
-  html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
-  html += '</div>';
-}
+        if (slide.type === 'slide') {
+          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
+          html += '<div class="note-area" id="noteArea-' + index + '">';
+          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
+          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
+          html += '</div>';
+        }
 
         html += '</div>';
         html += '</div>';
@@ -793,7 +835,6 @@ if (slide.type === 'slide') {
 
       container.innerHTML = html;
 
-      // Restaurer les notes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -806,7 +847,6 @@ if (slide.type === 'slide') {
         }
       }
 
-      // Navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -860,11 +900,9 @@ if (slide.type === 'slide') {
 
       recupererStatutExistant();
       mettreAJourPagination();
+      mettreAJourProgression();
     }
 
-    // ============================================================
-    // AFFICHER QUIZ
-    // ============================================================
     function afficherQuiz(slide) {
       var html = '';
       html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
@@ -885,9 +923,6 @@ if (slide.type === 'slide') {
       return html;
     }
 
-    // ============================================================
-    // AFFICHER QUESTION OUVERTE
-    // ============================================================
     function afficherOpen(slide) {
       var html = '';
       html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
@@ -898,9 +933,6 @@ if (slide.type === 'slide') {
       return html;
     }
 
-    // ============================================================
-    // AFFICHER RETENIR
-    // ============================================================
     function afficherRetenir(slide) {
       var html = '';
       html += '<div class="retenir-label">♡ À retenir</div>';
@@ -914,12 +946,8 @@ if (slide.type === 'slide') {
       return html;
     }
 
-    // ============================================================
-    // AFFICHER ORDRE (NOUVEAU)
-    // ============================================================
     function afficherOrdre(slide, index) {
       var elements = slide.elements || [];
-      // Mélanger les éléments
       var shuffled = elements.slice();
       for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -956,9 +984,6 @@ if (slide.type === 'slide') {
       return html;
     }
 
-    // ============================================================
-    // DÉPLACER DANS L'ORDRE
-    // ============================================================
     function deplacerOrdre(btn, direction, index) {
       var item = btn.closest('.ordre-item');
       var list = item.closest('.ordre-list');
@@ -968,26 +993,22 @@ if (slide.type === 'slide') {
 
       if (newIdx < 0 || newIdx >= items.length) return;
 
-      // Mettre à jour le DOM
       if (direction < 0) {
         list.insertBefore(item, items[newIdx]);
       } else {
         list.insertBefore(items[newIdx], item);
       }
 
-      // Mettre à jour les numéros d'affichage
       var allItems = list.querySelectorAll('.ordre-item');
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
         if (numSpan) numSpan.textContent = '#' + (idx + 1);
-        // Mettre à jour les boutons
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
         if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
       });
 
-      // Cacher les résultats précédents
       var resultat = document.getElementById('ordreResultat-' + index);
       if (resultat) {
         resultat.textContent = '';
@@ -998,9 +1019,6 @@ if (slide.type === 'slide') {
       if (btnContinuer) btnContinuer.classList.remove('visible');
     }
 
-    // ============================================================
-    // VALIDER L'ORDRE
-    // ============================================================
     function validerOrdre(index) {
       var list = document.getElementById('ordre-list-' + index);
       if (!list) return;
@@ -1031,7 +1049,6 @@ if (slide.type === 'slide') {
         resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
         resultat.className = 'ordre-resultat correct';
         etat.ordreValide[index] = true;
-        // Sauvegarder
         sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
         if (btnContinuer) btnContinuer.classList.add('visible');
         if (btnValider) btnValider.disabled = true;
@@ -1039,14 +1056,10 @@ if (slide.type === 'slide') {
         resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
         resultat.className = 'ordre-resultat incorrect';
         etat.ordreValide[index] = false;
-        // Sauvegarder l'échec
         sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
       }
     }
 
-    // ============================================================
-    // SAUVEGARDER L'ORDRE
-    // ============================================================
     function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveOrdre' +
@@ -1065,9 +1078,6 @@ if (slide.type === 'slide') {
         .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
-    // ============================================================
-    // AFFICHER CARTE ANKI (NOUVEAU)
-    // ============================================================
     function afficherCarte(slide, index) {
       var html = '';
       html += '<div class="carte-indicateur">Cliquez sur la carte pour la retourner</div>';
@@ -1089,9 +1099,6 @@ if (slide.type === 'slide') {
       return html;
     }
 
-    // ============================================================
-    // RETOURNER UNE CARTE
-    // ============================================================
     function retournerCarte(index) {
       var inner = document.getElementById('carteInner-' + index);
       if (!inner) return;
@@ -1102,9 +1109,6 @@ if (slide.type === 'slide') {
       if (boutons) boutons.classList.add('visible');
     }
 
-    // ============================================================
-    // CARTE TROUVÉE
-    // ============================================================
     function carteTrouve(index) {
       var resultat = document.getElementById('carteResultat-' + index);
       var boutons = document.getElementById('carteBoutons-' + index);
@@ -1124,9 +1128,6 @@ if (slide.type === 'slide') {
       sauvegarderCarte(index);
     }
 
-    // ============================================================
-    // CARTE PAS TROUVÉE
-    // ============================================================
     function cartePasTrouve(index) {
       var resultat = document.getElementById('carteResultat-' + index);
       var boutons = document.getElementById('carteBoutons-' + index);
@@ -1145,19 +1146,13 @@ if (slide.type === 'slide') {
       sauvegarderCarte(index);
     }
 
-    // ============================================================
-    // SAUVEGARDER LES CARTES
-    // ============================================================
     function sauvegarderCarte(index) {
-      // Compter toutes les cartes du slide
       var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
       if (!slide) return;
 
-      // Récupérer toutes les cartes de ce slide (une seule pour l'instant)
       var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
       var totalCartes = toutesLesCartes.length;
 
-      // Construire la chaîne des résultats
       var resultats = [];
       toutesLesCartes.forEach(function(c) {
         if (etat.cartesResultats[c.index] === true) resultats.push('1');
@@ -1186,9 +1181,6 @@ if (slide.type === 'slide') {
         .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
 
-    // ============================================================
-    // FONCTIONS QUIZ (existantes)
-    // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
@@ -1298,9 +1290,6 @@ if (slide.type === 'slide') {
       }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
-    // ============================================================
-    // QUESTION OUVERTE
-    // ============================================================
     function envoyerReponseOuverte(event, index) {
       if (event) event.stopPropagation();
       var textarea = document.getElementById('openReponse-' + index);
@@ -1340,9 +1329,6 @@ if (slide.type === 'slide') {
         });
     }
 
-    // ============================================================
-    // RÉCUPÉRER STATUT EXISTANT
-    // ============================================================
     function recupererStatutExistant() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
@@ -1364,9 +1350,6 @@ if (slide.type === 'slide') {
         .catch(function(e) { console.error('Erreur récupération statut:', e); });
     }
 
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
     function slideSuivante() {
       if (etat.enTransition) return;
       if (etat.currentIndex >= etat.slides.length - 1) return;
@@ -1403,6 +1386,7 @@ if (slide.type === 'slide') {
       if (next) next.classList.add('active');
       etat.currentIndex++;
       mettreAJourPagination();
+      mettreAJourProgression();
       setTimeout(function() {
         etat.enTransition = false;
       }, 850);
@@ -1418,6 +1402,7 @@ if (slide.type === 'slide') {
       if (prev) prev.classList.add('active');
       etat.currentIndex--;
       mettreAJourPagination();
+      mettreAJourProgression();
       setTimeout(function() {
         etat.enTransition = false;
       }, 850);
@@ -1430,9 +1415,43 @@ if (slide.type === 'slide') {
       }
     }
 
-    // ============================================================
-    // NOTES
-    // ============================================================
+    function mettreAJourProgression() {
+      var total = etat.slides.length;
+      var current = etat.currentIndex;
+      var slide = etat.slides[current];
+
+      var types = {
+        'slide': '⬜ Lecture',
+        'quiz': '⬜ Quiz',
+        'open': '⬜ Question ouverte',
+        'ordre': '⬜ Ordre',
+        'carte': '⬜ Carte',
+        'retenir': '⬜ À retenir'
+      };
+
+      var typeEl = document.getElementById('spType');
+      var dotsEl = document.getElementById('spDots');
+      var counterEl = document.getElementById('spCounter');
+
+      if (typeEl) typeEl.textContent = types[slide.type] || '⬜ Slide';
+      if (counterEl) counterEl.textContent = (current + 1) + ' / ' + total;
+
+      if (dotsEl) {
+        dotsEl.innerHTML = '';
+        var maxDots = Math.min(total, 12);
+        var step = Math.max(1, Math.floor(total / maxDots));
+
+        for (var i = 0; i < maxDots; i++) {
+          var dot = document.createElement('span');
+          dot.className = 'sp-dot';
+          var slideIndex = i * step;
+          if (slideIndex < current) dot.classList.add('done');
+          else if (slideIndex === current) dot.classList.add('current');
+          dotsEl.appendChild(dot);
+        }
+      }
+    }
+
     function toggleNote(index) {
       var area = document.getElementById('noteArea-' + index);
       var toggle = document.getElementById('noteToggle-' + index);
@@ -1496,9 +1515,6 @@ if (slide.type === 'slide') {
         });
     }
 
-    // ============================================================
-    // FERMER
-    // ============================================================
     function fermerLiseuse() {
       window.location.href = '/medit/mes-textes.html';
     }
@@ -1514,9 +1530,6 @@ if (slide.type === 'slide') {
       `;
     }
 
-    // ============================================================
-    // EXPOSER LES FONCTIONS GLOBALEMENT
-    // ============================================================
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
     window.slideSuivante = slideSuivante;
