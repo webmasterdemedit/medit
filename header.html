@@ -10,7 +10,7 @@
       </div>
     </div>
     <nav class="header-nav" id="headerNav">
-            <a href="/medit/admin.html" class="header-link">Admin</a>
+      <a href="/medit/admin.html" class="header-link">Admin</a>
       <a href="/medit/mes-textes.html" class="header-link">Mes textes</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
       <button onclick="deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
@@ -27,4 +27,21 @@ function deconnecter() {
     window.location.href = '/medit/index.html';
   }
 }
+
+// Auto-injection : si le header est chargé directement dans une page, on le met en haut
+(function() {
+  // Vérifie si le header est déjà présent dans la page
+  if (document.querySelector('.site-header')) {
+    return; // déjà présent, on ne fait rien
+  }
+  
+  // Récupère le HTML du header
+  var headerHTML = document.currentScript.previousElementSibling.outerHTML;
+  
+  // Insère le header en début de body
+  document.body.innerHTML = headerHTML + document.body.innerHTML;
+  
+  // Supprime le script pour éviter une boucle
+  document.currentScript.remove();
+})();
 </script>
