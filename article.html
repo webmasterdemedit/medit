@@ -643,7 +643,10 @@
     // ============================================================
     // PARSEUR - AVEC ORDRE ET CARTES ANKI
     // ============================================================
-   function parserContenu(texte) {
+   // ============================================================
+// PARSEUR - FUSIONNE TOUS LES -s- EN UN SEUL SLIDE
+// ============================================================
+function parserContenu(texte) {
   var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
   if (!texte) return result;
 
@@ -651,54 +654,80 @@
   var elements = texte.split(' | ');
 
   var i = 0;
+  var texteSlide = []; // Buffer pour accumuler le texte des -s-
+  var aFermer = false;
+
   while (i < elements.length) {
     var ligne = elements[i].trim();
     if (!ligne) { i++; continue; }
 
-    // On garde tout dans l'ordre
+    // Si on rencontre un -s-, on accumule le texte
     if (ligne.startsWith('-s-')) {
-      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
+      var contenu = ligne.replace('-s-', '').trim();
+      if (contenu) texteSlide.push(contenu);
       i++;
-    } else if (ligne.startsWith('-q-')) {
-      var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
-      i++;
-      while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
-        var repLigne = elements[i].trim();
-        var correct = repLigne.startsWith('-v-');
-        var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
-        quiz.reponses.push({ texte: texteRep, correct: correct });
+    } 
+    // Si c'est un autre tag, on ferme le slide si besoin
+    else {
+      // Si on avait du texte accumulé, on le push comme un slide
+      if (texteSlide.length > 0) {
+        result.slides.push({ 
+          type: 'slide', 
+          contenu: texteSlide.join('\n') 
+        });
+        texteSlide = [];
+      }
+      
+      // Traiter les autres tags normalement
+      if (ligne.startsWith('-q-')) {
+        var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
+        i++;
+        while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
+          var repLigne = elements[i].trim();
+          var correct = repLigne.startsWith('-v-');
+          var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
+          quiz.reponses.push({ texte: texteRep, correct: correct });
+          i++;
+        }
+        result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
+      } else if (ligne.startsWith('-qs-')) {
+        result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
+        i++;
+      } else if (ligne.startsWith('-o-')) {
+        var ordreElements = [];
+        i++;
+        while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
+          ordreElements.push(elements[i].trim());
+          i++;
+        }
+        result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
+      } else if (ligne.startsWith('-cr-')) {
+        var recto = ligne.replace('-cr-', '').trim() || 'Question';
+        var verso = '';
+        i++;
+        if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
+          verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
+          i++;
+        }
+        result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
+      } else if (ligne.startsWith('-r-')) {
+        var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+        result.slides.push({ type: 'retenir', mots: mots });
+        i++;
+      } else if (ligne.startsWith('-i-')) {
+        i++;
+      } else {
         i++;
       }
-      result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
-    } else if (ligne.startsWith('-qs-')) {
-      result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
-      i++;
-    } else if (ligne.startsWith('-o-')) {
-      var ordreElements = [];
-      i++;
-      while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
-        ordreElements.push(elements[i].trim());
-        i++;
-      }
-      result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
-    } else if (ligne.startsWith('-cr-')) {
-      var recto = ligne.replace('-cr-', '').trim() || 'Question';
-      var verso = '';
-      i++;
-      if (i < elements.length && elements[i].trim().startsWith('-cv-')) {
-        verso = elements[i].trim().replace('-cv-', '').trim() || 'Réponse';
-        i++;
-      }
-      result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
-    } else if (ligne.startsWith('-r-')) {
-      var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-      result.slides.push({ type: 'retenir', mots: mots });
-      i++;
-    } else if (ligne.startsWith('-i-')) {
-      i++;
-    } else {
-      i++;
     }
+  }
+
+  // Si on a du texte accumulé à la fin, on le push
+  if (texteSlide.length > 0) {
+    result.slides.push({ 
+      type: 'slide', 
+      contenu: texteSlide.join('\n') 
+    });
   }
 
   return result;
