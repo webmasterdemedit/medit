@@ -12,61 +12,7 @@
 </head>
 <body>
 
-  <div id="header-container"></div>
-
-  <script>
-    fetch('/medit/header.html')
-      .then(function(response) {
-        if (!response.ok) {
-          throw new Error('Header non trouvé');
-        }
-        return response.text();
-      })
-      .then(function(data) {
-        document.getElementById('header-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement header:', error);
-        document.getElementById('header-container').innerHTML = `
-          <header class="site-header">
-            <div class="header-inner">
-              <div class="header-left">
-                <div class="header-logo">
-                  <a href="/medit/index.html">
-                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
-                    <strong>Qiraat</strong> <i>lecture</i>
-                  </a>
-                </div>
-              </div>
-              <nav class="header-nav" id="headerNav">
-                <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-              </nav>
-            </div>
-          </header>
-        `;
-      });
-
-    function toggleDarkMode() {
-      document.body.classList.toggle('dark-mode');
-      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
-      localStorage.setItem('theme', mode);
-    }
-
-    (function() {
-      var theme = localStorage.getItem('theme');
-      if (theme === 'sombre') {
-        document.body.classList.add('dark-mode');
-      }
-    })();
-
-    function ouvrirConnexion() {
-      window.location.href = '/medit/index.html';
-    }
-
-    function ouvrirInscription() {
-      window.location.href = '/medit/index.html';
-    }
-  </script>
+  <script src="/medit/header-loader.js"></script>
 
   <div class="page">
 
