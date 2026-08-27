@@ -12,31 +12,15 @@
 </head>
 <body>
 
-  <div id="header-container"></div>
-
+  <!-- SOLUTION 2 : OBJECT + SCRIPT POUR METTRE À JOUR LE HEADER -->
+  <object data="/medit/header.html" type="text/html" style="display:block;width:100%;height:auto;" id="headerObject"></object>
+  
   <script>
-    fetch('/medit/header.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('header-container').innerHTML = data;
-        mettreAJourHeader();
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement header:', error);
-        document.getElementById('header-container').innerHTML = `
-          <header class="site-header">
-            <div class="header-inner">
-              <div class="header-logo">
-                <a href="/medit/index.html">✎ <strong>Qiraat</strong></a>
-              </div>
-              <nav class="header-nav" id="headerNav">
-                <a href="#" class="header-link" onclick="ouvrirConnexion(); return false;">Se connecter</a>
-              </nav>
-            </div>
-          </header>
-        `;
-        mettreAJourHeader();
-      });
+    // Attendre que l'objet soit chargé, puis appeler mettreAJourHeader
+    document.getElementById('headerObject').addEventListener('load', function() {
+      // Le contenu du header est chargé, on peut maintenant mettre à jour les liens
+      mettreAJourHeader();
+    });
 
     function mettreAJourHeader() {
       var id = localStorage.getItem('etudiant_id');
