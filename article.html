@@ -639,30 +639,19 @@
         })
         .catch(function(e) { console.error('Erreur récupération notes:', e); });
     }
-
-    // ============================================================
-    // PARSEUR - AVEC ORDRE ET CARTES ANKI
-    // ============================================================
-   // ============================================================
-// PARSEUR - FUSIONNE TOUS LES -s- EN UN SEUL SLIDE
 // ============================================================
-// ============================================================
-// PARSEUR - GARDE LE TEXTE AVEC SES SAUTS DE LIGNE
+// PARSEUR - CHAQUE -s- RESTE DANS SON PROPRE SLIDE
 // ============================================================
 function parserContenu(texte) {
   var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
   if (!texte) return result;
 
-  // On garde le texte brut, on ne découpe pas sur " | "
-  // On sépare sur les tags principaux en conservant le texte entre eux
   var tags = ['-s-', '-q-', '-qs-', '-o-', '-cr-', '-r-', '-i-'];
   var elements = [];
-  var current = '';
-  var inTag = false;
+  var buffer = '';
   
   // Découpage intelligent : on garde les sauts de ligne
   var lignes = texte.split('\n');
-  var buffer = '';
   
   for (var i = 0; i < lignes.length; i++) {
     var ligne = lignes[i];
@@ -699,6 +688,7 @@ function parserContenu(texte) {
   // Maintenant on parse les éléments en gardant le texte associé
   var i = 0;
   var texteSlide = ''; // Buffer pour le texte du -s- en cours
+  var enSlide = false;
   
   while (i < elements.length) {
     var ligne = elements[i].trim();
@@ -706,41 +696,47 @@ function parserContenu(texte) {
 
     // Si c'est un -s-
     if (ligne.startsWith('-s-')) {
-      // Si on avait un slide précédent avec du texte, on le sauvegarde
+      // Si on avait un slide précédent, on le sauvegarde
+      if (enSlide && texteSlide) {
+        result.slides.push({ type: 'slide', contenu: texteSlide });
+        texteSlide = '';
+        enSlide = false;
+      }
+      
+      // On commence un nouveau slide
+      var contenu = ligne.replace('-s-', '').trim();
+      texteSlide = contenu;
+      enSlide = true;
+      i++;
+      
+      // On regarde si l'élément suivant est du texte (pas un tag)
+      while (i < elements.length) {
+        var next = elements[i].trim();
+        var estTagSuivant = false;
+        for (var t = 0; t < tags.length; t++) {
+          if (next.startsWith(tags[t])) {
+            estTagSuivant = true;
+            break;
+          }
+        }
+        if (estTagSuivant) {
+          break;
+        } else {
+          // C'est du texte, on l'ajoute au slide
+          texteSlide += '\n' + next;
+          i++;
+        }
+      }
+      
+      // Sauvegarder le slide
       if (texteSlide) {
         result.slides.push({ type: 'slide', contenu: texteSlide });
         texteSlide = '';
-      }
-      // On commence un nouveau slide
-      var contenu = ligne.replace('-s-', '').trim();
-      // Regarder si l'élément suivant est du texte (pas un tag)
-      var next = elements[i + 1] || '';
-      var nextTrimmed = next.trim();
-      var estTag = false;
-      for (var t = 0; t < tags.length; t++) {
-        if (nextTrimmed.startsWith(tags[t])) {
-          estTag = true;
-          break;
-        }
-      }
-      if (contenu && !estTag) {
-        texteSlide = contenu + '\n' + next;
-        i += 2;
-      } else if (contenu) {
-        texteSlide = contenu;
-        i++;
-      } else {
-        i++;
+        enSlide = false;
       }
     } 
     // Si c'est un autre tag
     else if (ligne.startsWith('-q-')) {
-      // Sauvegarder le slide en cours
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-      }
-      
       var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
       i++;
       while (i < elements.length) {
@@ -756,17 +752,9 @@ function parserContenu(texte) {
       }
       result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
     } else if (ligne.startsWith('-qs-')) {
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-      }
       result.slides.push({ type: 'open', question: ligne.replace('-qs-', '').trim() || 'Question ouverte', index: result.slides.length });
       i++;
     } else if (ligne.startsWith('-o-')) {
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-      }
       var ordreElements = [];
       i++;
       while (i < elements.length && elements[i].trim().match(/^-\d+-/)) {
@@ -775,10 +763,6 @@ function parserContenu(texte) {
       }
       result.slides.push({ type: 'ordre', elements: ordreElements, index: result.slides.length });
     } else if (ligne.startsWith('-cr-')) {
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-      }
       var recto = ligne.replace('-cr-', '').trim() || 'Question';
       var verso = '';
       i++;
@@ -788,24 +772,14 @@ function parserContenu(texte) {
       }
       result.slides.push({ type: 'carte', recto: recto, verso: verso, index: result.slides.length });
     } else if (ligne.startsWith('-r-')) {
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-      }
       var mots = ligne.replace('-r-', '').trim().split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
       result.slides.push({ type: 'retenir', mots: mots });
       i++;
     } else if (ligne.startsWith('-i-')) {
       i++;
     } else {
-      // Texte normal qui n'est pas associé à un -s- (ne devrait pas arriver)
       i++;
     }
-  }
-
-  // Sauvegarder le dernier slide s'il existe
-  if (texteSlide) {
-    result.slides.push({ type: 'slide', contenu: texteSlide });
   }
 
   return result;
