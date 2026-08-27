@@ -9,39 +9,38 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
+  
+  <!-- Chargement immédiat du header -->
+  <script src="/medit/header-loader.js"></script>
 </head>
 <body>
 
-  <div id="header-container"></div>
+  <div class="page">
+    <h1>Mes textes</h1>
+    <p class="sous-titre-page">Retrouvez ici toutes les méditations à lire et celles que vous avez déjà validées.</p>
 
- <script src="/medit/header-loader.js"></script>
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Textes disponibles :</span>
+        <span class="nombre" id="totalPosts">0</span>
+      </div>
+    </div>
 
-<div class="page">
-  <h1>Mes textes</h1>
-  <p class="sous-titre-page">Retrouvez ici toutes les méditations à lire et celles que vous avez déjà validées.</p>
+    <div class="tabs-container" id="tabsContainer"></div>
 
-  <div class="stats-ligne" id="statsLigne">
-    <div class="stat-item">
-      <span>Textes disponibles :</span>
-      <span class="nombre" id="totalPosts">0</span>
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Vos textes vont s'afficher ici dans un instant...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
   </div>
 
-  <div class="tabs-container" id="tabsContainer"></div>
-
-  <div id="contenu">
-    <div class="loader" id="loader">
-      <div class="spinner"></div>
-      <p>Vos textes vont s'afficher ici dans un instant...</p>
-    </div>
-  </div>
-
-  <div class="devise">
-    “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
-  </div>
-</div>
-
-<script src="/medit/footer-loader.js"></script>
+  <script src="/medit/footer-loader.js"></script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
@@ -71,7 +70,6 @@
       history.pushState({ categorie: categorie }, '', newUrl);
     }
 
-    // Écouter le retour arrière (bouton précédent/suivant du navigateur)
     window.addEventListener('popstate', function(event) {
       if (event.state && event.state.categorie) {
         var categorie = event.state.categorie;
@@ -342,12 +340,11 @@
           dateValidation = reponse.date || '';
           retenir = reponse.retenir || '';
 
-          // ✅ CORRECTION ICI : estLu doit être true quand le quiz est réussi
           if (total === 1 && bonnes === 1) {
             estLu = true;
             estValide = true;
           } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-            estLu = true;  // ← LIGNE AJOUTÉE
+            estLu = true;
             estValide = true;
           }
         }
@@ -365,7 +362,6 @@
 
         var metaHtml = '';
 
-        // Si le post est lu, afficher les infos de validation
         if (estLu) {
           var resultatHtml = '';
           var questionHtml = '';
