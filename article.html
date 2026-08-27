@@ -639,116 +639,35 @@
         })
         .catch(function(e) { console.error('Erreur récupération notes:', e); });
     }
-// ============================================================
-// PARSEUR - CHAQUE -s- RESTE DANS SON PROPRE SLIDE
-// ============================================================
-function parserContenu(texte) {
+
+    // ============================================================
+    // PARSEUR - AVEC ORDRE ET CARTES ANKI
+    // ============================================================
+   function parserContenu(texte) {
   var result = { slides: [], quizs: [], openQuestions: [], retenir: [], ordres: [], cartes: [] };
   if (!texte) return result;
 
-  var tags = ['-s-', '-q-', '-qs-', '-o-', '-cr-', '-r-', '-i-'];
-  var elements = [];
-  var buffer = '';
-  
-  // Découpage intelligent : on garde les sauts de ligne
-  var lignes = texte.split('\n');
-  
-  for (var i = 0; i < lignes.length; i++) {
-    var ligne = lignes[i];
-    var trimmed = ligne.trim();
-    
-    // Vérifier si la ligne commence par un tag
-    var estTag = false;
-    for (var t = 0; t < tags.length; t++) {
-      if (trimmed.startsWith(tags[t])) {
-        estTag = true;
-        break;
-      }
-    }
-    
-    if (estTag) {
-      // Si on avait du texte accumulé, on le sauvegarde
-      if (buffer.trim()) {
-        elements.push(buffer.trim());
-        buffer = '';
-      }
-      elements.push(trimmed);
-    } else {
-      // C'est du texte normal, on l'accumule
-      if (buffer) buffer += '\n';
-      buffer += ligne;
-    }
-  }
-  
-  // Ajouter le dernier buffer
-  if (buffer.trim()) {
-    elements.push(buffer.trim());
-  }
+  // 🔥 On découpe sur " | " (espace + pipe + espace)
+  var elements = texte.split(' | ');
 
-  // Maintenant on parse les éléments en gardant le texte associé
   var i = 0;
-  var texteSlide = ''; // Buffer pour le texte du -s- en cours
-  var enSlide = false;
-  
   while (i < elements.length) {
     var ligne = elements[i].trim();
     if (!ligne) { i++; continue; }
 
-    // Si c'est un -s-
+    // On garde tout dans l'ordre
     if (ligne.startsWith('-s-')) {
-      // Si on avait un slide précédent, on le sauvegarde
-      if (enSlide && texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-        enSlide = false;
-      }
-      
-      // On commence un nouveau slide
-      var contenu = ligne.replace('-s-', '').trim();
-      texteSlide = contenu;
-      enSlide = true;
+      result.slides.push({ type: 'slide', contenu: ligne.replace('-s-', '').trim() || 'Slide vide' });
       i++;
-      
-      // On regarde si l'élément suivant est du texte (pas un tag)
-      while (i < elements.length) {
-        var next = elements[i].trim();
-        var estTagSuivant = false;
-        for (var t = 0; t < tags.length; t++) {
-          if (next.startsWith(tags[t])) {
-            estTagSuivant = true;
-            break;
-          }
-        }
-        if (estTagSuivant) {
-          break;
-        } else {
-          // C'est du texte, on l'ajoute au slide
-          texteSlide += '\n' + next;
-          i++;
-        }
-      }
-      
-      // Sauvegarder le slide
-      if (texteSlide) {
-        result.slides.push({ type: 'slide', contenu: texteSlide });
-        texteSlide = '';
-        enSlide = false;
-      }
-    } 
-    // Si c'est un autre tag
-    else if (ligne.startsWith('-q-')) {
+    } else if (ligne.startsWith('-q-')) {
       var quiz = { question: ligne.replace('-q-', '').trim() || 'Question', reponses: [] };
       i++;
-      while (i < elements.length) {
-        var nextLigne = elements[i].trim();
-        if (nextLigne.startsWith('-v-') || nextLigne.startsWith('-f-')) {
-          var correct = nextLigne.startsWith('-v-');
-          var texteRep = nextLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
-          quiz.reponses.push({ texte: texteRep, correct: correct });
-          i++;
-        } else {
-          break;
-        }
+      while (i < elements.length && (elements[i].trim().startsWith('-v-') || elements[i].trim().startsWith('-f-'))) {
+        var repLigne = elements[i].trim();
+        var correct = repLigne.startsWith('-v-');
+        var texteRep = repLigne.replace(/^-v-|-f-/, '').trim() || (correct ? 'Vrai' : 'Faux');
+        quiz.reponses.push({ texte: texteRep, correct: correct });
+        i++;
       }
       result.slides.push({ type: 'quiz', question: quiz.question, reponses: quiz.reponses, index: result.slides.length });
     } else if (ligne.startsWith('-qs-')) {
