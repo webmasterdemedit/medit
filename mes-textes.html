@@ -9,13 +9,67 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Segoe+UI:wght@400;600;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
-  
-  <!-- Chargement immédiat du header -->
-  <script src="/medit/header-loader.js"></script>
 </head>
 <body>
 
+  <div id="header-container"></div>
+
+  <script>
+    fetch('/medit/header.html')
+      .then(function(response) {
+        if (!response.ok) {
+          throw new Error('Header non trouvé');
+        }
+        return response.text();
+      })
+      .then(function(data) {
+        document.getElementById('header-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement header:', error);
+        document.getElementById('header-container').innerHTML = `
+          <header class="site-header">
+            <div class="header-inner">
+              <div class="header-left">
+                <div class="header-logo">
+                  <a href="/medit/index.html">
+                    <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
+                    <strong>Qiraat</strong> <i>lecture</i>
+                  </a>
+                </div>
+              </div>
+              <nav class="header-nav" id="headerNav">
+                <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+              </nav>
+            </div>
+          </header>
+        `;
+      });
+
+    function toggleDarkMode() {
+      document.body.classList.toggle('dark-mode');
+      var mode = document.body.classList.contains('dark-mode') ? 'sombre' : 'clair';
+      localStorage.setItem('theme', mode);
+    }
+
+    (function() {
+      var theme = localStorage.getItem('theme');
+      if (theme === 'sombre') {
+        document.body.classList.add('dark-mode');
+      }
+    })();
+
+    function ouvrirConnexion() {
+      window.location.href = '/medit/index.html';
+    }
+
+    function ouvrirInscription() {
+      window.location.href = '/medit/index.html';
+    }
+  </script>
+
   <div class="page">
+
     <h1>Mes textes</h1>
     <p class="sous-titre-page">Retrouvez ici toutes les méditations à lire et celles que vous avez déjà validées.</p>
 
@@ -38,9 +92,27 @@
     <div class="devise">
       “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
     </div>
+
   </div>
 
-  <script src="/medit/footer-loader.js"></script>
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
@@ -70,6 +142,7 @@
       history.pushState({ categorie: categorie }, '', newUrl);
     }
 
+    // Écouter le retour arrière (bouton précédent/suivant du navigateur)
     window.addEventListener('popstate', function(event) {
       if (event.state && event.state.categorie) {
         var categorie = event.state.categorie;
@@ -340,11 +413,12 @@
           dateValidation = reponse.date || '';
           retenir = reponse.retenir || '';
 
+          // ✅ CORRECTION ICI : estLu doit être true quand le quiz est réussi
           if (total === 1 && bonnes === 1) {
             estLu = true;
             estValide = true;
           } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-            estLu = true;
+            estLu = true;  // ← LIGNE AJOUTÉE
             estValide = true;
           }
         }
@@ -362,6 +436,7 @@
 
         var metaHtml = '';
 
+        // Si le post est lu, afficher les infos de validation
         if (estLu) {
           var resultatHtml = '';
           var questionHtml = '';
