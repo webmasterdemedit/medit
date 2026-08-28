@@ -889,17 +889,20 @@
       });
       
       // 2. Quiz - avec parser corrigé
-      if (quiz.trim() !== '') {
-        var quizParsed = parserQuizCorrige(quiz);
-        if (quizParsed && quizParsed.reponses.length > 0) {
-          slidesFinal.push({
-            type: 'quiz',
-            question: quizParsed.question,
-            reponses: quizParsed.reponses,
-            index: slidesFinal.length
-          });
-        }
-      }
+      // 2. Quiz - gère plusieurs quiz
+if (quiz.trim() !== '') {
+  var quizsParsed = parserQuizs(quiz);
+  quizsParsed.forEach(function(qp) {
+    if (qp && qp.reponses.length > 0) {
+      slidesFinal.push({
+        type: 'quiz',
+        question: qp.question,
+        reponses: qp.reponses,
+        index: slidesFinal.length
+      });
+    }
+  });
+}
       
       // 3. Question ouverte
       if (openQuestion.trim() !== '') {
@@ -953,41 +956,59 @@
     // ============================================================
     // PARSEUR QUIZ CORRIGÉ (reconnaît "v" et "f" sans "-")
     // ============================================================
-    function parserQuizCorrige(quizTexte) {
-      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      if (lignes.length === 0) return null;
+    function parserQuizs(quizTexte) {
+  var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+  if (lignes.length === 0) return [];
+  
+  var quizs = [];
+  var currentQuiz = null;
+  
+  for (var i = 0; i < lignes.length; i++) {
+    var ligne = lignes[i];
+    var trimmed = ligne.trim();
+    
+    // 🔥 Détecter une nouvelle question (commence par "q:")
+    if (trimmed.match(/^q:/i)) {
+      // Sauvegarder le quiz précédent s'il existe
+      if (currentQuiz && currentQuiz.reponses.length > 0) {
+        quizs.push(currentQuiz);
+      }
+      // Créer un nouveau quiz
+      currentQuiz = {
+        question: trimmed.replace(/^q:\s*/i, '').trim() || 'Question',
+        reponses: []
+      };
+    } 
+    // Détecter une réponse (commence par "v" ou "f")
+    else if (currentQuiz) {
+      var isCorrect = false;
+      var isFaux = false;
+      var texteRep = trimmed;
       
-      var question = lignes[0].replace(/^q:\s*/i, '').trim() || 'Question';
-      var reponses = [];
-      
-      for (var i = 1; i < lignes.length; i++) {
-        var ligne = lignes[i];
-        var trimmed = ligne.trim();
-        
-        var isCorrect = false;
-        var isFaux = false;
-        var texteRep = trimmed;
-        
-        // 🔥 Détecter les formats : "v Texte", "-v- Texte", "f Texte", "-f- Texte"
-        if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
-          isCorrect = true;
-          texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
-        } else if (/^f\s/i.test(trimmed) || /^-f-\s*/.test(trimmed) || trimmed.toLowerCase() === 'f') {
-          isFaux = true;
-          texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
-        }
-        
-        if (isCorrect || isFaux) {
-          reponses.push({
-            texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
-            correct: isCorrect
-          });
-        }
+      if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
+        isCorrect = true;
+        texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
+      } else if (/^f\s/i.test(trimmed) || /^-f-\s*/.test(trimmed) || trimmed.toLowerCase() === 'f') {
+        isFaux = true;
+        texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
       }
       
-      if (reponses.length === 0) return null;
-      return { question: question, reponses: reponses };
+      if (isCorrect || isFaux) {
+        currentQuiz.reponses.push({
+          texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
+          correct: isCorrect
+        });
+      }
     }
+  }
+  
+  // Ajouter le dernier quiz
+  if (currentQuiz && currentQuiz.reponses.length > 0) {
+    quizs.push(currentQuiz);
+  }
+  
+  return quizs;
+}
 
     // ============================================================
     // PARSEURS SPÉCIFIQUES
