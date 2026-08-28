@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ----- Styles (conservés) ----- */
+    /* ----- Styles ----- */
     .slide-wrapper {
       opacity: 0;
       transition: opacity 0.8s ease-in-out;
@@ -120,6 +120,8 @@
       font-weight: 400;
       letter-spacing: 0.3px;
     }
+
+    /* Quiz */
     .quiz-content .quiz-question {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -199,24 +201,8 @@
       color: var(--text);
       border-color: var(--border-hover);
     }
-    .btn-fermer-slide {
-      margin-top: 12px;
-      padding: 10px 24px;
-      background: transparent;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      cursor: pointer;
-      transition: all 0.2s;
-      display: inline-block;
-      align-self: center;
-    }
-    .btn-fermer-slide:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-      border-color: var(--border-hover);
-    }
+
+    /* Open */
     .open-content .open-question-text {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -268,6 +254,8 @@
       display: none;
     }
     .reponse-confirmation.visible { display: block; }
+
+    /* Retenir */
     .retenir-content .retenir-label {
       font-size: calc(var(--slide-font-size, 18px) * 1.2);
       font-weight: 600;
@@ -290,6 +278,8 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       font-weight: 500;
     }
+
+    /* Ordre */
     .ordre-content .ordre-list {
       display: flex;
       flex-direction: column;
@@ -368,6 +358,8 @@
     }
     .ordre-content .ordre-resultat.correct { color: var(--text); }
     .ordre-content .ordre-resultat.incorrect { color: var(--text-secondary); }
+
+    /* Cartes */
     .carte-content .carte-container {
       perspective: 1000px;
       width: 100%;
@@ -468,6 +460,8 @@
       color: var(--text-muted);
       margin-top: 8px;
     }
+
+    /* Note toggle */
     .note-toggle {
       position: absolute;
       bottom: 16px;
@@ -518,6 +512,8 @@
       font-family: 'Inter', sans-serif;
     }
     .note-area .note-indicator.saved { color: var(--text); }
+
+    /* Header */
     .lecture-header {
       display: flex;
       justify-content: space-between;
@@ -574,6 +570,7 @@
       transition: color 0.2s;
     }
     .btn-close:hover { color: var(--text); }
+
     .lecture-error {
       text-align: center;
       padding: 40px 20px;
@@ -731,10 +728,6 @@
       setFontSize(current - 2);
     }
 
-    // ============================================================
-    // FIN GESTION TAILLE
-    // ============================================================
-
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
@@ -755,6 +748,7 @@
         .then(function(data) {
           if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
           etat.post = data.post;
+          console.log('📦 POST reçu:', etat.post);
           preparerSlides(etat.post);
           recupererNotes();
           afficherSlides();
@@ -785,49 +779,59 @@
     }
 
     // ============================================================
-    // 🔥 PREPARER LES SLIDES - PARCOURT TOUTES LES COLONNES
+    // 🔥 PREPARER LES SLIDES - DÉTECTION DES VRAIS SAUTS DE LIGNE
     // ============================================================
     function preparerSlides(post) {
       var slides = [];
       
-      // 1. Slides normaux (colonne I) - séparés par \n\n
-      if (post.slides) {
-        var slidesData = typeof post.slides === 'string' ? post.slides.split('\n\n') : post.slides;
-        if (Array.isArray(slidesData)) {
-          slidesData.forEach(function(s) {
-            if (s && s.trim()) {
-              slides.push({ type: 'slide', contenu: s.trim() });
-            }
-          });
-        }
+      console.log('📊 post.slides:', post.slides);
+      console.log('📊 type de post.slides:', typeof post.slides);
+      
+      // 1. Slides normaux (colonne I)
+      // post.slides peut être un tableau OU une string avec des \n\n
+      var slidesData = [];
+      
+      if (typeof post.slides === 'string') {
+        // C'est une string, on split sur \n\n
+        slidesData = post.slides.split('\n\n');
+        console.log('📊 Slides string splités:', slidesData.length);
+      } else if (Array.isArray(post.slides)) {
+        // C'est déjà un tableau
+        slidesData = post.slides;
+        console.log('📊 Slides déjà un tableau:', slidesData.length);
       }
       
-      // 2. Quiz (colonne J) - détecté par q:
+      slidesData.forEach(function(s) {
+        if (s && s.trim()) {
+          slides.push({ type: 'slide', contenu: s.trim() });
+        }
+      });
+      
+      // 2. Quiz (colonne J)
       if (post.quiz && post.quiz.trim()) {
         slides.push({ type: 'quiz', contenuBrut: post.quiz });
       }
       
-      // 3. Question ouverte (colonne K) - détecté par qs:
+      // 3. Question ouverte (colonne K)
       if (post.openQ && post.openQ.trim()) {
         slides.push({ type: 'open', contenuBrut: post.openQ });
       }
       
-      // 4. Ordre (colonne L) - détecté par o:
+      // 4. Ordre (colonne L)
       if (post.ordre && post.ordre.trim()) {
         slides.push({ type: 'ordre', contenuBrut: post.ordre });
       }
       
-      // 5. Carte (colonne M) - détecté par r: et v:
+      // 5. Carte (colonne M)
       if (post.carte && post.carte.trim()) {
         slides.push({ type: 'carte', contenuBrut: post.carte });
       }
       
-      // 6. Retenir (colonne N) - détecté par #
+      // 6. Retenir (colonne N)
       if (post.retenir && post.retenir.trim()) {
         slides.push({ type: 'retenir', contenuBrut: post.retenir });
       }
       
-      // 7. Si aucun slide n'a été trouvé, afficher une erreur
       if (slides.length === 0) {
         slides.push({ type: 'error', message: 'Aucun contenu trouvé dans ce post.' });
       }
@@ -906,7 +910,6 @@
         html += '</div>';
       });
 
-      // Reconstruire
       var controls = document.getElementById('fontControlsBottom');
       var loader = document.getElementById('lectureLoader');
       if (loader) loader.style.display = 'none';
@@ -1017,7 +1020,6 @@
         }
       }
       
-      // Stocker les réponses pour le slide
       slide.reponses = reponses;
       slide.question = question;
       slide.index = index;
@@ -1085,7 +1087,6 @@
       slide.elements = elements;
       slide.index = index;
       
-      // Mélanger les éléments
       var shuffled = elements.slice();
       for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
