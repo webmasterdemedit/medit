@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ----- Styles ----- */
+    /* ----- Styles existants (conservés) ----- */
     .slide-wrapper {
       opacity: 0;
       transition: opacity 0.8s ease-in-out;
@@ -36,25 +36,28 @@
       background: var(--bg);
       margin-bottom: 16px;
     }
+    /* Taille de police pilotée par une variable CSS */
     .slide-content {
-      padding: 40px 50px;
-      height: 100%;
-      overflow-y: auto;
-      overflow-x: hidden;
-      display: flex;
-      flex-direction: column;
-      justify-content: flex-start;
-      text-align: justify;
-      font-size: var(--slide-font-size, 18px);
-      line-height: 1.8;
-      width: 100%;
-      box-sizing: border-box;
-      word-wrap: break-word;
-      overflow-wrap: break-word;
-      word-break: break-word;
-      hyphens: auto;
-      -webkit-hyphens: auto;
-    }
+  padding: 40px 50px;
+  height: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;          /* ← empêche le débordement horizontal */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  text-align: justify;
+  font-size: var(--slide-font-size, 18px);
+  line-height: 1.8;
+  width: 100%;
+  box-sizing: border-box;
+
+  /* --- Coupure des mots --- */
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  word-break: break-word;      /* ← force la coupure des mots trop longs */
+  hyphens: auto;               /* ← ajoute les traits d'union (-) */
+  -webkit-hyphens: auto;
+}
     .slide-content p {
       margin: 0 0 12px 0;
       line-height: 1.8;
@@ -70,6 +73,10 @@
       font-size: 15px;
       color: var(--text-secondary);
     }
+
+    /* ============================================================
+       CONTROLE DE TAILLE - EN BAS À DROITE (moderne & minimaliste)
+       ============================================================ */
     .font-control-bottom {
       position: absolute;
       bottom: 16px;
@@ -121,7 +128,7 @@
       letter-spacing: 0.3px;
     }
 
-    /* Quiz */
+    /* ----- Le reste des styles (quiz, ordre, cartes, etc.) ----- */
     .quiz-content .quiz-question {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -180,8 +187,12 @@
     .quiz-feedback.visible {
       display: block;
     }
-    .bonne-reponse { color: var(--text); }
-    .mauvaise-reponse { color: var(--text-secondary); }
+    .bonne-reponse {
+      color: var(--text);
+    }
+    .mauvaise-reponse {
+      color: var(--text-secondary);
+    }
     .btn-continuer {
       margin-top: 20px;
       padding: 10px 24px;
@@ -195,14 +206,32 @@
       display: none;
       align-self: center;
     }
-    .btn-continuer.visible { display: inline-block; }
+    .btn-continuer.visible {
+      display: inline-block;
+    }
     .btn-continuer:hover {
       background: var(--bg-hover);
       color: var(--text);
       border-color: var(--border-hover);
     }
-
-    /* Open */
+    .btn-fermer-slide {
+      margin-top: 12px;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: inline-block;
+      align-self: center;
+    }
+    .btn-fermer-slide:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
     .open-content .open-question-text {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -253,9 +282,9 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       display: none;
     }
-    .reponse-confirmation.visible { display: block; }
-
-    /* Retenir */
+    .reponse-confirmation.visible {
+      display: block;
+    }
     .retenir-content .retenir-label {
       font-size: calc(var(--slide-font-size, 18px) * 1.2);
       font-weight: 600;
@@ -277,6 +306,71 @@
       font-family: 'Inter', sans-serif;
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       font-weight: 500;
+    }
+    .lecture-error {
+      text-align: center;
+      padding: 40px 20px;
+      font-family: 'Inter', sans-serif;
+    }
+    .lecture-error .icone {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .lecture-error h2 {
+      font-size: 20px;
+      margin-bottom: 8px;
+    }
+    .lecture-error p {
+      color: var(--text-secondary);
+      margin-bottom: 20px;
+    }
+    .btn-retour {
+      display: inline-block;
+      padding: 10px 24px;
+      background: transparent;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn-retour:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+    .lecture-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      gap: 12px;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-secondary);
+    }
+    .lecture-loader .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    .slide-content::-webkit-scrollbar {
+      width: 6px;
+    }
+    .slide-content::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slide-content::-webkit-scrollbar-thumb {
+      background: var(--border);
+    }
+    .slide-content::-webkit-scrollbar-thumb:hover {
+      background: var(--border-hover);
     }
 
     /* Ordre */
@@ -356,8 +450,12 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       text-align: center;
     }
-    .ordre-content .ordre-resultat.correct { color: var(--text); }
-    .ordre-content .ordre-resultat.incorrect { color: var(--text-secondary); }
+    .ordre-content .ordre-resultat.correct {
+      color: var(--text);
+    }
+    .ordre-content .ordre-resultat.incorrect {
+      color: var(--text-secondary);
+    }
 
     /* Cartes */
     .carte-content .carte-container {
@@ -461,7 +559,7 @@
       margin-top: 8px;
     }
 
-    /* Note toggle */
+    /* Note toggle (stylo) - reste en bas à gauche */
     .note-toggle {
       position: absolute;
       bottom: 16px;
@@ -474,8 +572,12 @@
       z-index: 10;
       transition: all 0.2s;
     }
-    .note-toggle:hover { color: var(--text); }
-    .note-toggle.active { color: var(--text); }
+    .note-toggle:hover {
+      color: var(--text);
+    }
+    .note-toggle.active {
+      color: var(--text);
+    }
     .note-area {
       position: absolute;
       bottom: 60px;
@@ -487,7 +589,9 @@
       display: none;
       z-index: 10;
     }
-    .note-area.visible { display: block; }
+    .note-area.visible {
+      display: block;
+    }
     .note-area textarea {
       width: 100%;
       background: transparent;
@@ -511,9 +615,11 @@
       margin-top: 4px;
       font-family: 'Inter', sans-serif;
     }
-    .note-area .note-indicator.saved { color: var(--text); }
+    .note-area .note-indicator.saved {
+      color: var(--text);
+    }
 
-    /* Header */
+    /* Header lecture (sans les commandes de taille) */
     .lecture-header {
       display: flex;
       justify-content: space-between;
@@ -569,72 +675,8 @@
       padding: 4px 8px;
       transition: color 0.2s;
     }
-    .btn-close:hover { color: var(--text); }
-
-    .lecture-error {
-      text-align: center;
-      padding: 40px 20px;
-      font-family: 'Inter', sans-serif;
-    }
-    .lecture-error .icone {
-      font-size: 48px;
-      margin-bottom: 16px;
-    }
-    .lecture-error h2 {
-      font-size: 20px;
-      margin-bottom: 8px;
-    }
-    .lecture-error p {
-      color: var(--text-secondary);
-      margin-bottom: 20px;
-    }
-    .btn-retour {
-      display: inline-block;
-      padding: 10px 24px;
-      background: transparent;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-      text-decoration: none;
-      font-weight: 500;
-      transition: all 0.2s;
-    }
-    .btn-retour:hover {
-      background: var(--bg-hover);
+    .btn-close:hover {
       color: var(--text);
-      border-color: var(--border-hover);
-    }
-    .lecture-loader {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100%;
-      gap: 12px;
-      font-family: 'Inter', sans-serif;
-      color: var(--text-secondary);
-    }
-    .lecture-loader .spinner {
-      width: 40px;
-      height: 40px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-    .slide-content::-webkit-scrollbar {
-      width: 6px;
-    }
-    .slide-content::-webkit-scrollbar-track {
-      background: transparent;
-    }
-    .slide-content::-webkit-scrollbar-thumb {
-      background: var(--border);
-    }
-    .slide-content::-webkit-scrollbar-thumb:hover {
-      background: var(--border-hover);
     }
   </style>
 </head>
@@ -658,6 +700,8 @@
       <div class="spinner"></div>
       <span>Chargement...</span>
     </div>
+
+    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
       <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
@@ -689,7 +733,7 @@
     };
 
     // ============================================================
-    // GESTION DE LA TAILLE DE POLICE
+    // GESTION DE LA TAILLE DE POLICE (sauvegardée)
     // ============================================================
     var FONT_SIZE_KEY = 'medit_font_size';
     var FONT_SIZE_MIN = 12;
@@ -711,8 +755,10 @@
       size = Math.min(Math.max(size, FONT_SIZE_MIN), FONT_SIZE_MAX);
       localStorage.setItem(FONT_SIZE_KEY, String(size));
       document.documentElement.style.setProperty('--slide-font-size', size + 'px');
+      // Mettre à jour l'affichage en bas à droite
       var display = document.getElementById('fontSizeDisplayBottom');
       if (display) display.textContent = size;
+      // Appliquer à tous les slide-content déjà présents
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = size + 'px';
       });
@@ -728,6 +774,10 @@
       setFontSize(current - 2);
     }
 
+    // ============================================================
+    // FIN GESTION TAILLE
+    // ============================================================
+
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
@@ -735,27 +785,190 @@
       etat.postId = id;
       chargerPost(id);
 
+      // Initialiser la taille de police
       var initialSize = getSavedFontSize();
       setFontSize(initialSize);
 
+      // Écouter les boutons du bas
       document.getElementById('fontIncreaseBottom').addEventListener('click', increaseFont);
       document.getElementById('fontDecreaseBottom').addEventListener('click', decreaseFont);
     });
 
+    // ============================================================
+    // CHARGER LE POST (VERSION ADAPTÉE AU NOUVEAU FORMAT)
+    // ============================================================
     function chargerPost(id) {
       fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
         .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
         .then(function(data) {
           if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
-          etat.post = data.post;
-          console.log('📦 POST reçu:', etat.post);
-          preparerSlides(etat.post);
+          
+          // Récupérer les données du post
+          var post = data.post;
+          
+          // Colonne I (slides) - séparés par \n\n
+          var slidesBrut = post.slides || '';
+          var slidesArray = slidesBrut.split('\n\n').filter(function(s) { return s.trim() !== ''; });
+          
+          // Colonnes J, K, L, M, N
+          var quiz = post.quiz || '';
+          var openQuestion = post.openQ || '';
+          var ordre = post.ordre || '';
+          var carte = post.carte || '';
+          var retenir = post.retenir || '';
+          
+          etat.post = post;
+          
+          // Préparer les slides avec la nouvelle structure
+          preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
+          
           recupererNotes();
           afficherSlides();
         })
         .catch(function(error) { afficherErreur(error.message); });
     }
 
+    // ============================================================
+    // PRÉPARER LES SLIDES (VERSION V2)
+    // ============================================================
+    function preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
+      var slidesFinal = [];
+      
+      // 1. Slides normaux (colonne I)
+      slidesArray.forEach(function(texteSlide) {
+        if (texteSlide.trim() !== '') {
+          slidesFinal.push({
+            type: 'slide',
+            contenu: texteSlide.trim()
+          });
+        }
+      });
+      
+      // 2. Quiz (colonne J)
+      if (quiz.trim() !== '') {
+        var quizParsed = parserQuiz(quiz);
+        if (quizParsed) {
+          slidesFinal.push({
+            type: 'quiz',
+            question: quizParsed.question,
+            reponses: quizParsed.reponses,
+            index: slidesFinal.length
+          });
+        }
+      }
+      
+      // 3. Question ouverte (colonne K)
+      if (openQuestion.trim() !== '') {
+        slidesFinal.push({
+          type: 'open',
+          question: openQuestion.replace(/^qs:\s*/i, '').trim(),
+          index: slidesFinal.length
+        });
+      }
+      
+      // 4. Ordre (colonne L)
+      if (ordre.trim() !== '') {
+        var ordreParsed = parserOrdre(ordre);
+        if (ordreParsed && ordreParsed.length > 0) {
+          slidesFinal.push({
+            type: 'ordre',
+            elements: ordreParsed,
+            index: slidesFinal.length
+          });
+        }
+      }
+      
+      // 5. Carte (colonne M)
+      if (carte.trim() !== '') {
+        var carteParsed = parserCarte(carte);
+        if (carteParsed) {
+          slidesFinal.push({
+            type: 'carte',
+            recto: carteParsed.recto,
+            verso: carteParsed.verso,
+            index: slidesFinal.length
+          });
+        }
+      }
+      
+      // 6. Retenir (colonne N)
+      if (retenir.trim() !== '') {
+        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+        if (mots.length > 0) {
+          slidesFinal.push({
+            type: 'retenir',
+            mots: mots
+          });
+        }
+      }
+      
+      console.log('Slides construits :', slidesFinal);
+      etat.slides = slidesFinal;
+    }
+
+    // ============================================================
+    // PARSEURS SPÉCIFIQUES
+    // ============================================================
+    function parserQuiz(quizTexte) {
+      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      if (lignes.length === 0) return null;
+      
+      var question = lignes[0].replace(/^q:\s*/i, '').trim() || 'Question';
+      var reponses = [];
+      
+      for (var i = 1; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        var isCorrect = ligne.startsWith('-v-');
+        var isFaux = ligne.startsWith('-f-');
+        
+        if (isCorrect || isFaux) {
+          var texteRep = ligne.replace(/^-v-\s*|-f-\s*/, '').trim();
+          reponses.push({
+            texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
+            correct: isCorrect
+          });
+        }
+      }
+      
+      return { question: question, reponses: reponses };
+    }
+
+    function parserOrdre(ordreTexte) {
+      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var elements = [];
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        var match = ligne.match(/^(\d+)\s+(.+)/);
+        if (match) {
+          elements.push('-' + match[1] + '-' + match[2]);
+        }
+      }
+      
+      return elements;
+    }
+
+    function parserCarte(carteTexte) {
+      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var recto = '';
+      var verso = '';
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        if (ligne.toLowerCase().startsWith('r:')) {
+          recto = ligne.replace(/^r:\s*/i, '').trim() || 'Question';
+        } else if (ligne.toLowerCase().startsWith('v:')) {
+          verso = ligne.replace(/^v:\s*/i, '').trim() || 'Réponse';
+        }
+      }
+      
+      if (recto === '') return null;
+      return { recto: recto, verso: verso };
+    }
+
+    // ============================================================
+    // RÉCUPÉRER LES NOTES
+    // ============================================================
     function recupererNotes() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
@@ -779,165 +992,207 @@
     }
 
     // ============================================================
-    // 🔥 PREPARER LES SLIDES - DÉTECTION DES VRAIS SAUTS DE LIGNE
+    // AFFICHER LES SLIDES
     // ============================================================
-    function preparerSlides(post) {
-      var slides = [];
-      
-      console.log('📊 post.slides:', post.slides);
-      console.log('📊 type de post.slides:', typeof post.slides);
-      
-      // 1. Slides normaux (colonne I)
-      // post.slides peut être un tableau OU une string avec des \n\n
-      var slidesData = [];
-      
-      if (typeof post.slides === 'string') {
-        // C'est une string, on split sur \n\n
-        slidesData = post.slides.split('\n\n');
-        console.log('📊 Slides string splités:', slidesData.length);
-      } else if (Array.isArray(post.slides)) {
-        // C'est déjà un tableau
-        slidesData = post.slides;
-        console.log('📊 Slides déjà un tableau:', slidesData.length);
+    function afficherSlides() {
+      var container = document.getElementById('slidesContainer');
+      var post = etat.post;
+      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
+      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
+      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+
+      if (etat.slides.length === 0) {
+        container.innerHTML = '<div class="lecture-error"><div class="icone">⬜⬜⬜</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
+        return;
       }
-      
-      slidesData.forEach(function(s) {
-        if (s && s.trim()) {
-          slides.push({ type: 'slide', contenu: s.trim() });
+
+      var html = '';
+      etat.slides.forEach(function(slide, index) {
+        var activeClass = index === 0 ? ' active' : '';
+        html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
+        html += '<div class="slide-content';
+        if (slide.type === 'quiz') html += ' quiz-content';
+        else if (slide.type === 'open') html += ' open-content';
+        else if (slide.type === 'retenir') html += ' retenir-content';
+        else if (slide.type === 'ordre') html += ' ordre-content';
+        else if (slide.type === 'carte') html += ' carte-content';
+        html += '" id="slideContent-' + index + '">';
+
+        if (slide.type === 'slide') {
+          var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
+          html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
+        }
+
+        if (slide.type === 'quiz') {
+          html += afficherQuiz(slide);
+        }
+
+        if (slide.type === 'open') {
+          html += afficherOpen(slide);
+        }
+
+        if (slide.type === 'ordre') {
+          html += afficherOrdre(slide, index);
+        }
+
+        if (slide.type === 'carte') {
+          html += afficherCarte(slide, index);
+        }
+
+        if (slide.type === 'retenir') {
+          html += afficherRetenir(slide);
+        }
+
+        // Note toggle - UNIQUEMENT sur les slides normaux
+        if (slide.type === 'slide') {
+          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
+          html += '<div class="note-area" id="noteArea-' + index + '">';
+          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
+          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
+          html += '</div>';
+        }
+
+        html += '</div>';
+        html += '</div>';
+      });
+
+      var controls = document.getElementById('fontControlsBottom');
+      var loader = document.getElementById('lectureLoader');
+      if (loader) loader.style.display = 'none';
+
+      var oldWrappers = container.querySelectorAll('.slide-wrapper');
+      oldWrappers.forEach(function(el) { el.remove(); });
+
+      var tempDiv = document.createElement('div');
+      tempDiv.innerHTML = html;
+      while (tempDiv.firstChild) {
+        container.insertBefore(tempDiv.firstChild, controls);
+      }
+
+      // Restaurer les notes
+      for (var slideNum in etat.notes) {
+        var textarea = document.getElementById('noteText-' + slideNum);
+        if (textarea) {
+          textarea.value = etat.notes[slideNum];
+          var indicator = document.getElementById('noteIndicator-' + slideNum);
+          if (indicator) {
+            indicator.textContent = '✓ Note chargée';
+            indicator.className = 'note-indicator saved';
+          }
+        }
+      }
+
+      // Navigation
+      container.addEventListener('click', function(e) {
+        var target = e.target;
+        if (target.closest('.quiz-reponse') ||
+            target.closest('.btn-continuer') ||
+            target.closest('.btn-envoyer-reponse') ||
+            target.closest('textarea') ||
+            target.closest('.btn-fermer-slide') ||
+            target.closest('.note-toggle') ||
+            target.closest('.note-area') ||
+            target.closest('.ordre-item') ||
+            target.closest('.btn-valider-ordre') ||
+            target.closest('.carte-container') ||
+            target.closest('.carte-boutons') ||
+            target.closest('.font-control-bottom')) {
+          return;
+        }
+        var rect = container.getBoundingClientRect();
+        var x = e.clientX - rect.left;
+        var width = rect.width;
+        if (x < width * 0.2) {
+          slidePrecedente();
+        } else {
+          slideSuivante();
         }
       });
-      
-      // 2. Quiz (colonne J)
-      if (post.quiz && post.quiz.trim()) {
-        slides.push({ type: 'quiz', contenuBrut: post.quiz });
-      }
-      
-      // 3. Question ouverte (colonne K)
-      if (post.openQ && post.openQ.trim()) {
-        slides.push({ type: 'open', contenuBrut: post.openQ });
-      }
-      
-      // 4. Ordre (colonne L)
-      if (post.ordre && post.ordre.trim()) {
-        slides.push({ type: 'ordre', contenuBrut: post.ordre });
-      }
-      
-      // 5. Carte (colonne M)
-      if (post.carte && post.carte.trim()) {
-        slides.push({ type: 'carte', contenuBrut: post.carte });
-      }
-      
-      // 6. Retenir (colonne N)
-      if (post.retenir && post.retenir.trim()) {
-        slides.push({ type: 'retenir', contenuBrut: post.retenir });
-      }
-      
-      if (slides.length === 0) {
-        slides.push({ type: 'error', message: 'Aucun contenu trouvé dans ce post.' });
-      }
-      
-      etat.slides = slides;
-      console.log('📊 Slides préparés:', slides.length);
+
+      var scrollTimeout = null;
+      container.addEventListener('wheel', function(e) {
+        e.preventDefault();
+        if (scrollTimeout) return;
+        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
+        if (e.deltaY > 0) {
+          slideSuivante();
+        } else {
+          slidePrecedente();
+        }
+      }, { passive: false });
+
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
+          e.preventDefault();
+          slideSuivante();
+        } else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
+          e.preventDefault();
+          slidePrecedente();
+        }
+      });
+
+      document.getElementById('btnFermer').addEventListener('click', function() {
+        fermerLiseuse();
+      });
+
+      recupererStatutExistant();
+      mettreAJourPagination();
+
+      // Appliquer la taille de police aux nouveaux éléments
+      var currentSize = getSavedFontSize();
+      document.querySelectorAll('.slide-content').forEach(function(el) {
+        el.style.fontSize = currentSize + 'px';
+      });
     }
 
     // ============================================================
-    // AFFICHER LES SLIDES
+    // FONCTIONS D'AFFICHAGE (Quiz, Open, Retenir, Ordre, Carte)
     // ============================================================
-    var insertBeforeElement = controls;
-while (tempDiv.firstChild) {
-  var node = tempDiv.firstChild;
-  container.insertBefore(node, insertBeforeElement);
-}
-
-    // ============================================================
-    // 🔥 AFFICHER QUIZ
-    // ============================================================
-    function afficherQuiz(slide, index) {
-      var brut = slide.contenuBrut || '';
-      var lignes = brut.split('\n');
-      var question = '';
-      var reponses = [];
-      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
-      
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i].trim();
-        if (!ligne) continue;
-        if (ligne.toLowerCase().startsWith('q:')) {
-          question = ligne.substring(2).trim();
-        } else if (ligne.toLowerCase().startsWith('f ')) {
-          reponses.push({ texte: ligne.substring(2).trim(), correct: false });
-        } else if (ligne.toLowerCase().startsWith('v ')) {
-          reponses.push({ texte: ligne.substring(2).trim(), correct: true });
-        }
-      }
-      
-      slide.reponses = reponses;
-      slide.question = question;
-      slide.index = index;
-      
+    function afficherQuiz(slide) {
       var html = '';
-      html += '<div class="quiz-question">' + (question || 'Question') + '</div>';
-      html += '<div class="quiz-reponses" data-quiz-index="' + index + '">';
-      
-      reponses.forEach(function(rep, ri) {
-        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + index + ', ' + ri + ')">';
+      html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
+      html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      slide.reponses.forEach(function(rep, ri) {
+        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
         html += '<span class="lettre">' + lettres[ri] + '</span>';
         html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
         html += '<span class="result-icon"></span>';
         html += '</div>';
       });
-      
       html += '</div>';
-      html += '<div class="quiz-feedback" id="quizFeedback-' + index + '">';
-      html += '<div class="bonne-reponse" id="quizBonneReponse-' + index + '"></div>';
+      html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
+      html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
       html += '</div>';
-      html += '<button class="btn-continuer" id="btnContinuer-' + index + '" onclick="slideSuivante()">Continuer →</button>';
-      
+      html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
       return html;
     }
 
-    // ============================================================
-    // AFFICHER OPEN
-    // ============================================================
-    function afficherOpen(slide, index) {
-      var brut = slide.contenuBrut || '';
-      var question = brut.replace(/^qs:/i, '').trim();
-      slide.index = index;
-      
+    function afficherOpen(slide) {
       var html = '';
-      html += '<div class="open-question-text">' + (question || 'Question ouverte') + '</div>';
-      html += '<textarea id="openReponse-' + index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + index + ')">Envoyer la réponse</button>';
-      html += '<div class="reponse-confirmation" id="openConfirmation-' + index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
-      html += '<button class="btn-continuer" id="btnContinuerOpen-' + index + '" onclick="slideSuivante()">Continuer →</button>';
+      html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
+      html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
+      html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
+      html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
       return html;
     }
 
-    // ============================================================
-    // AFFICHER ORDRE
-    // ============================================================
+    function afficherRetenir(slide) {
+      var html = '';
+      html += '<div class="retenir-label">♡ À retenir</div>';
+      html += '<div class="retenir-mots">';
+      slide.mots.forEach(function(mot) {
+        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+      });
+      html += '</div>';
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+      return html;
+    }
+
     function afficherOrdre(slide, index) {
-      var brut = slide.contenuBrut || '';
-      var lignes = brut.split('\n');
-      var elements = [];
-      var question = '';
-      
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i].trim();
-        if (!ligne) continue;
-        if (ligne.toLowerCase().startsWith('o:')) {
-          question = ligne.substring(2).trim();
-        } else if (/^\d+\s/.test(ligne)) {
-          var match = ligne.match(/^(\d+)\s+(.+)$/);
-          if (match) {
-            elements.push(match[2].trim());
-          }
-        }
-      }
-      
-      slide.elements = elements;
-      slide.index = index;
-      
+      var elements = slide.elements || [];
       var shuffled = elements.slice();
       for (var i = shuffled.length - 1; i > 0; i--) {
         var j = Math.floor(Math.random() * (i + 1));
@@ -945,17 +1200,19 @@ while (tempDiv.firstChild) {
         shuffled[i] = shuffled[j];
         shuffled[j] = temp;
       }
-      slide.shuffled = shuffled;
 
       var html = '';
-      html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">' + (question || 'Remettez dans l\'ordre') + '</h3>';
+      html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">Remettez dans l\'ordre</h3>';
       html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Utilisez les boutons ↑↓ pour réorganiser les éléments.</p>';
       html += '<div class="ordre-list" id="ordre-list-' + index + '">';
 
       for (var i = 0; i < shuffled.length; i++) {
-        html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + (i + 1) + '">';
+        var num = shuffled[i].match(/^-(\d+)-/);
+        var numValue = num ? num[1] : (i + 1);
+        var texte = shuffled[i].replace(/^-\d+-/, '').trim();
+        html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
         html += '<span class="ordre-num">#' + (i + 1) + '</span>';
-        html += '<span class="ordre-texte">' + shuffled[i] + '</span>';
+        html += '<span class="ordre-texte">' + texte + '</span>';
         html += '<div class="ordre-boutons">';
         html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
         html += '<button onclick="deplacerOrdre(this, 1, ' + index + ')" ' + (i === shuffled.length - 1 ? 'disabled' : '') + '>↓</button>';
@@ -972,35 +1229,13 @@ while (tempDiv.firstChild) {
       return html;
     }
 
-    // ============================================================
-    // AFFICHER CARTE
-    // ============================================================
     function afficherCarte(slide, index) {
-      var brut = slide.contenuBrut || '';
-      var lignes = brut.split('\n');
-      var recto = '';
-      var verso = '';
-      
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i].trim();
-        if (!ligne) continue;
-        if (ligne.toLowerCase().startsWith('r:')) {
-          recto = ligne.substring(2).trim();
-        } else if (ligne.toLowerCase().startsWith('v:')) {
-          verso = ligne.substring(2).trim();
-        }
-      }
-      
-      slide.recto = recto;
-      slide.verso = verso;
-      slide.index = index;
-      
       var html = '';
       html += '<div class="carte-indicateur">Cliquez sur la carte pour la retourner</div>';
       html += '<div class="carte-container" id="carteContainer-' + index + '" onclick="retournerCarte(' + index + ')">';
       html += '<div class="carte-inner" id="carteInner-' + index + '">';
-      html += '<div class="carte-face carte-recto">' + (recto || 'Question') + '</div>';
-      html += '<div class="carte-face carte-verso">' + (verso || 'Réponse') + '</div>';
+      html += '<div class="carte-face carte-recto">' + (slide.recto || 'Question') + '</div>';
+      html += '<div class="carte-face carte-verso">' + (slide.verso || 'Réponse') + '</div>';
       html += '</div>';
       html += '</div>';
       html += '<div class="carte-boutons" id="carteBoutons-' + index + '">';
@@ -1016,33 +1251,14 @@ while (tempDiv.firstChild) {
     }
 
     // ============================================================
-    // AFFICHER RETENIR
-    // ============================================================
-    function afficherRetenir(slide) {
-      var brut = slide.contenuBrut || '';
-      var mots = brut.substring(1).split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-      
-      var html = '';
-      html += '<div class="retenir-label">♡ À retenir</div>';
-      html += '<div class="retenir-mots">';
-      mots.forEach(function(mot) {
-        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-      });
-      html += '</div>';
-      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
-      return html;
-    }
-
-    // ============================================================
-    // FONCTIONS DE NAVIGATION ET INTERACTION
+    // FONCTIONS DE NAVIGATION ET INTERACTION (existantes)
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
       if (!slide) return;
       if (etat.reponsesQuiz[quizIndex]) return;
-      var slideEl = document.getElementById('slide-' + quizIndex);
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
       if (!slideEl) return;
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var reponse = slide.reponses[reponseIndex];
@@ -1061,7 +1277,7 @@ while (tempDiv.firstChild) {
       if (!slide) return;
       var reponseData = etat.reponsesQuiz[quizIndex];
       if (!reponseData) return;
-      var slideEl = document.getElementById('slide-' + quizIndex);
+      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
       if (!slideEl) return;
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
@@ -1378,15 +1594,14 @@ while (tempDiv.firstChild) {
       if (!list) return;
       var items = list.querySelectorAll('.ordre-item');
       var ordreDonne = [];
+      var ordreAttendu = [];
 
       items.forEach(function(el) {
         ordreDonne.push(parseInt(el.dataset.num));
+        ordreAttendu.push(parseInt(el.dataset.num));
       });
 
-      var ordreAttendu = [];
-      for (var i = 1; i <= ordreDonne.length; i++) {
-        ordreAttendu.push(i);
-      }
+      ordreAttendu.sort(function(a, b) { return a - b; });
 
       var correct = true;
       for (var i = 0; i < ordreDonne.length; i++) {
