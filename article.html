@@ -808,44 +808,71 @@
       
       if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
       
-      // Récupérer les données du post
       var post = data.post;
       
-      console.log('📄 Post brut:', post);
-      console.log('📄 Colonne I (slides):', post.slides);
-      console.log('📄 Colonne J (quiz):', post.quiz);
-      console.log('📄 Colonne K (openQ):', post.openQ);
-      console.log('📄 Colonne L (ordre):', post.ordre);
-      console.log('📄 Colonne M (carte):', post.carte);
-      console.log('📄 Colonne N (retenir):', post.retenir);
+      // 🔥 LE CONTENU EST DANS post.contenu (pas post.slides)
+      var contenu = post.contenu || '';
       
-      // Nettoyer les données (enlever les guillemets et caractères indésirables)
-      var slidesBrut = post.slides || '';
-      var quiz = post.quiz || '';
-      var openQuestion = post.openQ || '';
-      var ordre = post.ordre || '';
-      var carte = post.carte || '';
-      var retenir = post.retenir || '';
+      console.log('📄 Contenu brut:', contenu);
       
-      // Nettoyer les guillemets si présents
-      slidesBrut = slidesBrut.replace(/^"|"$/g, '');
-      quiz = quiz.replace(/^"|"$/g, '');
-      openQuestion = openQuestion.replace(/^"|"$/g, '');
-      ordre = ordre.replace(/^"|"$/g, '');
-      carte = carte.replace(/^"|"$/g, '');
-      retenir = retenir.replace(/^"|"$/g, '');
+      // 🔥 Extraire les différentes parties séparées par " | "
+      var parts = contenu.split(' | ');
       
-      // Slides array
-      var slidesArray = slidesBrut.split('\n\n').filter(function(s) { return s.trim() !== ''; });
+      // Initialiser les variables
+      var slidesArray = [];
+      var quiz = '';
+      var openQuestion = '';
+      var ordre = '';
+      var carte = '';
+      var retenir = '';
+      
+      // Parcourir chaque partie
+      parts.forEach(function(part) {
+        part = part.trim();
+        
+        if (part.startsWith('q:')) {
+          // Quiz
+          quiz = part;
+        } else if (part.startsWith('qs:')) {
+          // Question ouverte
+          openQuestion = part;
+        } else if (part.startsWith('o:')) {
+          // Ordre
+          ordre = part;
+        } else if (part.startsWith('r:')) {
+          // Carte
+          carte = part;
+        } else if (part.startsWith('#')) {
+          // Retenir
+          retenir = part;
+        } else {
+          // Slide normal (texte)
+          // Nettoyer les retours à la ligne
+          var cleanText = part.replace(/\r\n/g, '\n').trim();
+          if (cleanText) {
+            slidesArray.push(cleanText);
+          }
+        }
+      });
       
       console.log('📊 Slides array:', slidesArray);
+      console.log('📊 Quiz:', quiz);
+      console.log('📊 OpenQ:', openQuestion);
+      console.log('📊 Ordre:', ordre);
+      console.log('📊 Carte:', carte);
+      console.log('📊 Retenir:', retenir);
       
       etat.post = post;
       
-      // Préparer les slides
+      // Préparer les slides avec les données extraites
       preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
       
       console.log('📊 Slides générés:', etat.slides);
+      
+      if (etat.slides.length === 0) {
+        afficherErreur('Aucun contenu trouvé dans ce post.');
+        return;
+      }
       
       recupererNotes();
       afficherSlides();
