@@ -755,10 +755,8 @@
       size = Math.min(Math.max(size, FONT_SIZE_MIN), FONT_SIZE_MAX);
       localStorage.setItem(FONT_SIZE_KEY, String(size));
       document.documentElement.style.setProperty('--slide-font-size', size + 'px');
-      // Mettre à jour l'affichage en bas à droite
       var display = document.getElementById('fontSizeDisplayBottom');
       if (display) display.textContent = size;
-      // Appliquer à tous les slide-content déjà présents
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = size + 'px';
       });
@@ -785,110 +783,102 @@
       etat.postId = id;
       chargerPost(id);
 
-      // Initialiser la taille de police
       var initialSize = getSavedFontSize();
       setFontSize(initialSize);
 
-      // Écouter les boutons du bas
       document.getElementById('fontIncreaseBottom').addEventListener('click', increaseFont);
       document.getElementById('fontDecreaseBottom').addEventListener('click', decreaseFont);
     });
 
     // ============================================================
-    // CHARGER LE POST (VERSION ADAPTÉE AU NOUVEAU FORMAT)
+    // CHARGER LE POST (VERSION CORRIGÉE)
     // ============================================================
-   function chargerPost(id) {
-  fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
-    .then(function(r) { 
-      if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
-      return r.json(); 
-    })
-    .then(function(data) {
-      console.log('📦 Données reçues du serveur:', data);
-      
-      if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
-      
-      var post = data.post;
-      
-      // 🔥 LE CONTENU EST DANS post.contenu (pas post.slides)
-      var contenu = post.contenu || '';
-      
-      console.log('📄 Contenu brut:', contenu);
-      
-      // 🔥 Extraire les différentes parties séparées par " | "
-      var parts = contenu.split(' | ');
-      
-      // Initialiser les variables
-      var slidesArray = [];
-      var quiz = '';
-      var openQuestion = '';
-      var ordre = '';
-      var carte = '';
-      var retenir = '';
-      
-      // Parcourir chaque partie
-      parts.forEach(function(part) {
-        part = part.trim();
-        
-        if (part.startsWith('q:')) {
-          // Quiz
-          quiz = part;
-        } else if (part.startsWith('qs:')) {
-          // Question ouverte
-          openQuestion = part;
-        } else if (part.startsWith('o:')) {
-          // Ordre
-          ordre = part;
-        } else if (part.startsWith('r:')) {
-          // Carte
-          carte = part;
-        } else if (part.startsWith('#')) {
-          // Retenir
-          retenir = part;
-        } else {
-          // Slide normal (texte)
-          // Nettoyer les retours à la ligne
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            slidesArray.push(cleanText);
+    function chargerPost(id) {
+      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
+        .then(function(r) { 
+          if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
+          return r.json(); 
+        })
+        .then(function(data) {
+          console.log('📦 Données reçues du serveur:', data);
+          
+          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
+          
+          var post = data.post;
+          var contenu = post.contenu || '';
+          
+          console.log('📄 Contenu brut:', contenu);
+          
+          // 🔥 Extraire les différentes parties séparées par " | "
+          var parts = contenu.split(' | ');
+          
+          var slidesArray = [];
+          var quiz = '';
+          var openQuestion = '';
+          var ordre = '';
+          var carte = '';
+          var retenir = '';
+          
+          parts.forEach(function(part) {
+            part = part.trim();
+            
+            if (part.startsWith('q:')) {
+              quiz = part;
+            } else if (part.startsWith('qs:')) {
+              openQuestion = part;
+            } else if (part.startsWith('o:')) {
+              ordre = part;
+            } else if (part.startsWith('r:')) {
+              carte = part;
+            } else if (part.startsWith('#')) {
+              retenir = part;
+            } else {
+              // 🔥 Slide normal - SÉPARER LES PARAGRAPHES
+              var cleanText = part.replace(/\r\n/g, '\n').trim();
+              if (cleanText) {
+                // 🔥 Séparer par \n\n pour avoir plusieurs slides
+                var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+                subSlides.forEach(function(sub) {
+                  slidesArray.push(sub.trim());
+                });
+              }
+            }
+          });
+          
+          console.log('📊 Slides array (' + slidesArray.length + ' slides):', slidesArray);
+          console.log('📊 Quiz:', quiz);
+          console.log('📊 OpenQ:', openQuestion);
+          console.log('📊 Ordre:', ordre);
+          console.log('📊 Carte:', carte);
+          console.log('📊 Retenir:', retenir);
+          
+          etat.post = post;
+          
+          preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
+          
+          console.log('📊 Slides générés:', etat.slides);
+          
+          if (etat.slides.length === 0) {
+            afficherErreur('Aucun contenu trouvé dans ce post.');
+            return;
           }
-        }
-      });
-      
-      console.log('📊 Slides array:', slidesArray);
-      console.log('📊 Quiz:', quiz);
-      console.log('📊 OpenQ:', openQuestion);
-      console.log('📊 Ordre:', ordre);
-      console.log('📊 Carte:', carte);
-      console.log('📊 Retenir:', retenir);
-      
-      etat.post = post;
-      
-      // Préparer les slides avec les données extraites
-      preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-      
-      console.log('📊 Slides générés:', etat.slides);
-      
-      if (etat.slides.length === 0) {
-        afficherErreur('Aucun contenu trouvé dans ce post.');
-        return;
-      }
-      
-      recupererNotes();
-      afficherSlides();
-    })
-    .catch(function(error) { 
-      console.error('❌ Erreur:', error);
-      afficherErreur(error.message); 
-    });
-}
+          
+          recupererNotes();
+          afficherSlides();
+        })
+        .catch(function(error) { 
+          console.error('❌ Erreur:', error);
+          afficherErreur(error.message); 
+        });
+    }
+
     // ============================================================
-    // PRÉPARER LES SLIDES (VERSION V2)
+    // PRÉPARER LES SLIDES (VERSION V2 CORRIGÉE)
     // ============================================================
     function preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
       var slidesFinal = [];
       
-      // 1. Slides normaux (colonne I)
+      // 1. Slides normaux
       slidesArray.forEach(function(texteSlide) {
         if (texteSlide.trim() !== '') {
           slidesFinal.push({
@@ -898,10 +888,10 @@
         }
       });
       
-      // 2. Quiz (colonne J)
+      // 2. Quiz - avec parser corrigé
       if (quiz.trim() !== '') {
-        var quizParsed = parserQuiz(quiz);
-        if (quizParsed) {
+        var quizParsed = parserQuizCorrige(quiz);
+        if (quizParsed && quizParsed.reponses.length > 0) {
           slidesFinal.push({
             type: 'quiz',
             question: quizParsed.question,
@@ -911,7 +901,7 @@
         }
       }
       
-      // 3. Question ouverte (colonne K)
+      // 3. Question ouverte
       if (openQuestion.trim() !== '') {
         slidesFinal.push({
           type: 'open',
@@ -920,7 +910,7 @@
         });
       }
       
-      // 4. Ordre (colonne L)
+      // 4. Ordre
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
         if (ordreParsed && ordreParsed.length > 0) {
@@ -932,7 +922,7 @@
         }
       }
       
-      // 5. Carte (colonne M)
+      // 5. Carte
       if (carte.trim() !== '') {
         var carteParsed = parserCarte(carte);
         if (carteParsed) {
@@ -945,7 +935,7 @@
         }
       }
       
-      // 6. Retenir (colonne N)
+      // 6. Retenir
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
@@ -956,14 +946,14 @@
         }
       }
       
-      console.log('Slides construits :', slidesFinal);
+      console.log('✅ Slides construits :', slidesFinal);
       etat.slides = slidesFinal;
     }
 
     // ============================================================
-    // PARSEURS SPÉCIFIQUES
+    // PARSEUR QUIZ CORRIGÉ (reconnaît "v" et "f" sans "-")
     // ============================================================
-    function parserQuiz(quizTexte) {
+    function parserQuizCorrige(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return null;
       
@@ -972,11 +962,22 @@
       
       for (var i = 1; i < lignes.length; i++) {
         var ligne = lignes[i];
-        var isCorrect = ligne.startsWith('-v-');
-        var isFaux = ligne.startsWith('-f-');
+        var trimmed = ligne.trim();
+        
+        var isCorrect = false;
+        var isFaux = false;
+        var texteRep = trimmed;
+        
+        // 🔥 Détecter les formats : "v Texte", "-v- Texte", "f Texte", "-f- Texte"
+        if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
+          isCorrect = true;
+          texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
+        } else if (/^f\s/i.test(trimmed) || /^-f-\s*/.test(trimmed) || trimmed.toLowerCase() === 'f') {
+          isFaux = true;
+          texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
+        }
         
         if (isCorrect || isFaux) {
-          var texteRep = ligne.replace(/^-v-\s*|-f-\s*/, '').trim();
           reponses.push({
             texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
             correct: isCorrect
@@ -984,9 +985,13 @@
         }
       }
       
+      if (reponses.length === 0) return null;
       return { question: question, reponses: reponses };
     }
 
+    // ============================================================
+    // PARSEURS SPÉCIFIQUES
+    // ============================================================
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
@@ -1097,7 +1102,6 @@
           html += afficherRetenir(slide);
         }
 
-        // Note toggle - UNIQUEMENT sur les slides normaux
         if (slide.type === 'slide') {
           html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
           html += '<div class="note-area" id="noteArea-' + index + '">';
@@ -1123,7 +1127,6 @@
         container.insertBefore(tempDiv.firstChild, controls);
       }
 
-      // Restaurer les notes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -1136,7 +1139,6 @@
         }
       }
 
-      // Navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -1192,7 +1194,6 @@
       recupererStatutExistant();
       mettreAJourPagination();
 
-      // Appliquer la taille de police aux nouveaux éléments
       var currentSize = getSavedFontSize();
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = currentSize + 'px';
@@ -1305,7 +1306,7 @@
     }
 
     // ============================================================
-    // FONCTIONS DE NAVIGATION ET INTERACTION (existantes)
+    // FONCTIONS DE NAVIGATION ET INTERACTION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
