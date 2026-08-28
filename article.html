@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ----- Styles existants (conservés) ----- */
+    /* ----- Styles (conservés) ----- */
     .slide-wrapper {
       opacity: 0;
       transition: opacity 0.8s ease-in-out;
@@ -70,8 +70,6 @@
       font-size: 15px;
       color: var(--text-secondary);
     }
-
-    /* Contrôle de taille - en bas à droite */
     .font-control-bottom {
       position: absolute;
       bottom: 16px;
@@ -122,8 +120,6 @@
       font-weight: 400;
       letter-spacing: 0.3px;
     }
-
-    /* Quiz styles */
     .quiz-content .quiz-question {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -182,12 +178,8 @@
     .quiz-feedback.visible {
       display: block;
     }
-    .bonne-reponse {
-      color: var(--text);
-    }
-    .mauvaise-reponse {
-      color: var(--text-secondary);
-    }
+    .bonne-reponse { color: var(--text); }
+    .mauvaise-reponse { color: var(--text-secondary); }
     .btn-continuer {
       margin-top: 20px;
       padding: 10px 24px;
@@ -201,9 +193,7 @@
       display: none;
       align-self: center;
     }
-    .btn-continuer.visible {
-      display: inline-block;
-    }
+    .btn-continuer.visible { display: inline-block; }
     .btn-continuer:hover {
       background: var(--bg-hover);
       color: var(--text);
@@ -227,8 +217,6 @@
       color: var(--text);
       border-color: var(--border-hover);
     }
-
-    /* Open question */
     .open-content .open-question-text {
       font-size: calc(var(--slide-font-size, 18px) * 1.1);
       font-weight: 500;
@@ -279,11 +267,7 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       display: none;
     }
-    .reponse-confirmation.visible {
-      display: block;
-    }
-
-    /* Retenir */
+    .reponse-confirmation.visible { display: block; }
     .retenir-content .retenir-label {
       font-size: calc(var(--slide-font-size, 18px) * 1.2);
       font-weight: 600;
@@ -306,8 +290,6 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       font-weight: 500;
     }
-
-    /* Ordre */
     .ordre-content .ordre-list {
       display: flex;
       flex-direction: column;
@@ -384,14 +366,8 @@
       font-size: calc(var(--slide-font-size, 18px) * 0.9);
       text-align: center;
     }
-    .ordre-content .ordre-resultat.correct {
-      color: var(--text);
-    }
-    .ordre-content .ordre-resultat.incorrect {
-      color: var(--text-secondary);
-    }
-
-    /* Cartes */
+    .ordre-content .ordre-resultat.correct { color: var(--text); }
+    .ordre-content .ordre-resultat.incorrect { color: var(--text-secondary); }
     .carte-content .carte-container {
       perspective: 1000px;
       width: 100%;
@@ -492,8 +468,6 @@
       color: var(--text-muted);
       margin-top: 8px;
     }
-
-    /* Note toggle */
     .note-toggle {
       position: absolute;
       bottom: 16px;
@@ -506,12 +480,8 @@
       z-index: 10;
       transition: all 0.2s;
     }
-    .note-toggle:hover {
-      color: var(--text);
-    }
-    .note-toggle.active {
-      color: var(--text);
-    }
+    .note-toggle:hover { color: var(--text); }
+    .note-toggle.active { color: var(--text); }
     .note-area {
       position: absolute;
       bottom: 60px;
@@ -523,9 +493,7 @@
       display: none;
       z-index: 10;
     }
-    .note-area.visible {
-      display: block;
-    }
+    .note-area.visible { display: block; }
     .note-area textarea {
       width: 100%;
       background: transparent;
@@ -549,11 +517,7 @@
       margin-top: 4px;
       font-family: 'Inter', sans-serif;
     }
-    .note-area .note-indicator.saved {
-      color: var(--text);
-    }
-
-    /* Header */
+    .note-area .note-indicator.saved { color: var(--text); }
     .lecture-header {
       display: flex;
       justify-content: space-between;
@@ -609,10 +573,7 @@
       padding: 4px 8px;
       transition: color 0.2s;
     }
-    .btn-close:hover {
-      color: var(--text);
-    }
-
+    .btn-close:hover { color: var(--text); }
     .lecture-error {
       text-align: center;
       padding: 40px 20px;
@@ -700,8 +661,6 @@
       <div class="spinner"></div>
       <span>Chargement...</span>
     </div>
-
-    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
       <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
@@ -826,64 +785,55 @@
     }
 
     // ============================================================
-    // 🔥 NOUVEAU PARSEUR - Lit les colonnes du post
+    // 🔥 PREPARER LES SLIDES - PARCOURT TOUTES LES COLONNES
     // ============================================================
     function preparerSlides(post) {
-      // Le post vient de Sheets avec les colonnes :
-      // slides: contenu avec \n\n comme séparateur
-      // quiz: tout le bloc q: f v
-      // openQ: qs: 
-      // ordre: o: 1 2 3
-      // carte: r: v:
-      // retenir: #
-      
-      var slidesData = post.slides || [];
-      var quizData = post.quiz || '';
-      var openData = post.openQ || '';
-      var ordreData = post.ordre || '';
-      var carteData = post.carte || '';
-      var retenirData = post.retenir || '';
-      
       var slides = [];
       
-      // 1. Ajouter les slides normaux
-      if (typeof slidesData === 'string') {
-        slidesData = slidesData.split('\n\n');
-      }
-      if (Array.isArray(slidesData)) {
-        slidesData.forEach(function(s) {
-          if (s.trim()) {
-            slides.push({ type: 'slide', contenu: s.trim() });
-          }
-        });
-      }
-      
-      // 2. Ajouter le quiz s'il existe
-      if (quizData.trim()) {
-        slides.push({ type: 'quiz', contenuBrut: quizData });
+      // 1. Slides normaux (colonne I) - séparés par \n\n
+      if (post.slides) {
+        var slidesData = typeof post.slides === 'string' ? post.slides.split('\n\n') : post.slides;
+        if (Array.isArray(slidesData)) {
+          slidesData.forEach(function(s) {
+            if (s && s.trim()) {
+              slides.push({ type: 'slide', contenu: s.trim() });
+            }
+          });
+        }
       }
       
-      // 3. Ajouter la question ouverte
-      if (openData.trim()) {
-        slides.push({ type: 'open', contenuBrut: openData });
+      // 2. Quiz (colonne J) - détecté par q:
+      if (post.quiz && post.quiz.trim()) {
+        slides.push({ type: 'quiz', contenuBrut: post.quiz });
       }
       
-      // 4. Ajouter l'ordre
-      if (ordreData.trim()) {
-        slides.push({ type: 'ordre', contenuBrut: ordreData });
+      // 3. Question ouverte (colonne K) - détecté par qs:
+      if (post.openQ && post.openQ.trim()) {
+        slides.push({ type: 'open', contenuBrut: post.openQ });
       }
       
-      // 5. Ajouter la carte
-      if (carteData.trim()) {
-        slides.push({ type: 'carte', contenuBrut: carteData });
+      // 4. Ordre (colonne L) - détecté par o:
+      if (post.ordre && post.ordre.trim()) {
+        slides.push({ type: 'ordre', contenuBrut: post.ordre });
       }
       
-      // 6. Ajouter retenir
-      if (retenirData.trim()) {
-        slides.push({ type: 'retenir', contenuBrut: retenirData });
+      // 5. Carte (colonne M) - détecté par r: et v:
+      if (post.carte && post.carte.trim()) {
+        slides.push({ type: 'carte', contenuBrut: post.carte });
+      }
+      
+      // 6. Retenir (colonne N) - détecté par #
+      if (post.retenir && post.retenir.trim()) {
+        slides.push({ type: 'retenir', contenuBrut: post.retenir });
+      }
+      
+      // 7. Si aucun slide n'a été trouvé, afficher une erreur
+      if (slides.length === 0) {
+        slides.push({ type: 'error', message: 'Aucun contenu trouvé dans ce post.' });
       }
       
       etat.slides = slides;
+      console.log('📊 Slides préparés:', slides.length);
     }
 
     // ============================================================
@@ -892,6 +842,7 @@
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var post = etat.post;
+      
       document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
       document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
       document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
@@ -906,18 +857,20 @@
         var activeClass = index === 0 ? ' active' : '';
         html += '<div class="slide-wrapper' + activeClass + '" data-index="' + index + '" id="slide-' + index + '">';
         html += '<div class="slide-content';
+        
         if (slide.type === 'quiz') html += ' quiz-content';
         else if (slide.type === 'open') html += ' open-content';
         else if (slide.type === 'retenir') html += ' retenir-content';
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
+        else if (slide.type === 'error') html += ' lecture-error';
+        
         html += '" id="slideContent-' + index + '">';
 
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
           
-          // Note toggle UNIQUEMENT sur les slides normaux
           html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
           html += '<div class="note-area" id="noteArea-' + index + '">';
           html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
@@ -926,11 +879,11 @@
         }
 
         if (slide.type === 'quiz') {
-          html += afficherQuiz(slide);
+          html += afficherQuiz(slide, index);
         }
 
         if (slide.type === 'open') {
-          html += afficherOpen(slide);
+          html += afficherOpen(slide, index);
         }
 
         if (slide.type === 'ordre') {
@@ -943,6 +896,10 @@
 
         if (slide.type === 'retenir') {
           html += afficherRetenir(slide);
+        }
+
+        if (slide.type === 'error') {
+          html += '<div class="icone">⬜⬜⬜</div><h2>' + (slide.message || 'Erreur') + '</h2>';
         }
 
         html += '</div>';
@@ -1039,9 +996,9 @@
     }
 
     // ============================================================
-    // 🔥 AFFICHER QUIZ - Parse le bloc brut
+    // 🔥 AFFICHER QUIZ
     // ============================================================
-    function afficherQuiz(slide) {
+    function afficherQuiz(slide, index) {
       var brut = slide.contenuBrut || '';
       var lignes = brut.split('\n');
       var question = '';
@@ -1060,12 +1017,17 @@
         }
       }
       
+      // Stocker les réponses pour le slide
+      slide.reponses = reponses;
+      slide.question = question;
+      slide.index = index;
+      
       var html = '';
       html += '<div class="quiz-question">' + (question || 'Question') + '</div>';
-      html += '<div class="quiz-reponses" data-quiz-index="' + slide.index + '">';
+      html += '<div class="quiz-reponses" data-quiz-index="' + index + '">';
       
       reponses.forEach(function(rep, ri) {
-        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + slide.index + ', ' + ri + ')">';
+        html += '<div class="quiz-reponse" data-reponse-index="' + ri + '" onclick="selectionnerReponse(event, ' + index + ', ' + ri + ')">';
         html += '<span class="lettre">' + lettres[ri] + '</span>';
         html += '<span>' + (rep.texte || 'Réponse vide') + '</span>';
         html += '<span class="result-icon"></span>';
@@ -1073,14 +1035,10 @@
       });
       
       html += '</div>';
-      html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
-      html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
+      html += '<div class="quiz-feedback" id="quizFeedback-' + index + '">';
+      html += '<div class="bonne-reponse" id="quizBonneReponse-' + index + '"></div>';
       html += '</div>';
-      html += '<button class="btn-continuer" id="btnContinuer-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
-      
-      // Stocker les réponses pour le slide
-      slide.reponses = reponses;
-      slide.question = question;
+      html += '<button class="btn-continuer" id="btnContinuer-' + index + '" onclick="slideSuivante()">Continuer →</button>';
       
       return html;
     }
@@ -1088,16 +1046,17 @@
     // ============================================================
     // AFFICHER OPEN
     // ============================================================
-    function afficherOpen(slide) {
+    function afficherOpen(slide, index) {
       var brut = slide.contenuBrut || '';
       var question = brut.replace(/^qs:/i, '').trim();
+      slide.index = index;
       
       var html = '';
       html += '<div class="open-question-text">' + (question || 'Question ouverte') + '</div>';
-      html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
-      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
-      html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
-      html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
+      html += '<textarea id="openReponse-' + index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
+      html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + index + ')">Envoyer la réponse</button>';
+      html += '<div class="reponse-confirmation" id="openConfirmation-' + index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
+      html += '<button class="btn-continuer" id="btnContinuerOpen-' + index + '" onclick="slideSuivante()">Continuer →</button>';
       return html;
     }
 
@@ -1123,6 +1082,9 @@
         }
       }
       
+      slide.elements = elements;
+      slide.index = index;
+      
       // Mélanger les éléments
       var shuffled = elements.slice();
       for (var i = shuffled.length - 1; i > 0; i--) {
@@ -1131,6 +1093,7 @@
         shuffled[i] = shuffled[j];
         shuffled[j] = temp;
       }
+      slide.shuffled = shuffled;
 
       var html = '';
       html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">' + (question || 'Remettez dans l\'ordre') + '</h3>';
@@ -1154,9 +1117,6 @@
       html += '<button class="btn-continuer" id="btnContinuerOrdre-' + index + '" onclick="slideSuivante()">Continuer →</button>';
 
       etat.ordreValide[index] = false;
-      slide.elements = elements;
-      slide.shuffled = shuffled;
-      
       return html;
     }
 
@@ -1179,6 +1139,10 @@
         }
       }
       
+      slide.recto = recto;
+      slide.verso = verso;
+      slide.index = index;
+      
       var html = '';
       html += '<div class="carte-indicateur">Cliquez sur la carte pour la retourner</div>';
       html += '<div class="carte-container" id="carteContainer-' + index + '" onclick="retournerCarte(' + index + ')">';
@@ -1196,9 +1160,6 @@
       html += '<button class="btn-continuer" id="btnContinuerCarte-' + index + '" onclick="slideSuivante()">Continuer →</button>';
 
       etat.cartesResultats[index] = null;
-      slide.recto = recto;
-      slide.verso = verso;
-      
       return html;
     }
 
@@ -1222,14 +1183,14 @@
     }
 
     // ============================================================
-    // FONCTIONS DE NAVIGATION ET INTERACTION (inchangées)
+    // FONCTIONS DE NAVIGATION ET INTERACTION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
       if (!slide) return;
       if (etat.reponsesQuiz[quizIndex]) return;
-      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      var slideEl = document.getElementById('slide-' + quizIndex);
       if (!slideEl) return;
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var reponse = slide.reponses[reponseIndex];
@@ -1248,7 +1209,7 @@
       if (!slide) return;
       var reponseData = etat.reponsesQuiz[quizIndex];
       if (!reponseData) return;
-      var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
+      var slideEl = document.getElementById('slide-' + quizIndex);
       if (!slideEl) return;
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
@@ -1570,7 +1531,6 @@
         ordreDonne.push(parseInt(el.dataset.num));
       });
 
-      // L'ordre attendu est 1, 2, 3, ...
       var ordreAttendu = [];
       for (var i = 1; i <= ordreDonne.length; i++) {
         ordreAttendu.push(i);
