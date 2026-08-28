@@ -183,37 +183,7 @@
       return data;
     }
 
-    async function renderVerse(verseKey, element) {
-      try {
-        const versesRes = await fetch('https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/verses.json');
-        const verses = await versesRes.json();
-        const info = verses[verseKey];
-        if (!info) {
-          element.textContent = `❌ ${verseKey} non trouvé`;
-          return;
-        }
-
-        const pageData = await loadPage(info.page);
-        let allWords = [];
-        info.lines.forEach(lineInfo => {
-          const lineData = pageData.lines.find(l => l.line === lineInfo.line);
-          if (!lineData) return;
-          const start = lineInfo.word_start - 1;
-          const end = lineInfo.word_end;
-          allWords = allWords.concat(lineData.words.slice(start, end));
-        });
-
-        let html = '';
-        allWords.forEach(word => {
-          const font = word.font || 'QCF4_Hafs_01';
-          html += `<span style="font-family:'${font}',serif;">${word.char}</span>`;
-        });
-        element.innerHTML = html;
-
-      } catch(e) {
-        element.textContent = `❌ Erreur: ${e.message}`;
-      }
-    }
+   
 
     function remplacerVersets(texte) {
       return texte.replace(/\[VERSET:(\d+):(\d+)\]/g, function(match, sura, verse) {
