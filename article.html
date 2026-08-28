@@ -797,37 +797,64 @@
     // ============================================================
     // CHARGER LE POST (VERSION ADAPTÉE AU NOUVEAU FORMAT)
     // ============================================================
-    function chargerPost(id) {
-      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
-        .then(function(r) { if (!r.ok) throw new Error('Erreur réseau'); return r.json(); })
-        .then(function(data) {
-          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
-          
-          // Récupérer les données du post
-          var post = data.post;
-          
-          // Colonne I (slides) - séparés par \n\n
-          var slidesBrut = post.slides || '';
-          var slidesArray = slidesBrut.split('\n\n').filter(function(s) { return s.trim() !== ''; });
-          
-          // Colonnes J, K, L, M, N
-          var quiz = post.quiz || '';
-          var openQuestion = post.openQ || '';
-          var ordre = post.ordre || '';
-          var carte = post.carte || '';
-          var retenir = post.retenir || '';
-          
-          etat.post = post;
-          
-          // Préparer les slides avec la nouvelle structure
-          preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-          
-          recupererNotes();
-          afficherSlides();
-        })
-        .catch(function(error) { afficherErreur(error.message); });
-    }
-
+   function chargerPost(id) {
+  fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
+    .then(function(r) { 
+      if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
+      return r.json(); 
+    })
+    .then(function(data) {
+      console.log('📦 Données reçues du serveur:', data);
+      
+      if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
+      
+      // Récupérer les données du post
+      var post = data.post;
+      
+      console.log('📄 Post brut:', post);
+      console.log('📄 Colonne I (slides):', post.slides);
+      console.log('📄 Colonne J (quiz):', post.quiz);
+      console.log('📄 Colonne K (openQ):', post.openQ);
+      console.log('📄 Colonne L (ordre):', post.ordre);
+      console.log('📄 Colonne M (carte):', post.carte);
+      console.log('📄 Colonne N (retenir):', post.retenir);
+      
+      // Nettoyer les données (enlever les guillemets et caractères indésirables)
+      var slidesBrut = post.slides || '';
+      var quiz = post.quiz || '';
+      var openQuestion = post.openQ || '';
+      var ordre = post.ordre || '';
+      var carte = post.carte || '';
+      var retenir = post.retenir || '';
+      
+      // Nettoyer les guillemets si présents
+      slidesBrut = slidesBrut.replace(/^"|"$/g, '');
+      quiz = quiz.replace(/^"|"$/g, '');
+      openQuestion = openQuestion.replace(/^"|"$/g, '');
+      ordre = ordre.replace(/^"|"$/g, '');
+      carte = carte.replace(/^"|"$/g, '');
+      retenir = retenir.replace(/^"|"$/g, '');
+      
+      // Slides array
+      var slidesArray = slidesBrut.split('\n\n').filter(function(s) { return s.trim() !== ''; });
+      
+      console.log('📊 Slides array:', slidesArray);
+      
+      etat.post = post;
+      
+      // Préparer les slides
+      preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
+      
+      console.log('📊 Slides générés:', etat.slides);
+      
+      recupererNotes();
+      afficherSlides();
+    })
+    .catch(function(error) { 
+      console.error('❌ Erreur:', error);
+      afficherErreur(error.message); 
+    });
+}
     // ============================================================
     // PRÉPARER LES SLIDES (VERSION V2)
     // ============================================================
