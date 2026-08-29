@@ -1128,33 +1128,27 @@
     window.cartePasTrouve = cartePasTrouve;
   </script>
 
-  <script>
-// 1. Charger l'index des versets
-const versesIndex = await fetch('verses.json').then(r => r.json());
+<script>
+(async function() {
+  const versesIndex = await fetch('verses.json').then(r => r.json());
+  
+  async function getVerse(ref) {
+    const info = versesIndex[ref];
+    if (!info) return '❌';
+    const page = await fetch(`pages/${String(info.page).padStart(3,'0')}.json`).then(r => r.json());
+    let chars = '';
+    info.lines.forEach(li => {
+      const line = page.lines.find(l => l.line === li.line);
+      if (!line) return;
+      chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
+    });
+    return chars;
+  }
 
-// 2. Fonction pour récupérer un verset
-async function getVerse(ref) {
-  const info = versesIndex[ref]; // ex: "2:12"
-  if (!info) return '❌ Verset non trouvé';
-  
-  // Charger la page
-  const pageNum = String(info.page).padStart(3, '0');
-  const page = await fetch(`pages/${pageNum}.json`).then(r => r.json());
-  
-  // Récupérer les caractères du verset
-  let chars = '';
-  info.lines.forEach(lineInfo => {
-    const line = page.lines.find(l => l.line === lineInfo.line);
-    if (!line) return;
-    const words = line.words.slice(lineInfo.word_start - 1, lineInfo.word_end);
-    chars += words.map(w => w.char).join('');
-  });
-  
-  return chars;
-}
-
-// 3. Utilisation : affiche 2:12
-document.querySelector('.verset').textContent = await getVerse('2:12');
+  for (const el of document.querySelectorAll('.verset[data-ref]')) {
+    el.textContent = await getVerse(el.dataset.ref);
+  }
+})();
 </script>
 </body>
 </html>
