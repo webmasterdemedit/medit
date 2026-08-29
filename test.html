@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QCF4 - Indexeur de versets</title>
-    <link rel="stylesheet" href="/medit/theme.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCF4 - Verset depuis GitHub</title>
+    <link rel="stylesheet" href="/medit/theme.css">
     <style>
         body {
             font-family: monospace;
@@ -61,46 +61,142 @@
             flex-wrap: wrap;
             margin: 20px 0;
         }
-        .info {
-            color: #8b7d60;
-            font-size: 14px;
-        }
-        .success { color: #4caf50; }
-        .error { color: #f44336; }
     </style>
 </head>
 <body>
 
-    <h1>📖 Indexeur QCF4</h1>
+    <h1>📖 QCF4 - Versets depuis GitHub</h1>
 
     <div class="controls">
-        <input type="text" id="verseInput" placeholder="ex: 3:187" value="3:187" />
-        <button id="loadBtn">🔍 Afficher le verset</button>
+        <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
+        <button id="loadBtn">🔍 Afficher</button>
         <button id="buildBtn">⚡ Reconstruire l'index</button>
     </div>
 
-    <div id="verseDisplay" class="verset"></div>
+    <div id="verseDisplay" class="verset">⏳ Chargement...</div>
 
-    <div id="log">⏳ Prêt... Clique sur "Reconstruire l'index" pour commencer.</div>
+    <div id="log">⏳ Initialisation...</div>
 
     <script>
-        // ===== INDEX GLOBAL =====
-        // Structure : verseIndex[verse_key] = [ { char, position, page }, ... ]
+        // ===== CONFIGURATION : UTILISATION DES FICHIERS DEPUIS GITHUB =====
+        const BASE_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main';
+        const FONT_BASE = 'https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2';
+
         let verseIndex = {};
         let isIndexBuilt = false;
 
-        // ===== AFFICHER LE VERSET =====
+        // ===== CHARGER LES POLICES DYNAMIQUEMENT =====
+        async function loadFont(fontName) {
+            if (document.fonts.check(`16px "${fontName}"`)) return;
+            
+            const fontUrl = `${FONT_BASE}/${fontName}_W.woff2`;
+            try {
+                const font = new FontFace(fontName, `url(${fontUrl})`);
+                await font.load();
+                document.fonts.add(font);
+                console.log(`✅ Police chargée : ${fontName}`);
+            } catch (e) {
+                console.warn(`⚠️ Police non chargée : ${fontName}`, e);
+            }
+        }
+
+        // ===== CONSTRUIRE L'INDEX DEPUIS GITHUB =====
+        async function buildIndex() {
+            const log = document.getElementById('log');
+            log.textContent = '⏳ Construction de l\'index depuis GitHub...\n';
+
+            verseIndex = {};
+            isIndexBuilt = false;
+
+            try {
+                // 1. Charger verses.json
+                const versesUrl = `${BASE_URL}/verses.json`;
+                log.textContent += `📥 Chargement de ${versesUrl}...\n`;
+                const verses = await fetch(versesUrl).then(r => r.json());
+                log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
+
+                // 2. Récupérer toutes les pages uniques
+                const pagesNeeded = new Set();
+                for (const key in verses) {
+                    pagesNeeded.add(verses[key].page);
+                }
+                log.textContent += `📄 ${pagesNeeded.size} pages à charger\n`;
+
+                // 3. Charger chaque page
+                let totalWords = 0;
+                let totalVersets = 0;
+
+                for (const pageNum of pagesNeeded) {
+                    const pageStr = String(pageNum).padStart(3, '0');
+                    const url = `${BASE_URL}/pages/${pageStr}.json`;
+                    
+                    try {
+                        const res = await fetch(url);
+                        if (!res.ok) continue;
+                        const page = await res.json();
+
+                        // Charger la police de cette page
+                        if (page.font) {
+                            await loadFont(page.font);
+                        }
+
+                        page.lines.forEach(line => {
+                            line.words.forEach(word => {
+                                if (word.verse_key) {
+                                    const key = word.verse_key;
+                                    if (!verseIndex[key]) {
+                                        verseIndex[key] = [];
+                                        totalVersets++;
+                                    }
+                                    verseIndex[key].push({
+                                        char: word.char,
+                                        position: word.position,
+                                        page: pageNum,
+                                        font: word.font || page.font
+                                    });
+                                    totalWords++;
+                                }
+                            });
+                        });
+
+                        log.textContent += `✅ Page ${pageStr} chargée\n`;
+
+                    } catch (e) {
+                        log.textContent += `❌ Erreur page ${pageStr}: ${e.message}\n`;
+                    }
+                }
+
+                isIndexBuilt = true;
+                log.textContent += `\n✅ Index construit !\n`;
+                log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
+                log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
+
+                // Afficher le verset par défaut
+                const defaultRef = document.getElementById('verseInput').value.trim();
+                if (defaultRef) {
+                    afficherVerset(defaultRef);
+                }
+
+            } catch (error) {
+                log.textContent += `\n❌ ERREUR : ${error.message}\n`;
+                console.error(error);
+            }
+
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ===== AFFICHER UN VERSET =====
         function afficherVerset(verseKey) {
             const display = document.getElementById('verseDisplay');
             const words = verseIndex[verseKey] || [];
 
             if (!isIndexBuilt) {
-                display.textContent = '⚠️ Index non construit. Clique sur "Reconstruire l\'index".';
+                display.textContent = '⚠️ Index en cours de construction...';
                 return;
             }
 
             if (words.length === 0) {
-                display.textContent = `❌ Verset ${verseKey} non trouvé. Vérifie la référence.`;
+                display.textContent = `❌ Verset ${verseKey} non trouvé.`;
                 return;
             }
 
@@ -111,78 +207,9 @@
             const chars = words.map(w => w.char).join('');
             display.textContent = chars;
 
-            // Afficher les infos
+            // Log
             const log = document.getElementById('log');
             log.textContent += `\n✅ ${verseKey} : ${words.length} mots (page ${words[0].page})`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        // ===== RECONSTRUIRE L'INDEX =====
-        async function buildIndex() {
-            const log = document.getElementById('log');
-            log.textContent = '⏳ Reconstruction de l\'index en cours...\n';
-
-            verseIndex = {};
-            let totalPages = 0;
-            let totalWords = 0;
-            let totalVersets = 0;
-
-            const maxPages = 604;
-
-            for (let p = 1; p <= maxPages; p++) {
-                const pageNum = String(p).padStart(3, '0');
-                const url = `/medit/pages/${pageNum}.json`;
-
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) continue;
-
-                    const page = await res.json();
-                    totalPages++;
-
-                    // Parcourir toutes les lignes
-                    page.lines.forEach(line => {
-                        line.words.forEach(word => {
-                            if (word.verse_key) {
-                                const key = word.verse_key;
-                                if (!verseIndex[key]) {
-                                    verseIndex[key] = [];
-                                    totalVersets++;
-                                }
-                                verseIndex[key].push({
-                                    char: word.char,
-                                    position: word.position,
-                                    page: p
-                                });
-                                totalWords++;
-                            }
-                        });
-                    });
-
-                    // Log toutes les 50 pages
-                    if (p % 50 === 0) {
-                        log.textContent += `📄 ${p} pages traitées...\n`;
-                    }
-
-                } catch (e) {
-                    // Ignorer les pages manquantes
-                    continue;
-                }
-            }
-
-            isIndexBuilt = true;
-
-            log.textContent += `\n✅ Index construit !\n`;
-            log.textContent += `   📄 Pages trouvées : ${totalPages}\n`;
-            log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
-            log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
-
-            // Afficher le verset par défaut
-            const defaultRef = document.getElementById('verseInput').value.trim();
-            if (defaultRef) {
-                afficherVerset(defaultRef);
-            }
-
             log.scrollTop = log.scrollHeight;
         }
 
@@ -198,15 +225,13 @@
             afficherVerset(ref);
         });
 
-        // Entrée clavier
         document.getElementById('verseInput').addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
                 document.getElementById('loadBtn').click();
             }
         });
 
-        // ===== AUTO-LOAD =====
-        // Construire l'index automatiquement au chargement
+        // ===== LANCEMENT AUTOMATIQUE =====
         window.addEventListener('load', function() {
             buildIndex();
         });
