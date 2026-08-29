@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QCF4 - Verset depuis GitHub</title>
-    <link rel="stylesheet" href="/medit/theme.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QCF4 - Indexeur complet</title>
     <style>
+        * {
+            box-sizing: border-box;
+        }
         body {
             font-family: monospace;
             background: #1a1a2e;
@@ -14,15 +16,20 @@
             max-width: 900px;
             margin: 0 auto;
         }
+        h1 {
+            color: #c9a84c;
+            text-align: center;
+        }
         #log {
             background: #0d1117;
             padding: 15px;
             border-radius: 8px;
-            max-height: 300px;
+            max-height: 250px;
             overflow-y: auto;
             font-size: 13px;
             white-space: pre-wrap;
             border: 1px solid #2a3040;
+            margin-top: 10px;
         }
         .verset {
             font-family: 'QCF4_Hafs_01', serif;
@@ -36,8 +43,10 @@
             color: #e8dfc8;
             border-radius: 12px;
             border-right: 5px solid #c9a84c;
+            min-height: 60px;
         }
-        input, button {
+        input,
+        button {
             padding: 10px 16px;
             font-size: 16px;
             border-radius: 6px;
@@ -61,61 +70,124 @@
             flex-wrap: wrap;
             margin: 20px 0;
         }
+        .status {
+            font-size: 14px;
+            color: #8b7d60;
+        }
+        .success {
+            color: #4caf50;
+        }
+        .error {
+            color: #f44336;
+        }
+        .info {
+            color: #8b7d60;
+        }
     </style>
 </head>
 <body>
 
-    <h1>📖 QCF4 - Versets depuis GitHub</h1>
+    <h1>📖 QCF4 - Indexeur complet</h1>
 
     <div class="controls">
         <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
-        <button id="loadBtn">🔍 Afficher</button>
+        <button id="loadBtn">🔍 Afficher le verset</button>
         <button id="buildBtn">⚡ Reconstruire l'index</button>
+        <span class="status" id="status">Prêt</span>
     </div>
 
-    <div id="verseDisplay" class="verset">⏳ Chargement...</div>
+    <div id="verseDisplay" class="verset">⏳ Entrez une référence et cliquez sur "Afficher".</div>
 
-    <div id="log">⏳ Initialisation...</div>
+    <div id="log">⏳ Initialisation... Cliquez sur "Reconstruire l'index" pour commencer.</div>
 
     <script>
-        // ===== CONFIGURATION : UTILISATION DES FICHIERS DEPUIS GITHUB =====
+        // ============================================================
+        // CONFIGURATION
+        // ============================================================
         const BASE_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main';
         const FONT_BASE = 'https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2';
 
+        // ============================================================
+        // ÉTAT GLOBAL
+        // ============================================================
         let verseIndex = {};
         let isIndexBuilt = false;
+        let fontCache = new Set();
 
-        // ===== CHARGER LES POLICES DYNAMIQUEMENT =====
+        // ============================================================
+        // CHARGER UNE POLICE (depuis CDN)
+        // ============================================================
         async function loadFont(fontName) {
-            if (document.fonts.check(`16px "${fontName}"`)) return;
-            
-            const fontUrl = `${FONT_BASE}/${fontName}_W.woff2`;
+            if (fontCache.has(fontName)) return true;
+            if (document.fonts.check(`16px "${fontName}"`)) {
+                fontCache.add(fontName);
+                return true;
+            }
+
+            const url = `${FONT_BASE}/${fontName}_W.woff2`;
             try {
-                const font = new FontFace(fontName, `url(${fontUrl})`);
+                const font = new FontFace(fontName, `url(${url})`);
                 await font.load();
                 document.fonts.add(font);
+                fontCache.add(fontName);
                 console.log(`✅ Police chargée : ${fontName}`);
+                return true;
             } catch (e) {
                 console.warn(`⚠️ Police non chargée : ${fontName}`, e);
+                return false;
             }
         }
 
-        // ===== CONSTRUIRE L'INDEX DEPUIS GITHUB =====
+        // ============================================================
+        // CHARGER UNE PAGE (depuis GitHub)
+        // ============================================================
+        async function loadPage(pageNum) {
+            const pageStr = String(pageNum).padStart(3, '0');
+            const url = `${BASE_URL}/pages/${pageStr}.json`;
+            try {
+                const res = await fetch(url);
+                if (!res.ok) return null;
+                return await res.json();
+            } catch (e) {
+                console.warn(`⚠️ Page ${pageStr} non chargée`, e);
+                return null;
+            }
+        }
+
+        // ============================================================
+        // CHARGER L'INDEX (verses.json)
+        // ============================================================
+        async function loadVersesIndex() {
+            const url = `${BASE_URL}/verses.json`;
+            try {
+                const res = await fetch(url);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return await res.json();
+            } catch (e) {
+                throw new Error(`Impossible de charger verses.json: ${e.message}`);
+            }
+        }
+
+        // ============================================================
+        // CONSTRUIRE L'INDEX COMPLET
+        // ============================================================
         async function buildIndex() {
             const log = document.getElementById('log');
-            log.textContent = '⏳ Construction de l\'index depuis GitHub...\n';
+            const status = document.getElementById('status');
+            log.textContent = '⏳ Construction de l\'index...\n';
+            status.textContent = '⏳ Chargement...';
 
             verseIndex = {};
             isIndexBuilt = false;
+            fontCache.clear();
 
             try {
                 // 1. Charger verses.json
-                const versesUrl = `${BASE_URL}/verses.json`;
-                log.textContent += `📥 Chargement de ${versesUrl}...\n`;
-                const verses = await fetch(versesUrl).then(r => r.json());
+                log.textContent += '📥 Chargement de verses.json...\n';
+                const verses = await loadVersesIndex();
                 log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
 
-                // 2. Récupérer toutes les pages uniques
+                // 2. Collecter les pages uniques
                 const pagesNeeded = new Set();
                 for (const key in verses) {
                     pagesNeeded.add(verses[key].page);
@@ -125,51 +197,55 @@
                 // 3. Charger chaque page
                 let totalWords = 0;
                 let totalVersets = 0;
+                let totalPagesLoaded = 0;
 
                 for (const pageNum of pagesNeeded) {
-                    const pageStr = String(pageNum).padStart(3, '0');
-                    const url = `${BASE_URL}/pages/${pageStr}.json`;
-                    
-                    try {
-                        const res = await fetch(url);
-                        if (!res.ok) continue;
-                        const page = await res.json();
+                    const page = await loadPage(pageNum);
+                    if (!page) continue;
 
-                        // Charger la police de cette page
-                        if (page.font) {
-                            await loadFont(page.font);
-                        }
+                    totalPagesLoaded++;
 
-                        page.lines.forEach(line => {
-                            line.words.forEach(word => {
-                                if (word.verse_key) {
-                                    const key = word.verse_key;
-                                    if (!verseIndex[key]) {
-                                        verseIndex[key] = [];
-                                        totalVersets++;
-                                    }
-                                    verseIndex[key].push({
-                                        char: word.char,
-                                        position: word.position,
-                                        page: pageNum,
-                                        font: word.font || page.font
-                                    });
-                                    totalWords++;
+                    // Charger la police de cette page
+                    if (page.font) {
+                        await loadFont(page.font);
+                    }
+
+                    page.lines.forEach(line => {
+                        line.words.forEach(word => {
+                            if (word.verse_key) {
+                                const key = word.verse_key;
+                                if (!verseIndex[key]) {
+                                    verseIndex[key] = [];
+                                    totalVersets++;
                                 }
-                            });
+                                verseIndex[key].push({
+                                    char: word.char,
+                                    position: word.position,
+                                    page: pageNum,
+                                    font: word.font || page.font,
+                                    line: line.line,
+                                    word_start: word.position,
+                                    word_end: word.position
+                                });
+                                totalWords++;
+                            }
                         });
+                    });
 
-                        log.textContent += `✅ Page ${pageStr} chargée\n`;
-
-                    } catch (e) {
-                        log.textContent += `❌ Erreur page ${pageStr}: ${e.message}\n`;
+                    // Log toutes les 10 pages
+                    if (totalPagesLoaded % 10 === 0) {
+                        log.textContent += `✅ ${totalPagesLoaded} pages chargées...\n`;
                     }
                 }
 
                 isIndexBuilt = true;
                 log.textContent += `\n✅ Index construit !\n`;
+                log.textContent += `   📄 Pages chargées : ${totalPagesLoaded}\n`;
                 log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
                 log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
+
+                status.textContent = '✅ Prêt';
+                status.className = 'status success';
 
                 // Afficher le verset par défaut
                 const defaultRef = document.getElementById('verseInput').value.trim();
@@ -180,41 +256,61 @@
             } catch (error) {
                 log.textContent += `\n❌ ERREUR : ${error.message}\n`;
                 console.error(error);
+                status.textContent = '❌ Erreur';
+                status.className = 'status error';
             }
 
             log.scrollTop = log.scrollHeight;
         }
 
-        // ===== AFFICHER UN VERSET =====
-        function afficherVerset(verseKey) {
+        // ============================================================
+        // AFFICHER UN VERSET
+        // ============================================================
+        async function afficherVerset(verseKey) {
             const display = document.getElementById('verseDisplay');
-            const words = verseIndex[verseKey] || [];
+            const log = document.getElementById('log');
+            const status = document.getElementById('status');
 
             if (!isIndexBuilt) {
-                display.textContent = '⚠️ Index en cours de construction...';
+                display.textContent = '⚠️ Index non construit. Clique sur "Reconstruire l\'index".';
                 return;
             }
 
+            const words = verseIndex[verseKey] || [];
             if (words.length === 0) {
                 display.textContent = `❌ Verset ${verseKey} non trouvé.`;
+                log.textContent += `\n❌ ${verseKey} non trouvé\n`;
                 return;
             }
+
+            status.textContent = `⏳ Chargement de ${verseKey}...`;
+            log.textContent += `\n📖 Chargement de ${verseKey} (${words.length} mots)...\n`;
 
             // Trier par position
             words.sort((a, b) => a.position - b.position);
 
-            // Construire le texte
+            // Charger les polices nécessaires
+            const fontsNeeded = new Set(words.map(w => w.font));
+            for (const fontName of fontsNeeded) {
+                await loadFont(fontName);
+            }
+
+            // Construire le verset
             const chars = words.map(w => w.char).join('');
             display.textContent = chars;
 
-            // Log
-            const log = document.getElementById('log');
-            log.textContent += `\n✅ ${verseKey} : ${words.length} mots (page ${words[0].page})`;
+            log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères)\n`;
+            status.textContent = `✅ ${verseKey} affiché`;
+            status.className = 'status success';
             log.scrollTop = log.scrollHeight;
         }
 
-        // ===== ÉVÉNEMENTS =====
-        document.getElementById('buildBtn').addEventListener('click', buildIndex);
+        // ============================================================
+        // ÉVÉNEMENTS
+        // ============================================================
+        document.getElementById('buildBtn').addEventListener('click', function() {
+            buildIndex();
+        });
 
         document.getElementById('loadBtn').addEventListener('click', function() {
             const ref = document.getElementById('verseInput').value.trim();
@@ -231,7 +327,9 @@
             }
         });
 
-        // ===== LANCEMENT AUTOMATIQUE =====
+        // ============================================================
+        // LANCEMENT AUTOMATIQUE
+        // ============================================================
         window.addEventListener('load', function() {
             buildIndex();
         });
