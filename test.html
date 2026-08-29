@@ -1,13 +1,10 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QCF4 - Indexeur complet</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QCF4 - Test avec mes polices</title>
     <style>
-        * {
-            box-sizing: border-box;
-        }
         body {
             font-family: monospace;
             background: #1a1a2e;
@@ -15,10 +12,6 @@
             padding: 20px;
             max-width: 900px;
             margin: 0 auto;
-        }
-        h1 {
-            color: #c9a84c;
-            text-align: center;
         }
         #log {
             background: #0d1117;
@@ -32,7 +25,6 @@
             margin-top: 10px;
         }
         .verset {
-            font-family: 'QCF4_Hafs_01', serif;
             font-size: 32px;
             display: block;
             padding: 20px;
@@ -44,9 +36,9 @@
             border-radius: 12px;
             border-right: 5px solid #c9a84c;
             min-height: 60px;
+            font-family: 'QCF4_Hafs_01', serif;
         }
-        input,
-        button {
+        input, button {
             padding: 10px 16px;
             font-size: 16px;
             border-radius: 6px;
@@ -80,50 +72,45 @@
         .error {
             color: #f44336;
         }
-        .info {
-            color: #8b7d60;
-        }
     </style>
 </head>
 <body>
 
-    <h1>📖 QCF4 - Indexeur complet</h1>
+    <h1>📖 QCF4 - Test avec mes polices</h1>
 
     <div class="controls">
         <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
-        <button id="loadBtn">🔍 Afficher le verset</button>
+        <button id="loadBtn">🔍 Afficher</button>
         <button id="buildBtn">⚡ Reconstruire l'index</button>
         <span class="status" id="status">Prêt</span>
     </div>
 
-    <div id="verseDisplay" class="verset">⏳ Entrez une référence et cliquez sur "Afficher".</div>
-
-    <div id="log">⏳ Initialisation... Cliquez sur "Reconstruire l'index" pour commencer.</div>
+    <div id="verseDisplay" class="verset">⏳ Entrez une référence.</div>
+    <div id="log">⏳ Initialisation...</div>
 
     <script>
         // ============================================================
-        // CONFIGURATION
+        // CONFIGURATION : UTILISATION DE TES POLICES
         // ============================================================
         const BASE_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main';
-        const FONT_BASE = 'https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2';
+        const FONT_BASE = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts';
 
-        // ============================================================
-        // ÉTAT GLOBAL
-        // ============================================================
         let verseIndex = {};
         let isIndexBuilt = false;
         let fontCache = new Set();
 
         // ============================================================
-        // CHARGER UNE POLICE (depuis CDN)
+        // CHARGER UNE POLICE DEPUIS TON DEPOT
         // ============================================================
         async function loadFont(fontName) {
+            // Vérifier si déjà chargée
             if (fontCache.has(fontName)) return true;
             if (document.fonts.check(`16px "${fontName}"`)) {
                 fontCache.add(fontName);
                 return true;
             }
 
+            // Charger depuis ton dépôt
             const url = `${FONT_BASE}/${fontName}_W.woff2`;
             try {
                 const font = new FontFace(fontName, `url(${url})`);
@@ -133,24 +120,8 @@
                 console.log(`✅ Police chargée : ${fontName}`);
                 return true;
             } catch (e) {
-                console.warn(`⚠️ Police non chargée : ${fontName}`, e);
+                console.warn(`⚠️ Échec chargement de ${fontName} :`, e);
                 return false;
-            }
-        }
-
-        // ============================================================
-        // CHARGER UNE PAGE (depuis GitHub)
-        // ============================================================
-        async function loadPage(pageNum) {
-            const pageStr = String(pageNum).padStart(3, '0');
-            const url = `${BASE_URL}/pages/${pageStr}.json`;
-            try {
-                const res = await fetch(url);
-                if (!res.ok) return null;
-                return await res.json();
-            } catch (e) {
-                console.warn(`⚠️ Page ${pageStr} non chargée`, e);
-                return null;
             }
         }
 
@@ -159,17 +130,13 @@
         // ============================================================
         async function loadVersesIndex() {
             const url = `${BASE_URL}/verses.json`;
-            try {
-                const res = await fetch(url);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                return await res.json();
-            } catch (e) {
-                throw new Error(`Impossible de charger verses.json: ${e.message}`);
-            }
+            const res = await fetch(url);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
         }
 
         // ============================================================
-        // CONSTRUIRE L'INDEX COMPLET
+        // CONSTRUIRE L'INDEX
         // ============================================================
         async function buildIndex() {
             const log = document.getElementById('log');
@@ -182,68 +149,16 @@
             fontCache.clear();
 
             try {
-                // 1. Charger verses.json
-                log.textContent += '📥 Chargement de verses.json...\n';
                 const verses = await loadVersesIndex();
                 log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
 
-                // 2. Collecter les pages uniques
-                const pagesNeeded = new Set();
-                for (const key in verses) {
-                    pagesNeeded.add(verses[key].page);
-                }
-                log.textContent += `📄 ${pagesNeeded.size} pages à charger\n`;
-
-                // 3. Charger chaque page
-                let totalWords = 0;
-                let totalVersets = 0;
-                let totalPagesLoaded = 0;
-
-                for (const pageNum of pagesNeeded) {
-                    const page = await loadPage(pageNum);
-                    if (!page) continue;
-
-                    totalPagesLoaded++;
-
-                    // Charger la police de cette page
-                    if (page.font) {
-                        await loadFont(page.font);
-                    }
-
-                    page.lines.forEach(line => {
-                        line.words.forEach(word => {
-                            if (word.verse_key) {
-                                const key = word.verse_key;
-                                if (!verseIndex[key]) {
-                                    verseIndex[key] = [];
-                                    totalVersets++;
-                                }
-                                verseIndex[key].push({
-                                    char: word.char,
-                                    position: word.position,
-                                    page: pageNum,
-                                    font: word.font || page.font,
-                                    line: line.line,
-                                    word_start: word.position,
-                                    word_end: word.position
-                                });
-                                totalWords++;
-                            }
-                        });
-                    });
-
-                    // Log toutes les 10 pages
-                    if (totalPagesLoaded % 10 === 0) {
-                        log.textContent += `✅ ${totalPagesLoaded} pages chargées...\n`;
-                    }
+                // Indexer directement
+                for (const [key, info] of Object.entries(verses)) {
+                    verseIndex[key] = info;
                 }
 
                 isIndexBuilt = true;
-                log.textContent += `\n✅ Index construit !\n`;
-                log.textContent += `   📄 Pages chargées : ${totalPagesLoaded}\n`;
-                log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
-                log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
-
+                log.textContent += `✅ Index prêt ! (${Object.keys(verseIndex).length} versets)\n`;
                 status.textContent = '✅ Prêt';
                 status.className = 'status success';
 
@@ -255,12 +170,9 @@
 
             } catch (error) {
                 log.textContent += `\n❌ ERREUR : ${error.message}\n`;
-                console.error(error);
                 status.textContent = '❌ Erreur';
                 status.className = 'status error';
             }
-
-            log.scrollTop = log.scrollHeight;
         }
 
         // ============================================================
@@ -269,53 +181,59 @@
         async function afficherVerset(verseKey) {
             const display = document.getElementById('verseDisplay');
             const log = document.getElementById('log');
-            const status = document.getElementById('status');
 
             if (!isIndexBuilt) {
-                display.textContent = '⚠️ Index non construit. Clique sur "Reconstruire l\'index".';
+                display.textContent = '⚠️ Index en cours de construction...';
                 return;
             }
 
-            const words = verseIndex[verseKey] || [];
-            if (words.length === 0) {
-                display.textContent = `❌ Verset ${verseKey} non trouvé.`;
+            const info = verseIndex[verseKey];
+            if (!info) {
+                display.textContent = `❌ ${verseKey} non trouvé`;
                 log.textContent += `\n❌ ${verseKey} non trouvé\n`;
                 return;
             }
 
-            status.textContent = `⏳ Chargement de ${verseKey}...`;
-            log.textContent += `\n📖 Chargement de ${verseKey} (${words.length} mots)...\n`;
+            log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
 
-            // Trier par position
-            words.sort((a, b) => a.position - b.position);
+            // Déterminer et charger la bonne police
+            const fontNumber = String(info.page).padStart(2, '0');
+            const fontName = `QCF4_Hafs_${fontNumber}`;
+            await loadFont(fontName);
 
-            // Charger les polices nécessaires
-            const fontsNeeded = new Set(words.map(w => w.font));
-            for (const fontName of fontsNeeded) {
-                await loadFont(fontName);
+            // Charger la page
+            const pageNum = String(info.page).padStart(3, '0');
+            const pageUrl = `${BASE_URL}/pages/${pageNum}.json`;
+            const page = await fetch(pageUrl).then(r => r.json());
+
+            // Extraire les caractères
+            let chars = '';
+            for (const lineInfo of info.lines) {
+                const line = page.lines.find(l => l.line === lineInfo.line);
+                if (!line) continue;
+                const words = line.words.slice(lineInfo.word_start - 1, lineInfo.word_end);
+                chars += words.map(w => w.char).join('');
             }
 
-            // Construire le verset
-            const chars = words.map(w => w.char).join('');
-            display.textContent = chars;
+            // Afficher avec la bonne police
+            display.textContent = chars || '⚠️ Aucun caractère';
+            display.style.fontFamily = `'${fontName}', serif`;
+            display.style.fontSize = '32px';
+            display.style.direction = 'rtl';
+            display.style.textAlign = 'right';
 
-            log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères)\n`;
-            status.textContent = `✅ ${verseKey} affiché`;
-            status.className = 'status success';
+            log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères) avec ${fontName}\n`;
             log.scrollTop = log.scrollHeight;
         }
 
         // ============================================================
         // ÉVÉNEMENTS
         // ============================================================
-        document.getElementById('buildBtn').addEventListener('click', function() {
-            buildIndex();
-        });
-
+        document.getElementById('buildBtn').addEventListener('click', buildIndex);
         document.getElementById('loadBtn').addEventListener('click', function() {
             const ref = document.getElementById('verseInput').value.trim();
             if (!ref) {
-                document.getElementById('verseDisplay').textContent = '⚠️ Entrez une référence (ex: 3:187)';
+                document.getElementById('verseDisplay').textContent = '⚠️ Entrez une référence.';
                 return;
             }
             afficherVerset(ref);
@@ -330,9 +248,7 @@
         // ============================================================
         // LANCEMENT AUTOMATIQUE
         // ============================================================
-        window.addEventListener('load', function() {
-            buildIndex();
-        });
+        window.addEventListener('load', buildIndex);
     </script>
 
 </body>
