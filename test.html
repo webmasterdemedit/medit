@@ -1,19 +1,79 @@
 <!DOCTYPE html>
-<html>
+<html lang="fr">
 <head>
-<style>
-@font-face {
-    font-family: 'QCF47';
-    src: url('medit/font/QCF2047.ttf') format('truetype');
-}
-.test {
-    font-family: 'QCF47', serif;
-    font-size: 3em;
-    direction: rtl;
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Test verset</title>
+  <link rel="stylesheet" href="/medit/theme.css" />
 </head>
 <body>
-<div class="test">ﱊ</div>
+
+  <h1>🧪 Test d'affichage</h1>
+
+  <div class="verset" data-ref="2:12"></div>
+
+  <hr>
+
+  <div id="log" style="font-family:monospace;background:#f0f0f0;padding:10px;white-space:pre-wrap;"></div>
+
+  <script>
+    (async function() {
+      const log = document.getElementById('log');
+      log.textContent = '⏳ Chargement...\n';
+
+      try {
+        // 1. Test verses.json
+        log.textContent += '1. Chargement de /medit/verses.json...\n';
+        const r1 = await fetch('/medit/verses.json');
+        log.textContent += `   → Status: ${r1.status}\n`;
+        if (!r1.ok) { log.textContent += '❌ Fichier non trouvé !'; return; }
+        
+        const versesIndex = await r1.json();
+        log.textContent += '   ✅ verses.json chargé\n';
+
+        // 2. Test 2:12
+        log.textContent += '2. Recherche de 2:12...\n';
+        const info = versesIndex['2:12'];
+        if (!info) { log.textContent += '❌ 2:12 non trouvé !'; return; }
+        log.textContent += `   ✅ Trouvé sur la page ${info.page}\n`;
+
+        // 3. Test page
+        const pageNum = String(info.page).padStart(3, '0');
+        log.textContent += `3. Chargement de /medit/pages/${pageNum}.json...\n`;
+        const r2 = await fetch(`/medit/pages/${pageNum}.json`);
+        log.textContent += `   → Status: ${r2.status}\n`;
+        if (!r2.ok) { log.textContent += '❌ Page non trouvée !'; return; }
+        
+        const page = await r2.json();
+        log.textContent += '   ✅ Page chargée\n';
+
+        // 4. Extraire les caractères
+        log.textContent += '4. Extraction des caractères...\n';
+        let chars = '';
+        info.lines.forEach(li => {
+          const line = page.lines.find(l => l.line === li.line);
+          if (!line) { log.textContent += `   ⚠️ Ligne ${li.line} non trouvée\n`; return; }
+          const words = line.words.slice(li.word_start - 1, li.word_end);
+          chars += words.map(w => w.char).join('');
+        });
+        log.textContent += `   ✅ Caractères extraits : "${chars}"\n`;
+
+        // 5. Afficher
+        log.textContent += '5. Affichage dans le DOM...\n';
+        const el = document.querySelector('.verset[data-ref="2:12"]');
+        if (el) {
+          el.textContent = chars;
+          log.textContent += '   ✅ Terminé !\n';
+        } else {
+          log.textContent += '   ❌ Élément .verset[data-ref="2:12"] non trouvé !\n';
+        }
+
+      } catch(e) {
+        log.textContent += `\n❌ ERREUR : ${e.message}`;
+        console.error(e);
+      }
+    })();
+  </script>
+
 </body>
 </html>
