@@ -1131,43 +1131,35 @@
 <script>
 (async function() {
   try {
-    // Charger l'index des versets (chemin absolu depuis la racine)
+    // 1. Charger l'index
     const versesIndex = await fetch('/medit/verses.json').then(r => r.json());
-    console.log('✅ verses.json chargé');
     
+    // 2. Fonction pour récupérer un verset
     async function getVerse(ref) {
       const info = versesIndex[ref];
-      if (!info) {
-        console.warn('⚠️ Verset non trouvé:', ref);
-        return '❌ Verset non trouvé';
-      }
+      if (!info) return '❌ Verset non trouvé';
       
-      // Charger la page
-      const pageNum = String(info.page).padStart(3, '0');
-      const page = await fetch(`/medit/pages/${pageNum}.json`).then(r => r.json());
+      const page = await fetch(`/medit/pages/${String(info.page).padStart(3, '0')}.json`).then(r => r.json());
       
       let chars = '';
-      info.lines.forEach(li => {
+      for (const li of info.lines) {
         const line = page.lines.find(l => l.line === li.line);
-        if (!line) return;
+        if (!line) continue;
         chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
-      });
+      }
       return chars;
     }
-    
-    // Rendre tous les versets
-    const elements = document.querySelectorAll('.verset[data-ref]');
-    console.log(`📦 ${elements.length} verset(s) à charger`);
-    
-    for (const el of elements) {
-      const ref = el.dataset.ref;
-      console.log(`⏳ Chargement de ${ref}...`);
-      el.textContent = await getVerse(ref);
-      console.log(`✅ ${ref} chargé`);
+
+    // 3. Appliquer à tous les éléments
+    for (const el of document.querySelectorAll('.verset[data-ref]')) {
+      const ref = el.dataset.ref.trim();
+      console.log('Chargement de', ref);
+      const result = await getVerse(ref);
+      el.textContent = result;
+      console.log('Résultat :', result);
     }
-    
-  } catch(e) {
-    console.error('❌ Erreur:', e);
+  } catch (e) {
+    console.error('Erreur :', e);
   }
 })();
 </script>
