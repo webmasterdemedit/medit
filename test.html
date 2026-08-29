@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QCF4 - Test complet avec police</title>
+    <title>QCF4 - Correction finale</title>
     <style>
         body {
             background: #1a1a2e;
@@ -61,11 +61,13 @@
             flex-wrap: wrap;
             margin: 20px 0;
         }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
     </style>
 </head>
 <body>
 
-    <h1>📖 QCF4 - Test complet avec police</h1>
+    <h1>📖 QCF4 - Correction finale</h1>
 
     <div class="controls">
         <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
@@ -92,7 +94,7 @@
         let fontCache = new Set();
 
         // ============================================================
-        // CHARGER font-map.json
+        // 1. CHARGER font-map.json (indispensable)
         // ============================================================
         async function loadFontMap() {
             try {
@@ -102,7 +104,7 @@
                 console.log(`✅ font-map.json chargé (${Object.keys(fontMap).length} pages)`);
             } catch (e) {
                 console.warn('⚠️ Erreur chargement font-map.json, fallback utilisé', e);
-                // Fallback: générer un mapping approximatif
+                // Fallback (au cas où)
                 for (let i = 1; i <= 604; i++) {
                     const fontIndex = Math.ceil(i / 13);
                     fontMap[String(i)] = `QCF4_Hafs_${String(fontIndex).padStart(2, '0')}`;
@@ -111,14 +113,14 @@
         }
 
         // ============================================================
-        // TROUVER LA POLICE POUR UNE PAGE
+        // 2. TROUVER LA BONNE POLICE (correction clé)
         // ============================================================
         function getFontForPage(pageNum) {
             return fontMap[String(pageNum)] || `QCF4_Hafs_47`;
         }
 
         // ============================================================
-        // CHARGER UNE POLICE (depuis TON dépôt)
+        // 3. CHARGER UNE POLICE (depuis ton dépôt ou CDN)
         // ============================================================
         async function loadFont(fontName) {
             if (fontCache.has(fontName)) return true;
@@ -127,25 +129,25 @@
                 return true;
             }
 
+            // Essayer depuis ton dépôt d'abord
             const url = `${FONTS_BASE}/${fontName}_W.woff2`;
             try {
                 const font = new FontFace(fontName, `url(${url})`);
                 await font.load();
                 document.fonts.add(font);
                 fontCache.add(fontName);
-                console.log(`✅ Police chargée : ${fontName}`);
+                console.log(`✅ Police chargée (ton dépôt) : ${fontName}`);
                 return true;
             } catch (e) {
-                console.warn(`⚠️ Échec chargement de ${fontName} depuis ton dépôt, tentative CDN...`, e);
-                
-                // Fallback: tenter de charger depuis le CDN officiel
+                console.warn(`⚠️ Échec depuis ton dépôt pour ${fontName}, tentative CDN...`, e);
+                // Fallback CDN
                 const cdnUrl = `https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2/${fontName}_W.woff2`;
                 try {
                     const font = new FontFace(fontName, `url(${cdnUrl})`);
                     await font.load();
                     document.fonts.add(font);
                     fontCache.add(fontName);
-                    console.log(`✅ Police chargée depuis CDN : ${fontName}`);
+                    console.log(`✅ Police chargée (CDN) : ${fontName}`);
                     return true;
                 } catch (e2) {
                     console.warn(`⚠️ Échec total pour ${fontName}`, e2);
@@ -155,7 +157,7 @@
         }
 
         // ============================================================
-        // CHARGER L'INDEX (verses.json)
+        // 4. CHARGER L'INDEX (verses.json)
         // ============================================================
         async function loadVersesIndex() {
             const res = await fetch(VERSES_URL);
@@ -164,7 +166,7 @@
         }
 
         // ============================================================
-        // CONSTRUIRE L'INDEX
+        // 5. CONSTRUIRE L'INDEX
         // ============================================================
         async function buildIndex() {
             const log = document.getElementById('log');
@@ -177,15 +179,15 @@
             fontCache.clear();
 
             try {
-                // 1. Charger font-map.json
+                // Étape 1 : charger font-map.json
                 await loadFontMap();
                 log.textContent += `✅ font-map.json chargé\n`;
 
-                // 2. Charger verses.json
+                // Étape 2 : charger verses.json
                 const verses = await loadVersesIndex();
                 log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
 
-                // 3. Indexer directement
+                // Étape 3 : indexer les versets
                 for (const [key, info] of Object.entries(verses)) {
                     verseIndex[key] = info;
                 }
@@ -209,7 +211,7 @@
         }
 
         // ============================================================
-        // AFFICHER UN VERSET
+        // 6. AFFICHER UN VERSET (avec la bonne police)
         // ============================================================
         async function afficherVerset(verseKey) {
             const display = document.getElementById('verseDisplay');
@@ -229,18 +231,13 @@
 
             log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
 
-            // ✅ Utiliser font-map.json pour trouver la bonne police
+            // ✅ Utiliser font-map.json pour trouver la police
             const fontName = getFontForPage(info.page);
-            if (!fontName) {
-                log.textContent += `❌ Police non trouvée pour la page ${info.page}\n`;
-                display.textContent = `❌ Police non trouvée pour la page ${info.page}`;
-                return;
-            }
-
             log.textContent += `🔤 Police : ${fontName}\n`;
+
             await loadFont(fontName);
 
-            // Charger la page depuis TON dépôt
+            // Charger la page depuis ton dépôt
             const pageNum = String(info.page).padStart(3, '0');
             const pageUrl = `${PAGES_BASE}/${pageNum}.json`;
             const page = await fetch(pageUrl).then(r => r.json());
@@ -254,7 +251,7 @@
                 chars += words.map(w => w.char).join('');
             }
 
-            // Afficher avec la bonne police
+            // Afficher
             display.textContent = chars || '⚠️ Aucun caractère';
             display.style.fontFamily = `'${fontName}', serif`;
             display.style.fontSize = '32px';
@@ -266,10 +263,9 @@
         }
 
         // ============================================================
-        // ÉVÉNEMENTS
+        // 7. ÉVÉNEMENTS
         // ============================================================
         document.getElementById('buildBtn').addEventListener('click', buildIndex);
-
         document.getElementById('loadBtn').addEventListener('click', function() {
             const ref = document.getElementById('verseInput').value.trim();
             if (!ref) {
@@ -278,15 +274,12 @@
             }
             afficherVerset(ref);
         });
-
         document.getElementById('verseInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('loadBtn').click();
-            }
+            if (e.key === 'Enter') document.getElementById('loadBtn').click();
         });
 
         // ============================================================
-        // LANCEMENT AUTOMATIQUE
+        // 8. LANCEMENT AUTO
         // ============================================================
         window.addEventListener('load', buildIndex);
     </script>
