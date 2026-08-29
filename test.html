@@ -1,79 +1,152 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Test verset</title>
-  <link rel="stylesheet" href="/medit/theme.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test verset générique</title>
+    <link rel="stylesheet" href="/medit/theme.css">
+    <style>
+        /* Un peu de style pour le log */
+        #log {
+            font-family: monospace;
+            background: #1e1e1e;
+            color: #d4d4d4;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            white-space: pre-wrap;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+    </style>
 </head>
 <body>
 
-  <h1>🧪 Test d'affichage</h1>
+    <h1>📖 Test d'affichage d'un verset</h1>
 
-  <div class="verset" data-ref="2:12"></div>
+    <!-- C'est ici que tu changes la référence pour tester d'autres versets -->
+    <div class="verset" data-ref="2:12"></div>
+    <!-- Exemple: <div class="verset" data-ref="1:1"></div> -->
+    <!-- Exemple: <div class="verset" data-ref="36:1"></div> -->
 
-  <hr>
+    <hr>
 
-  <div id="log" style="font-family:monospace;background:#f0f0f0;padding:10px;white-space:pre-wrap;"></div>
+    <div id="log">⏳ Chargement en cours...</div>
 
-  <script>
-    (async function() {
-      const log = document.getElementById('log');
-      log.textContent = '⏳ Chargement...\n';
+    <script>
+        (async function() {
 
-      try {
-        // 1. Test verses.json
-        log.textContent += '1. Chargement de /medit/verses.json...\n';
-        const r1 = await fetch('/medit/verses.json');
-        log.textContent += `   → Status: ${r1.status}\n`;
-        if (!r1.ok) { log.textContent += '❌ Fichier non trouvé !'; return; }
-        
-        const versesIndex = await r1.json();
-        log.textContent += '   ✅ verses.json chargé\n';
+            const log = document.getElementById('log');
+            // Fonction pour ajouter des messages au journal
+            function logMessage(message) {
+                log.textContent += message + '\n';
+                console.log(message);
+            }
 
-        // 2. Test 2:12
-        log.textContent += '2. Recherche de 2:12...\n';
-        const info = versesIndex['2:12'];
-        if (!info) { log.textContent += '❌ 2:12 non trouvé !'; return; }
-        log.textContent += `   ✅ Trouvé sur la page ${info.page}\n`;
+            logMessage('🚀 Début du test...');
 
-        // 3. Test page
-        const pageNum = String(info.page).padStart(3, '0');
-        log.textContent += `3. Chargement de /medit/pages/${pageNum}.json...\n`;
-        const r2 = await fetch(`/medit/pages/${pageNum}.json`);
-        log.textContent += `   → Status: ${r2.status}\n`;
-        if (!r2.ok) { log.textContent += '❌ Page non trouvée !'; return; }
-        
-        const page = await r2.json();
-        log.textContent += '   ✅ Page chargée\n';
+            try {
+                // 1. Charger l'index des versets
+                logMessage('📥 1. Chargement de /medit/verses.json...');
+                const versesResponse = await fetch('/medit/verses.json');
+                if (!versesResponse.ok) {
+                    throw new Error(`Impossible de charger verses.json (status: ${versesResponse.status})`);
+                }
+                const versesIndex = await versesResponse.json();
+                logMessage('✅ verses.json chargé avec succès.');
 
-        // 4. Extraire les caractères
-        log.textContent += '4. Extraction des caractères...\n';
-        let chars = '';
-        info.lines.forEach(li => {
-          const line = page.lines.find(l => l.line === li.line);
-          if (!line) { log.textContent += `   ⚠️ Ligne ${li.line} non trouvée\n`; return; }
-          const words = line.words.slice(li.word_start - 1, li.word_end);
-          chars += words.map(w => w.char).join('');
-        });
-        log.textContent += `   ✅ Caractères extraits : "${chars}"\n`;
+                // 2. Parcourir tous les éléments .verset[data-ref]
+                const elements = document.querySelectorAll('.verset[data-ref]');
+                logMessage(`📦 2. ${elements.length} élément(s) à traiter.`);
 
-        // 5. Afficher
-        log.textContent += '5. Affichage dans le DOM...\n';
-        const el = document.querySelector('.verset[data-ref="2:12"]');
-        if (el) {
-          el.textContent = chars;
-          log.textContent += '   ✅ Terminé !\n';
-        } else {
-          log.textContent += '   ❌ Élément .verset[data-ref="2:12"] non trouvé !\n';
-        }
+                for (const el of elements) {
+                    const ref = el.dataset.ref;
+                    logMessage(`\n🔍 3. Recherche du verset : "${ref}"`);
 
-      } catch(e) {
-        log.textContent += `\n❌ ERREUR : ${e.message}`;
-        console.error(e);
-      }
-    })();
-  </script>
+                    // 3. Trouver le verset dans l'index
+                    const info = versesIndex[ref];
+                    if (!info) {
+                        const errorMsg = `❌ Verset "${ref}" non trouvé dans verses.json. Vérifie la référence.`;
+                        el.textContent = errorMsg;
+                        logMessage(errorMsg);
+                        continue;
+                    }
+
+                    logMessage(`✅ Verset trouvé sur la page ${info.page}.`);
+
+                    // 4. Charger la page correspondante
+                    const pageNum = String(info.page).padStart(3, '0');
+                    const pageUrl = `/medit/pages/${pageNum}.json`;
+                    logMessage(`📄 4. Chargement de la page : ${pageUrl}`);
+                    const pageResponse = await fetch(pageUrl);
+                    if (!pageResponse.ok) {
+                        throw new Error(`Impossible de charger la page ${pageNum} (status: ${pageResponse.status})`);
+                    }
+                    const pageData = await pageResponse.json();
+                    logMessage(`✅ Page ${pageNum} chargée avec succès.`);
+
+                    // 5. Extraire les caractères du verset
+                    logMessage(`🔧 5. Extraction des caractères du verset...`);
+                    let chars = '';
+                    let charCount = 0; // Pour compter les caractères extraits (hors 'end')
+                    let wordCount = 0; // Pour compter les mots (hors 'end')
+
+                    for (const lineInfo of info.lines) {
+                        const lineNumber = lineInfo.line;
+                        const start = lineInfo.word_start - 1;
+                        const end = lineInfo.word_end;
+
+                        // Trouver la ligne dans la page
+                        const lineData = pageData.lines.find(l => l.line === lineNumber);
+                        if (!lineData) {
+                            logMessage(`⚠️ Ligne ${lineNumber} non trouvée dans la page.`);
+                            continue;
+                        }
+
+                        // Récupérer les mots de cette ligne pour ce verset
+                        const words = lineData.words.slice(start, end);
+
+                        // Filtrer les marqueurs de fin de verset (type 'end')
+                        const wordsWithoutEnd = words.filter(w => w.type !== 'end');
+
+                        // Ajouter les caractères
+                        for (const word of wordsWithoutEnd) {
+                            chars += word.char;
+                            charCount++;
+                            wordCount++;
+                        }
+
+                        logMessage(`   ➜ Ligne ${lineNumber} (mots ${lineInfo.word_start} à ${lineInfo.word_end}) : ${wordsWithoutEnd.map(w => w.text).join(' ')}`);
+                    }
+
+                    logMessage(`✅ Extraction terminée. ${wordCount} mots, ${charCount} caractères.`);
+
+                    // 6. Afficher le résultat
+                    if (chars) {
+                        el.textContent = chars;
+                        logMessage(`✅ Verset "${ref}" affiché avec succès.`);
+                    } else {
+                        const errorMsg = `⚠️ Aucun caractère extrait pour "${ref}". Vérifie les positions.`;
+                        el.textContent = errorMsg;
+                        logMessage(errorMsg);
+                    }
+                }
+
+                logMessage(`\n🎯 Test terminé avec succès !`);
+
+            } catch (error) {
+                const errorMsg = `\n❌ ERREUR FATALE : ${error.message}`;
+                logMessage(errorMsg);
+                console.error(error);
+                // Afficher l'erreur dans tous les éléments
+                document.querySelectorAll('.verset[data-ref]').forEach(el => {
+                    el.textContent = '⚠️ Erreur de chargement. Voir la console pour plus de détails.';
+                });
+            }
+        })();
+    </script>
 
 </body>
 </html>
