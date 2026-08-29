@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QCF4 - Correction finale</title>
+    <title>QCF4 - Externe uniquement</title>
     <style>
         body {
             background: #1a1a2e;
@@ -67,7 +67,7 @@
 </head>
 <body>
 
-    <h1>📖 QCF4 - Correction finale</h1>
+    <h1>📖 QCF4 - Externe uniquement</h1>
 
     <div class="controls">
         <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
@@ -81,12 +81,14 @@
 
     <script>
         // ============================================================
-        // CONFIGURATION
+        // CONFIGURATION : TOUT DEPUIS LE DEPOT EXTERNE
         // ============================================================
-        const PAGES_BASE = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/pages';
-        const FONTS_BASE = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts';
-        const VERSES_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/verses.json';
-        const FONT_MAP_URL = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/font-map.json';
+        const BASE_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main';
+        const FONT_BASE = 'https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2';
+
+        const VERSES_URL = `${BASE_URL}/verses.json`;
+        const FONT_MAP_URL = `${BASE_URL}/font-map.json`;
+        const PAGES_BASE = `${BASE_URL}/pages`;
 
         let verseIndex = {};
         let fontMap = {};
@@ -94,7 +96,7 @@
         let fontCache = new Set();
 
         // ============================================================
-        // 1. CHARGER font-map.json (indispensable)
+        // CHARGER font-map.json
         // ============================================================
         async function loadFontMap() {
             try {
@@ -104,7 +106,6 @@
                 console.log(`✅ font-map.json chargé (${Object.keys(fontMap).length} pages)`);
             } catch (e) {
                 console.warn('⚠️ Erreur chargement font-map.json, fallback utilisé', e);
-                // Fallback (au cas où)
                 for (let i = 1; i <= 604; i++) {
                     const fontIndex = Math.ceil(i / 13);
                     fontMap[String(i)] = `QCF4_Hafs_${String(fontIndex).padStart(2, '0')}`;
@@ -113,14 +114,14 @@
         }
 
         // ============================================================
-        // 2. TROUVER LA BONNE POLICE (correction clé)
+        // TROUVER LA POLICE POUR UNE PAGE
         // ============================================================
         function getFontForPage(pageNum) {
             return fontMap[String(pageNum)] || `QCF4_Hafs_47`;
         }
 
         // ============================================================
-        // 3. CHARGER UNE POLICE (depuis ton dépôt ou CDN)
+        // CHARGER UNE POLICE (depuis CDN externe)
         // ============================================================
         async function loadFont(fontName) {
             if (fontCache.has(fontName)) return true;
@@ -129,35 +130,22 @@
                 return true;
             }
 
-            // Essayer depuis ton dépôt d'abord
-            const url = `${FONTS_BASE}/${fontName}_W.woff2`;
+            const url = `${FONT_BASE}/${fontName}_W.woff2`;
             try {
                 const font = new FontFace(fontName, `url(${url})`);
                 await font.load();
                 document.fonts.add(font);
                 fontCache.add(fontName);
-                console.log(`✅ Police chargée (ton dépôt) : ${fontName}`);
+                console.log(`✅ Police chargée : ${fontName}`);
                 return true;
             } catch (e) {
-                console.warn(`⚠️ Échec depuis ton dépôt pour ${fontName}, tentative CDN...`, e);
-                // Fallback CDN
-                const cdnUrl = `https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2/${fontName}_W.woff2`;
-                try {
-                    const font = new FontFace(fontName, `url(${cdnUrl})`);
-                    await font.load();
-                    document.fonts.add(font);
-                    fontCache.add(fontName);
-                    console.log(`✅ Police chargée (CDN) : ${fontName}`);
-                    return true;
-                } catch (e2) {
-                    console.warn(`⚠️ Échec total pour ${fontName}`, e2);
-                    return false;
-                }
+                console.warn(`⚠️ Échec chargement de ${fontName}`, e);
+                return false;
             }
         }
 
         // ============================================================
-        // 4. CHARGER L'INDEX (verses.json)
+        // CHARGER L'INDEX (verses.json)
         // ============================================================
         async function loadVersesIndex() {
             const res = await fetch(VERSES_URL);
@@ -166,7 +154,7 @@
         }
 
         // ============================================================
-        // 5. CONSTRUIRE L'INDEX
+        // CONSTRUIRE L'INDEX
         // ============================================================
         async function buildIndex() {
             const log = document.getElementById('log');
@@ -179,15 +167,12 @@
             fontCache.clear();
 
             try {
-                // Étape 1 : charger font-map.json
                 await loadFontMap();
                 log.textContent += `✅ font-map.json chargé\n`;
 
-                // Étape 2 : charger verses.json
                 const verses = await loadVersesIndex();
                 log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
 
-                // Étape 3 : indexer les versets
                 for (const [key, info] of Object.entries(verses)) {
                     verseIndex[key] = info;
                 }
@@ -197,7 +182,6 @@
                 status.textContent = '✅ Prêt';
                 status.className = 'success';
 
-                // Afficher le verset par défaut
                 const defaultRef = document.getElementById('verseInput').value.trim();
                 if (defaultRef) {
                     afficherVerset(defaultRef);
@@ -211,7 +195,7 @@
         }
 
         // ============================================================
-        // 6. AFFICHER UN VERSET (avec la bonne police)
+        // AFFICHER UN VERSET
         // ============================================================
         async function afficherVerset(verseKey) {
             const display = document.getElementById('verseDisplay');
@@ -231,18 +215,15 @@
 
             log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
 
-            // ✅ Utiliser font-map.json pour trouver la police
             const fontName = getFontForPage(info.page);
             log.textContent += `🔤 Police : ${fontName}\n`;
 
             await loadFont(fontName);
 
-            // Charger la page depuis ton dépôt
             const pageNum = String(info.page).padStart(3, '0');
             const pageUrl = `${PAGES_BASE}/${pageNum}.json`;
             const page = await fetch(pageUrl).then(r => r.json());
 
-            // Extraire les caractères
             let chars = '';
             for (const lineInfo of info.lines) {
                 const line = page.lines.find(l => l.line === lineInfo.line);
@@ -251,7 +232,6 @@
                 chars += words.map(w => w.char).join('');
             }
 
-            // Afficher
             display.textContent = chars || '⚠️ Aucun caractère';
             display.style.fontFamily = `'${fontName}', serif`;
             display.style.fontSize = '32px';
@@ -263,7 +243,7 @@
         }
 
         // ============================================================
-        // 7. ÉVÉNEMENTS
+        // ÉVÉNEMENTS
         // ============================================================
         document.getElementById('buildBtn').addEventListener('click', buildIndex);
         document.getElementById('loadBtn').addEventListener('click', function() {
@@ -278,9 +258,6 @@
             if (e.key === 'Enter') document.getElementById('loadBtn').click();
         });
 
-        // ============================================================
-        // 8. LANCEMENT AUTO
-        // ============================================================
         window.addEventListener('load', buildIndex);
     </script>
 
