@@ -1,125 +1,26 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Test verset - adaptation</title>
-  <link rel="stylesheet" href="/medit/theme.css">
-  <style>
-    #log {
-      font-family: monospace;
-      background: #1e1e1e;
-      color: #d4d4d4;
-      padding: 15px;
-      border-radius: 8px;
-      margin-top: 20px;
-      white-space: pre-wrap;
-      font-size: 13px;
-      max-height: 400px;
-      overflow-y: auto;
-      border: 1px solid #333;
+<script>
+  (async function() {
+    // 1. Charger l'index des versets
+    const verses = await fetch('/medit/verses.json').then(r => r.json());
+    
+    // 2. Pour chaque élément .verset[data-ref]
+    for (const el of document.querySelectorAll('.verset[data-ref]')) {
+      const ref = el.dataset.ref;
+      const info = verses[ref];
+      if (!info) { el.textContent = '❌'; continue; }
+      
+      // 3. Charger la page
+      const page = await fetch(`/medit/pages/${String(info.page).padStart(3, '0')}.json`).then(r => r.json());
+      
+      // 4. Extraire les caractères
+      let chars = '';
+      info.lines.forEach(li => {
+        const line = page.lines.find(l => l.line === li.line);
+        if (!line) return;
+        chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
+      });
+      
+      el.textContent = chars;
     }
-    .verset {
-      font-size: 32px;
-      padding: 20px;
-      background: #1e2a3a;
-      border-radius: 12px;
-      border-right: 5px solid #c9a84c;
-      margin: 15px 0;
-      color: #e8dfc8;
-      text-align: right;
-      font-family: 'QCF4_Hafs_01', serif;
-    }
-  </style>
-</head>
-<body>
-
-  <h1>🧪 Test verset 2:12</h1>
-
-  <!-- Le verset s'affichera ici -->
-  <div class="verset" data-ref="2:12"></div>
-
-  <hr>
-  <div id="log">⏳ Chargement...</div>
-
-  <script>
-    (async function() {
-      const log = document.getElementById('log');
-      log.textContent = '';
-
-      try {
-        // ===== 1. DÉFINITION MANUELLE DES POSITIONS POUR 2:12 =====
-        // D'après ton fichier 003.json :
-        // Ligne 8 : positions 10 à 12 (أَلَا إِنَّهُمْ)
-        // Ligne 9 : positions 1 à 8 (هُمُ الْمُفْسِدُونَ وَلَاكِن لَّا يَشْعُرُونَ V12)
-        const VERSES_INDEX = {
-          "2:12": {
-            "page": 3,
-            "lines": [
-              { "line": 8, "word_start": 10, "word_end": 12 },
-              { "line": 9, "word_start": 1, "word_end": 8 }
-            ]
-          }
-        };
-
-        log.textContent += '📌 Utilisation de la logique adaptée\n';
-
-        // Récupérer l'élément
-        const el = document.querySelector('.verset[data-ref="2:12"]');
-        if (!el) {
-          log.textContent += '❌ Élément .verset[data-ref="2:12"] non trouvé\n';
-          return;
-        }
-
-        const ref = '2:12';
-        const info = VERSES_INDEX[ref];
-
-        log.textContent += `📄 Chargement de ${ref} (page ${info.page})\n`;
-
-        // Charger la page 3
-        const pageRes = await fetch('/medit/pages/003.json');
-        if (!pageRes.ok) {
-          throw new Error(`Impossible de charger pages/003.json (status: ${pageRes.status})`);
-        }
-        const page = await pageRes.json();
-        log.textContent += `✅ page 003.json chargée\n`;
-
-        // Extraire les caractères
-        let chars = '';
-        let details = '';
-
-        for (const li of info.lines) {
-          const line = page.lines.find(l => l.line === li.line);
-          if (!line) {
-            log.textContent += `⚠️ Ligne ${li.line} non trouvée\n`;
-            continue;
-          }
-
-          const words = line.words.slice(li.word_start - 1, li.word_end);
-          // Filtrer les marqueurs de fin de verset (type 'end')
-          const filtered = words.filter(w => w.type !== 'end');
-
-          for (const word of filtered) {
-            chars += word.char;
-          }
-
-          details += `Ligne ${li.line} (positions ${li.word_start}-${li.word_end}) : `;
-          details += words.map(w => w.text).join(' ') + '\n';
-        }
-
-        log.textContent += `📄 ${details}`;
-        log.textContent += `✅ Caractères extraits : "${chars}"\n`;
-
-        // Afficher le résultat
-        el.textContent = chars || '⚠️ Aucun caractère';
-        log.textContent += `✅ Affiché dans le DOM\n`;
-
-      } catch (error) {
-        log.textContent += `❌ ERREUR : ${error.message}\n`;
-        console.error(error);
-      }
-    })();
-  </script>
-
-</body>
-</html>
+  })();
+</script>
