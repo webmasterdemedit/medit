@@ -39,7 +39,6 @@
     }
   </style>
   <script>
-  // Chargement synchrone du header
   var xhr = new XMLHttpRequest();
   xhr.open('GET', '/medit/header.html', false);
   xhr.send();
@@ -72,7 +71,7 @@
     </div>
 
     <div class="devise">
-      “Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?” — Coran 47:24
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
     </div>
 
   </div>
@@ -101,18 +100,11 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // mes-textes.html - Logique principale
-    // ============================================================
-
     var toutesLesReponses = {};
     var postsData = [];
     var niveauEtudiant = 0;
     var categorieActuelle = 'toutes';
 
-    // ============================================================
-    // GESTION DE L'URL
-    // ============================================================
     function getCategorieFromURL() {
       var params = new URLSearchParams(window.location.search);
       var cat = params.get('cat');
@@ -144,7 +136,7 @@
     }
 
     // ============================================================
-    // FONCTIONS D'IMPRESSION (VERSION MANUEL SCOLAIRE - LECTURE)
+    // FONCTIONS D'IMPRESSION
     // ============================================================
     function imprimerArticle(articleId, titre) {
       var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
@@ -163,6 +155,71 @@
         .catch(function(error) {
           alert('Erreur : ' + error.message);
         });
+    }
+
+    function parserQuizsPourImpression(quizTexte) {
+      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var quizs = [];
+      var currentQuiz = null;
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        if (ligne.match(/^q:/i)) {
+          if (currentQuiz && currentQuiz.reponses.length > 0) {
+            quizs.push(currentQuiz);
+          }
+          currentQuiz = {
+            question: ligne.replace(/^q:\s*/i, '').trim() || 'Question',
+            reponses: []
+          };
+        } else if (currentQuiz) {
+          var texteRep = ligne;
+          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
+          } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
+          }
+          if (texteRep) {
+            currentQuiz.reponses.push({ 
+              texte: texteRep || 'Réponse', 
+              lettre: lettres[currentQuiz.reponses.length] || '?'
+            });
+          }
+        }
+      }
+      
+      if (currentQuiz && currentQuiz.reponses.length > 0) {
+        quizs.push(currentQuiz);
+      }
+      return quizs;
+    }
+
+    function parserOrdrePourImpression(ordreTexte) {
+      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var elements = [];
+      for (var i = 0; i < lignes.length; i++) {
+        var match = lignes[i].match(/^(\d+)\s+(.+)/);
+        if (match) {
+          elements.push(match[2]);
+        }
+      }
+      return elements;
+    }
+
+    function parserCartePourImpression(carteTexte) {
+      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var recto = '', verso = '';
+      for (var i = 0; i < lignes.length; i++) {
+        var l = lignes[i];
+        if (l.toLowerCase().startsWith('r:')) {
+          recto = l.replace(/^r:\s*/i, '').trim();
+        } else if (l.toLowerCase().startsWith('v:')) {
+          verso = l.replace(/^v:\s*/i, '').trim();
+        }
+      }
+      if (!recto) return null;
+      return { recto: recto, verso: verso };
     }
 
     function genererImpression(post, contenu) {
@@ -283,7 +340,7 @@
             }
             .exo-quiz .reponses .r {
               display: inline-block;
-              margin-right: 12px;
+              margin-right: 14px;
             }
             .exo-quiz .case {
               display: inline-block;
@@ -348,9 +405,7 @@
         <div class="sous-titre">Méditation guidée · Niveau ${post.niveau || 0}</div>
       `;
 
-      // ============================================================
-      // ZONE DE LECTURE
-      // ============================================================
+      // ===== ZONE DE LECTURE =====
       printHtml += `<div class="zone-lecture">`;
 
       if (slidesArray.length > 0) {
@@ -365,13 +420,8 @@
       }
 
       printHtml += `</div>`;
-      // ============================================================
-      // FIN ZONE DE LECTURE
-      // ============================================================
 
-      // ============================================================
-      // ZONE EXERCICES (en bas, petit)
-      // ============================================================
+      // ===== ZONE EXERCICES =====
       printHtml += `<div class="zone-exercices">`;
 
       var hasExercice = false;
@@ -385,9 +435,8 @@
           printHtml += `<div class="exo-quiz">`;
           printHtml += `<span class="q">${qi+1}.</span> ${q.question}`;
           printHtml += `<div class="reponses">`;
-          var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
-          q.reponses.forEach(function(rep, ri) {
-            printHtml += `<span class="r"><span class="case"></span> ${lettres[ri]}</span>`;
+          q.reponses.forEach(function(rep) {
+            printHtml += `<span class="r"><span class="case"></span> ${rep.lettre}. ${rep.texte}</span>`;
           });
           printHtml += `</div>`;
           printHtml += `</div>`;
@@ -447,9 +496,6 @@
       }
 
       printHtml += `</div>`;
-      // ============================================================
-      // FIN ZONE EXERCICES
-      // ============================================================
 
       var date = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
       printHtml += `
@@ -468,68 +514,6 @@
       }
       win.document.write(printHtml);
       win.document.close();
-    }
-
-    // ===== FONCTIONS DE PARSING POUR L'IMPRESSION =====
-    function parserQuizsPourImpression(quizTexte) {
-      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var quizs = [];
-      var currentQuiz = null;
-      
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i];
-        if (ligne.match(/^q:/i)) {
-          if (currentQuiz && currentQuiz.reponses.length > 0) {
-            quizs.push(currentQuiz);
-          }
-          currentQuiz = {
-            question: ligne.replace(/^q:\s*/i, '').trim() || 'Question',
-            reponses: []
-          };
-        } else if (currentQuiz) {
-          var texteRep = ligne;
-          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
-            texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
-          } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
-            texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
-          }
-          if (texteRep) {
-            currentQuiz.reponses.push({ texte: texteRep || 'Réponse', correct: false });
-          }
-        }
-      }
-      
-      if (currentQuiz && currentQuiz.reponses.length > 0) {
-        quizs.push(currentQuiz);
-      }
-      return quizs;
-    }
-
-    function parserOrdrePourImpression(ordreTexte) {
-      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var elements = [];
-      for (var i = 0; i < lignes.length; i++) {
-        var match = lignes[i].match(/^(\d+)\s+(.+)/);
-        if (match) {
-          elements.push(match[2]);
-        }
-      }
-      return elements;
-    }
-
-    function parserCartePourImpression(carteTexte) {
-      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var recto = '', verso = '';
-      for (var i = 0; i < lignes.length; i++) {
-        var l = lignes[i];
-        if (l.toLowerCase().startsWith('r:')) {
-          recto = l.replace(/^r:\s*/i, '').trim();
-        } else if (l.toLowerCase().startsWith('v:')) {
-          verso = l.replace(/^v:\s*/i, '').trim();
-        }
-      }
-      if (!recto) return null;
-      return { recto: recto, verso: verso };
     }
 
     // ============================================================
