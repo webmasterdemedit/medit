@@ -136,7 +136,7 @@
     }
 
     // ============================================================
-    // FONCTIONS D'IMPRESSION
+    // FONCTIONS D'IMPRESSION - VERSION ACADÉMIQUE AVEC CADRES
     // ============================================================
     function imprimerArticle(articleId, titre) {
       var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
@@ -302,46 +302,61 @@
               flex-direction: column;
             }
             
-            h1 {
-              font-size: 20pt;
+            /* ===== EN-TÊTE ACADÉMIQUE AVEC CADRES ===== */
+            .header-academique {
+              border: 2px solid #000;
+              padding: 12px 16px 10px 16px;
+              margin-bottom: 16px;
+              background: #fafafa;
+            }
+            .header-academique .categorie {
+              font-size: 10pt;
+              text-transform: uppercase;
+              letter-spacing: 2px;
+              color: #444;
+              text-align: center;
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 4px;
+              margin-bottom: 6px;
+            }
+            .header-academique h1 {
+              font-size: 16pt;
               font-weight: bold;
               text-align: center;
               text-transform: uppercase;
-              letter-spacing: 1.5px;
-              margin-bottom: 4px;
+              letter-spacing: 1px;
+              margin-bottom: 2px;
             }
-            .sous-titre {
+            .header-academique .meta-ligne {
               text-align: center;
-              font-size: 11pt;
-              font-style: italic;
-              margin-bottom: 4px;
-              color: #444;
-            }
-            .meta-ligne {
-              text-align: center;
-              font-size: 10pt;
+              font-size: 9.5pt;
               color: #555;
-              margin-bottom: 18px;
-              border-bottom: 1px solid #ccc;
-              padding-bottom: 10px;
+              border-top: 1px solid #ccc;
+              padding-top: 4px;
+              margin-top: 4px;
             }
-            .meta-ligne span {
-              margin: 0 8px;
+            .header-academique .meta-ligne span {
+              margin: 0 6px;
             }
-            .meta-ligne .sep {
+            .header-academique .meta-ligne .sep {
               color: #ccc;
             }
             
+            /* ===== ZONE DE LECTURE AVEC CADRE ===== */
             .zone-lecture {
               flex: 1;
-              padding: 6px 0;
+              padding: 8px 12px;
+              border: 1px solid #ccc;
+              background: white;
+              margin-bottom: 12px;
+              min-height: 200px;
             }
             .slide {
-              margin-bottom: 14px;
+              margin-bottom: 12px;
             }
             .slide p {
               font-size: 13pt;
-              margin-bottom: 8px;
+              margin-bottom: 6px;
               text-align: justify;
               text-indent: 2em;
             }
@@ -349,10 +364,11 @@
               text-indent: 0;
             }
             
+            /* ===== ZONE EXERCICES AVEC CADRE ===== */
             .zone-exercices {
-              border-top: 1px solid #ccc;
-              padding-top: 10px;
-              margin-top: 12px;
+              border: 1px solid #ccc;
+              padding: 10px 14px;
+              background: #fafafa;
               font-size: 10pt;
               line-height: 1.5;
               color: #333;
@@ -363,15 +379,18 @@
               text-transform: uppercase;
               letter-spacing: 0.5px;
               margin-bottom: 4px;
+              border-bottom: 1px solid #ddd;
+              padding-bottom: 2px;
             }
             .exo-quiz {
               margin-bottom: 6px;
+              padding-left: 4px;
             }
             .exo-quiz .q {
               font-weight: bold;
             }
             .exo-quiz .reponses {
-              padding-left: 16px;
+              padding-left: 20px;
             }
             .exo-quiz .reponses .r {
               display: inline-block;
@@ -382,11 +401,12 @@
               width: 12px;
               height: 12px;
               border: 1px solid #000;
-              margin-right: 3px;
+              margin-right: 4px;
               background: white;
             }
             .exo-ordre {
               margin-bottom: 6px;
+              padding-left: 4px;
             }
             .exo-ordre .item {
               display: inline-block;
@@ -398,9 +418,9 @@
             }
             .exo-carte {
               margin-bottom: 6px;
-              border: 1px solid #ccc;
+              border: 1px solid #bbb;
               padding: 4px 10px;
-              background: #f9f9f9;
+              background: white;
             }
             .exo-carte .recto {
               font-weight: bold;
@@ -412,22 +432,26 @@
             }
             .exo-retenir {
               margin-top: 4px;
+              padding-left: 4px;
             }
             .exo-retenir .mot {
               display: inline-block;
-              padding: 1px 8px;
+              padding: 1px 10px;
               margin: 1px 4px 1px 0;
               border: 1px solid #999;
               font-weight: bold;
               font-size: 9pt;
+              background: white;
             }
+            
+            /* ===== PIED DE PAGE ===== */
             .pied-page {
               text-align: center;
               font-size: 9pt;
               color: #666;
-              margin-top: 6px;
+              margin-top: 10px;
               padding-top: 6px;
-              border-top: 1px solid #ddd;
+              border-top: 2px solid #000;
             }
             .pied-page .imprime-le {
               font-style: italic;
@@ -441,18 +465,20 @@
           <div class="page">
       `;
 
-      // ===== EN-TÊTE =====
+      // ===== EN-TÊTE ACADÉMIQUE =====
       printHtml += `
-        <h1>${post.titre || 'Lecture'}</h1>
-        <div class="sous-titre">${post.categorie || 'Sans catégorie'}</div>
-        <div class="meta-ligne">
-          <span>Créé le : ${dateCreationStr || '—'}</span>
-          <span class="sep">|</span>
-          <span>Niveau ${post.niveau || 0}</span>
+        <div class="header-academique">
+          <div class="categorie">${post.categorie || 'Sans catégorie'}</div>
+          <h1>${post.titre || 'Lecture'}</h1>
+          <div class="meta-ligne">
+            <span>Créé le : ${dateCreationStr || '—'}</span>
+            <span class="sep">|</span>
+            <span>Niveau ${post.niveau || 0}</span>
+          </div>
         </div>
       `;
 
-      // ===== ZONE DE LECTURE =====
+      // ===== ZONE DE LECTURE AVEC CADRE =====
       printHtml += `<div class="zone-lecture">`;
 
       if (slidesArray.length > 0) {
@@ -464,11 +490,13 @@
           });
           printHtml += `</div>`;
         });
+      } else {
+        printHtml += `<p style="font-style:italic;color:#999;text-align:center;">(Aucun contenu de lecture)</p>`;
       }
 
       printHtml += `</div>`;
 
-      // ===== ZONE EXERCICES =====
+      // ===== ZONE EXERCICES AVEC CADRE =====
       printHtml += `<div class="zone-exercices">`;
 
       var hasExercice = false;
@@ -478,7 +506,7 @@
       if (quiz.trim() !== '') {
         hasExercice = true;
         var quizs = parserQuizsPourImpression(quiz);
-        printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
+        printHtml += `<div class="titre-exo">I. Questions de compréhension</div>`;
         quizs.forEach(function(q, qi) {
           printHtml += `<div class="exo-quiz">`;
           printHtml += `<span class="q">${questionNum}.</span> ${q.question}`;
@@ -497,11 +525,11 @@
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
         if (quiz.trim() === '') {
-          printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
+          printHtml += `<div class="titre-exo">I. Questions de compréhension</div>`;
         }
         printHtml += `<div class="exo-quiz">`;
         printHtml += `<span class="q">${questionNum}.</span> ${qsTexte}`;
-        printHtml += `<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>`;
+        printHtml += `<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 20px;background:white;"></div>`;
         printHtml += `</div>`;
         questionNum++;
       }
@@ -511,10 +539,11 @@
         hasExercice = true;
         var ordreItems = parserOrdrePourImpression(ordre);
         if (quiz.trim() === '' && openQuestion.trim() === '') {
-          printHtml += `<div class="titre-exo">Exercices</div>`;
+          printHtml += `<div class="titre-exo">I. Exercices</div>`;
+        } else {
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">II. Remettre dans l'ordre</div>`;
         }
-        printHtml += `<div class="exo-ordre" style="margin-top:6px;">`;
-        printHtml += `<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l'ordre :</div>`;
+        printHtml += `<div class="exo-ordre">`;
         ordreItems.forEach(function(item, idx) {
           printHtml += `<span class="item">${item}</span>`;
         });
@@ -526,10 +555,14 @@
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
         if (carteData) {
-          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') {
-            printHtml += `<div class="titre-exo">Exercices</div>`;
-          }
-          printHtml += `<div class="exo-carte" style="margin-top:6px;">`;
+          var numSection = 2;
+          if (ordre.trim() !== '') numSection = 3;
+          else if (quiz.trim() !== '' || openQuestion.trim() !== '') numSection = 2;
+          else numSection = 1;
+          
+          var chiffresRomains = ['I', 'II', 'III', 'IV', 'V'];
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">${chiffresRomains[numSection-1]}. Carte mémoire</div>`;
+          printHtml += `<div class="exo-carte">`;
           printHtml += `<div class="recto">${carteData.recto}</div>`;
           printHtml += `<div class="verso-vide">(Espace pour écrire la réponse)</div>`;
           printHtml += `</div>`;
@@ -541,7 +574,14 @@
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
-          printHtml += `<div class="titre-exo" style="margin-top:8px;">Mots à retenir</div>`;
+          var numSection = 3;
+          if (carte.trim() !== '') numSection = 4;
+          else if (ordre.trim() !== '') numSection = 3;
+          else if (quiz.trim() !== '' || openQuestion.trim() !== '') numSection = 2;
+          else numSection = 1;
+          
+          var chiffresRomains = ['I', 'II', 'III', 'IV', 'V'];
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">${chiffresRomains[numSection-1]}. Mots à retenir</div>`;
           printHtml += `<div class="exo-retenir">`;
           mots.forEach(function(mot) {
             printHtml += `<span class="mot">${mot}</span>`;
@@ -551,7 +591,7 @@
       }
 
       if (!hasExercice) {
-        printHtml += `<div style="height:2px;"></div>`;
+        printHtml += `<div style="height:2px;color:#ddd;">— Aucun exercice —</div>`;
       }
 
       printHtml += `</div>`;
