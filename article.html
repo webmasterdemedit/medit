@@ -1127,5 +1127,35 @@
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
   </script>
+
+  <script>
+// 1. Charger l'index des versets
+const versesIndex = await fetch('verses.json').then(r => r.json());
+
+// 2. Fonction pour récupérer un verset
+async function getVerse(ref) {
+  const info = versesIndex[ref]; // ex: "2:12"
+  if (!info) return '❌ Verset non trouvé';
+  
+  // Charger la page
+  const pageNum = String(info.page).padStart(3, '0');
+  const page = await fetch(`pages/${pageNum}.json`).then(r => r.json());
+  
+  // Récupérer les caractères du verset
+  let chars = '';
+  info.lines.forEach(lineInfo => {
+    const line = page.lines.find(l => l.line === lineInfo.line);
+    if (!line) return;
+    const words = line.words.slice(lineInfo.word_start - 1, lineInfo.word_end);
+    chars += words.map(w => w.char).join('');
+  });
+  
+  return chars;
+}
+
+// 3. Utilisation : affiche 2:12
+document.querySelector('.verset').textContent = await getVerse('2:12');
+</script>
 </body>
 </html>
+
