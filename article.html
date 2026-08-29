@@ -1175,6 +1175,25 @@
   }
 })();
 </script>
+  <script>
+// FORCER L'AFFICHAGE (solution de secours)
+setTimeout(async function() {
+  const el = document.querySelector('.verset[data-ref="2:12"]');
+  if (el && el.textContent === '') {
+    const versesIndex = await fetch('/medit/verses.json').then(r => r.json());
+    const info = versesIndex['2:12'];
+    const page = await fetch(`/medit/pages/003.json`).then(r => r.json());
+    let chars = '';
+    info.lines.forEach(li => {
+      const line = page.lines.find(l => l.line === li.line);
+      if (!line) return;
+      chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
+    });
+    el.textContent = chars;
+    console.log('✅ Forcement du verset 2:12:', chars);
+  }
+}, 500);
+</script>
 </body>
 </html>
 
