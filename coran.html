@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="fr" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Coran - QCF4</title>
+    <link rel="stylesheet" href="css/theme.css">
+</head>
+<body>
+
+<div class="quran-container">
+    <h1 style="text-align:center;font-family:var(--font-sans);direction:ltr;color:var(--text);">📖 Coran - Madinah Mushaf</h1>
+    
+    <div class="quran-controls">
+        <button onclick="changePage(1)">⏮ Début</button>
+        <button onclick="changePage(currentPage - 1)">◀</button>
+        <input type="number" id="pageInput" min="1" max="604" value="1">
+        <button onclick="goToPage()">Aller</button>
+        <button onclick="changePage(currentPage + 1)">▶</button>
+        <button onclick="changePage(604)">Fin ⏭</button>
+    </div>
+
+    <div id="quran-content">
+        <div class="quran-loading">⏳ Chargement...</div>
+    </div>
+
+    <div class="quran-page-number" id="pageDisplay">Page 1 / 604</div>
+</div>
+
+<script>
+    let currentPage = 1;
+
+    function changePage(pageNumber) {
+        if (pageNumber < 1 || pageNumber > 604) return;
+        currentPage = pageNumber;
+        document.getElementById('pageInput').value = pageNumber;
+        loadQuranPage(pageNumber);
+    }
+
+    function goToPage() {
+        let page = parseInt(document.getElementById('pageInput').value);
+        if (isNaN(page) || page < 1) page = 1;
+        if (page > 604) page = 604;
+        changePage(page);
+    }
+
+    async function loadQuranPage(pageNumber) {
+        const content = document.getElementById('quran-content');
+        const display = document.getElementById('pageDisplay');
+        
+        content.innerHTML = '<div class="quran-loading">⏳ Chargement...</div>';
+        display.textContent = `Page ${pageNumber} / 604`;
+
+        try {
+            const pageStr = String(pageNumber).padStart(3, '0');
+            const url = `https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/pages/${pageStr}.json`;
+            const response = await fetch(url);
+            if (!response.ok) throw new Error('Page non trouvée');
+            const data = await response.json();
+
+            const pageNum = String(pageNumber).padStart(2, '0');
+            let html = '';
+            
+            data.lines.forEach(line => {
+                html += '<div class="quran-line">';
+                line.words.forEach(word => {
+                    let fontFamily = `'QCF4_Hafs_${pageNum}', sans-serif`;
+                    let className = 'quran-word';
+                    
+                    if (word.type === 'surah_header') {
+                        fontFamily = "'QCF4_QBSML', sans-serif";
+                        className += ' quran-surah-header';
+                    } else if (word.type === 'bismillah') {
+                        fontFamily = "'QCF4_QBSML', sans-serif";
+                    } else if (word.type === 'end') {
+                        className += ' quran-verse-end';
+                    }
+                    
+                    if (word.font && word.font !== 'QCF4_QBSML') {
+                        fontFamily = `'${word.font}', sans-serif`;
+                    }
+                    
+                    html += `<span class="${className}" style="font-family:${fontFamily}">${word.char}</span>`;
+                });
+                html += '</div>';
+            });
+
+            content.innerHTML = html;
+
+        } catch (error) {
+            content.innerHTML = `
+                <div class="quran-loading" style="color:red;">
+                    ❌ Erreur : ${error.message}
+                </div>
+            `;
+        }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => loadQuranPage(1));
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'ArrowLeft') changePage(currentPage - 1);
+        if (e.key === 'ArrowRight') changePage(currentPage + 1);
+    });
+</script>
+
+</body>
+</html>
