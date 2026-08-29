@@ -198,49 +198,57 @@
         // AFFICHER UN VERSET
         // ============================================================
         async function afficherVerset(verseKey) {
-            const display = document.getElementById('verseDisplay');
-            const log = document.getElementById('log');
+    const display = document.getElementById('verseDisplay');
+    const log = document.getElementById('log');
 
-            if (!isIndexBuilt) {
-                display.textContent = '⏳ Index en cours de chargement...';
-                return;
-            }
+    if (!isIndexBuilt) {
+        display.textContent = '⏳ Index en cours de chargement...';
+        return;
+    }
 
-            const info = verseIndex[verseKey];
-            if (!info) {
-                display.textContent = `❌ ${verseKey} non trouvé`;
-                log.textContent += `\n❌ ${verseKey} non trouvé\n`;
-                return;
-            }
+    const info = verseIndex[verseKey];
+    if (!info) {
+        display.textContent = `❌ ${verseKey} non trouvé`;
+        log.textContent += `\n❌ ${verseKey} non trouvé\n`;
+        return;
+    }
 
-            log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
+    log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
 
-            const fontName = getFontForPage(info.page);
-            log.textContent += `🔤 Police : ${fontName}\n`;
+    const fontName = getFontForPage(info.page);
+    log.textContent += `🔤 Police : ${fontName}\n`;
 
-            await loadFont(fontName);
+    await loadFont(fontName);
 
-            const pageNum = String(info.page).padStart(3, '0');
-            const pageUrl = `${PAGES_BASE}/${pageNum}.json`;
-            const page = await fetch(pageUrl).then(r => r.json());
+    const pageNum = String(info.page).padStart(3, '0');
+    const pageUrl = `${PAGES_BASE}/${pageNum}.json`;
+    const page = await fetch(pageUrl).then(r => r.json());
 
-            let chars = '';
-            for (const lineInfo of info.lines) {
-                const line = page.lines.find(l => l.line === lineInfo.line);
-                if (!line) continue;
-                const words = line.words.slice(lineInfo.word_start - 1, lineInfo.word_end);
-                chars += words.map(w => w.char).join('');
-            }
+    let chars = '';
+    for (const lineInfo of info.lines) {
+        const line = page.lines.find(l => l.line === lineInfo.line);
+        if (!line) continue;
+        const words = line.words.slice(lineInfo.word_start - 1, lineInfo.word_end);
+        chars += words.map(w => w.char).join('');
+    }
 
-            display.textContent = chars || '⚠️ Aucun caractère';
-            display.style.fontFamily = `'${fontName}', serif`;
-            display.style.fontSize = '32px';
-            display.style.direction = 'rtl';
-            display.style.textAlign = 'right';
+    // ===== FORCER L'APPLICATION DE LA POLICE =====
+    display.textContent = chars || '⚠️ Aucun caractère';
+    display.style.fontFamily = `'${fontName}', 'QCF4_Hafs_01', serif`;
+    display.style.fontSize = '32px';
+    display.style.direction = 'rtl';
+    display.style.textAlign = 'right';
+    display.style.fontWeight = 'normal';
+    display.style.fontStyle = 'normal';
 
-            log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères) avec ${fontName}\n`;
-            log.scrollTop = log.scrollHeight;
-        }
+    // Forcer le re-rendu
+    display.style.display = 'none';
+    void display.offsetHeight; // Force le reflow
+    display.style.display = 'block';
+
+    log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères) avec ${fontName}\n`;
+    log.scrollTop = log.scrollHeight;
+}
 
         // ============================================================
         // ÉVÉNEMENTS
