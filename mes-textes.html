@@ -255,6 +255,27 @@
         }
       });
 
+      // Date de création du post
+      var dateCreation = post.date || '';
+      var dateCreationStr = '';
+      if (dateCreation) {
+        var d = new Date(dateCreation);
+        if (!isNaN(d.getTime())) {
+          dateCreationStr = d.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric'
+          });
+        }
+      }
+
+      // Date d'impression
+      var dateImpression = new Date();
+      var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+      var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+        hour: '2-digit', minute: '2-digit'
+      });
+
       var printHtml = `
         <!DOCTYPE html>
         <html>
@@ -293,8 +314,22 @@
               text-align: center;
               font-size: 11pt;
               font-style: italic;
-              margin-bottom: 18px;
+              margin-bottom: 4px;
               color: #444;
+            }
+            .meta-ligne {
+              text-align: center;
+              font-size: 10pt;
+              color: #555;
+              margin-bottom: 18px;
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 10px;
+            }
+            .meta-ligne span {
+              margin: 0 8px;
+            }
+            .meta-ligne .sep {
+              color: #ccc;
             }
             
             .zone-lecture {
@@ -394,15 +429,27 @@
               padding-top: 6px;
               border-top: 1px solid #ddd;
             }
+            .pied-page .imprime-le {
+              font-style: italic;
+              font-size: 8pt;
+              color: #999;
+              margin-top: 2px;
+            }
           </style>
         </head>
         <body>
           <div class="page">
       `;
 
+      // ===== EN-TÊTE =====
       printHtml += `
         <h1>${post.titre || 'Lecture'}</h1>
-        <div class="sous-titre">Méditation guidée · Niveau ${post.niveau || 0}</div>
+        <div class="sous-titre">${post.categorie || 'Sans catégorie'}</div>
+        <div class="meta-ligne">
+          <span>Créé le : ${dateCreationStr || '—'}</span>
+          <span class="sep">|</span>
+          <span>Niveau ${post.niveau || 0}</span>
+        </div>
       `;
 
       // ===== ZONE DE LECTURE =====
@@ -425,6 +472,7 @@
       printHtml += `<div class="zone-exercices">`;
 
       var hasExercice = false;
+      var questionNum = 1;
 
       // --- QUIZ ---
       if (quiz.trim() !== '') {
@@ -433,31 +481,40 @@
         printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
         quizs.forEach(function(q, qi) {
           printHtml += `<div class="exo-quiz">`;
-          printHtml += `<span class="q">${qi+1}.</span> ${q.question}`;
+          printHtml += `<span class="q">${questionNum}.</span> ${q.question}`;
           printHtml += `<div class="reponses">`;
           q.reponses.forEach(function(rep) {
             printHtml += `<span class="r"><span class="case"></span> ${rep.lettre}. ${rep.texte}</span>`;
           });
           printHtml += `</div>`;
           printHtml += `</div>`;
+          questionNum++;
         });
       }
 
-      // --- QUESTION OUVERTE ---
+      // --- QUESTION OUVERTE (comme une question de compréhension) ---
       if (openQuestion.trim() !== '') {
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
-        printHtml += `<div class="titre-exo">Réflexion personnelle</div>`;
-        printHtml += `<div style="font-style:italic;margin-bottom:3px;">${qsTexte}</div>`;
-        printHtml += `<div style="border:1px solid #ddd;height:30px;margin-bottom:4px;"></div>`;
+        if (quiz.trim() === '') {
+          printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
+        }
+        printHtml += `<div class="exo-quiz">`;
+        printHtml += `<span class="q">${questionNum}.</span> ${qsTexte}`;
+        printHtml += `<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>`;
+        printHtml += `</div>`;
+        questionNum++;
       }
 
       // --- ORDRE ---
       if (ordre.trim() !== '') {
         hasExercice = true;
         var ordreItems = parserOrdrePourImpression(ordre);
-        printHtml += `<div class="titre-exo">Remettre dans l'ordre</div>`;
-        printHtml += `<div class="exo-ordre">`;
+        if (quiz.trim() === '' && openQuestion.trim() === '') {
+          printHtml += `<div class="titre-exo">Exercices</div>`;
+        }
+        printHtml += `<div class="exo-ordre" style="margin-top:6px;">`;
+        printHtml += `<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l'ordre :</div>`;
         ordreItems.forEach(function(item, idx) {
           printHtml += `<span class="item">${item}</span>`;
         });
@@ -469,8 +526,10 @@
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
         if (carteData) {
-          printHtml += `<div class="titre-exo">Carte mémoire</div>`;
-          printHtml += `<div class="exo-carte">`;
+          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') {
+            printHtml += `<div class="titre-exo">Exercices</div>`;
+          }
+          printHtml += `<div class="exo-carte" style="margin-top:6px;">`;
           printHtml += `<div class="recto">${carteData.recto}</div>`;
           printHtml += `<div class="verso-vide">(Espace pour écrire la réponse)</div>`;
           printHtml += `</div>`;
@@ -482,7 +541,7 @@
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
-          printHtml += `<div class="titre-exo">Mots à retenir</div>`;
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">Mots à retenir</div>`;
           printHtml += `<div class="exo-retenir">`;
           mots.forEach(function(mot) {
             printHtml += `<span class="mot">${mot}</span>`;
@@ -497,10 +556,11 @@
 
       printHtml += `</div>`;
 
-      var date = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      // ===== PIED DE PAGE =====
       printHtml += `
             <div class="pied-page">
-              Qiraat · ${date}
+              <div>Qiraat</div>
+              <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
             </div>
           </div>
         </body>
