@@ -1,216 +1,213 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>QCF4 - Indexeur de versets</title>
-    <link rel="stylesheet" href="/medit/theme.css" />
-    <style>
-        body {
-            font-family: monospace;
-            background: #1a1a2e;
-            color: #e0d4b4;
-            padding: 20px;
-            max-width: 900px;
-            margin: 0 auto;
-        }
-        #log {
-            background: #0d1117;
-            padding: 15px;
-            border-radius: 8px;
-            max-height: 300px;
-            overflow-y: auto;
-            font-size: 13px;
-            white-space: pre-wrap;
-            border: 1px solid #2a3040;
-        }
-        .verset {
-            font-family: 'QCF4_Hafs_01', serif;
-            font-size: 32px;
-            display: block;
-            padding: 20px;
-            margin: 15px 0;
-            line-height: 2;
-            text-align: right;
-            background: #161b22;
-            color: #e8dfc8;
-            border-radius: 12px;
-            border-right: 5px solid #c9a84c;
-        }
-        input, button {
-            padding: 10px 16px;
-            font-size: 16px;
-            border-radius: 6px;
-            border: 1px solid #2a3040;
-            background: #0d1117;
-            color: #e0d4b4;
-        }
-        button {
-            background: #c9a84c;
-            color: #0d1117;
-            cursor: pointer;
-            border: none;
-        }
-        button:hover {
-            background: #dbb95e;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-            align-items: center;
-            flex-wrap: wrap;
-            margin: 20px 0;
-        }
-        .info {
-            color: #8b7d60;
-            font-size: 14px;
-        }
-        .success { color: #4caf50; }
-        .error { color: #f44336; }
-    </style>
-</head>
-<body>
+<!-- ============================================================
+   POPUP CONNEXION / INSCRIPTION - STRUCTURE UNIQUEMENT
+   Les couleurs sont dans lecture-mode.css
+   ============================================================ -->
+<style>
+  /* STRUCTURE UNIQUEMENT */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 99999;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
 
-    <h1>📖 Indexeur QCF4</h1>
+  .modal-overlay.visible {
+    display: flex;
+  }
 
-    <div class="controls">
-        <input type="text" id="verseInput" placeholder="ex: 3:187" value="3:187" />
-        <button id="loadBtn">🔍 Afficher le verset</button>
-        <button id="buildBtn">⚡ Reconstruire l'index</button>
+  .modal-content {
+    max-width: 480px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 32px 36px;
+    position: relative;
+  }
+
+  .modal-content .modal-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  .modal-content h3 {
+    font-size: 22px;
+    font-weight: 400;
+    font-family: 'Georgia', serif;
+    text-align: center;
+    margin-bottom: 20px;
+    letter-spacing: 0.5px;
+  }
+
+  .modal-content .champ {
+    margin-bottom: 16px;
+  }
+
+  .modal-content label {
+    display: block;
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: 0.3px;
+  }
+
+  .modal-content input,
+  .modal-content textarea,
+  .modal-content select {
+    width: 100%;
+    padding: 12px 16px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: inherit;
+  }
+
+  .modal-content input:focus,
+  .modal-content textarea:focus,
+  .modal-content select:focus {
+    outline: none;
+  }
+
+  .modal-content textarea {
+    resize: vertical;
+    min-height: 80px;
+  }
+
+  .modal-content select {
+    appearance: auto;
+    cursor: pointer;
+  }
+
+  .modal-content .btn-submit {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 500;
+    cursor: pointer;
+    font-family: 'Segoe UI', sans-serif;
+    letter-spacing: 0.3px;
+    margin-top: 4px;
+  }
+
+  .modal-content .message {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 8px;
+  }
+
+  .modal-content .lien-form {
+    margin-top: 12px;
+    font-size: 14px;
+    text-align: center;
+  }
+
+  .modal-content .lien-form a {
+    font-weight: 500;
+    cursor: pointer;
+  }
+
+  /* STRUCTURE DES DISCIPLINES */
+  #registerDisciplines {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px 20px;
+    padding: 12px 16px;
+    border-radius: 10px;
+  }
+
+  #registerDisciplines label {
+    font-size: 14px;
+    cursor: pointer;
+    font-weight: 400;
+  }
+
+  #registerDisciplines input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    .modal-content {
+      padding: 24px 20px;
+    }
+  }
+</style>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-content">
+    <button class="modal-close" onclick="fermerModal()">✕</button>
+
+    <!-- CONNEXION -->
+    <div id="formConnexion" style="display:block;">
+      <h3>Se connecter</h3>
+      <div class="champ">
+        <label>Identifiant</label>
+        <input type="text" id="loginId" placeholder="Votre identifiant" />
+      </div>
+      <div class="champ">
+        <label>Mot de passe</label>
+        <input type="password" id="loginMdp" placeholder="Votre mot de passe" />
+      </div>
+      <button class="btn-submit" onclick="seConnecter()">Se connecter</button>
+      <div class="message" id="loginMessage"></div>
+      <div class="lien-form">
+        Pas encore de compte ? <a onclick="ouvrirInscription();return false;">Faire une demande d'inscription</a>
+      </div>
     </div>
 
-    <div id="verseDisplay" class="verset"></div>
+    <!-- INSCRIPTION -->
+    <div id="formInscription" style="display:none;">
+      <h3>Demande d'inscription</h3>
 
-    <div id="log">⏳ Prêt... Clique sur "Reconstruire l'index" pour commencer.</div>
+      <div class="champ">
+        <label>Nom et prénom</label>
+        <input type="text" id="registerNom" placeholder="Votre nom et prénom" />
+      </div>
 
-    <script>
-        // ===== INDEX GLOBAL =====
-        // Structure : verseIndex[verse_key] = [ { char, position, page }, ... ]
-        let verseIndex = {};
-        let isIndexBuilt = false;
+      <div class="champ">
+        <label>Email ou numéro de téléphone</label>
+        <input type="text" id="registerContact" placeholder="ex: email@exemple.fr ou 06 12 34 56 78" />
+      </div>
 
-        // ===== AFFICHER LE VERSET =====
-        function afficherVerset(verseKey) {
-            const display = document.getElementById('verseDisplay');
-            const words = verseIndex[verseKey] || [];
+      <div class="champ">
+        <label>Discipline souhaitée</label>
+        <div id="registerDisciplines"></div>
+      </div>
 
-            if (!isIndexBuilt) {
-                display.textContent = '⚠️ Index non construit. Clique sur "Reconstruire l\'index".';
-                return;
-            }
+      <div class="champ">
+        <label>Niveau souhaité</label>
+        <select id="registerNiveau">
+          <option value="">— Choisissez un niveau —</option>
+        </select>
+      </div>
 
-            if (words.length === 0) {
-                display.textContent = `❌ Verset ${verseKey} non trouvé. Vérifie la référence.`;
-                return;
-            }
+      <div class="champ">
+        <label>Message libre</label>
+        <textarea id="registerMessage" placeholder="Votre motivation, vos attentes, vos questions..." rows="3"></textarea>
+      </div>
 
-            // Trier par position
-            words.sort((a, b) => a.position - b.position);
+      <button class="btn-submit" onclick="sInscrire()">Envoyer ma demande</button>
+      <div class="message" id="registerStatusMessage"></div>
 
-            // Construire le texte
-            const chars = words.map(w => w.char).join('');
-            display.textContent = chars;
+      <div class="lien-form">
+        Déjà un compte ? <a onclick="ouvrirConnexion();return false;">Se connecter</a>
+      </div>
+    </div>
 
-            // Afficher les infos
-            const log = document.getElementById('log');
-            log.textContent += `\n✅ ${verseKey} : ${words.length} mots (page ${words[0].page})`;
-            log.scrollTop = log.scrollHeight;
-        }
-
-        // ===== RECONSTRUIRE L'INDEX =====
-        async function buildIndex() {
-            const log = document.getElementById('log');
-            log.textContent = '⏳ Reconstruction de l\'index en cours...\n';
-
-            verseIndex = {};
-            let totalPages = 0;
-            let totalWords = 0;
-            let totalVersets = 0;
-
-            const maxPages = 604;
-
-            for (let p = 1; p <= maxPages; p++) {
-                const pageNum = String(p).padStart(3, '0');
-                const url = `/medit/pages/${pageNum}.json`;
-
-                try {
-                    const res = await fetch(url);
-                    if (!res.ok) continue;
-
-                    const page = await res.json();
-                    totalPages++;
-
-                    // Parcourir toutes les lignes
-                    page.lines.forEach(line => {
-                        line.words.forEach(word => {
-                            if (word.verse_key) {
-                                const key = word.verse_key;
-                                if (!verseIndex[key]) {
-                                    verseIndex[key] = [];
-                                    totalVersets++;
-                                }
-                                verseIndex[key].push({
-                                    char: word.char,
-                                    position: word.position,
-                                    page: p
-                                });
-                                totalWords++;
-                            }
-                        });
-                    });
-
-                    // Log toutes les 50 pages
-                    if (p % 50 === 0) {
-                        log.textContent += `📄 ${p} pages traitées...\n`;
-                    }
-
-                } catch (e) {
-                    // Ignorer les pages manquantes
-                    continue;
-                }
-            }
-
-            isIndexBuilt = true;
-
-            log.textContent += `\n✅ Index construit !\n`;
-            log.textContent += `   📄 Pages trouvées : ${totalPages}\n`;
-            log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
-            log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
-
-            // Afficher le verset par défaut
-            const defaultRef = document.getElementById('verseInput').value.trim();
-            if (defaultRef) {
-                afficherVerset(defaultRef);
-            }
-
-            log.scrollTop = log.scrollHeight;
-        }
-
-        // ===== ÉVÉNEMENTS =====
-        document.getElementById('buildBtn').addEventListener('click', buildIndex);
-
-        document.getElementById('loadBtn').addEventListener('click', function() {
-            const ref = document.getElementById('verseInput').value.trim();
-            if (!ref) {
-                document.getElementById('verseDisplay').textContent = '⚠️ Entrez une référence (ex: 3:187)';
-                return;
-            }
-            afficherVerset(ref);
-        });
-
-        // Entrée clavier
-        document.getElementById('verseInput').addEventListener('keydown', function(e) {
-            if (e.key === 'Enter') {
-                document.getElementById('loadBtn').click();
-            }
-        });
-
-        // ===== AUTO-LOAD =====
-        // Construire l'index automatiquement au chargement
-        window.addEventListener('load', function() {
-            buildIndex();
-        });
-    </script>
-
-</body>
-</html>
+  </div>
+</div>
