@@ -1131,35 +1131,47 @@
 <script>
 (async function() {
   try {
-    // 1. Charger l'index
+    // 1. Charger l'index des versets
     const versesIndex = await fetch('/medit/verses.json').then(r => r.json());
+    console.log('✅ verses.json chargé');
     
     // 2. Fonction pour récupérer un verset
     async function getVerse(ref) {
       const info = versesIndex[ref];
-      if (!info) return '❌ Verset non trouvé';
+      if (!info) {
+        console.warn('⚠️ Verset non trouvé:', ref);
+        return '❌ Verset non trouvé';
+      }
       
-      const page = await fetch(`/medit/pages/${String(info.page).padStart(3, '0')}.json`).then(r => r.json());
+      // Charger la page
+      const pageNum = String(info.page).padStart(3, '0');
+      const page = await fetch(`/medit/pages/${pageNum}.json`).then(r => r.json());
       
       let chars = '';
-      for (const li of info.lines) {
+      info.lines.forEach(li => {
         const line = page.lines.find(l => l.line === li.line);
-        if (!line) continue;
+        if (!line) return;
         chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
-      }
+      });
       return chars;
     }
 
-    // 3. Appliquer à tous les éléments
-    for (const el of document.querySelectorAll('.verset[data-ref]')) {
+    // 3. Rendre tous les versets
+    const elements = document.querySelectorAll('.verset[data-ref]');
+    console.log(`📦 ${elements.length} verset(s) à charger`);
+    
+    for (const el of elements) {
       const ref = el.dataset.ref.trim();
-      console.log('Chargement de', ref);
+      console.log(`⏳ Chargement de ${ref}...`);
       const result = await getVerse(ref);
       el.textContent = result;
-      console.log('Résultat :', result);
+      console.log(`✅ ${ref} chargé : ${result}`);
     }
-  } catch (e) {
-    console.error('Erreur :', e);
+    
+    console.log('🎯 Tous les versets sont affichés !');
+    
+  } catch(e) {
+    console.error('❌ Erreur:', e);
   }
 })();
 </script>
