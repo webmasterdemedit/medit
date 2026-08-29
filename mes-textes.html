@@ -12,20 +12,30 @@
   <style>
     .btn-imprimer {
       display: inline-block;
-      margin-top: 4px;
-      padding: 3px 12px;
-      font-size: 11px;
+      margin: 6px 0 0 0;
+      padding: 4px 14px;
+      font-size: 12px;
       font-family: 'Roboto', sans-serif;
       background: transparent;
       border: 1px solid #999;
-      border-radius: 3px;
+      border-radius: 4px;
       cursor: pointer;
       color: #333;
       transition: all 0.2s;
+      position: relative;
+      z-index: 10;
     }
     .btn-imprimer:hover {
       background: #f0f0f0;
       border-color: #000;
+    }
+    .carte-post .clickable-area {
+      cursor: pointer;
+    }
+    .carte-post .btn-wrap {
+      padding-top: 4px;
+      border-top: 1px solid #eee;
+      margin-top: 4px;
     }
   </style>
   <script>
@@ -114,7 +124,6 @@
       history.pushState({ categorie: categorie }, '', newUrl);
     }
 
-    // Écouter le retour arrière (bouton précédent/suivant du navigateur)
     window.addEventListener('popstate', function(event) {
       if (event.state && event.state.categorie) {
         var categorie = event.state.categorie;
@@ -133,9 +142,6 @@
         }
       });
     }
-    // ============================================================
-    // FIN GESTION URL
-    // ============================================================
 
     // ============================================================
     // FONCTIONS D'IMPRESSION (VERSION MANUEL SCOLAIRE)
@@ -381,7 +387,6 @@
             </div>
       `;
 
-      // === SLIDES DE TEXTE ===
       if (slidesArray.length > 0) {
         printHtml += `<div class="titre-section">📖 Texte</div>`;
         slidesArray.forEach(function(slide, idx) {
@@ -394,7 +399,6 @@
         });
       }
 
-      // === QUIZ ===
       if (quiz.trim() !== '') {
         var quizs = parserQuizsPourImpression(quiz);
         printHtml += `<div class="titre-section">❓ Questions à choix multiples</div>`;
@@ -410,7 +414,6 @@
         });
       }
 
-      // === QUESTION OUVERTE ===
       if (openQuestion.trim() !== '') {
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
         printHtml += `<div class="titre-section">✏️ Question ouverte</div>`;
@@ -420,7 +423,6 @@
         printHtml += `</div>`;
       }
 
-      // === ORDRE ===
       if (ordre.trim() !== '') {
         var ordreItems = parserOrdrePourImpression(ordre);
         printHtml += `<div class="titre-section">🔢 Remettre dans l'ordre</div>`;
@@ -432,7 +434,6 @@
         printHtml += `<p style="font-size:14px;color:#444;margin-top:6px;">→ L'ordre correct est : ${ordreItems.map(function(_, i) { return i+1; }).join(', ')}</p>`;
       }
 
-      // === CARTE ===
       if (carte.trim() !== '') {
         var carteData = parserCartePourImpression(carte);
         if (carteData) {
@@ -444,7 +445,6 @@
         }
       }
 
-      // === RETENIR ===
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
@@ -481,7 +481,6 @@
       win.document.close();
     }
 
-    // ===== FONCTIONS DE PARSING POUR L'IMPRESSION =====
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var quizs = [];
@@ -544,6 +543,7 @@
       if (!recto) return null;
       return { recto: recto, verso: verso };
     }
+
     // ============================================================
     // FIN FONCTIONS D'IMPRESSION
     // ============================================================
@@ -878,44 +878,46 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-        // === BOUTON IMPRIMER ===
+        // === BOUTON IMPRIMER (avec stopPropagation) ===
         var imprimerHtml = '';
         if (!estBloque && estLu) {
           imprimerHtml = `
-            <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
-              🖨️ Imprimer
-            </button>
+            <div class="btn-wrap">
+              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
+                🖨️ Imprimer
+              </button>
+            </div>
           `;
         }
 
         var carteStyle = '';
         var iconeCadenas = '';
-        var onclickAction = '';
+        var onClickAttr = '';
         
         if (estBloque) {
-          carteStyle = 'style="opacity:0.6;cursor:not-allowed;"';
+          carteStyle = 'style="opacity:0.6;"';
           iconeCadenas = '🔒︎ ';
-          onclickAction = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
+          onClickAttr = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
         } else {
-          onclickAction = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
         }
 
         html += `
-          <div class="carte-post" ${carteStyle} ${onclickAction}>
-            <div class="infos">
+          <div class="carte-post" ${carteStyle}>
+            <div class="infos clickable-area" ${onClickAttr}>
               <div class="titre">${iconeCadenas}${post.titre}</div>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${post.niveau}</span>
                 ${metaHtml}
                 ${motsHtml}
                 ${retenirHtml}
-                ${imprimerHtml}
               </div>
             </div>
-            <div class="statut">
+            <div class="statut clickable-area" ${onClickAttr}>
               ${dateLabelHtml}
               ${dateHtml}
             </div>
+            ${imprimerHtml}
           </div>
         `;
       }
@@ -930,4 +932,23 @@
         <div class="vide">
           <span class="icone">📭</span>
           <h2>Aucune méditation disponible</h2>
-          <p>De nouvelles méd
+          <p>De nouvelles méditations seront ajoutées prochainement.</p>
+          <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+        </div>
+      `;
+      document.getElementById('tabsContainer').innerHTML = '';
+    }
+
+    function demarrer() {
+      chargerTableauDeBord();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
