@@ -224,7 +224,6 @@
               flex-direction: column;
             }
             
-            /* ===== TITRE ===== */
             h1 {
               font-size: 20pt;
               font-weight: bold;
@@ -241,7 +240,6 @@
               color: #444;
             }
             
-            /* ===== ZONE DE LECTURE (prend tout l'espace) ===== */
             .zone-lecture {
               flex: 1;
               padding: 6px 0;
@@ -259,7 +257,6 @@
               text-indent: 0;
             }
             
-            /* ===== ZONE EXERCICES (en bas, petit) ===== */
             .zone-exercices {
               border-top: 1px solid #ccc;
               padding-top: 10px;
@@ -340,25 +337,19 @@
               padding-top: 6px;
               border-top: 1px solid #ddd;
             }
-            .separateur {
-              border: none;
-              border-top: 1px solid #ddd;
-              margin: 8px 0;
-            }
           </style>
         </head>
         <body>
           <div class="page">
       `;
 
-      // --- EN-TÊTE ---
       printHtml += `
         <h1>${post.titre || 'Lecture'}</h1>
         <div class="sous-titre">Méditation guidée · Niveau ${post.niveau || 0}</div>
       `;
 
       // ============================================================
-      // ZONE DE LECTURE (prend tout l'espace)
+      // ZONE DE LECTURE
       // ============================================================
       printHtml += `<div class="zone-lecture">`;
 
@@ -385,7 +376,7 @@
 
       var hasExercice = false;
 
-      // --- QUIZ (petit) ---
+      // --- QUIZ ---
       if (quiz.trim() !== '') {
         hasExercice = true;
         var quizs = parserQuizsPourImpression(quiz);
@@ -403,7 +394,7 @@
         });
       }
 
-      // --- QUESTION OUVERTE (petit) ---
+      // --- QUESTION OUVERTE ---
       if (openQuestion.trim() !== '') {
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
@@ -412,7 +403,7 @@
         printHtml += `<div style="border:1px solid #ddd;height:30px;margin-bottom:4px;"></div>`;
       }
 
-      // --- ORDRE (petit) ---
+      // --- ORDRE ---
       if (ordre.trim() !== '') {
         hasExercice = true;
         var ordreItems = parserOrdrePourImpression(ordre);
@@ -424,7 +415,7 @@
         printHtml += `</div>`;
       }
 
-      // --- CARTE (petit) ---
+      // --- CARTE ---
       if (carte.trim() !== '') {
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
@@ -437,7 +428,7 @@
         }
       }
 
-      // --- RETENIR (petit) ---
+      // --- RETENIR ---
       if (retenir.trim() !== '') {
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
@@ -451,7 +442,6 @@
         }
       }
 
-      // Si pas d'exercice, on met une petite ligne vide
       if (!hasExercice) {
         printHtml += `<div style="height:2px;"></div>`;
       }
@@ -461,7 +451,6 @@
       // FIN ZONE EXERCICES
       // ============================================================
 
-      // --- PIED DE PAGE ---
       var date = new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
       printHtml += `
             <div class="pied-page">
@@ -498,16 +487,14 @@
             reponses: []
           };
         } else if (currentQuiz) {
-          var isCorrect = false;
           var texteRep = ligne;
           if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
-            isCorrect = true;
             texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
           } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
             texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
           }
           if (texteRep) {
-            currentQuiz.reponses.push({ texte: texteRep || 'Réponse', correct: isCorrect });
+            currentQuiz.reponses.push({ texte: texteRep || 'Réponse', correct: false });
           }
         }
       }
@@ -879,7 +866,6 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-        // === BOUTON IMPRIMER ===
         var imprimerHtml = '';
         if (!estBloque && estLu) {
           imprimerHtml = `
