@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>QCF4 - Solution finale</title>
+    <title>QCF4 - Test complet avec police</title>
     <style>
         body {
             background: #1a1a2e;
@@ -65,25 +65,26 @@
 </head>
 <body>
 
-    <h1>📖 QCF4 - Solution finale</h1>
+    <h1>📖 QCF4 - Test complet avec police</h1>
 
     <div class="controls">
-        <input type="text" id="verseInput" placeholder="ex: 2:22" value="2:22" />
+        <input type="text" id="verseInput" placeholder="ex: 2:12" value="2:12" />
         <button id="loadBtn">🔍 Afficher</button>
+        <button id="buildBtn">⚡ Reconstruire l'index</button>
         <span class="status" id="status">Prêt</span>
     </div>
 
     <div id="verseDisplay" class="verset">⏳ Entrez une référence.</div>
-    <div id="log">⏳ Chargement...</div>
+    <div id="log">⏳ Initialisation...</div>
 
     <script>
         // ============================================================
         // CONFIGURATION
         // ============================================================
         const PAGES_BASE = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/pages';
+        const FONTS_BASE = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts';
         const VERSES_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/verses.json';
-        const FONT_MAP_URL = 'https://raw.githubusercontent.com/MohamadHajjRabee/quran-qcf4/main/font-map.json';
-        const FONT_BASE = 'https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2';
+        const FONT_MAP_URL = 'https://raw.githubusercontent.com/webmasterdemedit/medit/main/font-map.json';
 
         let verseIndex = {};
         let fontMap = {};
@@ -94,21 +95,30 @@
         // CHARGER font-map.json
         // ============================================================
         async function loadFontMap() {
-            const res = await fetch(FONT_MAP_URL);
-            if (!res.ok) throw new Error(`HTTP ${res.status}`);
-            fontMap = await res.json();
-            console.log(`✅ font-map.json chargé (${Object.keys(fontMap).length} pages)`);
+            try {
+                const res = await fetch(FONT_MAP_URL);
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                fontMap = await res.json();
+                console.log(`✅ font-map.json chargé (${Object.keys(fontMap).length} pages)`);
+            } catch (e) {
+                console.warn('⚠️ Erreur chargement font-map.json, fallback utilisé', e);
+                // Fallback: générer un mapping approximatif
+                for (let i = 1; i <= 604; i++) {
+                    const fontIndex = Math.ceil(i / 13);
+                    fontMap[String(i)] = `QCF4_Hafs_${String(fontIndex).padStart(2, '0')}`;
+                }
+            }
         }
 
         // ============================================================
         // TROUVER LA POLICE POUR UNE PAGE
         // ============================================================
         function getFontForPage(pageNum) {
-            return fontMap[String(pageNum)] || `QCF4_Hafs_${String(pageNum).padStart(2, '0')}`;
+            return fontMap[String(pageNum)] || `QCF4_Hafs_47`;
         }
 
         // ============================================================
-        // CHARGER UNE POLICE (depuis CDN officiel)
+        // CHARGER UNE POLICE (depuis TON dépôt)
         // ============================================================
         async function loadFont(fontName) {
             if (fontCache.has(fontName)) return true;
@@ -117,7 +127,7 @@
                 return true;
             }
 
-            const url = `${FONT_BASE}/${fontName}_W.woff2`;
+            const url = `${FONTS_BASE}/${fontName}_W.woff2`;
             try {
                 const font = new FontFace(fontName, `url(${url})`);
                 await font.load();
@@ -126,32 +136,75 @@
                 console.log(`✅ Police chargée : ${fontName}`);
                 return true;
             } catch (e) {
-                console.warn(`⚠️ Échec chargement de ${fontName} :`, e);
-                return false;
+                console.warn(`⚠️ Échec chargement de ${fontName} depuis ton dépôt, tentative CDN...`, e);
+                
+                // Fallback: tenter de charger depuis le CDN officiel
+                const cdnUrl = `https://cdn.jsdelivr.net/gh/MohamadHajjRabee/quran-qcf4@main/fonts-woff2/${fontName}_W.woff2`;
+                try {
+                    const font = new FontFace(fontName, `url(${cdnUrl})`);
+                    await font.load();
+                    document.fonts.add(font);
+                    fontCache.add(fontName);
+                    console.log(`✅ Police chargée depuis CDN : ${fontName}`);
+                    return true;
+                } catch (e2) {
+                    console.warn(`⚠️ Échec total pour ${fontName}`, e2);
+                    return false;
+                }
             }
         }
 
         // ============================================================
         // CHARGER L'INDEX (verses.json)
         // ============================================================
+        async function loadVersesIndex() {
+            const res = await fetch(VERSES_URL);
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return await res.json();
+        }
+
+        // ============================================================
+        // CONSTRUIRE L'INDEX
+        // ============================================================
         async function buildIndex() {
             const log = document.getElementById('log');
-            log.textContent = '⏳ Chargement de verses.json...\n';
+            const status = document.getElementById('status');
+            log.textContent = '⏳ Chargement...\n';
+            status.textContent = '⏳ Chargement...';
+
+            verseIndex = {};
+            isIndexBuilt = false;
+            fontCache.clear();
 
             try {
+                // 1. Charger font-map.json
                 await loadFontMap();
-                const res = await fetch(VERSES_URL);
-                if (!res.ok) throw new Error(`HTTP ${res.status}`);
-                verseIndex = await res.json();
-                isIndexBuilt = true;
-                log.textContent += `✅ verses.json chargé (${Object.keys(verseIndex).length} versets)\n`;
-                log.textContent += '✅ Index prêt !\n';
+                log.textContent += `✅ font-map.json chargé\n`;
 
+                // 2. Charger verses.json
+                const verses = await loadVersesIndex();
+                log.textContent += `✅ verses.json chargé (${Object.keys(verses).length} versets)\n`;
+
+                // 3. Indexer directement
+                for (const [key, info] of Object.entries(verses)) {
+                    verseIndex[key] = info;
+                }
+
+                isIndexBuilt = true;
+                log.textContent += `✅ Index prêt ! (${Object.keys(verseIndex).length} versets)\n`;
+                status.textContent = '✅ Prêt';
+                status.className = 'success';
+
+                // Afficher le verset par défaut
                 const defaultRef = document.getElementById('verseInput').value.trim();
-                if (defaultRef) afficherVerset(defaultRef);
+                if (defaultRef) {
+                    afficherVerset(defaultRef);
+                }
 
             } catch (error) {
                 log.textContent += `\n❌ ERREUR : ${error.message}\n`;
+                status.textContent = '❌ Erreur';
+                status.className = 'error';
             }
         }
 
@@ -176,10 +229,15 @@
 
             log.textContent += `\n📖 Chargement de ${verseKey} (page ${info.page})...\n`;
 
-            // ✅ Trouver la bonne police via font-map.json
+            // ✅ Utiliser font-map.json pour trouver la bonne police
             const fontName = getFontForPage(info.page);
-            log.textContent += `🔤 Police : ${fontName}\n`;
+            if (!fontName) {
+                log.textContent += `❌ Police non trouvée pour la page ${info.page}\n`;
+                display.textContent = `❌ Police non trouvée pour la page ${info.page}`;
+                return;
+            }
 
+            log.textContent += `🔤 Police : ${fontName}\n`;
             await loadFont(fontName);
 
             // Charger la page depuis TON dépôt
@@ -196,15 +254,22 @@
                 chars += words.map(w => w.char).join('');
             }
 
+            // Afficher avec la bonne police
             display.textContent = chars || '⚠️ Aucun caractère';
             display.style.fontFamily = `'${fontName}', serif`;
+            display.style.fontSize = '32px';
+            display.style.direction = 'rtl';
+            display.style.textAlign = 'right';
 
             log.textContent += `✅ ${verseKey} affiché (${chars.length} caractères) avec ${fontName}\n`;
+            log.scrollTop = log.scrollHeight;
         }
 
         // ============================================================
         // ÉVÉNEMENTS
         // ============================================================
+        document.getElementById('buildBtn').addEventListener('click', buildIndex);
+
         document.getElementById('loadBtn').addEventListener('click', function() {
             const ref = document.getElementById('verseInput').value.trim();
             if (!ref) {
@@ -220,6 +285,9 @@
             }
         });
 
+        // ============================================================
+        // LANCEMENT AUTOMATIQUE
+        // ============================================================
         window.addEventListener('load', buildIndex);
     </script>
 
