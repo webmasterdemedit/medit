@@ -1,26 +1,216 @@
-<script>
-  (async function() {
-    // 1. Charger l'index des versets
-    const verses = await fetch('/medit/verses.json').then(r => r.json());
-    
-    // 2. Pour chaque élément .verset[data-ref]
-    for (const el of document.querySelectorAll('.verset[data-ref]')) {
-      const ref = el.dataset.ref;
-      const info = verses[ref];
-      if (!info) { el.textContent = '❌'; continue; }
-      
-      // 3. Charger la page
-      const page = await fetch(`/medit/pages/${String(info.page).padStart(3, '0')}.json`).then(r => r.json());
-      
-      // 4. Extraire les caractères
-      let chars = '';
-      info.lines.forEach(li => {
-        const line = page.lines.find(l => l.line === li.line);
-        if (!line) return;
-        chars += line.words.slice(li.word_start - 1, li.word_end).map(w => w.char).join('');
-      });
-      
-      el.textContent = chars;
-    }
-  })();
-</script>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>QCF4 - Indexeur de versets</title>
+    <link rel="stylesheet" href="/medit/theme.css" />
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a2e;
+            color: #e0d4b4;
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        #log {
+            background: #0d1117;
+            padding: 15px;
+            border-radius: 8px;
+            max-height: 300px;
+            overflow-y: auto;
+            font-size: 13px;
+            white-space: pre-wrap;
+            border: 1px solid #2a3040;
+        }
+        .verset {
+            font-family: 'QCF4_Hafs_01', serif;
+            font-size: 32px;
+            display: block;
+            padding: 20px;
+            margin: 15px 0;
+            line-height: 2;
+            text-align: right;
+            background: #161b22;
+            color: #e8dfc8;
+            border-radius: 12px;
+            border-right: 5px solid #c9a84c;
+        }
+        input, button {
+            padding: 10px 16px;
+            font-size: 16px;
+            border-radius: 6px;
+            border: 1px solid #2a3040;
+            background: #0d1117;
+            color: #e0d4b4;
+        }
+        button {
+            background: #c9a84c;
+            color: #0d1117;
+            cursor: pointer;
+            border: none;
+        }
+        button:hover {
+            background: #dbb95e;
+        }
+        .controls {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+            margin: 20px 0;
+        }
+        .info {
+            color: #8b7d60;
+            font-size: 14px;
+        }
+        .success { color: #4caf50; }
+        .error { color: #f44336; }
+    </style>
+</head>
+<body>
+
+    <h1>📖 Indexeur QCF4</h1>
+
+    <div class="controls">
+        <input type="text" id="verseInput" placeholder="ex: 3:187" value="3:187" />
+        <button id="loadBtn">🔍 Afficher le verset</button>
+        <button id="buildBtn">⚡ Reconstruire l'index</button>
+    </div>
+
+    <div id="verseDisplay" class="verset"></div>
+
+    <div id="log">⏳ Prêt... Clique sur "Reconstruire l'index" pour commencer.</div>
+
+    <script>
+        // ===== INDEX GLOBAL =====
+        // Structure : verseIndex[verse_key] = [ { char, position, page }, ... ]
+        let verseIndex = {};
+        let isIndexBuilt = false;
+
+        // ===== AFFICHER LE VERSET =====
+        function afficherVerset(verseKey) {
+            const display = document.getElementById('verseDisplay');
+            const words = verseIndex[verseKey] || [];
+
+            if (!isIndexBuilt) {
+                display.textContent = '⚠️ Index non construit. Clique sur "Reconstruire l\'index".';
+                return;
+            }
+
+            if (words.length === 0) {
+                display.textContent = `❌ Verset ${verseKey} non trouvé. Vérifie la référence.`;
+                return;
+            }
+
+            // Trier par position
+            words.sort((a, b) => a.position - b.position);
+
+            // Construire le texte
+            const chars = words.map(w => w.char).join('');
+            display.textContent = chars;
+
+            // Afficher les infos
+            const log = document.getElementById('log');
+            log.textContent += `\n✅ ${verseKey} : ${words.length} mots (page ${words[0].page})`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ===== RECONSTRUIRE L'INDEX =====
+        async function buildIndex() {
+            const log = document.getElementById('log');
+            log.textContent = '⏳ Reconstruction de l\'index en cours...\n';
+
+            verseIndex = {};
+            let totalPages = 0;
+            let totalWords = 0;
+            let totalVersets = 0;
+
+            const maxPages = 604;
+
+            for (let p = 1; p <= maxPages; p++) {
+                const pageNum = String(p).padStart(3, '0');
+                const url = `/medit/pages/${pageNum}.json`;
+
+                try {
+                    const res = await fetch(url);
+                    if (!res.ok) continue;
+
+                    const page = await res.json();
+                    totalPages++;
+
+                    // Parcourir toutes les lignes
+                    page.lines.forEach(line => {
+                        line.words.forEach(word => {
+                            if (word.verse_key) {
+                                const key = word.verse_key;
+                                if (!verseIndex[key]) {
+                                    verseIndex[key] = [];
+                                    totalVersets++;
+                                }
+                                verseIndex[key].push({
+                                    char: word.char,
+                                    position: word.position,
+                                    page: p
+                                });
+                                totalWords++;
+                            }
+                        });
+                    });
+
+                    // Log toutes les 50 pages
+                    if (p % 50 === 0) {
+                        log.textContent += `📄 ${p} pages traitées...\n`;
+                    }
+
+                } catch (e) {
+                    // Ignorer les pages manquantes
+                    continue;
+                }
+            }
+
+            isIndexBuilt = true;
+
+            log.textContent += `\n✅ Index construit !\n`;
+            log.textContent += `   📄 Pages trouvées : ${totalPages}\n`;
+            log.textContent += `   📝 Mots indexés : ${totalWords}\n`;
+            log.textContent += `   📖 Versets uniques : ${totalVersets}\n`;
+
+            // Afficher le verset par défaut
+            const defaultRef = document.getElementById('verseInput').value.trim();
+            if (defaultRef) {
+                afficherVerset(defaultRef);
+            }
+
+            log.scrollTop = log.scrollHeight;
+        }
+
+        // ===== ÉVÉNEMENTS =====
+        document.getElementById('buildBtn').addEventListener('click', buildIndex);
+
+        document.getElementById('loadBtn').addEventListener('click', function() {
+            const ref = document.getElementById('verseInput').value.trim();
+            if (!ref) {
+                document.getElementById('verseDisplay').textContent = '⚠️ Entrez une référence (ex: 3:187)';
+                return;
+            }
+            afficherVerset(ref);
+        });
+
+        // Entrée clavier
+        document.getElementById('verseInput').addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('loadBtn').click();
+            }
+        });
+
+        // ===== AUTO-LOAD =====
+        // Construire l'index automatiquement au chargement
+        window.addEventListener('load', function() {
+            buildIndex();
+        });
+    </script>
+
+</body>
+</html>
