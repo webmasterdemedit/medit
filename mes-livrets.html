@@ -376,10 +376,7 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // --- Récupérer les couleurs des livrets depuis les métadonnées ---
-          // On suppose que data.livrets est un tableau d'objets { titre, niveau, description, nbChapitres, couleur }
-          // ou un objet { "Nom": "couleur" }.
-          // On va parser les deux cas.
+          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
@@ -388,9 +385,7 @@
                   livretsData[l.titre] = l.couleur;
                 }
               });
-            } else if (typeof data.livrets === 'object') {
-              // Déjà un objet clé/valeur
-              livretsData = data.livrets;
+              console.log('📚 ' + data.livrets.length + ' livrets chargés avec couleurs');
             }
           }
 
@@ -407,7 +402,8 @@
 
           afficherLivrets();
         })
-        .catch(function() {
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
@@ -421,8 +417,6 @@
                     livretsData[l.titre] = l.couleur;
                   }
                 });
-              } else if (typeof cache.livrets === 'object') {
-                livretsData = cache.livrets;
               }
             }
             document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
