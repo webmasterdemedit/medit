@@ -593,15 +593,7 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var categorieActuelle = '';
-
-    // ============================================================
-    // PALETTE DE COULEURS
-    // ============================================================
-    var couleursParDefaut = [
-      '#2d6a4f', '#6b4c3a', '#4a6b8a', '#8a6b4a', 
-      '#5a3a6a', '#3a6a5a', '#8a4a3a', '#3a5a7a',
-      '#4a6a5a', '#6a4a3a', '#3a5a6a', '#7a5a3a'
-    ];
+    var livretsData = {};  // AJOUTÉ
 
     // ============================================================
     // IMPRESSION (reprise de mes-textes)
@@ -733,7 +725,7 @@
     }
 
     // ============================================================
-    // EST POST LU ? (EXACTEMENT COMME mes-textes.html)
+    // EST POST LU ?
     // ============================================================
     function estPostLu(post) {
       var reponse = toutesLesReponses[post.id];
@@ -760,7 +752,7 @@
     }
 
     // ============================================================
-    // CHARGEMENT (EXACTEMENT COMME mes-textes.html)
+    // CHARGEMENT
     // ============================================================
     function chargerLivret() {
       var params = new URLSearchParams(window.location.search);
@@ -791,6 +783,18 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
+          // === AJOUT : RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          livretsData = {};
+          if (data.livrets) {
+            if (Array.isArray(data.livrets)) {
+              data.livrets.forEach(function(l) {
+                if (l.titre && l.couleur) {
+                  livretsData[l.titre] = l.couleur;
+                }
+              });
+            }
+          }
+
           toutesLesReponses = {};
           if (data.reponses) {
             data.reponses.forEach(function(r) {
@@ -805,6 +809,17 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
+            // === AJOUT : Récupérer les livrets depuis le cache ===
+            if (cache.livrets) {
+              if (Array.isArray(cache.livrets)) {
+                livretsData = {};
+                cache.livrets.forEach(function(l) {
+                  if (l.titre && l.couleur) {
+                    livretsData[l.titre] = l.couleur;
+                  }
+                });
+              }
+            }
             afficherLivret();
           } else {
             document.getElementById('enteteLivret').innerHTML = `
@@ -863,9 +878,8 @@
         }
       });
 
-      // === DÉTERMINER LA COULEUR ===
-      var indexCouleur = postsFiltres.length % couleursParDefaut.length;
-      var couleur = couleursParDefaut[indexCouleur];
+      // === DÉTERMINER LA COULEUR DEPUIS livretsData ===
+      var couleur = livretsData[categorieActuelle] || '#2d6a4f';
 
       // === DESCRIPTION PAR DÉFAUT ===
       var description = 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalLecons + ' leçons. Chaque leçon vous guidera pas à pas dans l\'apprentissage.';
@@ -902,7 +916,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES LEÇONS (EXACTEMENT COMME mes-textes.html)
+    // AFFICHER LES LEÇONS
     // ============================================================
     function afficherLecons(posts) {
       var container = document.getElementById('contenuLecons');
@@ -947,152 +961,3 @@
           if (total === 1 && bonnes === 1) {
             estLu = true;
             estValide = true;
-          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-            estLu = true;
-            estValide = true;
-          }
-        }
-
-        var estAccessible = estPostAccessible(posts, i);
-        var estBloque = !estAccessible;
-
-        var hasQuiz = post.hasQuiz || false;
-        var hasQuestion = post.hasQuestion || false;
-        var mots = post.mots || 0;
-
-        var nbQuestions = 0;
-        if (hasQuiz) nbQuestions++;
-        if (hasQuestion) nbQuestions++;
-
-        var metaHtml = '';
-
-        if (estLu) {
-          var resultatHtml = '';
-          var questionHtml = '';
-          var annoteHtml = '';
-
-          if (reponse) {
-            var bonnes = reponse.bonnes || 0;
-            var total = reponse.total || 0;
-            if (total > 0) {
-              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
-            }
-
-            var reponseOuverte = reponse.reponseOuverte || '';
-            if (reponseOuverte && reponseOuverte.trim() !== '') {
-              questionHtml = '<span class="badge-icone">Question envoyée</span>';
-            } else if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-
-            var annotations = reponse.annotations || '';
-            if (annotations && annotations.trim() !== '') {
-              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté</span>';
-            } else {
-              annoteHtml = '<span class="badge-icone">Non annoté</span>';
-            }
-          } else {
-            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
-            if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-            annoteHtml = '<span class="badge-icone">Non annoté</span>';
-          }
-
-          metaHtml = resultatHtml + questionHtml + annoteHtml;
-        } else {
-          metaHtml = '<span class="badge-icone">Nb questions : ' + nbQuestions + '</span>';
-        }
-
-        var dateHtml = '';
-        var dateLabelHtml = '';
-
-        if (estLu && dateValidation) {
-          var d = new Date(dateValidation);
-          if (!isNaN(d.getTime())) {
-            var dateStr = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-            var heureStr = d.toLocaleTimeString('fr-FR', {
-              hour: '2-digit', minute: '2-digit'
-            });
-            dateLabelHtml = '<span class="date-label">Fait :</span>';
-            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
-          }
-        }
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre">
-              <strong>À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
-        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
-
-        var imprimerHtml = '';
-        if (!estBloque && estLu) {
-          imprimerHtml = `
-            <div class="btn-wrap">
-              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
-                Imprimer la page
-              </button>
-            </div>
-          `;
-        }
-
-        var carteClass = 'carte-post';
-        var iconeCadenas = '';
-        var onClickAttr = '';
-
-        if (estBloque) {
-          carteClass += ' bloque';
-          iconeCadenas = '🔒 ';
-          onClickAttr = 'onclick="alert(\'Vous devez d\'abord valider la leçon précédente.\');"';
-        } else {
-          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
-        }
-
-        html += `
-          <div class="${carteClass}" ${onClickAttr}>
-            <div class="infos">
-              <div class="titre">${iconeCadenas}${post.titre}</div>
-              <div class="meta">
-                <span class="niveau-badge">Niveau ${post.niveau}</span>
-                ${metaHtml}
-                ${motsHtml}
-                ${retenirHtml}
-              </div>
-            </div>
-            <div class="statut">
-              ${dateLabelHtml}
-              ${dateHtml}
-            </div>
-            ${imprimerHtml}
-          </div>
-        `;
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
-    }
-
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
-    function demarrer() {
-      chargerLivret();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
-  </script>
-
-</body>
-</html>
