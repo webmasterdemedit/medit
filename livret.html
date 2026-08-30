@@ -593,7 +593,7 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var categorieActuelle = '';
-    var livretsData = {};  // AJOUTÉ
+    var livretsData = {};
 
     // ============================================================
     // IMPRESSION (reprise de mes-textes)
@@ -783,7 +783,7 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === AJOUT : RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
@@ -809,7 +809,7 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
-            // === AJOUT : Récupérer les livrets depuis le cache ===
+            // Récupérer les livrets depuis le cache
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
@@ -887,7 +887,7 @@
       // === AFFICHER L'ENTÊTE ===
       var enteteHtml = `
         <div class="entete-livret">
-          <div class="couverture-mini" style="background: ${couleur}; border-color: ${couleur};">
+          <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
             <span class="niveau-couv">Niveau ${niveauLivret}</span>
             <div class="contenu-couv">
               <span class="titre-couv">${categorieActuelle}</span>
@@ -961,3 +961,50 @@
           if (total === 1 && bonnes === 1) {
             estLu = true;
             estValide = true;
+          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estLu = true;
+            estValide = true;
+          }
+        }
+
+        var estAccessible = estPostAccessible(posts, i);
+        var estBloque = !estAccessible;
+
+        var hasQuiz = post.hasQuiz || false;
+        var hasQuestion = post.hasQuestion || false;
+        var mots = post.mots || 0;
+
+        var nbQuestions = 0;
+        if (hasQuiz) nbQuestions++;
+        if (hasQuestion) nbQuestions++;
+
+        var metaHtml = '';
+
+        if (estLu) {
+          var resultatHtml = '';
+          var questionHtml = '';
+          var annoteHtml = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var total = reponse.total || 0;
+            if (total > 0) {
+              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+            }
+
+            var reponseOuverte = reponse.reponseOuverte || '';
+            if (reponseOuverte && reponseOuverte.trim() !== '') {
+              questionHtml = '<span class="badge-icone">Question envoyée</span>';
+            } else if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+
+            var annotations = reponse.annotations || '';
+            if (annotations && annotations.trim() !== '') {
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté</span>';
+            } else {
+              annoteHtml = '<span class="badge-icone">Non annoté</span>';
+            }
+          } else {
+            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+            if
