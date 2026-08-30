@@ -319,6 +319,11 @@
               font-weight: 400;
               margin-bottom: 2px;
             }
+            .header-liseuse .categorie .niveau {
+              font-size: 8.5pt;
+              letter-spacing: 1.5px;
+              color: #a89888;
+            }
             .header-liseuse h1 {
               font-size: 17pt;
               font-weight: 700;
@@ -469,21 +474,53 @@
             .zone-exercices .sous-section {
               margin-top: 6px;
             }
+
+            /* ===== BOUTON D'IMPRESSION ===== */
+            .no-print {
+              text-align: center;
+              margin-bottom: 12px;
+              padding: 8px;
+              background: #f0ece6;
+              border: 1px solid #d4c9b8;
+            }
+            .no-print button {
+              padding: 6px 20px;
+              font-size: 12pt;
+              font-family: 'Georgia', 'Times New Roman', Times, serif;
+              cursor: pointer;
+              border: 1px solid #8a7a6a;
+              background: white;
+              border-radius: 3px;
+              color: #1a1a1a;
+              margin: 0 4px;
+            }
+            .no-print button:hover {
+              background: #faf8f5;
+            }
+            @media print {
+              .no-print { display: none; }
+            }
           </style>
         </head>
         <body>
           <div class="page">
       `;
 
+      // ===== BOUTONS D'IMPRESSION (masqués à l'impression) =====
+      printHtml += `
+        <div class="no-print">
+          <button onclick="window.print()">🖨️ Imprimer</button>
+          <button onclick="window.close()">✕ Fermer</button>
+        </div>
+      `;
+
       // ===== EN-TÊTE LISEUSE =====
       printHtml += `
         <div class="header-liseuse">
-          <div class="categorie">${post.categorie || 'Sans catégorie'}</div>
+          <div class="categorie">${post.categorie || 'Sans catégorie'} <span class="niveau">· Niveau ${post.niveau || 0}</span></div>
           <h1>${post.titre || 'Lecture'}</h1>
           <div class="meta-ligne">
-            <span>Créé le ${dateCreationStr || '—'}</span>
-            <span class="sep">·</span>
-            <span>Niveau ${post.niveau || 0}</span>
+            <span>Le ${dateCreationStr || '—'}</span>
           </div>
         </div>
       `;
@@ -574,7 +611,7 @@
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
-          printHtml += `<div class="titre-exo" style="margin-top:8px;">Mots à retenir</div>`;
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">À retenir</div>`;
           printHtml += `<div class="exo-retenir">`;
           mots.forEach(function(mot) {
             printHtml += `<span class="mot">${mot}</span>`;
@@ -607,6 +644,11 @@
       }
       win.document.write(printHtml);
       win.document.close();
+
+      // === OUVRE LA FENÊTRE D'IMPRESSION AUTOMATIQUEMENT ===
+      setTimeout(function() {
+        win.print();
+      }, 500);
     }
 
     // ============================================================
@@ -1015,4 +1057,4 @@
   </script>
 
 </body>
-</html>
+</html>  
