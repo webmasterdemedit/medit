@@ -855,182 +855,190 @@
       return resultats;
     }
 
-    function afficherPosts(posts) {
-      var container = document.getElementById('contenu');
-      if (!container) return;
+   function afficherPosts(posts) {
+  var container = document.getElementById('contenu');
+  if (!container) return;
 
-      if (posts.length === 0) {
-        container.innerHTML = `
-          <div class="vide" style="padding:30px 20px;">
-            <span class="icone" style="font-size:32px;">📭</span>
-            <h2 style="font-size:18px;">Aucun texte</h2>
-            <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
-          </div>
-        `;
-        return;
+  if (posts.length === 0) {
+    container.innerHTML = `
+      <div class="vide" style="padding:30px 20px;">
+        <span class="icone" style="font-size:32px;">📭</span>
+        <h2 style="font-size:18px;">Aucun texte</h2>
+        <p style="font-size:14px;">Aucun texte dans cette catégorie.</p>
+      </div>
+    `;
+    return;
+  }
+
+  var html = '<div class="grille">';
+
+  for (var i = 0; i < posts.length; i++) {
+    var post = posts[i];
+    var reponse = toutesLesReponses[post.id];
+    
+    if (!reponse) {
+      for (var key in toutesLesReponses) {
+        if (toutesLesReponses[key].titre === post.titre) {
+          reponse = toutesLesReponses[key];
+          break;
+        }
       }
-
-      var html = '<div class="grille">';
-
-      for (var i = 0; i < posts.length; i++) {
-        var post = posts[i];
-        var reponse = toutesLesReponses[post.id];
-        
-        if (!reponse) {
-          for (var key in toutesLesReponses) {
-            if (toutesLesReponses[key].titre === post.titre) {
-              reponse = toutesLesReponses[key];
-              break;
-            }
-          }
-        }
-        
-        var dateValidation = '';
-        var retenir = '';
-        var estLu = false;
-        var estValide = false;
-
-        if (reponse) {
-          var bonnes = parseInt(reponse.bonnes) || 0;
-          var total = parseInt(reponse.total) || 0;
-          dateValidation = reponse.date || '';
-          retenir = reponse.retenir || '';
-
-          if (total === 1 && bonnes === 1) {
-            estLu = true;
-            estValide = true;
-          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-            estLu = true;
-            estValide = true;
-          }
-        }
-
-        var estAccessible = estPostAccessible(posts, i);
-        var estBloque = !estAccessible;
-
-        var hasQuiz = post.hasQuiz || false;
-        var hasQuestion = post.hasQuestion || false;
-        var mots = post.mots || 0;
-
-        var nbQuestions = 0;
-        if (hasQuiz) nbQuestions++;
-        if (hasQuestion) nbQuestions++;
-
-        var metaHtml = '';
-
-        if (estLu) {
-          var resultatHtml = '';
-          var questionHtml = '';
-          var annoteHtml = '';
-
-          if (reponse) {
-            var bonnes = reponse.bonnes || 0;
-            var total = reponse.total || 0;
-            if (total > 0) {
-              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
-            }
-
-            var reponseOuverte = reponse.reponseOuverte || '';
-            if (reponseOuverte && reponseOuverte.trim() !== '') {
-              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
-            } else if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-
-            var annotations = reponse.annotations || '';
-            if (annotations && annotations.trim() !== '') {
-              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
-            } else {
-              annoteHtml = '<span class="badge-icone">Non annoté</span>';
-            }
-          } else {
-            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
-            if (hasQuestion) {
-              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
-            }
-            annoteHtml = '<span class="badge-icone">Non annoté</span>';
-          }
-
-          metaHtml = resultatHtml + questionHtml + annoteHtml;
-        } else {
-          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
-        }
-
-        var dateHtml = '';
-        var dateLabelHtml = '';
-
-        if (estLu && dateValidation) {
-          var d = new Date(dateValidation);
-          if (!isNaN(d.getTime())) {
-            var dateStr = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-            var heureStr = d.toLocaleTimeString('fr-FR', {
-              hour: '2-digit', minute: '2-digit'
-            });
-            dateLabelHtml = '<span class="date-label visible">Fait :</span>';
-            dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
-          }
-        }
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre visible">
-              <strong>À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
-        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
-
-        var imprimerHtml = '';
-        if (!estBloque && estLu) {
-          imprimerHtml = `
-            <div class="btn-wrap">
-              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
-                📄 Version papier
-              </button>
-            </div>
-          `;
-        }
-
-        var carteStyle = '';
-        var iconeCadenas = '';
-        var onClickAttr = '';
-        
-        if (estBloque) {
-          carteStyle = 'style="opacity:0.6;"';
-          iconeCadenas = '🔒︎ ';
-          onClickAttr = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
-        } else {
-          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
-        }
-
-        html += `
-          <div class="carte-post" ${carteStyle}>
-            <div class="infos clickable-area" ${onClickAttr}>
-              <div class="titre">${iconeCadenas}${post.titre}</div>
-              <div class="meta">
-                <span class="niveau-badge">Niveau ${post.niveau}</span>
-                ${metaHtml}
-                ${motsHtml}
-                ${retenirHtml}
-              </div>
-            </div>
-            <div class="statut clickable-area" ${onClickAttr}>
-              ${dateLabelHtml}
-              ${dateHtml}
-            </div>
-            ${imprimerHtml}
-          </div>
-        `;
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
     }
+    
+    var dateValidation = '';
+    var retenir = '';
+    var estLu = false;
+    var estValide = false;
+
+    if (reponse) {
+      var bonnes = parseInt(reponse.bonnes) || 0;
+      var total = parseInt(reponse.total) || 0;
+      dateValidation = reponse.date || '';
+      retenir = reponse.retenir || '';
+
+      if (total === 1 && bonnes === 1) {
+        estLu = true;
+        estValide = true;
+      } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+        estLu = true;
+        estValide = true;
+      }
+    }
+
+    var estAccessible = estPostAccessible(posts, i);
+    var estBloque = !estAccessible;
+
+    var hasQuiz = post.hasQuiz || false;
+    var hasQuestion = post.hasQuestion || false;
+    var mots = post.mots || 0;
+
+    var nbQuestions = 0;
+    if (hasQuiz) nbQuestions++;
+    if (hasQuestion) nbQuestions++;
+
+    var metaHtml = '';
+
+    if (estLu) {
+      var resultatHtml = '';
+      var questionHtml = '';
+      var annoteHtml = '';
+
+      if (reponse) {
+        var bonnes = reponse.bonnes || 0;
+        var total = reponse.total || 0;
+        if (total > 0) {
+          resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+        }
+
+        var reponseOuverte = reponse.reponseOuverte || '';
+        if (reponseOuverte && reponseOuverte.trim() !== '') {
+          questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
+        } else if (hasQuestion) {
+          questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+        }
+
+        var annotations = reponse.annotations || '';
+        if (annotations && annotations.trim() !== '') {
+          annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+        } else {
+          annoteHtml = '<span class="badge-icone">Non annoté</span>';
+        }
+      } else {
+        resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+        if (hasQuestion) {
+          questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+        }
+        annoteHtml = '<span class="badge-icone">Non annoté</span>';
+      }
+
+      metaHtml = resultatHtml + questionHtml + annoteHtml;
+    } else {
+      metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
+    }
+
+    var dateHtml = '';
+    var dateLabelHtml = '';
+
+    if (estLu && dateValidation) {
+      var d = new Date(dateValidation);
+      if (!isNaN(d.getTime())) {
+        var dateStr = d.toLocaleDateString('fr-FR', {
+          day: '2-digit', month: 'long', year: 'numeric'
+        });
+        var heureStr = d.toLocaleTimeString('fr-FR', {
+          hour: '2-digit', minute: '2-digit'
+        });
+        dateLabelHtml = '<span class="date-label visible">Fait :</span>';
+        dateHtml = '<span class="date-validation visible">' + dateStr + ' à ' + heureStr + '</span>';
+      }
+    }
+
+    var retenirHtml = '';
+    if (estValide && retenir) {
+      retenirHtml = `
+        <div class="retenir-cadre visible">
+          <strong>À retenir</strong>
+          ${retenir}
+        </div>
+      `;
+    }
+
+    var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+    // ===== BOUTON IMPRIMER =====
+    var imprimerHtml = '';
+    if (!estBloque && estLu) {
+      imprimerHtml = `
+        <div class="btn-wrap-print">
+          <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
+            📄 Version papier
+          </button>
+        </div>
+      `;
+    }
+
+    var carteStyle = '';
+    var iconeCadenas = '';
+    var lienArticle = '';
+    
+    if (estBloque) {
+      carteStyle = 'style="opacity:0.6;cursor:not-allowed;"';
+      iconeCadenas = '🔒︎ ';
+      lienArticle = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
+    } else {
+      lienArticle = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+    }
+
+    // ===== CONSTRUCTION DE LA CARTE =====
+    html += `
+      <div class="carte-post" ${carteStyle}>
+        <!-- Toute la carte est cliquable (sauf le bouton) -->
+        <div class="carte-contenu clickable" ${lienArticle}>
+          <div class="infos">
+            <div class="titre">${iconeCadenas}${post.titre}</div>
+            <div class="meta">
+              <span class="niveau-badge">Niveau ${post.niveau}</span>
+              ${metaHtml}
+              ${motsHtml}
+              ${retenirHtml}
+            </div>
+          </div>
+          <div class="statut">
+            ${dateLabelHtml}
+            ${dateHtml}
+          </div>
+        </div>
+        <!-- Bouton imprimer à part, en bas à droite -->
+        <div class="carte-actions">
+          ${imprimerHtml}
+        </div>
+      </div>
+    `;
+  }
+
+  html += '</div>';
+  container.innerHTML = html;
+}
 
     function afficherVide() {
       document.getElementById('loader').style.display = 'none';
