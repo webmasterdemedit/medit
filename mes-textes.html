@@ -267,13 +267,10 @@
         }
       }
 
-      // Date d'impression
+      // Date d'impression (seulement la date, pas l'heure)
       var dateImpression = new Date();
       var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric'
-      });
-      var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
-        hour: '2-digit', minute: '2-digit'
       });
 
       var printHtml = `
@@ -360,7 +357,7 @@
               color: #1a1a1a;
             }
             .slide p:first-of-type {
-              text-indent: 0;
+              text-indent: 2em;
             }
             
             /* ===== ZONE EXERCICES ===== */
@@ -407,8 +404,8 @@
               padding-left: 2px;
             }
             .exo-ordre .item {
-              display: inline-block;
-              margin-right: 10px;
+              display: block;
+              margin-left: 18px;
               font-style: italic;
             }
             .exo-ordre .item::before {
@@ -422,11 +419,6 @@
             }
             .exo-carte .recto {
               font-weight: 600;
-            }
-            .exo-carte .verso-vide {
-              color: #8a7a6a;
-              font-style: italic;
-              font-size: 9pt;
             }
             .exo-retenir {
               margin-top: 4px;
@@ -453,11 +445,16 @@
               border-top: 1px solid #d4c9b8;
               letter-spacing: 0.5px;
             }
-            .pied-page .imprime-le {
-              font-style: italic;
-              font-size: 7.5pt;
+            .pied-page .date-ligne {
+              font-size: 8pt;
               color: #a89888;
               margin-top: 2px;
+            }
+            .pied-page .date-ligne span {
+              margin: 0 6px;
+            }
+            .pied-page .date-ligne .sep {
+              color: #c4b8a8;
             }
             .pied-page .qiraat {
               font-weight: 400;
@@ -522,9 +519,6 @@
         <div class="header-liseuse">
           <div class="categorie">${post.categorie || 'Sans catégorie'} <span class="niveau">· Niveau ${post.niveau || 0}</span></div>
           <h1>${post.titre || 'Lecture'}</h1>
-          <div class="meta-ligne">
-            <span>Le ${dateCreationStr || '—'}</span>
-          </div>
         </div>
       `;
 
@@ -596,7 +590,7 @@
         printHtml += `</div>`;
       }
 
-      // --- CARTE ---
+      // --- CARTE (seulement le recto) ---
       if (carte.trim() !== '') {
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
@@ -604,7 +598,6 @@
           printHtml += `<div class="titre-exo" style="margin-top:8px;">Carte mémoire</div>`;
           printHtml += `<div class="exo-carte">`;
           printHtml += `<div class="recto">${carteData.recto}</div>`;
-          printHtml += `<div class="verso-vide">(Espace pour écrire la réponse)</div>`;
           printHtml += `</div>`;
         }
       }
@@ -633,7 +626,11 @@
       printHtml += `
             <div class="pied-page">
               <div class="qiraat">Qiraat</div>
-              <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
+              <div class="date-ligne">
+                <span>Le ${dateCreationStr || '—'}</span>
+                <span class="sep">·</span>
+                <span>Imprimé le ${dateImpressionStr}</span>
+              </div>
             </div>
           </div>
         </body>
@@ -648,10 +645,10 @@
       win.document.write(printHtml);
       win.document.close();
 
-      // === OUVRE LA FENÊTRE D'IMPRESSION AUTOMATIQUEMENT ===
+      // === OUVRE LA FENÊTRE D'IMPRESSION DIRECTEMENT ===
       setTimeout(function() {
         win.print();
-      }, 500);
+      }, 300);
     }
 
     // ============================================================
@@ -988,7 +985,6 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-        // === BOUTON VERSION PAPIER (au lieu de "Imprimer") ===
         var imprimerHtml = '';
         if (!estBloque && estLu) {
           imprimerHtml = `
