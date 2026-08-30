@@ -29,12 +29,8 @@
       background: #f0f0f0;
       border-color: #000;
     }
-    .carte-post {
+    .carte-post .clickable-area {
       cursor: pointer;
-      transition: background 0.15s;
-    }
-    .carte-post:hover {
-      background: rgba(0,0,0,0.02);
     }
     .carte-post .btn-wrap {
       padding-top: 4px;
@@ -140,7 +136,7 @@
     }
 
     // ============================================================
-    // FONCTIONS D'IMPRESSION
+    // FONCTIONS D'IMPRESSION - STYLE LISEUSE ÉLÉGANT
     // ============================================================
     function imprimerArticle(articleId, titre) {
       var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
@@ -271,7 +267,7 @@
         }
       }
 
-      // Date d'impression
+      // Date d'impression (seulement la date, pas l'heure)
       var dateImpression = new Date();
       var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric'
@@ -304,6 +300,7 @@
               background: #faf8f5;
             }
             
+            /* ===== EN-TÊTE LISEUSE ===== */
             .header-liseuse {
               text-align: center;
               padding-bottom: 14px;
@@ -332,7 +329,19 @@
               margin-bottom: 2px;
               font-family: 'Georgia', 'Times New Roman', Times, serif;
             }
+            .header-liseuse .meta-ligne {
+              font-size: 9pt;
+              color: #8a7a6a;
+              letter-spacing: 0.5px;
+            }
+            .header-liseuse .meta-ligne span {
+              margin: 0 4px;
+            }
+            .header-liseuse .meta-ligne .sep {
+              color: #c4b8a8;
+            }
             
+            /* ===== ZONE DE LECTURE ===== */
             .zone-lecture {
               flex: 1;
               padding: 4px 0;
@@ -351,6 +360,7 @@
               text-indent: 2em;
             }
             
+            /* ===== ZONE EXERCICES ===== */
             .zone-exercices {
               margin-top: 16px;
               padding-top: 14px;
@@ -413,17 +423,19 @@
             .exo-retenir {
               margin-top: 4px;
               padding-left: 2px;
-              font-style: italic;
-              font-size: 9.5pt;
-              color: #4a3a2a;
             }
             .exo-retenir .mot {
-              display: inline;
-            }
-            .exo-retenir .mot:not(:last-child)::after {
-              content: ", ";
+              display: inline-block;
+              padding: 1px 10px;
+              margin: 1px 4px 1px 0;
+              border: 1px solid #b8a898;
+              font-weight: 500;
+              font-size: 9pt;
+              background: #f5f0ea;
+              color: #2a2a2a;
             }
             
+            /* ===== PIED DE PAGE ===== */
             .pied-page {
               text-align: center;
               font-size: 8.5pt;
@@ -450,6 +462,17 @@
               letter-spacing: 2px;
             }
 
+            /* ===== PETITS DÉTAILS ===== */
+            .separateur-doux {
+              border: none;
+              border-top: 1px solid #e8e0d8;
+              margin: 4px 0;
+            }
+            .zone-exercices .sous-section {
+              margin-top: 6px;
+            }
+
+            /* ===== BOUTON D'IMPRESSION ===== */
             .no-print {
               text-align: center;
               margin-bottom: 12px;
@@ -482,14 +505,16 @@
           <div class="page">
       `;
 
+      // ===== BOUTONS D'IMPRESSION (masqués à l'impression) =====
       printHtml += `
         <div class="no-print">
           <button onclick="window.print()">🖨️ Imprimer</button>
-          <button onclick="window.print()">📧 Envoyer par email</button>
+          <button onclick="window.print()">📥 Télécharger en PDF</button>
           <button onclick="window.close()">✕ Fermer</button>
         </div>
       `;
 
+      // ===== EN-TÊTE LISEUSE =====
       printHtml += `
         <div class="header-liseuse">
           <div class="categorie">${post.categorie || 'Sans catégorie'} <span class="niveau">· Niveau ${post.niveau || 0}</span></div>
@@ -497,6 +522,7 @@
         </div>
       `;
 
+      // ===== ZONE DE LECTURE =====
       printHtml += `<div class="zone-lecture">`;
 
       if (slidesArray.length > 0) {
@@ -514,11 +540,13 @@
 
       printHtml += `</div>`;
 
+      // ===== ZONE EXERCICES =====
       printHtml += `<div class="zone-exercices">`;
 
       var hasExercice = false;
       var questionNum = 1;
 
+      // --- QUIZ ---
       if (quiz.trim() !== '') {
         hasExercice = true;
         var quizs = parserQuizsPourImpression(quiz);
@@ -536,6 +564,7 @@
         });
       }
 
+      // --- QUESTION OUVERTE ---
       if (openQuestion.trim() !== '') {
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
@@ -549,6 +578,7 @@
         questionNum++;
       }
 
+      // --- ORDRE ---
       if (ordre.trim() !== '') {
         hasExercice = true;
         var ordreItems = parserOrdrePourImpression(ordre);
@@ -560,6 +590,7 @@
         printHtml += `</div>`;
       }
 
+      // --- CARTE (seulement le recto) ---
       if (carte.trim() !== '') {
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
@@ -571,6 +602,7 @@
         }
       }
 
+      // --- RETENIR ---
       if (retenir.trim() !== '') {
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
@@ -590,6 +622,7 @@
 
       printHtml += `</div>`;
 
+      // ===== PIED DE PAGE =====
       printHtml += `
             <div class="pied-page">
               <div class="qiraat">Qiraat</div>
@@ -612,6 +645,7 @@
       win.document.write(printHtml);
       win.document.close();
 
+      // === OUVRE LA FENÊTRE D'IMPRESSION DIRECTEMENT ===
       setTimeout(function() {
         win.print();
       }, 300);
@@ -955,4 +989,72 @@
         if (!estBloque && estLu) {
           imprimerHtml = `
             <div class="btn-wrap">
-              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}
+              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
+                📄 Version papier
+              </button>
+            </div>
+          `;
+        }
+
+        var carteStyle = '';
+        var iconeCadenas = '';
+        var onClickAttr = '';
+        
+        if (estBloque) {
+          carteStyle = 'style="opacity:0.6;"';
+          iconeCadenas = '🔒︎ ';
+          onClickAttr = 'onclick="event.preventDefault(); alert(\'Vous devez d\'abord valider le texte précédent.\');"';
+        } else {
+          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+        }
+
+        html += `
+          <div class="carte-post" ${carteStyle}>
+            <div class="infos clickable-area" ${onClickAttr}>
+              <div class="titre">${iconeCadenas}${post.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${post.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut clickable-area" ${onClickAttr}>
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+            ${imprimerHtml}
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function afficherVide() {
+      document.getElementById('loader').style.display = 'none';
+      document.getElementById('contenu').innerHTML = `
+        <div class="vide">
+          <span class="icone">📭</span>
+          <h2>Aucune méditation disponible</h2>
+          <p>De nouvelles méditations seront ajoutées prochainement.</p>
+          <p style="font-size:13px;color:var(--text-secondary);margin-top:4px;">Votre niveau actuel : ${niveauEtudiant}</p>
+        </div>
+      `;
+      document.getElementById('tabsContainer').innerHTML = '';
+    }
+
+    function demarrer() {
+      chargerTableauDeBord();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
