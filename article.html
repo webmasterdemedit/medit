@@ -12,13 +12,13 @@
 
   <style>
     /* ============================================================
-       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
+       PROGRESSION - NOIR & BLANC
        ============================================================ */
     .progress-dots {
       display: flex !important;
       justify-content: center !important;
       gap: 10px !important;
-      padding: 16px 0 12px 0 !important;
+      padding: 28px 0 24px 0 !important;
       flex-wrap: wrap !important;
       position: relative !important;
       z-index: 5 !important;
@@ -38,11 +38,6 @@
       border-color: var(--text, #111) !important;
       background: var(--text, #111) !important;
     }
-    .progress-dot.done {
-      border-color: var(--text-secondary, #444) !important;
-      background: var(--text-secondary, #444) !important;
-    }
-
     /* Slide = carré */
     .progress-dot.type-slide {
       border-radius: 0 !important;
@@ -63,10 +58,6 @@
       border-color: var(--text, #111) !important;
       background: var(--text, #111) !important;
     }
-    .progress-dot.type-open.done {
-      border-color: var(--text-secondary, #444) !important;
-      background: var(--text-secondary, #444) !important;
-    }
     /* Ordre = losange */
     .progress-dot.type-ordre {
       border-radius: 0 !important;
@@ -79,11 +70,6 @@
       transform: rotate(45deg) !important;
       border-color: var(--text, #111) !important;
       background: var(--text, #111) !important;
-    }
-    .progress-dot.type-ordre.done {
-      transform: rotate(45deg) !important;
-      border-color: var(--text-secondary, #444) !important;
-      background: var(--text-secondary, #444) !important;
     }
     /* Carte = rectangle */
     .progress-dot.type-carte {
@@ -104,17 +90,13 @@
       border-color: var(--text, #111) !important;
       background: var(--text, #111) !important;
     }
-    .progress-dot.type-retenir.done {
-      border-color: var(--text-secondary, #444) !important;
-      background: var(--text-secondary, #444) !important;
-    }
 
     /* Légende cachée */
     .progress-legend {
       display: none !important;
     }
 
-    /* Slide wrapper - pour que les points soient visibles */
+    /* Slide wrapper */
     .slide-wrapper {
       display: none !important;
     }
@@ -123,6 +105,92 @@
     }
     .slide-content {
       position: relative !important;
+      padding-bottom: 60px !important;
+    }
+
+    /* ============================================================
+       STYLO EN BAS A DROITE (à côté du contrôle taille)
+       ============================================================ */
+    .note-toggle-bottom {
+      position: absolute;
+      bottom: 16px;
+      right: 80px;
+      z-index: 20;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      font-size: 20px;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+      padding: 4px 8px;
+    }
+    .note-toggle-bottom:hover {
+      color: var(--text);
+    }
+    .note-toggle-bottom.active {
+      color: var(--text);
+    }
+
+    /* Zone de note en bas à droite */
+    .note-area-bottom {
+      position: absolute;
+      bottom: 60px;
+      right: 16px;
+      left: 16px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      display: none;
+      z-index: 10;
+    }
+    .note-area-bottom.visible {
+      display: block;
+    }
+    .note-area-bottom textarea {
+      width: 100%;
+      background: transparent;
+      border: none;
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: calc(var(--slide-font-size, 18px) * 0.9);
+      resize: vertical;
+      min-height: 60px;
+      max-height: 120px;
+      outline: none;
+      padding: 4px 0;
+    }
+    .note-area-bottom textarea::placeholder {
+      color: var(--text-muted);
+    }
+    .note-area-bottom .note-indicator {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-align: right;
+      margin-top: 4px;
+      font-family: 'Inter', sans-serif;
+    }
+    .note-area-bottom .note-indicator.saved {
+      color: var(--text);
+    }
+
+    /* ============================================================
+       ORDRE - LETTRES AU LIEU DE CHIFFRES
+       ============================================================ */
+    .ordre-content .ordre-item .ordre-num {
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 28px;
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* ============================================================
+       FONT CONTROL - un peu plus haut
+       ============================================================ */
+    .font-control-bottom {
+      bottom: 16px !important;
+      right: 16px !important;
     }
   </style>
 </head>
@@ -543,13 +611,12 @@
           html += afficherRetenir(slide);
         }
 
-        if (slide.type === 'slide') {
-          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
-          html += '<div class="note-area" id="noteArea-' + index + '">';
-          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
-          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
-          html += '</div>';
-        }
+        // Stylo + zone note en bas à droite (pour tous les slides)
+        html += '<button class="note-toggle-bottom" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</button>';
+        html += '<div class="note-area-bottom" id="noteArea-' + index + '">';
+        html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note..." oninput="autoSaveNote(' + index + ')"></textarea>';
+        html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
+        html += '</div>';
 
         html += '</div>';
         html += '</div>';
@@ -562,7 +629,6 @@
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
 
-      // Supprimer les anciens points aussi
       var oldDots = container.querySelectorAll('.progress-dots');
       oldDots.forEach(function(el) { el.remove(); });
 
@@ -591,8 +657,8 @@
             target.closest('.btn-envoyer-reponse') ||
             target.closest('textarea') ||
             target.closest('.btn-fermer-slide') ||
-            target.closest('.note-toggle') ||
-            target.closest('.note-area') ||
+            target.closest('.note-toggle-bottom') ||
+            target.closest('.note-area-bottom') ||
             target.closest('.ordre-item') ||
             target.closest('.btn-valider-ordre') ||
             target.closest('.carte-container') ||
@@ -704,6 +770,7 @@
       }
 
       var consigne = slide.consigne || 'Remettez dans l\'ordre';
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
       var html = '';
       html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">' + consigne + '</h3>';
@@ -715,8 +782,7 @@
         var numValue = num ? num[1] : (i + 1);
         var texte = shuffled[i].replace(/^-\d+-/, '').trim();
         html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
-        var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-html += '<span class="ordre-num">#' + lettres[i] + '</span>';
+        html += '<span class="ordre-num">#' + lettres[i] + '</span>';
         html += '<span class="ordre-texte">' + texte + '</span>';
         html += '<div class="ordre-boutons">';
         html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
@@ -997,9 +1063,17 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       dots.forEach(function(dot, idx) {
         dot.classList.remove('active', 'done');
         if (idx < etat.currentIndex) {
-          dot.classList.add('done');
+          // Point déjà passé → gris clair (bordure seulement)
+          dot.style.borderColor = 'var(--border, #ccc)';
+          dot.style.background = 'transparent';
         } else if (idx === etat.currentIndex) {
-          dot.classList.add('active');
+          // Point actif → noir
+          dot.style.borderColor = 'var(--text, #111)';
+          dot.style.background = 'var(--text, #111)';
+        } else {
+          // Points futurs → gris clair
+          dot.style.borderColor = 'var(--border, #ccc)';
+          dot.style.background = 'transparent';
         }
       });
     }
@@ -1089,10 +1163,10 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       }
 
       var allItems = list.querySelectorAll('.ordre-item');
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
-        if (numSpan) var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-numSpan.textContent = '#' + lettres[idx];
+        if (numSpan) numSpan.textContent = '#' + lettres[idx];
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
