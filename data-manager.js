@@ -95,14 +95,14 @@ var DataManager = {
     ajouterLivrets: function(data) {
         // Si data contient déjà des livrets (feuille "Livrets"), on les garde
         if (data.livrets) {
-            return data;
+            return Promise.resolve(data);
         }
 
         // Sinon, on va chercher la feuille "Livrets" séparément
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             data.livrets = [];
-            return data;
+            return Promise.resolve(data);
         }
 
         var url = CONFIG.SCRIPT_URL + '?action=getLivrets&nom=' + encodeURIComponent(id);
@@ -213,19 +213,6 @@ var DataManager = {
             return cache.livrets;
         }
         return [];
-    },
-
-    // ============================================================
-    // NOUVEAU : RÉCUPÉRER LA COULEUR D'UN LIVRET PAR SON NOM
-    // ============================================================
-    getCouleurLivret: function(nomLivret) {
-        var livrets = this.getLivrets();
-        for (var i = 0; i < livrets.length; i++) {
-            if (livrets[i].titre === nomLivret) {
-                return livrets[i].couleur || null;
-            }
-        }
-        return null;
     },
 
     getReponses: function() {
@@ -361,9 +348,8 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDER ORDRE (NOUVEAU)
+    // SAUVEGARDER ORDRE
     // ============================================================
-
     sauvegarderOrdre: function(articleId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -392,9 +378,8 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDER CARTES ANKI (NOUVEAU)
+    // SAUVEGARDER CARTES ANKI
     // ============================================================
-
     sauvegarderCarte: function(articleId, titre, cartes, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -715,10 +700,6 @@ function getMdp() {
 
 function getLivrets() {
     return DataManager.getLivrets();
-}
-
-function getCouleurLivret(nomLivret) {
-    return DataManager.getCouleurLivret(nomLivret);
 }
 
 function envoyerMessage(sujet, message) {
