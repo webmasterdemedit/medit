@@ -9,166 +9,120 @@
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
+
   <style>
-    /* ===== PROGRESSION EN HAUT ===== */
+    /* ============================================================
+       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
+       ============================================================ */
     .progress-dots {
-      display: flex;
-      justify-content: center;
-      gap: 10px;
-      padding: 16px 0 20px 0;
-      flex-wrap: wrap;
+      display: flex !important;
+      justify-content: center !important;
+      gap: 10px !important;
+      padding: 16px 0 12px 0 !important;
+      flex-wrap: wrap !important;
+      position: relative !important;
+      z-index: 5 !important;
     }
     .progress-dot {
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: var(--bg-secondary, #2a2a2a);
-      border: 2px solid var(--border-color, #444);
-      transition: all 0.3s ease;
-      cursor: default;
-      flex-shrink: 0;
+      width: 14px !important;
+      height: 14px !important;
+      border-radius: 0 !important;
+      background: transparent !important;
+      border: 2px solid var(--border, #ccc) !important;
+      transition: all 0.3s ease !important;
+      cursor: default !important;
+      flex-shrink: 0 !important;
+      position: relative !important;
     }
     .progress-dot.active {
-      background: var(--accent, #6a8cff);
-      border-color: var(--accent, #6a8cff);
-      transform: scale(1.2);
-      box-shadow: 0 0 12px rgba(106, 140, 255, 0.4);
+      border-color: var(--text, #111) !important;
+      background: var(--text, #111) !important;
     }
     .progress-dot.done {
-      background: var(--success, #4caf50);
-      border-color: var(--success, #4caf50);
+      border-color: var(--text-secondary, #444) !important;
+      background: var(--text-secondary, #444) !important;
     }
-    /* Slide lecture = carré */
+
+    /* Slide = carré */
     .progress-dot.type-slide {
-      border-radius: 4px;
+      border-radius: 0 !important;
     }
-    /* Quiz = cercle avec point d'interrogation */
+    /* Quiz = cercle */
     .progress-dot.type-quiz {
-      border-radius: 50%;
+      border-radius: 50% !important;
     }
-    .progress-dot.type-quiz::after {
-      content: "?";
-      font-size: 9px;
-      font-weight: bold;
-      color: var(--text-secondary, #aaa);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 100%;
-      height: 100%;
-    }
-    .progress-dot.type-quiz.active::after,
-    .progress-dot.type-quiz.done::after {
-      color: #fff;
-    }
-    /* Question ouverte = triangle */
+    /* Open = triangle */
     .progress-dot.type-open {
-      border-radius: 0;
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      width: 16px;
-      height: 14px;
-      background: transparent;
-      border: 2px solid var(--border-color, #444);
-      border-bottom: none;
+      border-radius: 0 !important;
+      clip-path: polygon(50% 0%, 0% 100%, 100% 100%) !important;
+      width: 16px !important;
+      height: 14px !important;
+      border-bottom: none !important;
     }
     .progress-dot.type-open.active {
-      border-color: var(--accent, #6a8cff);
-      background: var(--accent, #6a8cff);
+      border-color: var(--text, #111) !important;
+      background: var(--text, #111) !important;
     }
     .progress-dot.type-open.done {
-      border-color: var(--success, #4caf50);
-      background: var(--success, #4caf50);
+      border-color: var(--text-secondary, #444) !important;
+      background: var(--text-secondary, #444) !important;
     }
     /* Ordre = losange */
     .progress-dot.type-ordre {
-      border-radius: 0;
-      transform: rotate(45deg);
-      width: 12px;
-      height: 12px;
-      margin: 1px 2px;
+      border-radius: 0 !important;
+      transform: rotate(45deg) !important;
+      width: 12px !important;
+      height: 12px !important;
+      margin: 1px 2px !important;
     }
     .progress-dot.type-ordre.active {
-      transform: rotate(45deg) scale(1.2);
+      transform: rotate(45deg) !important;
+      border-color: var(--text, #111) !important;
+      background: var(--text, #111) !important;
     }
     .progress-dot.type-ordre.done {
-      transform: rotate(45deg);
+      transform: rotate(45deg) !important;
+      border-color: var(--text-secondary, #444) !important;
+      background: var(--text-secondary, #444) !important;
     }
-    /* Carte = rectangle avec coins arrondis */
+    /* Carte = rectangle */
     .progress-dot.type-carte {
-      border-radius: 4px;
-      width: 18px;
-      height: 12px;
+      border-radius: 0 !important;
+      width: 18px !important;
+      height: 12px !important;
     }
     /* Retenir = étoile */
     .progress-dot.type-retenir {
-      border-radius: 0;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      width: 16px;
-      height: 16px;
-      background: transparent;
-      border: 2px solid var(--border-color, #444);
+      border-radius: 0 !important;
+      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
+      width: 16px !important;
+      height: 16px !important;
+      background: transparent !important;
+      border: 2px solid var(--border, #ccc) !important;
     }
     .progress-dot.type-retenir.active {
-      border-color: var(--accent, #6a8cff);
-      background: var(--accent, #6a8cff);
+      border-color: var(--text, #111) !important;
+      background: var(--text, #111) !important;
     }
     .progress-dot.type-retenir.done {
-      border-color: var(--success, #4caf50);
-      background: var(--success, #4caf50);
+      border-color: var(--text-secondary, #444) !important;
+      background: var(--text-secondary, #444) !important;
     }
 
-    /* Légende des types */
+    /* Légende cachée */
     .progress-legend {
-      display: flex;
-      justify-content: center;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 11px;
-      color: var(--text-secondary, #888);
-      padding: 4px 0 12px 0;
-      font-family: Inter, sans-serif;
+      display: none !important;
     }
-    .progress-legend span {
-      display: flex;
-      align-items: center;
-      gap: 5px;
+
+    /* Slide wrapper - pour que les points soient visibles */
+    .slide-wrapper {
+      display: none !important;
     }
-    .progress-legend .legend-dot {
-      display: inline-block;
-      width: 12px;
-      height: 12px;
-      border-radius: 4px;
-      background: var(--bg-secondary, #2a2a2a);
-      border: 1px solid var(--border-color, #444);
+    .slide-wrapper.active {
+      display: block !important;
     }
-    .progress-legend .legend-dot.slide { border-radius: 4px; }
-    .progress-legend .legend-dot.quiz { border-radius: 50%; }
-    .progress-legend .legend-dot.open { 
-      border-radius: 0;
-      clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-      width: 10px;
-      height: 9px;
-      background: var(--bg-secondary, #2a2a2a);
-      border: 1px solid var(--border-color, #444);
-    }
-    .progress-legend .legend-dot.ordre {
-      border-radius: 0;
-      transform: rotate(45deg);
-      width: 10px;
-      height: 10px;
-    }
-    .progress-legend .legend-dot.carte {
-      border-radius: 4px;
-      width: 14px;
-      height: 9px;
-    }
-    .progress-legend .legend-dot.retenir {
-      border-radius: 0;
-      clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%);
-      width: 12px;
-      height: 12px;
-      background: var(--bg-secondary, #2a2a2a);
-      border: 1px solid var(--border-color, #444);
+    .slide-content {
+      position: relative !important;
     }
   </style>
 </head>
@@ -225,7 +179,7 @@
     };
 
     // ============================================================
-    // GESTION DE LA TAILLE DE POLICE (sauvegardée)
+    // GESTION DE LA TAILLE DE POLICE
     // ============================================================
     var FONT_SIZE_KEY = 'medit_font_size';
     var FONT_SIZE_MIN = 12;
@@ -413,7 +367,7 @@
     }
 
     // ============================================================
-    // PARSEUR QUIZ (gère plusieurs quiz)
+    // PARSEUR QUIZ
     // ============================================================
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -542,23 +496,13 @@
         return;
       }
 
-      // --- Générer la barre de progression ---
+      // --- Points de progression ---
       var progressHtml = '<div class="progress-dots">';
       etat.slides.forEach(function(slide, idx) {
         var typeClass = 'type-' + slide.type;
         var activeClass = (idx === 0) ? ' active' : '';
         progressHtml += '<div class="progress-dot ' + typeClass + activeClass + '" data-index="' + idx + '" title="' + (idx + 1) + ': ' + slide.type + '"></div>';
       });
-      progressHtml += '</div>';
-
-      // --- Légende ---
-      progressHtml += '<div class="progress-legend">';
-      progressHtml += '<span><span class="legend-dot slide"></span> Lecture</span>';
-      progressHtml += '<span><span class="legend-dot quiz"></span> Quiz</span>';
-      progressHtml += '<span><span class="legend-dot open"></span> Question ouverte</span>';
-      progressHtml += '<span><span class="legend-dot ordre"></span> Ordre</span>';
-      progressHtml += '<span><span class="legend-dot carte"></span> Carte</span>';
-      progressHtml += '<span><span class="legend-dot retenir"></span> À retenir</span>';
       progressHtml += '</div>';
 
       // --- Slides ---
@@ -618,6 +562,10 @@
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
 
+      // Supprimer les anciens points aussi
+      var oldDots = container.querySelectorAll('.progress-dots');
+      oldDots.forEach(function(el) { el.remove(); });
+
       var tempDiv = document.createElement('div');
       tempDiv.innerHTML = html;
       while (tempDiv.firstChild) {
@@ -650,8 +598,7 @@
             target.closest('.carte-container') ||
             target.closest('.carte-boutons') ||
             target.closest('.font-control-bottom') ||
-            target.closest('.progress-dots') ||
-            target.closest('.progress-legend')) {
+            target.closest('.progress-dots')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -692,6 +639,7 @@
 
       recupererStatutExistant();
       mettreAJourPagination();
+      mettreAJourProgress();
 
       var currentSize = getSavedFontSize();
       document.querySelectorAll('.slide-content').forEach(function(el) {
