@@ -479,20 +479,22 @@
             .no-print {
               text-align: center;
               margin-bottom: 12px;
-              padding: 8px;
+              padding: 10px;
               background: #f0ece6;
               border: 1px solid #d4c9b8;
+              border-radius: 4px;
             }
             .no-print button {
-              padding: 6px 20px;
+              padding: 8px 24px;
               font-size: 12pt;
               font-family: 'Georgia', 'Times New Roman', Times, serif;
               cursor: pointer;
               border: 1px solid #8a7a6a;
               background: white;
-              border-radius: 3px;
+              border-radius: 4px;
               color: #1a1a1a;
-              margin: 0 4px;
+              margin: 0 6px;
+              transition: background 0.2s;
             }
             .no-print button:hover {
               background: #faf8f5;
@@ -510,6 +512,7 @@
       printHtml += `
         <div class="no-print">
           <button onclick="window.print()">🖨️ Imprimer</button>
+          <button onclick="window.print()">📥 Télécharger en PDF</button>
           <button onclick="window.close()">✕ Fermer</button>
         </div>
       `;
@@ -985,12 +988,13 @@
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
+        // === BOUTON VERSION PAPIER (au lieu de "Imprimer") ===
         var imprimerHtml = '';
         if (!estBloque && estLu) {
           imprimerHtml = `
             <div class="btn-wrap">
               <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
-                🖨️ Imprimer
+                📄 Version papier
               </button>
             </div>
           `;
@@ -1057,4 +1061,4 @@
   </script>
 
 </body>
-</html>  
+</html>
