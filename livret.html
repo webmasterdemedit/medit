@@ -1007,4 +1007,106 @@
             }
           } else {
             resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
-            if
+            if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+            annoteHtml = '<span class="badge-icone">Non annoté</span>';
+          }
+
+          metaHtml = resultatHtml + questionHtml + annoteHtml;
+        } else {
+          metaHtml = '<span class="badge-icone">Nb questions : ' + nbQuestions + '</span>';
+        }
+
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre">
+              <strong>À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        var imprimerHtml = '';
+        if (!estBloque && estLu) {
+          imprimerHtml = `
+            <div class="btn-wrap">
+              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
+                Imprimer la page
+              </button>
+            </div>
+          `;
+        }
+
+        var carteClass = 'carte-post';
+        var iconeCadenas = '';
+        var onClickAttr = '';
+
+        if (estBloque) {
+          carteClass += ' bloque';
+          iconeCadenas = '🔒 ';
+          onClickAttr = 'onclick="alert(\'Vous devez d\'abord valider la leçon précédente.\');"';
+        } else {
+          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+        }
+
+        html += `
+          <div class="${carteClass}" ${onClickAttr}>
+            <div class="infos">
+              <div class="titre">${iconeCadenas}${post.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${post.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+            ${imprimerHtml}
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      chargerLivret();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
