@@ -222,8 +222,13 @@
       
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
-        if (ordreParsed && ordreParsed.length > 0) {
-          slidesFinal.push({ type: 'ordre', elements: ordreParsed, index: slidesFinal.length });
+        if (ordreParsed && ordreParsed.elements.length > 0) {
+          slidesFinal.push({ 
+            type: 'ordre', 
+            elements: ordreParsed.elements,
+            consigne: ordreParsed.consigne,
+            index: slidesFinal.length 
+          });
         }
       }
       
@@ -302,16 +307,19 @@
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
-      
+      var consigne = 'Remettez dans l\'ordre';
+
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         var match = ligne.match(/^(\d+)\s+(.+)/);
         if (match) {
           elements.push('-' + match[1] + '-' + match[2]);
+        } else if (elements.length === 0 && ligne.length > 0) {
+          consigne = ligne;
         }
       }
-      
-      return elements;
+
+      return { elements: elements, consigne: consigne };
     }
 
     function parserCarte(carteTexte) {
@@ -563,8 +571,10 @@
         shuffled[j] = temp;
       }
 
+      var consigne = slide.consigne || 'Remettez dans l\'ordre';
+
       var html = '';
-      html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">Remettez dans l\'ordre</h3>';
+      html += '<h3 style="font-family:Inter,sans-serif;font-size:18px;font-weight:500;margin-bottom:8px;text-align:center;">' + consigne + '</h3>';
       html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);text-align:center;margin-bottom:12px;">Utilisez les boutons ↑↓ pour réorganiser les éléments.</p>';
       html += '<div class="ordre-list" id="ordre-list-' + index + '">';
 
@@ -1130,4 +1140,3 @@
 
 </body>
 </html>
-
