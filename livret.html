@@ -4,297 +4,550 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Mes livrets - Qiraat</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📚</text></svg>" />
+  <title>Livret - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
-    /* ===== PAGE LIVRETS ===== */
-    .page-livrets {
-      max-width: 1200px;
+    /* ============================================================
+       PAGE LIVRET - VUE DÉTAIL
+       ============================================================ */
+
+    .page-livret {
+      max-width: 1100px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
 
-    .page-livrets h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: #1a1a1a;
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    .page-livrets .sous-titre-page {
-      font-size: 15px;
-      color: #5a5a5a;
-      margin-bottom: 24px;
-      font-weight: 300;
-    }
-
-    /* ===== STATS ===== */
-    .stats-ligne {
+    /* ===== EN-TÊTE DU LIVRET ===== */
+    .entete-livret {
       display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 12px 20px;
-      background: #f6f4f0;
-      border-radius: 10px;
-      border: 1px solid #e8e4de;
+      gap: 32px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid #e8e4de;
     }
 
-    .stat-item {
-      font-size: 14px;
-      color: #3a3a3a;
-    }
-
-    .stat-item .nombre {
-      font-weight: 700;
-      font-size: 18px;
-      color: #2d6a4f;
-      margin-left: 6px;
-    }
-
-    /* ===== GRILLE DES LIVRETS ===== */
-    .grille-livrets {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 28px;
-      margin-top: 10px;
-    }
-
-    /* ===== CARTE LIVRET (grand rectangle) ===== */
-    .carte-livret {
-      position: relative;
-      border-radius: 16px;
-      padding: 0;
-      height: 320px;
+    /* ===== COUVERTURE MINIATURE ===== */
+    .couverture-mini {
+      flex-shrink: 0;
+      width: 200px;
+      height: 280px;
+      border-radius: 12px;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       text-align: center;
-      cursor: pointer;
-      transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.10);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      overflow: hidden;
-      text-decoration: none;
+      padding: 20px;
       color: #ffffff;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+      border: 1px solid rgba(255, 255, 255, 0.10);
+      position: relative;
+      overflow: hidden;
     }
 
-    .carte-livret:hover {
-      transform: translateY(-8px) scale(1.01);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.20);
-    }
-
-    .carte-livret:active {
-      transform: scale(0.97);
-    }
-
-    /* Dégradé doux pour la lisibilité */
-    .carte-livret::after {
+    .couverture-mini::after {
       content: '';
       position: absolute;
       inset: 0;
-      background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.25) 100%);
+      background: linear-gradient(180deg, rgba(0,0,0,0) 60%, rgba(0,0,0,0.20) 100%);
       pointer-events: none;
-      border-radius: 16px;
+      border-radius: 12px;
     }
 
-    .carte-livret .contenu-livret {
+    .couverture-mini .contenu-couv {
       position: relative;
       z-index: 2;
-      padding: 24px 20px;
-      width: 100%;
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
       height: 100%;
+      width: 100%;
     }
 
-    .carte-livret .icone-livret {
-      font-size: 44px;
-      margin-bottom: 10px;
-      opacity: 0.9;
-      filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
-    }
-
-    .carte-livret .titre-livret {
+    .couverture-mini .titre-couv {
       font-family: 'Georgia', serif;
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-bottom: 6px;
+      letter-spacing: 0.5px;
       text-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
       line-height: 1.2;
-      max-width: 90%;
+      margin-bottom: 6px;
     }
 
-    .carte-livret .sous-titre-livret {
-      font-size: 13px;
-      font-weight: 400;
-      opacity: 0.92;
-      letter-spacing: 0.5px;
-      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.1);
+    .couverture-mini .nb-lecons-couv {
+      font-size: 14px;
+      font-weight: 300;
+      opacity: 0.90;
+      text-shadow: 0 1px 4px rgba(0, 0, 0, 0.10);
       background: rgba(0, 0, 0, 0.15);
-      padding: 4px 14px;
+      padding: 4px 16px;
       border-radius: 20px;
       backdrop-filter: blur(4px);
       margin-top: 4px;
     }
 
-    .carte-livret .nb-lecons {
-      font-size: 13px;
-      font-weight: 300;
-      opacity: 0.85;
-      margin-top: 6px;
-      background: rgba(0, 0, 0, 0.10);
-      padding: 3px 14px;
-      border-radius: 16px;
-      backdrop-filter: blur(2px);
-    }
-
-    /* ===== BANDEAU NIVEAU ===== */
-    .carte-livret .badge-niveau {
+    .couverture-mini .niveau-couv {
       position: absolute;
-      top: 14px;
-      right: 14px;
+      top: 12px;
+      right: 12px;
       z-index: 3;
-      background: rgba(0, 0, 0, 0.35);
+      background: rgba(0, 0, 0, 0.30);
       backdrop-filter: blur(6px);
-      padding: 3px 12px;
-      border-radius: 20px;
+      padding: 2px 12px;
+      border-radius: 16px;
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.5px;
-      color: rgba(255, 255, 255, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.15);
+      color: rgba(255, 255, 255, 0.90);
+      border: 1px solid rgba(255, 255, 255, 0.10);
     }
 
-    /* ===== PROGRESSION ===== */
-    .carte-livret .progression-livret {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 3;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.20);
-      border-radius: 0 0 16px 16px;
-      overflow: hidden;
+    /* ===== DESCRIPTION ===== */
+    .description-livret {
+      flex: 1;
+      padding-top: 4px;
     }
 
-    .carte-livret .progression-livret .barre {
-      height: 100%;
-      background: rgba(255, 255, 255, 0.70);
-      border-radius: 0 0 16px 16px;
-      transition: width 0.8s ease;
-      width: 0%;
+    .description-livret h2 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
     }
 
-    /* ===== TEXTE PAR DÉFAUT ===== */
-    .vide-livrets {
-      grid-column: 1 / -1;
+    .description-livret .sous-titre-desc {
+      font-size: 13px;
+      color: #7a7a7a;
+      margin-bottom: 10px;
+      font-weight: 300;
+    }
+
+    .description-livret .texte-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: #2a2a2a;
+      font-weight: 300;
+    }
+
+    .description-livret .texte-desc p {
+      margin-bottom: 8px;
+    }
+
+    /* ===== STATS DU LIVRET ===== */
+    .stats-livret {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding: 10px 16px;
+      background: #f6f4f0;
+      border-radius: 8px;
+      border: 1px solid #e8e4de;
+    }
+
+    .stats-livret .stat-item {
+      font-size: 13px;
+      color: #3a3a3a;
+    }
+
+    .stats-livret .stat-item .nombre {
+      font-weight: 700;
+      font-size: 16px;
+      color: #2d6a4f;
+      margin-left: 4px;
+    }
+
+    /* ===== BOUTON RETOUR ===== */
+    .btn-retour {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid #c4b8a8;
+      border-radius: 6px;
+      cursor: pointer;
+      color: #4a4a4a;
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-retour:hover {
+      background: #f0ece6;
+      border-color: #8a7a6a;
+    }
+
+    /* ===== LISTE DES LEÇONS ===== */
+    .section-lecons {
+      margin-top: 8px;
+    }
+
+    .section-lecons h3 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    /* ===== CARTE POST (héritée de mes-textes) ===== */
+    .carte-post {
+      background: #ffffff;
+      border: 1px solid #e8e4de;
+      border-radius: 10px;
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .carte-post:hover {
+      border-color: #c4b8a8;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .carte-post .infos {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .carte-post .titre {
+      font-weight: 500;
+      font-size: 15px;
+      color: #1a1a1a;
+    }
+
+    .carte-post .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: #6a6a6a;
+    }
+
+    .carte-post .meta .badge-icone {
+      display: inline-block;
+      padding: 1px 10px;
+      border-radius: 12px;
+      background: #f0ece6;
+      font-size: 11px;
+      color: #4a4a4a;
+    }
+
+    .carte-post .meta .badge-icone.clickable {
+      cursor: pointer;
+      color: #2d6a4f;
+      background: #e8f0ec;
+    }
+
+    .carte-post .meta .badge-icone.clickable:hover {
+      background: #d4e4dc;
+    }
+
+    .carte-post .statut {
+      font-size: 12px;
+      color: #7a7a7a;
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .carte-post .statut .date-label {
+      font-weight: 400;
+      color: #6a6a6a;
+    }
+
+    .carte-post .statut .date-validation {
+      color: #2d6a4f;
+      font-weight: 500;
+    }
+
+    .carte-post .btn-wrap {
+      width: 100%;
+      padding-top: 6px;
+      margin-top: 6px;
+      border-top: 1px solid #f0ece6;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .carte-post .btn-imprimer {
+      display: inline-block;
+      padding: 3px 14px;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid #c4b8a8;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #4a4a4a;
+      transition: all 0.2s;
+    }
+
+    .carte-post .btn-imprimer:hover {
+      background: #f0ece6;
+      border-color: #8a7a6a;
+    }
+
+    .carte-post .retenir-cadre {
+      margin-top: 4px;
+      padding: 4px 12px;
+      background: #f6f4f0;
+      border-radius: 4px;
+      font-size: 12px;
+      color: #3a3a3a;
+      border-left: 3px solid #2d6a4f;
+    }
+
+    .carte-post .retenir-cadre strong {
+      font-weight: 600;
+      margin-right: 6px;
+    }
+
+    .carte-post .niveau-badge {
+      font-size: 11px;
+      padding: 1px 10px;
+      border-radius: 12px;
+      background: #e8e4de;
+      color: #4a4a4a;
+    }
+
+    .carte-post .mots {
+      font-size: 11px;
+      color: #8a8a8a;
+      margin-left: 4px;
+    }
+
+    /* ===== POST BLOQUÉ ===== */
+    .carte-post.bloque {
+      opacity: 0.55;
+      cursor: not-allowed;
+    }
+
+    .carte-post.bloque .titre::before {
+      content: '🔒 ';
+      font-size: 13px;
+    }
+
+    /* ===== VIDE ===== */
+    .vide-lecons {
       text-align: center;
-      padding: 60px 20px;
+      padding: 40px 20px;
       background: #f9f7f4;
-      border-radius: 16px;
-      border: 2px dashed #d4c9b8;
+      border-radius: 12px;
+      border: 1px dashed #d4c9b8;
     }
 
-    .vide-livrets .icone {
-      font-size: 48px;
+    .vide-lecons .icone {
+      font-size: 32px;
       display: block;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      color: #8a7a6a;
     }
 
-    .vide-livrets h2 {
-      font-size: 20px;
+    .vide-lecons h4 {
+      font-size: 16px;
       color: #3a3a3a;
       font-weight: 500;
     }
 
-    .vide-livrets p {
+    .vide-lecons p {
       color: #7a7a7a;
       font-size: 14px;
-      margin-top: 4px;
+    }
+
+    /* ===== LOADER ===== */
+    .loader {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid #e8e4de;
+      border-top-color: #2d6a4f;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
 
     /* ===== RESPONSIVE ===== */
-    @media (max-width: 640px) {
-      .page-livrets {
+    @media (max-width: 768px) {
+      .page-livret {
         padding: 12px 16px 30px;
       }
 
-      .page-livrets h1 {
-        font-size: 22px;
+      .entete-livret {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 18px;
       }
 
-      .grille-livrets {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 16px;
-      }
-
-      .carte-livret {
+      .couverture-mini {
+        width: 160px;
         height: 220px;
       }
 
-      .carte-livret .titre-livret {
-        font-size: 17px;
+      .couverture-mini .titre-couv {
+        font-size: 20px;
       }
 
-      .carte-livret .icone-livret {
-        font-size: 32px;
+      .description-livret {
+        width: 100%;
+        text-align: center;
       }
 
-      .carte-livret .sous-titre-livret {
-        font-size: 11px;
-        padding: 2px 12px;
+      .description-livret h2 {
+        font-size: 20px;
       }
 
-      .carte-livret .nb-lecons {
-        font-size: 11px;
+      .stats-livret {
+        justify-content: center;
+        gap: 16px;
       }
 
-      .carte-livret .badge-niveau {
-        font-size: 10px;
-        top: 10px;
-        right: 10px;
-        padding: 2px 10px;
+      .carte-post {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
       }
 
-      .stats-ligne {
-        padding: 10px 14px;
-        gap: 12px;
-        flex-wrap: wrap;
+      .carte-post .statut {
+        text-align: left;
+        min-width: unset;
       }
 
-      .stat-item {
-        font-size: 13px;
+      .carte-post .btn-wrap {
+        justify-content: flex-start;
       }
     }
 
     @media (max-width: 400px) {
-      .grille-livrets {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
+      .couverture-mini {
+        width: 140px;
+        height: 190px;
       }
 
-      .carte-livret {
-        height: 180px;
+      .couverture-mini .titre-couv {
+        font-size: 17px;
       }
 
-      .carte-livret .titre-livret {
-        font-size: 15px;
+      .couverture-mini .nb-lecons-couv {
+        font-size: 12px;
       }
 
-      .carte-livret .icone-livret {
-        font-size: 26px;
+      .description-livret .texte-desc {
+        font-size: 14px;
       }
+
+      .stats-livret .stat-item {
+        font-size: 12px;
+      }
+    }
+
+    /* ============================================================
+       MODAL (pour les annotations)
+       ============================================================ */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.50);
+      backdrop-filter: blur(4px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-contenu {
+      background: #ffffff;
+      border-radius: 14px;
+      max-width: 540px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 28px 32px 24px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+      position: relative;
+    }
+
+    .modal-contenu h3 {
+      font-family: 'Georgia', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: #1a1a1a;
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .modal-sous-titre {
+      font-size: 13px;
+      color: #7a7a7a;
+      margin-bottom: 16px;
+      border-bottom: 1px solid #e8e4de;
+      padding-bottom: 10px;
+    }
+
+    .modal-contenu .modal-annotation {
+      padding: 10px 0;
+      border-bottom: 1px solid #f0ece6;
+    }
+
+    .modal-contenu .modal-annotation:last-child {
+      border-bottom: none;
+    }
+
+    .modal-contenu .modal-annotation strong {
+      display: block;
+      font-size: 12px;
+      color: #2d6a4f;
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .aucune-annotation {
+      color: #8a8a8a;
+      font-style: italic;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    .modal-contenu .modal-close {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      background: #f0ece6;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      color: #3a3a3a;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .modal-contenu .modal-close:hover {
+      background: #e4ded6;
     }
   </style>
 
@@ -309,30 +562,21 @@
 </head>
 <body>
 
-  <div class="page page-livrets">
+  <div class="page page-livret">
 
-    <h1>📚 Mes livrets</h1>
-    <p class="sous-titre-page">Chaque livret regroupe des leçons sur un même thème. Cliquez sur un livret pour commencer l'apprentissage.</p>
+    <a href="/medit/mes-livrets.html" class="btn-retour">← Retour aux livrets</a>
 
-    <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Livrets disponibles :</span>
-        <span class="nombre" id="totalLivrets">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Leçons totales :</span>
-        <span class="nombre" id="totalLecons">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Votre niveau :</span>
-        <span class="nombre" id="niveauEtudiant">0</span>
+    <div id="enteteLivret">
+      <div class="loader">
+        <div class="spinner"></div>
+        <p>Chargement du livret...</p>
       </div>
     </div>
 
-    <div id="contenu">
-      <div class="loader" id="loader">
+    <div id="contenuLecons">
+      <div class="loader">
         <div class="spinner"></div>
-        <p>Chargement de vos livrets...</p>
+        <p>Chargement des leçons...</p>
       </div>
     </div>
 
@@ -374,22 +618,190 @@
     var cataloguesData = [];
     var niveauEtudiant = 0;
     var nomEtudiant = '';
+    var categorieActuelle = '';
 
     // ============================================================
-    // PALETTE D'ICÔNES PAR DÉFAUT (si pas d'icône dans le sheet)
+    // IMPRESSION
     // ============================================================
-    var iconesParDefaut = ['📖', '🕌', '✨', '🌙', '📜', '☀️', '🌿', '💎', '🕊️', '🌊', '🔥', '🌺'];
+    function imprimerArticle(articleId, titre) {
+      var url = config.scriptUrl;
+
+      fetch(url + '?action=getPost&id=' + encodeURIComponent(articleId))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success || !data.post) {
+            alert('Impossible de charger le contenu.');
+            return;
+          }
+          var post = data.post;
+          var contenu = post.contenu || '';
+          genererImpression(post, contenu);
+        })
+        .catch(function(error) {
+          alert('Erreur : ' + error.message);
+        });
+    }
+
+    function genererImpression(post, contenu) {
+      // Fonction simplifiée d'impression (reprise de mes-textes)
+      var printHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${post.titre || 'Lecture'}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page { margin: 2.5cm; size: A4; }
+            body {
+              font-family: 'Georgia', 'Times New Roman', Times, serif;
+              background: #faf8f5;
+              color: #1a1a1a;
+              font-size: 11.5pt;
+              line-height: 1.8;
+              padding: 20px;
+            }
+            h1 { font-size: 18pt; text-align: center; margin-bottom: 6px; }
+            .meta { text-align: center; font-size: 10pt; color: #6a6a6a; margin-bottom: 16px; }
+            .contenu { max-width: 100%; }
+            .contenu p { text-indent: 2em; margin-bottom: 6px; text-align: justify; }
+            .footer { text-align: center; font-size: 8pt; color: #8a7a6a; margin-top: 20px; border-top: 1px solid #d4c9b8; padding-top: 10px; }
+            .no-print { display: none; }
+            @media print { .no-print { display: none; } }
+          </style>
+        </head>
+        <body>
+          <h1>${post.titre || 'Lecture'}</h1>
+          <div class="meta">${post.categorie || ''} · Niveau ${post.niveau || 0}</div>
+          <div class="contenu">
+      `;
+
+      var slides = contenu.split(' | ').filter(function(s) { return s.trim() !== ''; });
+      slides.forEach(function(slide) {
+        var paras = slide.split('\n').filter(function(p) { return p.trim() !== ''; });
+        paras.forEach(function(p) {
+          printHtml += '<p>' + p.trim() + '</p>';
+        });
+      });
+
+      printHtml += `
+          </div>
+          <div class="footer">Qiraat · Imprimé le ${new Date().toLocaleDateString('fr-FR')}</div>
+          <script>
+            window.onload = function() { window.print(); }
+          <\/script>
+        </body>
+        </html>
+      `;
+
+      var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
+      if (!win) {
+        alert('Veuillez autoriser les pop-ups pour imprimer.');
+        return;
+      }
+      win.document.write(printHtml);
+      win.document.close();
+    }
+
+    // ============================================================
+    // OUVERTURE MODAL ANNOTATIONS
+    // ============================================================
+    function ouvrirAnnotations(articleId, titre) {
+      var reponse = toutesLesReponses[articleId] || null;
+      var annotations = reponse ? reponse.annotations : '';
+
+      var modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modalAnnotations';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotations();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Annotations</div>';
+
+      if (annotations && annotations.trim() !== '') {
+        var parts = annotations.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split(':');
+          if (kv.length === 2) {
+            var slideNum = kv[0].replace('slide', '');
+            var texte = kv[1];
+            html += '<div class="modal-annotation">';
+            html += '<strong>Slide ' + slideNum + '</strong>';
+            html += texte;
+            html += '</div>';
+          }
+        }
+      } else {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
+      }
+
+      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+      html += '</div>';
+
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
+    }
+
+    function fermerAnnotations() {
+      var modal = document.getElementById('modalAnnotations');
+      if (modal) modal.remove();
+    }
+
+    // ============================================================
+    // EST POST LU ?
+    // ============================================================
+    function estPostLu(post) {
+      var reponse = toutesLesReponses[post.id];
+      if (!reponse) {
+        for (var key in toutesLesReponses) {
+          if (toutesLesReponses[key].titre === post.titre) {
+            reponse = toutesLesReponses[key];
+            break;
+          }
+        }
+      }
+      if (!reponse) return false;
+      var bonnes = parseInt(reponse.bonnes) || 0;
+      var total = parseInt(reponse.total) || 0;
+      if (total === 1 && bonnes === 1) return true;
+      if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
+      return false;
+    }
+
+    function estPostAccessible(posts, index) {
+      if (index === 0) return true;
+      var postPrecedent = posts[index - 1];
+      return estPostLu(postPrecedent);
+    }
 
     // ============================================================
     // CHARGEMENT
     // ============================================================
-    function chargerLivrets() {
+    function chargerLivret() {
+      var params = new URLSearchParams(window.location.search);
+      categorieActuelle = params.get('cat') || '';
+
+      if (!categorieActuelle) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-lecons" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucune catégorie spécifiée</h4>
+            <p>Veuillez sélectionner un livret depuis la page d'accueil.</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid #c4b8a8;border-radius:6px;text-decoration:none;color:#4a4a4a;">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuLecons').innerHTML = '';
+        return;
+      }
+
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
         window.location.href = '/medit/index.html';
         return;
       }
-
       nomEtudiant = id;
 
       DataManager.charger()
@@ -404,35 +816,30 @@
             });
           }
 
-          // === CHARGER LE CATALOGUE DEPUIS LE SHEET ===
           chargerCatalogueDepuisSheet();
         })
         .catch(function() {
-          // Essayer le cache
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
             chargerCatalogueDepuisSheet();
           } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-livrets">
-                <span class="icone">⚠️</span>
-                <h2>Erreur de chargement</h2>
+            document.getElementById('enteteLivret').innerHTML = `
+              <div class="vide-lecons" style="margin-top:20px;">
+                <span class="icone">⚠</span>
+                <h4>Erreur de chargement</h4>
                 <p>Vérifiez votre connexion internet.</p>
-                <button onclick="DataManager.rafraichir(); location.reload();" 
-                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border-color);border-radius:4px;cursor:pointer;color:var(--text-primary);">
-                  Réessayer
-                </button>
+                <button onclick="location.reload();" style="margin-top:10px;padding:8px 20px;background:transparent;border:1px solid #c4b8a8;border-radius:6px;cursor:pointer;">Réessayer</button>
               </div>
             `;
+            document.getElementById('contenuLecons').innerHTML = '';
           }
         });
     }
 
     // ============================================================
-    // CHARGER LE CATALOGUE DEPUIS LE SHEET (via Google Apps Script)
+    // CHARGER LE CATALOGUE
     // ============================================================
     function chargerCatalogueDepuisSheet() {
       var url = config.scriptUrl;
@@ -443,122 +850,290 @@
           if (resultat.success && resultat.catalogues) {
             cataloguesData = resultat.catalogues;
           } else {
-            // Si la feuille n'existe pas encore, on génère à partir des catégories existantes
-            console.warn('Feuille Catalogues introuvable, génération automatique...');
-            genererCatalogueDepuisPosts();
+            cataloguesData = [];
           }
-          afficherLivrets();
+          afficherLivret();
         })
-        .catch(function(error) {
-          console.error('Erreur chargement catalogue:', error);
-          // En cas d'erreur, on génère à partir des catégories des posts
-          genererCatalogueDepuisPosts();
-          afficherLivrets();
+        .catch(function() {
+          cataloguesData = [];
+          afficherLivret();
         });
     }
 
     // ============================================================
-    // GÉNÉRER LE CATALOGUE À PARTIR DES POSTS (fallback)
+    // AFFICHER LE LIVRET
     // ============================================================
-    function genererCatalogueDepuisPosts() {
-      var categories = {};
-      var couleurs = ['#2d6a4f', '#6b4c3a', '#4a6b8a', '#8a6b4a', '#5a3a6a', '#3a6a5a', '#8a4a3a', '#3a5a7a'];
-
-      postsData.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) {
-          categories[cat] = {
-            nom: cat,
-            description: 'Ce livret explore les thèmes de ' + cat + ' à travers plusieurs leçons.',
-            niveau: post.niveau || 1,
-            couleur: couleurs[Object.keys(categories).length % couleurs.length],
-            lecons: 0
-          };
+    function afficherLivret() {
+      // Trouver le livret correspondant à la catégorie
+      var livret = null;
+      for (var i = 0; i < cataloguesData.length; i++) {
+        if (cataloguesData[i].nom === categorieActuelle) {
+          livret = cataloguesData[i];
+          break;
         }
-        categories[cat].lecons++;
+      }
+
+      // Si le livret n'est pas dans le catalogue, on le crée à partir des posts
+      if (!livret) {
+        var postsFiltres = postsData.filter(function(p) {
+          return (p.categorie || 'Sans catégorie') === categorieActuelle;
+        });
+        var lecons = postsFiltres.length;
+        livret = {
+          nom: categorieActuelle,
+          description: 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + lecons + ' leçons.',
+          niveau: lecons > 0 ? postsFiltres[0].niveau || 1 : 1,
+          couleur: '#2d6a4f',
+          lecons: lecons
+        };
+      }
+
+      // Vérifier si le livret est accessible (niveau)
+      var niveauLivret = livret.niveau || 1;
+      if (niveauLivret > niveauEtudiant) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-lecons" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Livret non accessible</h4>
+            <p>Ce livret nécessite le niveau ${niveauLivret}. Votre niveau actuel est ${niveauEtudiant}.</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid #c4b8a8;border-radius:6px;text-decoration:none;color:#4a4a4a;">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuLecons').innerHTML = '';
+        return;
+      }
+
+      // === AFFICHER L'ENTÊTE ===
+      var couleur = livret.couleur || '#2d6a4f';
+      var description = livret.description || 'Ce livret explore les thèmes de ' + livret.nom + ' à travers ' + (livret.lecons || 0) + ' leçons.';
+      var totalLecons = livret.lecons || 0;
+
+      // Compter les leçons validées
+      var validees = 0;
+      postsData.forEach(function(post) {
+        if ((post.categorie || 'Sans catégorie') === livret.nom) {
+          var reponse = toutesLesReponses[post.id];
+          if (reponse) {
+            var bonnes = parseInt(reponse.bonnes) || 0;
+            var total = parseInt(reponse.total) || 0;
+            if (total === 1 && bonnes === 1) validees++;
+            else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
+          }
+        }
       });
 
-      cataloguesData = Object.values(categories);
-      cataloguesData.sort(function(a, b) {
-        return a.niveau - b.niveau || a.nom.localeCompare(b.nom);
+      var enteteHtml = `
+        <div class="entete-livret">
+          <div class="couverture-mini" style="background: ${couleur};">
+            <span class="niveau-couv">Niveau ${livret.niveau || 1}</span>
+            <div class="contenu-couv">
+              <span class="titre-couv">${livret.nom}</span>
+              <span class="nb-lecons-couv">${totalLecons} leçon${totalLecons > 1 ? 's' : ''}</span>
+            </div>
+          </div>
+          <div class="description-livret">
+            <h2>${livret.nom}</h2>
+            <div class="sous-titre-desc">${totalLecons} leçon${totalLecons > 1 ? 's' : ''} · ${validees} validée${validees > 1 ? 's' : ''}</div>
+            <div class="texte-desc">
+              <p>${description}</p>
+            </div>
+            <div class="stats-livret">
+              <span class="stat-item">Leçons totales : <span class="nombre">${totalLecons}</span></span>
+              <span class="stat-item">Validées : <span class="nombre">${validees}</span></span>
+              <span class="stat-item">Progression : <span class="nombre">${totalLecons > 0 ? Math.round((validees / totalLecons) * 100) : 0}%</span></span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('enteteLivret').innerHTML = enteteHtml;
+
+      // === AFFICHER LES LEÇONS ===
+      var postsFiltres = postsData.filter(function(p) {
+        return (p.categorie || 'Sans catégorie') === livret.nom;
       });
+
+      postsFiltres.sort(function(a, b) {
+        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+      });
+
+      afficherLecons(postsFiltres);
     }
 
     // ============================================================
-    // AFFICHER LES LIVRETS
+    // AFFICHER LES LEÇONS
     // ============================================================
-    function afficherLivrets() {
-      var container = document.getElementById('contenu');
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
+    function afficherLecons(posts) {
+      var container = document.getElementById('contenuLecons');
 
-      // Filtrer les livrets selon le niveau de l'étudiant
-      var livretsFiltres = cataloguesData.filter(function(l) {
-        return (l.niveau || 1) <= niveauEtudiant;
-      });
-
-      // Mettre à jour les stats
-      document.getElementById('totalLivrets').textContent = livretsFiltres.length;
-      document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-
-      var totalLecons = 0;
-      livretsFiltres.forEach(function(l) {
-        totalLecons += l.lecons || 0;
-      });
-      document.getElementById('totalLecons').textContent = totalLecons;
-
-      if (livretsFiltres.length === 0) {
+      if (posts.length === 0) {
         container.innerHTML = `
-          <div class="vide-livrets">
-            <span class="icone">📭</span>
-            <h2>Aucun livret disponible</h2>
-            <p>Aucun livret n'est accessible pour votre niveau (${niveauEtudiant}).</p>
-            <p style="font-size:13px;color:var(--text-secondary);margin-top:6px;">Contactez l'administrateur pour plus d'informations.</p>
+          <div class="vide-lecons">
+            <span class="icone">◈</span>
+            <h4>Aucune leçon</h4>
+            <p>Ce livret ne contient pas encore de leçons.</p>
           </div>
         `;
         return;
       }
 
-      var html = '<div class="grille-livrets">';
+      var html = '<div class="section-lecons"><h3>Leçons</h3>';
 
-      livretsFiltres.forEach(function(livret, index) {
-        var couleur = livret.couleur || '#2d6a4f';
-        var icone = livret.icone || iconesParDefaut[index % iconesParDefaut.length];
-        var lecons = livret.lecons || 0;
+      for (var i = 0; i < posts.length; i++) {
+        var post = posts[i];
+        var reponse = toutesLesReponses[post.id];
 
-        // Calculer la progression (leçons validées / total)
-        var validees = 0;
-        postsData.forEach(function(post) {
-          if ((post.categorie || 'Sans catégorie') === livret.nom) {
-            var reponse = toutesLesReponses[post.id];
-            if (reponse) {
-              var bonnes = parseInt(reponse.bonnes) || 0;
-              var total = parseInt(reponse.total) || 0;
-              if (total === 1 && bonnes === 1) validees++;
-              else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === post.titre) {
+              reponse = toutesLesReponses[key];
+              break;
             }
           }
-        });
+        }
 
-        var pourcentage = lecons > 0 ? Math.round((validees / lecons) * 100) : 0;
+        var dateValidation = '';
+        var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          dateValidation = reponse.date || '';
+          retenir = reponse.retenir || '';
+
+          if (total === 1 && bonnes === 1) {
+            estLu = true;
+            estValide = true;
+          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estLu = true;
+            estValide = true;
+          }
+        }
+
+        var estAccessible = estPostAccessible(posts, i);
+        var estBloque = !estAccessible;
+
+        var hasQuiz = post.hasQuiz || false;
+        var hasQuestion = post.hasQuestion || false;
+        var mots = post.mots || 0;
+
+        var nbQuestions = 0;
+        if (hasQuiz) nbQuestions++;
+        if (hasQuestion) nbQuestions++;
+
+        var metaHtml = '';
+
+        if (estLu) {
+          var resultatHtml = '';
+          var questionHtml = '';
+          var annoteHtml = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var total = reponse.total || 0;
+            if (total > 0) {
+              resultatHtml = '<span class="badge-icone">Resultat : ' + bonnes + '/' + total + '</span>';
+            }
+
+            var reponseOuverte = reponse.reponseOuverte || '';
+            if (reponseOuverte && reponseOuverte.trim() !== '') {
+              questionHtml = '<span class="badge-icone">Question envoyee</span>';
+            } else if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyee</span>';
+            }
+
+            var annotations = reponse.annotations || '';
+            if (annotations && annotations.trim() !== '') {
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annote</span>';
+            } else {
+              annoteHtml = '<span class="badge-icone">Non annote</span>';
+            }
+          } else {
+            resultatHtml = '<span class="badge-icone">Resultat : 0/0</span>';
+            if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyee</span>';
+            }
+            annoteHtml = '<span class="badge-icone">Non annote</span>';
+          }
+
+          metaHtml = resultatHtml + questionHtml + annoteHtml;
+        } else {
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
+        }
+
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' a ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre">
+              <strong>A retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        var imprimerHtml = '';
+        if (!estBloque && estLu) {
+          imprimerHtml = `
+            <div class="btn-wrap">
+              <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
+                Imprimer la page
+              </button>
+            </div>
+          `;
+        }
+
+        var carteClass = 'carte-post';
+        var iconeCadenas = '';
+        var onClickAttr = '';
+
+        if (estBloque) {
+          carteClass += ' bloque';
+          iconeCadenas = '🔒 ';
+          onClickAttr = 'onclick="alert(\'Vous devez d\'abord valider la lecon precedente.\');"';
+        } else {
+          onClickAttr = 'onclick="window.location.href=\'/medit/article.html?id=' + post.id + '\'"';
+        }
 
         html += `
-          <div class="carte-livret" 
-               style="background: ${couleur};"
-               onclick="window.location.href='/medit/livret.html?cat=${encodeURIComponent(livret.nom)}'">
-            <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
-            <div class="contenu-livret">
-              <span class="icone-livret">${icone}</span>
-              <span class="titre-livret">${livret.nom}</span>
-              <span class="nb-lecons">📖 ${lecons} leçon${lecons > 1 ? 's' : ''}</span>
-              ${lecons > 0 ? `<span class="sous-titre-livret">${validees}/${lecons} validée${validees > 1 ? 's' : ''}</span>` : ''}
+          <div class="${carteClass}" ${onClickAttr}>
+            <div class="infos">
+              <div class="titre">${iconeCadenas}${post.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${post.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
             </div>
-            <div class="progression-livret">
-              <div class="barre" style="width: ${pourcentage}%;"></div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
             </div>
+            ${imprimerHtml}
           </div>
         `;
-      });
+      }
 
       html += '</div>';
       container.innerHTML = html;
@@ -568,7 +1143,7 @@
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
-      chargerLivrets();
+      chargerLivret();
     }
 
     if (document.readyState === 'loading') {
