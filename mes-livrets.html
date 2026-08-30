@@ -355,20 +355,12 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
+    var livretsData = {};        // { "Nom du livret": "couleur" }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
     // ============================================================
-    // PALETTE DE COULEURS (si pas de couleur dans le sheet)
-    // ============================================================
-    var couleursParDefaut = [
-      '#2d6a4f', '#6b4c3a', '#4a6b8a', '#8a6b4a', 
-      '#5a3a6a', '#3a6a5a', '#8a4a3a', '#3a5a7a',
-      '#4a6a5a', '#6a4a3a', '#3a5a6a', '#7a5a3a'
-    ];
-
-    // ============================================================
-    // CHARGEMENT (EXACTEMENT COMME mes-textes.html)
+    // CHARGEMENT
     // ============================================================
     function chargerLivrets() {
       var id = localStorage.getItem('etudiant_id');
@@ -383,6 +375,24 @@
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
+
+          // --- Récupérer les couleurs des livrets depuis les métadonnées ---
+          // On suppose que data.livrets est un tableau d'objets { titre, niveau, description, nbChapitres, couleur }
+          // ou un objet { "Nom": "couleur" }.
+          // On va parser les deux cas.
+          livretsData = {};
+          if (data.livrets) {
+            if (Array.isArray(data.livrets)) {
+              data.livrets.forEach(function(l) {
+                if (l.titre && l.couleur) {
+                  livretsData[l.titre] = l.couleur;
+                }
+              });
+            } else if (typeof data.livrets === 'object') {
+              // Déjà un objet clé/valeur
+              livretsData = data.livrets;
+            }
+          }
 
           toutesLesReponses = {};
           if (data.reponses) {
@@ -402,6 +412,19 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
+            // Récupérer les livrets depuis le cache aussi
+            if (cache.livrets) {
+              if (Array.isArray(cache.livrets)) {
+                livretsData = {};
+                cache.livrets.forEach(function(l) {
+                  if (l.titre && l.couleur) {
+                    livretsData[l.titre] = l.couleur;
+                  }
+                });
+              } else if (typeof cache.livrets === 'object') {
+                livretsData = cache.livrets;
+              }
+            }
             document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
             afficherLivrets();
           } else {
@@ -422,7 +445,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES LIVRETS (À PARTIR DES POSTS)
+    // AFFICHER LES LIVRETS (AVEC COULEURS DEPUIS SHEETS)
     // ============================================================
     function afficherLivrets() {
       var container = document.getElementById('contenu');
@@ -472,8 +495,10 @@
 
       var html = '<div class="grille-livrets">';
 
-      livrets.forEach(function(livret, index) {
-        var couleur = couleursParDefaut[index % couleursParDefaut.length];
+      livrets.forEach(function(livret) {
+        // === RÉCUPÉRER LA COULEUR DEPUIS livretsData ===
+        var couleur = livretsData[livret.nom] || '#2d6a4f'; // fallback vert par défaut
+
         var lecons = livret.lecons || 0;
 
         // Compter les leçons validées
