@@ -35,12 +35,16 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.setCache(id, data);
-                    console.log('✅ Données chargées et mises en cache');
-                    return data;
+                    // === NOUVEAU : Ajouter la feuille "Livrets" si elle existe ===
+                    return DataManager.ajouterLivrets(data);
                 } else {
                     throw new Error(data.message || 'Erreur de chargement');
                 }
+            })
+            .then(function(data) {
+                DataManager.setCache(id, data);
+                console.log('✅ Données chargées et mises en cache');
+                return data;
             })
             .catch(function(error) {
                 console.error('❌ Erreur:', error);
@@ -69,15 +73,55 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    console.log('✅ Données admin chargées');
-                    return data;
+                    // === NOUVEAU : Ajouter la feuille "Livrets" si elle existe ===
+                    return DataManager.ajouterLivrets(data);
                 } else {
                     throw new Error(data.message || 'Erreur de chargement');
                 }
             })
+            .then(function(data) {
+                console.log('✅ Données admin chargées');
+                return data;
+            })
             .catch(function(error) {
                 console.error('❌ Erreur:', error);
                 throw error;
+            });
+    },
+
+    // ============================================================
+    // NOUVEAU : AJOUTER LES LIVRETS DEPUIS LA FEUILLE DÉDIÉE
+    // ============================================================
+    ajouterLivrets: function(data) {
+        // Si data contient déjà des livrets (feuille "Livrets"), on les garde
+        if (data.livrets) {
+            return data;
+        }
+
+        // Sinon, on va chercher la feuille "Livrets" séparément
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            data.livrets = [];
+            return data;
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=getLivrets&nom=' + encodeURIComponent(id);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success && result.livrets) {
+                    data.livrets = result.livrets;
+                    console.log('📚 ' + data.livrets.length + ' livrets chargés');
+                } else {
+                    data.livrets = [];
+                    console.log('📚 Aucune feuille "Livrets" trouvée');
+                }
+                return data;
+            })
+            .catch(function() {
+                data.livrets = [];
+                return data;
             });
     },
 
@@ -156,6 +200,32 @@ var DataManager = {
             return cache.posts;
         }
         return [];
+    },
+
+    // ============================================================
+    // NOUVEAU : RÉCUPÉRER LES LIVRETS
+    // ============================================================
+    getLivrets: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return [];
+        var cache = this.getCacheForce(id);
+        if (cache && cache.livrets) {
+            return cache.livrets;
+        }
+        return [];
+    },
+
+    // ============================================================
+    // NOUVEAU : RÉCUPÉRER LA COULEUR D'UN LIVRET PAR SON NOM
+    // ============================================================
+    getCouleurLivret: function(nomLivret) {
+        var livrets = this.getLivrets();
+        for (var i = 0; i < livrets.length; i++) {
+            if (livrets[i].titre === nomLivret) {
+                return livrets[i].couleur || null;
+            }
+        }
+        return null;
     },
 
     getReponses: function() {
@@ -637,6 +707,18 @@ function getDisciplines() {
 
 function getMdp() {
     return DataManager.getMdp();
+}
+
+// ============================================================
+// NOUVELLES FONCTIONS UTILITAIRES POUR LES LIVRETS
+// ============================================================
+
+function getLivrets() {
+    return DataManager.getLivrets();
+}
+
+function getCouleurLivret(nomLivret) {
+    return DataManager.getCouleurLivret(nomLivret);
 }
 
 function envoyerMessage(sujet, message) {
