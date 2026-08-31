@@ -1111,45 +1111,57 @@ numSpan.textContent = '#' + lettres[idx];
     }
 
     function validerOrdre(index) {
-      var list = document.getElementById('ordre-list-' + index);
-      if (!list) return;
-      var items = list.querySelectorAll('.ordre-item');
-      var ordreDonne = [];
-      var ordreAttendu = [];
+  var list = document.getElementById('ordre-list-' + index);
+  if (!list) return;
+  var items = list.querySelectorAll('.ordre-item');
+  var ordreDonne = [];
+  var ordreAttendu = [];
 
-      items.forEach(function(el) {
-        ordreDonne.push(parseInt(el.dataset.num));
-        ordreAttendu.push(parseInt(el.dataset.num));
-      });
+  items.forEach(function(el) {
+    ordreDonne.push(parseInt(el.dataset.num));
+    ordreAttendu.push(parseInt(el.dataset.num));
+  });
 
-      ordreAttendu.sort(function(a, b) { return a - b; });
+  ordreAttendu.sort(function(a, b) { return a - b; });
 
-      var correct = true;
-      for (var i = 0; i < ordreDonne.length; i++) {
-        if (ordreDonne[i] !== ordreAttendu[i]) {
-          correct = false;
-          break;
-        }
-      }
-
-      var resultat = document.getElementById('ordreResultat-' + index);
-      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
-      var btnValider = document.getElementById('btnValiderOrdre-' + index);
-
-      if (correct) {
-        resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
-        resultat.className = 'ordre-resultat correct';
-        etat.ordreValide[index] = true;
-        sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
-        if (btnContinuer) btnContinuer.classList.add('visible');
-        if (btnValider) btnValider.disabled = true;
-      } else {
-        resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
-        resultat.className = 'ordre-resultat incorrect';
-        etat.ordreValide[index] = false;
-        sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
-      }
+  // ✅ NOUVEAU : Créer un tableau de résultats (1=bon, 0=mauvais)
+  var resultats = [];
+  for (var i = 0; i < ordreDonne.length; i++) {
+    if (ordreDonne[i] === ordreAttendu[i]) {
+      resultats.push(1);  // ✅ Bien placé
+    } else {
+      resultats.push(0);  // ❌ Mal placé
     }
+  }
+
+  var correct = true;
+  for (var i = 0; i < ordreDonne.length; i++) {
+    if (ordreDonne[i] !== ordreAttendu[i]) {
+      correct = false;
+      break;
+    }
+  }
+
+  var resultat = document.getElementById('ordreResultat-' + index);
+  var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+  var btnValider = document.getElementById('btnValiderOrdre-' + index);
+
+  if (correct) {
+    resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
+    resultat.className = 'ordre-resultat correct';
+    etat.ordreValide[index] = true;
+    // ✅ Envoyer les résultats (1,1,0) au lieu des valeurs (1,2,2003)
+    sauvegarderOrdre(index, resultats.join(','), 1, ordreDonne.length);
+    if (btnContinuer) btnContinuer.classList.add('visible');
+    if (btnValider) btnValider.disabled = true;
+  } else {
+    resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
+    resultat.className = 'ordre-resultat incorrect';
+    etat.ordreValide[index] = false;
+    // ✅ Envoyer les résultats (1,0,0) au lieu des valeurs (1,2,2003)
+    sauvegarderOrdre(index, resultats.join(','), 0, ordreDonne.length);
+  }
+}
 
     function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
