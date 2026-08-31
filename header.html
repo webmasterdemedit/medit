@@ -14,15 +14,13 @@
       <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
       <a href="/medit/mes-livrets.html" class="header-link">Mes livrets</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
-      <button id="btnDeconnexion" class="header-btn-deconnexion">Déconnexion</button>
+      <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
     </nav>
   </div>
 </header>
 
 <script>
-// ============================================================
-// DÉCONNEXION - Définie AVANT l'injection
-// ============================================================
+// Définir la fonction globalement
 window.deconnecter = function() {
   if (confirm('Se déconnecter ?')) {
     localStorage.removeItem('etudiant_id');
@@ -45,68 +43,13 @@ window.deconnecter = function() {
   }
 })();
 
-// === ATTACHER L'ÉVÉNEMENT AU BOUTON APRÈS CHARGEMENT ===
-document.addEventListener('DOMContentLoaded', function() {
-  var btn = document.getElementById('btnDeconnexion');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.deconnecter();
-    });
-  }
-});
-
-// === ATTACHER L'ÉVÉNEMENT IMMÉDIATEMENT (SI DÉJÀ CHARGÉ) ===
+// Auto-injection
 (function() {
-  var btn = document.getElementById('btnDeconnexion');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.deconnecter();
-    });
-  }
-})();
-
-// ============================================================
-// AUTO-INJECTION DU HEADER
-// ============================================================
-(function() {
-  // Si le header est déjà présent, on ne fait rien
   if (document.querySelector('.site-header')) {
     return;
   }
-  
-  // Récupère le HTML du header (l'élément header actuel)
-  var headerElement = document.querySelector('header.site-header');
-  if (!headerElement) return;
-  
-  var headerHTML = headerElement.outerHTML;
-  
-  // Supprime le header actuel pour éviter le double
-  headerElement.remove();
-  
-  // Insère le header en début de body
+  var headerHTML = document.currentScript.previousElementSibling.outerHTML;
   document.body.innerHTML = headerHTML + document.body.innerHTML;
-  
-  // Ré-attribuer la fonction si elle a été perdue
-  if (typeof window.deconnecter === 'undefined') {
-    window.deconnecter = function() {
-      if (confirm('Se déconnecter ?')) {
-        localStorage.removeItem('etudiant_id');
-        localStorage.removeItem('etudiant_nom');
-        localStorage.removeItem('etudiant_niveau');
-        window.location.href = '/medit/index.html';
-      }
-    };
-  }
-  
-  // Rattacher l'événement au nouveau bouton
-  var btn = document.getElementById('btnDeconnexion');
-  if (btn) {
-    btn.addEventListener('click', function(e) {
-      e.preventDefault();
-      window.deconnecter();
-    });
-  }
+  document.currentScript.remove();
 })();
 </script>
