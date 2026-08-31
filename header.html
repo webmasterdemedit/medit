@@ -10,7 +10,8 @@
       </div>
     </div>
     <nav class="header-nav" id="headerNav">
-      <a href="/medit/admin.html" class="header-link">Admin</a>
+      <!-- ADMIN : visible uniquement si admin -->
+      <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
       <a href="/medit/mes-livrets.html" class="header-link">Mes livrets</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
       <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
@@ -19,7 +20,7 @@
 </header>
 
 <script>
-// Définir la fonction globalement pour qu'elle soit accessible partout
+// Définir la fonction globalement
 window.deconnecter = function() {
   if (confirm('Se déconnecter ?')) {
     localStorage.removeItem('etudiant_id');
@@ -29,20 +30,26 @@ window.deconnecter = function() {
   }
 };
 
-// Auto-injection : si le header est chargé directement dans une page, on le met en haut
+// === AFFICHER LE LIEN ADMIN SI L'UTILISATEUR EST ADMIN ===
 (function() {
-  // Vérifie si le header est déjà présent dans la page
-  if (document.querySelector('.site-header')) {
-    return; // déjà présent, on ne fait rien
+  var id = localStorage.getItem('etudiant_id');
+  var adminLink = document.getElementById('adminLink');
+  if (adminLink) {
+    if (id === 'admin') {
+      adminLink.style.display = 'inline-block';
+    } else {
+      adminLink.style.display = 'none';
+    }
   }
-  
-  // Récupère le HTML du header
+})();
+
+// Auto-injection
+(function() {
+  if (document.querySelector('.site-header')) {
+    return;
+  }
   var headerHTML = document.currentScript.previousElementSibling.outerHTML;
-  
-  // Insère le header en début de body
   document.body.innerHTML = headerHTML + document.body.innerHTML;
-  
-  // Supprime le script pour éviter une boucle
   document.currentScript.remove();
 })();
 </script>
