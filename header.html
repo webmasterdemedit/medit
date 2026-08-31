@@ -14,13 +14,15 @@
       <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
       <a href="/medit/mes-livrets.html" class="header-link">Mes livrets</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
-      <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
+      <button id="btnDeconnexion" class="header-btn-deconnexion">Déconnexion</button>
     </nav>
   </div>
 </header>
 
 <script>
-// Définir la fonction globalement
+// ============================================================
+// DÉCONNEXION - Définie AVANT l'injection
+// ============================================================
 window.deconnecter = function() {
   if (confirm('Se déconnecter ?')) {
     localStorage.removeItem('etudiant_id');
@@ -43,13 +45,68 @@ window.deconnecter = function() {
   }
 })();
 
-// Auto-injection
+// === ATTACHER L'ÉVÉNEMENT AU BOUTON APRÈS CHARGEMENT ===
+document.addEventListener('DOMContentLoaded', function() {
+  var btn = document.getElementById('btnDeconnexion');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.deconnecter();
+    });
+  }
+});
+
+// === ATTACHER L'ÉVÉNEMENT IMMÉDIATEMENT (SI DÉJÀ CHARGÉ) ===
 (function() {
+  var btn = document.getElementById('btnDeconnexion');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.deconnecter();
+    });
+  }
+})();
+
+// ============================================================
+// AUTO-INJECTION DU HEADER
+// ============================================================
+(function() {
+  // Si le header est déjà présent, on ne fait rien
   if (document.querySelector('.site-header')) {
     return;
   }
-  var headerHTML = document.currentScript.previousElementSibling.outerHTML;
+  
+  // Récupère le HTML du header (l'élément header actuel)
+  var headerElement = document.querySelector('header.site-header');
+  if (!headerElement) return;
+  
+  var headerHTML = headerElement.outerHTML;
+  
+  // Supprime le header actuel pour éviter le double
+  headerElement.remove();
+  
+  // Insère le header en début de body
   document.body.innerHTML = headerHTML + document.body.innerHTML;
-  document.currentScript.remove();
+  
+  // Ré-attribuer la fonction si elle a été perdue
+  if (typeof window.deconnecter === 'undefined') {
+    window.deconnecter = function() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_nom');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    };
+  }
+  
+  // Rattacher l'événement au nouveau bouton
+  var btn = document.getElementById('btnDeconnexion');
+  if (btn) {
+    btn.addEventListener('click', function(e) {
+      e.preventDefault();
+      window.deconnecter();
+    });
+  }
 })();
 </script>
