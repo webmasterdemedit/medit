@@ -124,6 +124,705 @@
     .slide-content {
       position: relative !important;
     }
+
+    /* ============================================================
+       STYLES POUR LES CARTES
+       ============================================================ */
+    .carte-container {
+      perspective: 1000px;
+      width: 100%;
+      max-width: 400px;
+      margin: 20px auto;
+      cursor: pointer;
+      height: 250px;
+    }
+    .carte-inner {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transition: transform 0.6s;
+      transform-style: preserve-3d;
+    }
+    .carte-inner.retournee {
+      transform: rotateY(180deg);
+    }
+    .carte-face {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      backface-visibility: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      border-radius: 12px;
+      font-family: 'Merriweather', serif;
+      font-size: 20px;
+      text-align: center;
+      border: 2px solid var(--border, #ccc);
+      background: var(--bg-secondary, #f5f5f5);
+      color: var(--text, #111);
+    }
+    .carte-verso {
+      transform: rotateY(180deg);
+      background: var(--bg-secondary, #f5f5f5);
+      color: var(--text, #111);
+    }
+    .carte-indicateur {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #666);
+      margin-bottom: 8px;
+    }
+    .carte-boutons {
+      display: none;
+      justify-content: center;
+      gap: 16px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+    .carte-boutons.visible {
+      display: flex;
+    }
+    .carte-boutons button {
+      padding: 10px 24px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+    }
+    .carte-boutons button.btn-trouve {
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+    }
+    .carte-boutons button.btn-trouve:hover {
+      background: #2d6a4f;
+      color: white;
+    }
+    .carte-boutons button:last-child:hover {
+      background: var(--text-secondary, #666);
+      color: white;
+    }
+    .carte-resultat {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      margin-top: 12px;
+      min-height: 30px;
+    }
+    .carte-progression {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #666);
+      margin-top: 6px;
+    }
+
+    /* ============================================================
+       STYLES POUR L'ORDRE
+       ============================================================ */
+    .ordre-list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      margin: 12px 0;
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .ordre-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 8px;
+      background: var(--bg-secondary, #f5f5f5);
+      transition: all 0.2s ease;
+    }
+    .ordre-item:hover {
+      border-color: var(--text, #111);
+    }
+    .ordre-num {
+      font-family: 'Inter', sans-serif;
+      font-weight: 600;
+      font-size: 16px;
+      color: var(--text-secondary, #666);
+      min-width: 30px;
+    }
+    .ordre-texte {
+      flex: 1;
+      font-family: 'Merriweather', serif;
+      font-size: 16px;
+      color: var(--text, #111);
+    }
+    .ordre-boutons {
+      display: flex;
+      gap: 6px;
+    }
+    .ordre-boutons button {
+      width: 32px;
+      height: 32px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 6px;
+      background: transparent;
+      cursor: pointer;
+      font-size: 16px;
+      transition: all 0.2s ease;
+      color: var(--text, #111);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .ordre-boutons button:hover:not(:disabled) {
+      background: var(--text, #111);
+      color: white;
+    }
+    .ordre-boutons button:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+    .ordre-resultat {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      margin-top: 12px;
+      min-height: 30px;
+      font-weight: 500;
+    }
+    .ordre-resultat.correct {
+      color: #2d6a4f;
+    }
+    .ordre-resultat.incorrect {
+      color: #c0392b;
+    }
+
+    .btn-valider-ordre {
+      display: block;
+      margin: 12px auto;
+      padding: 10px 32px;
+      border: 2px solid var(--text, #111);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+    }
+    .btn-valider-ordre:hover:not(:disabled) {
+      background: var(--text, #111);
+      color: white;
+    }
+    .btn-valider-ordre:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ============================================================
+       BOUTON CONTINUER
+       ============================================================ */
+    .btn-continuer {
+      display: none;
+      margin: 16px auto 0 auto;
+      padding: 10px 32px;
+      border: 2px solid var(--text, #111);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+    }
+    .btn-continuer.visible {
+      display: block;
+    }
+    .btn-continuer:hover {
+      background: var(--text, #111);
+      color: white;
+    }
+
+    .btn-envoyer-reponse {
+      display: block;
+      margin: 12px auto;
+      padding: 10px 32px;
+      border: 2px solid var(--text, #111);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+    }
+    .btn-envoyer-reponse:hover:not(:disabled) {
+      background: var(--text, #111);
+      color: white;
+    }
+    .btn-envoyer-reponse:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .btn-fermer-slide {
+      display: block;
+      margin: 16px auto;
+      padding: 10px 32px;
+      border: 2px solid var(--text, #111);
+      border-radius: 8px;
+      background: transparent;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+    }
+    .btn-fermer-slide:hover {
+      background: var(--text, #111);
+      color: white;
+    }
+
+    /* ============================================================
+       QUIZ
+       ============================================================ */
+    .quiz-question {
+      font-family: 'Merriweather', serif;
+      font-size: 20px;
+      font-weight: 600;
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text, #111);
+    }
+    .quiz-reponses {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .quiz-reponse {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 16px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: var(--text, #111);
+      background: var(--bg-secondary, #f5f5f5);
+    }
+    .quiz-reponse:hover {
+      border-color: var(--text, #111);
+    }
+    .quiz-reponse .lettre {
+      font-weight: 600;
+      color: var(--text-secondary, #666);
+      min-width: 24px;
+    }
+    .quiz-reponse .result-icon {
+      margin-left: auto;
+      font-size: 20px;
+    }
+    .quiz-reponse.selectionnee {
+      border-color: var(--text, #111);
+      background: var(--bg-secondary, #f5f5f5);
+    }
+    .quiz-reponse.correcte {
+      border-color: #2d6a4f;
+      background: #2d6a4f20;
+    }
+    .quiz-reponse.incorrecte {
+      border-color: #c0392b;
+      background: #c0392b20;
+    }
+    .quiz-feedback {
+      margin-top: 16px;
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      min-height: 40px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .quiz-feedback.visible {
+      opacity: 1;
+    }
+    .bonne-reponse {
+      color: #2d6a4f;
+      font-weight: 500;
+    }
+    .mauvaise-reponse {
+      color: #c0392b;
+      font-weight: 500;
+    }
+
+    /* ============================================================
+       OPEN
+       ============================================================ */
+    .open-question-text {
+      font-family: 'Merriweather', serif;
+      font-size: 18px;
+      text-align: center;
+      margin-bottom: 16px;
+      color: var(--text, #111);
+    }
+    .open-content textarea {
+      width: 100%;
+      max-width: 500px;
+      display: block;
+      margin: 0 auto;
+      padding: 14px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 8px;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      min-height: 120px;
+      resize: vertical;
+      background: var(--bg-secondary, #f5f5f5);
+      color: var(--text, #111);
+    }
+    .open-content textarea:focus {
+      outline: none;
+      border-color: var(--text, #111);
+    }
+    .open-content textarea:disabled {
+      opacity: 0.6;
+    }
+    .reponse-confirmation {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: #2d6a4f;
+      margin-top: 12px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+    .reponse-confirmation.visible {
+      opacity: 1;
+    }
+
+    /* ============================================================
+       RETENIR
+       ============================================================ */
+    .retenir-label {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-secondary, #666);
+      text-align: center;
+      margin-bottom: 12px;
+    }
+    .retenir-mots {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 12px;
+      max-width: 500px;
+      margin: 0 auto;
+    }
+    .retenir-mot {
+      padding: 8px 18px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 20px;
+      font-family: 'Merriweather', serif;
+      font-size: 18px;
+      color: var(--text, #111);
+      background: var(--bg-secondary, #f5f5f5);
+    }
+
+    /* ============================================================
+       NOTES
+       ============================================================ */
+    .note-toggle {
+      position: absolute;
+      bottom: 12px;
+      right: 12px;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 2px solid var(--border, #ccc);
+      background: var(--bg-secondary, #f5f5f5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      transition: all 0.3s ease;
+      color: var(--text, #111);
+      z-index: 10;
+    }
+    .note-toggle:hover {
+      border-color: var(--text, #111);
+    }
+    .note-toggle.active {
+      border-color: var(--text, #111);
+      background: var(--text, #111);
+      color: white;
+    }
+    .note-area {
+      display: none;
+      margin-top: 16px;
+      padding: 12px;
+      border-top: 2px solid var(--border, #ccc);
+      max-width: 500px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .note-area.visible {
+      display: block;
+    }
+    .note-area textarea {
+      width: 100%;
+      padding: 10px;
+      border: 2px solid var(--border, #ccc);
+      border-radius: 6px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      min-height: 60px;
+      resize: vertical;
+      background: var(--bg-secondary, #f5f5f5);
+      color: var(--text, #111);
+    }
+    .note-area textarea:focus {
+      outline: none;
+      border-color: var(--text, #111);
+    }
+    .note-indicator {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #666);
+      margin-top: 4px;
+      text-align: right;
+    }
+    .note-indicator.saved {
+      color: #2d6a4f;
+    }
+
+    /* ============================================================
+       FONT CONTROLS
+       ============================================================ */
+    .font-control-bottom {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--bg-secondary, #f5f5f5);
+      padding: 8px 12px;
+      border-radius: 30px;
+      border: 2px solid var(--border, #ccc);
+      z-index: 100;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+    }
+    .font-control-bottom button {
+      width: 32px;
+      height: 32px;
+      border: none;
+      border-radius: 50%;
+      background: transparent;
+      cursor: pointer;
+      font-size: 18px;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      color: var(--text, #111);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .font-control-bottom button:hover {
+      background: var(--text, #111);
+      color: white;
+    }
+    .font-control-bottom .size-indicator {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      min-width: 28px;
+      text-align: center;
+      color: var(--text, #111);
+    }
+
+    /* ============================================================
+      HEADER
+      ============================================================ */
+    .lecture-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      padding: 16px 20px;
+      border-bottom: 2px solid var(--border, #ccc);
+      background: var(--bg, #fff);
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+    .meta-left {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .meta-left .cat-niveau {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      color: var(--text-secondary, #666);
+    }
+    .meta-left .titre {
+      font-family: 'Merriweather', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text, #111);
+    }
+    .actions {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    .badge-statut {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 20px;
+      border: 2px solid var(--border, #ccc);
+    }
+    .badge-statut.valide {
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+    }
+    .badge-statut.non-valide {
+      border-color: #c0392b;
+      color: #c0392b;
+    }
+    .badge-statut.partiel {
+      border-color: #f39c12;
+      color: #f39c12;
+    }
+    .badge-statut.en-attente {
+      border-color: var(--border, #ccc);
+      color: var(--text-secondary, #666);
+    }
+    .btn-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px 8px;
+      transition: transform 0.2s ease;
+      color: var(--text, #111);
+    }
+    .btn-close:hover {
+      transform: scale(1.2);
+    }
+
+    /* ============================================================
+      SLIDES CONTAINER
+      ============================================================ */
+    .slides-container {
+      padding: 20px 24px 80px 24px;
+      max-width: 700px;
+      margin: 0 auto;
+      min-height: 60vh;
+      position: relative;
+    }
+    .pagination-text {
+      text-align: center;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #666);
+      padding: 12px 0;
+    }
+
+    /* ============================================================
+      LOADER / ERROR
+      ============================================================ */
+    .lecture-loader {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 20px;
+      gap: 16px;
+    }
+    .lecture-loader .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid var(--border, #ccc);
+      border-top: 4px solid var(--text, #111);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    .lecture-loader span {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: var(--text-secondary, #666);
+    }
+    .lecture-error {
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .lecture-error .icone {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    .lecture-error h2 {
+      font-family: 'Merriweather', serif;
+      font-size: 24px;
+      color: var(--text, #111);
+      margin-bottom: 8px;
+    }
+    .lecture-error p {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      color: var(--text-secondary, #666);
+      margin-bottom: 20px;
+    }
+    .lecture-error .btn-retour {
+      display: inline-block;
+      padding: 10px 28px;
+      border: 2px solid var(--text, #111);
+      border-radius: 8px;
+      text-decoration: none;
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      color: var(--text, #111);
+      transition: all 0.3s ease;
+    }
+    .lecture-error .btn-retour:hover {
+      background: var(--text, #111);
+      color: white;
+    }
+
+    .slide-content {
+      font-size: 18px;
+      line-height: 1.8;
+      font-family: 'Merriweather', serif;
+      color: var(--text, #111);
+      padding-bottom: 20px;
+    }
+    .slide-content p {
+      margin-bottom: 16px;
+    }
   </style>
 </head>
 <body>
@@ -136,7 +835,7 @@
       <div class="titre" id="metaTitre">Chargement...</div>
     </div>
     <div class="actions">
-      <span class="badge-statut" id="badgeStatut"></span>
+      <span class="badge-statut" id="badgeStatut">⏱ En cours</span>
       <button class="btn-close" id="btnFermer">✕</button>
     </div>
   </header>
@@ -158,7 +857,8 @@
   <div class="pagination-text" id="pagination">1 / 1</div>
 
   <script>
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbw6VQMboZEiAUawFIOhF6GXraaev8To07xtw6xOhlNYMYefJNd8NEOVLWE0Nrl0ix27/exec';
+    // 🔥 REMPLACE PAR TON URL 🔥
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
 
     var etat = {
       postId: null,
@@ -304,6 +1004,7 @@
           
           recupererNotes();
           afficherSlides();
+          verifierValidationGlobale();
         })
         .catch(function(error) { 
           console.error('❌ Erreur:', error);
@@ -716,7 +1417,7 @@
         var texte = shuffled[i].replace(/^-\d+-/, '').trim();
         html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
         var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-html += '<span class="ordre-num">#' + lettres[i] + '</span>';
+        html += '<span class="ordre-num">#' + lettres[i] + '</span>';
         html += '<span class="ordre-texte">' + texte + '</span>';
         html += '<div class="ordre-boutons">';
         html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
@@ -823,9 +1524,14 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       });
       if (!tousRepondus) return;
       var totalBonnes = 0, totalQuestions = 0;
+      var resultatsIndividuels = [];
       quizSlides.forEach(function(q) {
         var rep = etat.reponsesQuiz[q.index];
-        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
+        if (rep) { 
+          totalQuestions++; 
+          if (rep.correct) { totalBonnes++; resultatsIndividuels.push('1'); }
+          else { resultatsIndividuels.push('0'); }
+        }
       });
       etat.totalBonnes = totalBonnes;
       etat.totalQuestions = totalQuestions;
@@ -833,7 +1539,7 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
       if (totalQuestions === 0) etat.statutFinal = 'en-attente';
       mettreAJourBadge();
-      sauvegarderQuiz();
+      sauvegarderQuiz(resultatsIndividuels.join(','));
     }
 
     function mettreAJourBadge() {
@@ -843,27 +1549,22 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
     }
 
-    function sauvegarderQuiz() {
+    // ✅ FONCTION SAUVEGARDER QUIZ - CORRIGÉE
+    function sauvegarderQuiz(resultatsIndividuels) {
       if (!etat.postId) return;
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var choixQcm = '';
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) {
-          if (choixQcm) choixQcm += '|';
-          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
-        }
-      });
       var url = SCRIPT_URL + '?action=saveQuiz' +
         '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(etat.postId) +
         '&titre=' + encodeURIComponent(etat.post.titre || 'Quiz') +
-        '&choixQcm=' + encodeURIComponent(choixQcm) +
+        '&choixQcm=' + encodeURIComponent(resultatsIndividuels) +
         '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
         '&total=' + encodeURIComponent(etat.totalQuestions);
       fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.success) console.log('✓ Quiz sauvegardé');
+        if (data.success) {
+          console.log('✓ Quiz sauvegardé');
+          verifierValidationGlobale();
+        }
       }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
@@ -1091,8 +1792,10 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       var allItems = list.querySelectorAll('.ordre-item');
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
-        if (numSpan) var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-numSpan.textContent = '#' + lettres[idx];
+        if (numSpan) {
+          var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+          numSpan.textContent = '#' + lettres[idx];
+        }
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
@@ -1115,19 +1818,23 @@ numSpan.textContent = '#' + lettres[idx];
       var items = list.querySelectorAll('.ordre-item');
       var ordreDonne = [];
       var ordreAttendu = [];
+      var resultatsIndividuels = [];
 
       items.forEach(function(el) {
-        ordreDonne.push(parseInt(el.dataset.num));
-        ordreAttendu.push(parseInt(el.dataset.num));
+        var num = parseInt(el.dataset.num);
+        ordreDonne.push(num);
+        ordreAttendu.push(num);
       });
 
       ordreAttendu.sort(function(a, b) { return a - b; });
 
       var correct = true;
       for (var i = 0; i < ordreDonne.length; i++) {
-        if (ordreDonne[i] !== ordreAttendu[i]) {
+        if (ordreDonne[i] === ordreAttendu[i]) {
+          resultatsIndividuels.push('1');
+        } else {
+          resultatsIndividuels.push('0');
           correct = false;
-          break;
         }
       }
 
@@ -1136,34 +1843,37 @@ numSpan.textContent = '#' + lettres[idx];
       var btnValider = document.getElementById('btnValiderOrdre-' + index);
 
       if (correct) {
-        resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
+        resultat.textContent = '✌︎ Tous les éléments sont bien placés !';
         resultat.className = 'ordre-resultat correct';
         etat.ordreValide[index] = true;
-        sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
+        sauvegarderOrdre(index, resultatsIndividuels.join(','), ordreDonne.length, ordreDonne.length);
         if (btnContinuer) btnContinuer.classList.add('visible');
         if (btnValider) btnValider.disabled = true;
       } else {
-        resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
+        resultat.textContent = '✋ L\'ordre n\'est pas correct. Réessayez.';
         resultat.className = 'ordre-resultat incorrect';
         etat.ordreValide[index] = false;
-        sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
+        sauvegarderOrdre(index, resultatsIndividuels.join(','), 0, ordreDonne.length);
       }
     }
 
-    function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
+    // ✅ FONCTION SAUVEGARDER ORDRE - CORRIGÉE
+    function sauvegarderOrdre(index, resultatsIndividuels, bonnes, total) {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveOrdre' +
         '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Ordre') +
-        '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+        '&ordreDonne=' + encodeURIComponent(resultatsIndividuels) +
         '&bonnes=' + encodeURIComponent(bonnes) +
         '&total=' + encodeURIComponent(total);
 
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data.success) console.log('✓ Ordre sauvegardé');
+          if (data.success) {
+            console.log('✓ Ordre sauvegardé');
+            verifierValidationGlobale();
+          }
         })
         .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
@@ -1197,7 +1907,7 @@ numSpan.textContent = '#' + lettres[idx];
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
 
-      sauvegarderCarte(index);
+      sauvegarderToutesLesCartes();
     }
 
     function cartePasTrouve(index) {
@@ -1215,13 +1925,11 @@ numSpan.textContent = '#' + lettres[idx];
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
 
-      sauvegarderCarte(index);
+      sauvegarderToutesLesCartes();
     }
 
-    function sauvegarderCarte(index) {
-      var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
-      if (!slide) return;
-
+    // ✅ FONCTION SAUVEGARDER CARTES - CORRIGÉE
+    function sauvegarderToutesLesCartes() {
       var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
       var resultats = [];
       toutesLesCartes.forEach(function(c) {
@@ -1238,7 +1946,6 @@ numSpan.textContent = '#' + lettres[idx];
       var url = SCRIPT_URL + '?action=saveCarte' +
         '&nom=' + encodeURIComponent(nom) +
         '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Cartes') +
         '&cartes=' + encodeURIComponent(cartesStr) +
         '&bonnes=' + encodeURIComponent(bonnes) +
         '&total=' + encodeURIComponent(total);
@@ -1246,7 +1953,10 @@ numSpan.textContent = '#' + lettres[idx];
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data.success) console.log('✓ Cartes sauvegardées');
+          if (data.success) {
+            console.log('✓ Cartes sauvegardées');
+            verifierValidationGlobale();
+          }
         })
         .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
@@ -1270,6 +1980,33 @@ numSpan.textContent = '#' + lettres[idx];
     }
 
     // ============================================================
+    // VALIDATION GLOBALE
+    // ============================================================
+    function verifierValidationGlobale() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&articleId=' + encodeURIComponent(etat.postId);
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.global === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            } else if (data.validation.global === 'partiel') {
+              badge.textContent = '⏳ Partiel';
+              badge.className = 'badge-statut partiel';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+    }
+
+    // ============================================================
     // EXPOSER LES FONCTIONS GLOBALEMENT
     // ============================================================
     window.selectionnerReponse = selectionnerReponse;
@@ -1284,6 +2021,7 @@ numSpan.textContent = '#' + lettres[idx];
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
+    window.verifierValidationGlobale = verifierValidationGlobale;
   </script>
 
 </body>
