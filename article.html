@@ -304,6 +304,7 @@
           
           recupererNotes();
           afficherSlides();
+              verifierValidationGlobale();  // ← AJOUTER CETTE LIGNE
         })
         .catch(function(error) { 
           console.error('❌ Erreur:', error);
@@ -1284,7 +1285,32 @@ numSpan.textContent = '#' + lettres[idx];
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
+
+    function verifierValidationGlobale() {
+  var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+  var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&articleId=' + encodeURIComponent(etat.postId);
+  
+  fetch(url)
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data.success && data.validation) {
+        var badge = document.getElementById('badgeStatut');
+        if (data.validation.global === 'valide') {
+          badge.textContent = '✓ Validé';
+          badge.className = 'badge-statut valide';
+        } else if (data.validation.global === 'partiel') {
+          badge.textContent = '⏳ Partiel';
+          badge.className = 'badge-statut partiel';
+        } else {
+          badge.textContent = '⏱ À faire';
+          badge.className = 'badge-statut en-attente';
+        }
+      }
+    })
+    .catch(function(e) { console.error('Erreur vérification validation:', e); });
+}
   </script>
 
 </body>
 </html>
+
