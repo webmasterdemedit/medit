@@ -540,7 +540,7 @@
 
   <div class="page page-livret">
 
-    <a href="/medit/mes-textes.html" class="btn-retour">← Retour aux textes</a>
+    <a href="/medit/mes-livrets.html" class="btn-retour">← Retour aux livrets</a>
 
     <div id="enteteLivret">
       <div class="loader">
@@ -594,7 +594,7 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var categorieActuelle = '';
-    var livretsData = {};
+    var livretsData = {};        // { "Nom du livret": { couleur, description } }
 
     // ============================================================
     // FONCTIONS D'IMPRESSION (copiées de mes-textes.html)
@@ -1125,7 +1125,7 @@
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
             <p>Veuillez sélectionner un livret depuis la page d'accueil.</p>
-            <a href="/medit/mes-textes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux textes</a>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
           </div>
         `;
         document.getElementById('contenuLecons').innerHTML = '';
@@ -1144,15 +1144,19 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          // === RÉCUPÉRER LES DONNÉES DES LIVRETS (couleur + description) ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
               data.livrets.forEach(function(l) {
-                if (l.titre && l.couleur) {
-                  livretsData[l.titre] = l.couleur;
+                if (l.titre) {
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    description: l.description || ''
+                  };
                 }
               });
+              console.log('📚 ' + data.livrets.length + ' livrets chargés avec couleurs et descriptions');
             }
           }
 
@@ -1175,8 +1179,11 @@
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
                 cache.livrets.forEach(function(l) {
-                  if (l.titre && l.couleur) {
-                    livretsData[l.titre] = l.couleur;
+                  if (l.titre) {
+                    livretsData[l.titre] = {
+                      couleur: l.couleur || '#2d6a4f',
+                      description: l.description || ''
+                    };
                   }
                 });
               }
@@ -1216,7 +1223,7 @@
             <span class="icone">◈</span>
             <h4>Aucune leçon</h4>
             <p>Ce livret ne contient pas encore de leçons accessibles à votre niveau (${niveauEtudiant}).</p>
-            <a href="/medit/mes-textes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux textes</a>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
           </div>
         `;
         document.getElementById('contenuLecons').innerHTML = '';
@@ -1239,11 +1246,10 @@
         }
       });
 
-      // === DÉTERMINER LA COULEUR DEPUIS livretsData ===
-      var couleur = livretsData[categorieActuelle] || '#2d6a4f';
-
-      // === DESCRIPTION PAR DÉFAUT ===
-      var description = 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalLecons + ' leçons. Chaque leçon vous guidera pas à pas dans l\'apprentissage.';
+      // === RÉCUPÉRER LA COULEUR ET LA DESCRIPTION DEPUIS livretsData ===
+      var infosLivret = livretsData[categorieActuelle] || {};
+      var couleur = infosLivret.couleur || '#2d6a4f';
+      var description = infosLivret.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalLecons + ' leçons. Chaque leçon vous guidera pas à pas dans l\'apprentissage.';
 
       // === AFFICHER L'ENTÊTE ===
       var enteteHtml = `
