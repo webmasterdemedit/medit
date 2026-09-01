@@ -108,9 +108,19 @@
     .carte-livret .titre-wrapper {
       display: flex;
       flex-direction: column;
-      align-items: center; /* ← AJOUTE CETTE LIGNE pour centrer */
-      gap: 4px;
-      margin-top: 80px;
+      align-items: center;
+      gap: 2px;
+      margin-top: 30px;
+    }
+
+    .carte-livret .auteur-livret {
+      font-size: 10px;
+      font-weight: 300;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      margin-bottom: 2px;
+      color: rgba(26, 26, 26, 0.5);
     }
 
     .carte-livret .titre-livret {
@@ -122,17 +132,17 @@
       line-height: 1.2;
       max-width: 90%;
       color: #1a1a1a;
-      align-items: center; /* ← AJOUTE CETTE LIGNE pour centrer */
+      text-align: center;
     }
 
     .carte-livret .sous-titre-livret {
       font-size: 13px;
       font-weight: 500;
       opacity: 0.8;
-      margin-top: 8px;
+      margin-top: 4px;
       color: rgba(26, 26, 26, 0.8);
       line-height: 1.3;
-       text-align: center; /* ← AJOUTE pour centrer le texte */
+      text-align: center;
     }
 
     .carte-livret .edition-info {
@@ -172,7 +182,7 @@
       letter-spacing: 0.5px;
       color: rgba(26, 26, 26, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70); 
+      background: rgba(255, 255, 255, 0.70);
     }
 
     .carte-livret .progression-livret {
@@ -268,6 +278,10 @@
         font-size: 11px;
       }
 
+      .carte-livret .auteur-livret {
+        font-size: 9px;
+      }
+
       .carte-livret .badge-niveau {
         font-size: 10px;
         top: 10px;
@@ -324,7 +338,7 @@
         <span class="nombre" id="totalLivrets">0</span>
       </div>
       <div class="stat-item">
-        <span>chapitres totals :</span>
+        <span>Chapitres total :</span>
         <span class="nombre" id="totalLecons">0</span>
       </div>
       <div class="stat-item">
@@ -419,7 +433,8 @@
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
-                  preRequis: l.preRequis || ''
+                  preRequis: l.preRequis || '',
+                  auteur: l.auteur || ''
                 };
               });
               console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
@@ -453,7 +468,8 @@
                     couleur: l.couleur || '#2d6a4f',
                     sousTitre: l.sousTitre || '',
                     date: l.date || '',
-                    preRequis: l.preRequis || ''
+                    preRequis: l.preRequis || '',
+                    auteur: l.auteur || ''
                   };
                 });
               }
@@ -530,6 +546,7 @@
         var couleur = data.couleur || '#2d6a4f';
         var sousTitre = data.sousTitre || '';
         var date = data.date || '';
+        var auteur = data.auteur || '';
 
         var lecons = livret.lecons || 0;
 
@@ -554,6 +571,7 @@
             <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
             <div class="contenu-livret">
               <div class="titre-wrapper">
+                ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
                 <span class="titre-livret">${livret.nom}</span>
                 ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
               </div>
