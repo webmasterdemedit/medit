@@ -70,7 +70,7 @@
       position: relative;
       border-radius: 0;
       padding: 0;
-      height: 380px;
+      height: 320px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -101,8 +101,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
+      justify-content: space-between;
       height: 100%;
     }
 
@@ -119,21 +118,35 @@
 
     .carte-livret .sous-titre-livret {
       font-size: 13px;
-      font-weight: 400;
+      font-weight: 300;
       opacity: 0.85;
-      letter-spacing: 0.5px;
-      padding: 4px 14px;
       margin-top: 4px;
       color: rgba(26, 26, 26, 0.85);
     }
 
-    .carte-livret .nb-lecons {
-      font-size: 13px;
-      font-weight: 300;
-      opacity: 0.80;
-      margin-top: 6px;
-      padding: 3px 14px;
-      color: rgba(26, 26, 26, 0.75);
+    .carte-livret .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding-bottom: 10px;
+    }
+
+    .carte-livret .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+
+    .carte-livret .edition-date {
+      font-size: 10px;
+      opacity: 0.4;
+      color: rgba(26, 26, 26, 0.4);
     }
 
     .carte-livret .badge-niveau {
@@ -232,7 +245,7 @@
       }
 
       .carte-livret {
-        height: 220px;
+        height: 280px;
       }
 
       .carte-livret .titre-livret {
@@ -240,11 +253,6 @@
       }
 
       .carte-livret .sous-titre-livret {
-        font-size: 11px;
-        padding: 2px 12px;
-      }
-
-      .carte-livret .nb-lecons {
         font-size: 11px;
       }
 
@@ -273,7 +281,7 @@
       }
 
       .carte-livret {
-        height: 180px;
+        height: 240px;
       }
 
       .carte-livret .titre-livret {
@@ -355,9 +363,24 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
-    var livretsData = {};        // { "Nom du livret": "couleur" }
+    var livretsData = {};        // { "Nom du livret": { couleur, sousTitre, date, preRequis } }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
+
+    // ============================================================
+    // FORMATER LA DATE
+    // ============================================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var date = new Date(dateStr);
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        return mois[date.getMonth()] + ' ' + date.getFullYear();
+      } catch(e) {
+        return dateStr;
+      }
+    }
 
     // ============================================================
     // CHARGEMENT
@@ -376,16 +399,19 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          // === RÉCUPÉRER LES DONNÉES DES LIVRETS ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
               data.livrets.forEach(function(l) {
-                if (l.titre && l.couleur) {
-                  livretsData[l.titre] = l.couleur;
-                }
+                livretsData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  preRequis: l.preRequis || ''
+                };
               });
-              console.log('📚 ' + data.livrets.length + ' livrets chargés avec couleurs');
+              console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
             }
           }
 
@@ -408,14 +434,16 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
-            // Récupérer les livrets depuis le cache aussi
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
                 cache.livrets.forEach(function(l) {
-                  if (l.titre && l.couleur) {
-                    livretsData[l.titre] = l.couleur;
-                  }
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    sousTitre: l.sousTitre || '',
+                    date: l.date || '',
+                    preRequis: l.preRequis || ''
+                  };
                 });
               }
             }
@@ -439,7 +467,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES LIVRETS (AVEC COULEURS DEPUIS SHEETS)
+    // AFFICHER LES LIVRETS
     // ============================================================
     function afficherLivrets() {
       var container = document.getElementById('contenu');
@@ -490,8 +518,11 @@
       var html = '<div class="grille-livrets">';
 
       livrets.forEach(function(livret) {
-        // === RÉCUPÉRER LA COULEUR DEPUIS livretsData ===
-        var couleur = livretsData[livret.nom] || '#2d6a4f'; // fallback vert par défaut
+        // === RÉCUPÉRER LES DONNÉES DEPUIS livretsData ===
+        var data = livretsData[livret.nom] || {};
+        var couleur = data.couleur || '#2d6a4f';
+        var sousTitre = data.sousTitre || '';
+        var date = data.date || '';
 
         var lecons = livret.lecons || 0;
 
@@ -508,6 +539,7 @@
         });
 
         var pourcentage = lecons > 0 ? Math.round((validees / lecons) * 100) : 0;
+        var dateFormatee = formatDate(date);
 
         html += `
           <div class="carte-livret" 
@@ -515,9 +547,14 @@
                onclick="window.location.href='/medit/livret.html?cat=${encodeURIComponent(livret.nom)}'">
             <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
             <div class="contenu-livret">
-              <span class="titre-livret">${livret.nom}</span>
-              <span class="nb-lecons">${lecons} leçon${lecons > 1 ? 's' : ''}</span>
-              <span class="sous-titre-livret">${validees}/${lecons} validée${validees > 1 ? 's' : ''}</span>
+              <div>
+                <span class="titre-livret">${livret.nom}</span>
+                ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              </div>
             </div>
             <div class="progression-livret">
               <div class="barre" style="width: ${pourcentage}%;"></div>
