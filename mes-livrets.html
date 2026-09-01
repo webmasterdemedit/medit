@@ -410,7 +410,7 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
-    var livretsData = {};
+    var livretsData = {};        // { "Nom du livret": { couleur, niveau, description, nbChapitres } }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
@@ -431,16 +431,21 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          // === RÉCUPÉRER LES DONNÉES DES LIVRETS (couleur, niveau, description, nbChapitres) ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
               data.livrets.forEach(function(l) {
-                if (l.titre && l.couleur) {
-                  livretsData[l.titre] = l.couleur;
+                if (l.titre) {
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    niveau: l.niveau || 1,
+                    description: l.description || '',
+                    nbChapitres: l.nbChapitres || 0
+                  };
                 }
               });
-              console.log('📚 ' + data.livrets.length + ' livrets chargés avec couleurs');
+              console.log('📚 ' + data.livrets.length + ' livrets chargés');
             }
           }
 
@@ -463,13 +468,18 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
-            // Récupérer les livrets depuis le cache aussi
+            // Récupérer les livrets depuis le cache
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
                 cache.livrets.forEach(function(l) {
-                  if (l.titre && l.couleur) {
-                    livretsData[l.titre] = l.couleur;
+                  if (l.titre) {
+                    livretsData[l.titre] = {
+                      couleur: l.couleur || '#2d6a4f',
+                      niveau: l.niveau || 1,
+                      description: l.description || '',
+                      nbChapitres: l.nbChapitres || 0
+                    };
                   }
                 });
               }
@@ -494,33 +504,65 @@
     }
 
     // ============================================================
-    // AFFICHER LES LIVRETS (AVEC COULEURS DEPUIS SHEETS)
+    // AFFICHER LES LIVRETS
     // ============================================================
     function afficherLivrets() {
       var container = document.getElementById('contenu');
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // === EXTRAIRE LES CATÉGORIES DES POSTS ===
-      var categories = {};
+      // === COMPTER LES LEÇONS PAR CATÉGORIE (parmi les posts de l'étudiant) ===
+      var categoriesFromPosts = {};
       var totalLecons = 0;
 
       postsData.forEach(function(post) {
         var cat = post.categorie || 'Sans catégorie';
-        if (!categories[cat]) {
-          categories[cat] = {
-            nom: cat,
-            niveau: post.niveau || 1,
+        if (!categoriesFromPosts[cat]) {
+          categoriesFromPosts[cat] = {
             lecons: 0,
             posts: []
           };
         }
-        categories[cat].lecons++;
-        categories[cat].posts.push(post);
+        categoriesFromPosts[cat].lecons++;
+        categoriesFromPosts[cat].posts.push(post);
         totalLecons++;
       });
 
-      var livrets = Object.values(categories);
+      // === CONSTRUIRE LA LISTE COMPLÈTE DES LIVRETS (depuis livretsData + posts) ===
+      var livrets = [];
+
+      // 1. Ajouter tous les livrets depuis livretsData
+      for (var titre in livretsData) {
+        var info = livretsData[titre];
+        var posts = categoriesFromPosts[titre] ? categoriesFromPosts[titre].posts : [];
+        var lecons = categoriesFromPosts[titre] ? categoriesFromPosts[titre].lecons : 0;
+        
+        livrets.push({
+          nom: titre,
+          niveau: info.niveau || 1,
+          couleur: info.couleur || '#2d6a4f',
+          description: info.description || '',
+          nbChapitres: info.nbChapitres || 0,
+          lecons: lecons,
+          posts: posts
+        });
+      }
+
+      // 2. Ajouter les catégories qui existent dans posts mais pas dans livretsData
+      for (var cat in categoriesFromPosts) {
+        var existeDeja = livrets.some(function(l) { return l.nom === cat; });
+        if (!existeDeja) {
+          livrets.push({
+            nom: cat,
+            niveau: 1,
+            couleur: '#2d6a4f',
+            description: 'Ce livret explore les thèmes de ' + cat + '.',
+            nbChapitres: categoriesFromPosts[cat].lecons,
+            lecons: categoriesFromPosts[cat].lecons,
+            posts: categoriesFromPosts[cat].posts
+          });
+        }
+      }
 
       // Trier par niveau puis par nom
       livrets.sort(function(a, b) {
@@ -536,7 +578,7 @@
           <div class="vide-livrets">
             <span class="icone">◈</span>
             <h2>Aucun livret disponible</h2>
-            <p>Aucune catégorie de leçons n'est disponible pour votre niveau (${niveauEtudiant}).</p>
+            <p>Aucune catégorie de leçons n'est disponible.</p>
           </div>
         `;
         return;
@@ -545,9 +587,7 @@
       var html = '<div class="grille-livrets">';
 
       livrets.forEach(function(livret) {
-        // === RÉCUPÉRER LA COULEUR DEPUIS livretsData ===
-        var couleur = livretsData[livret.nom] || '#2d6a4f';
-
+        var couleur = livret.couleur || '#2d6a4f';
         var lecons = livret.lecons || 0;
 
         // Compter les leçons validées
@@ -565,12 +605,7 @@
         var pourcentage = lecons > 0 ? Math.round((validees / lecons) * 100) : 0;
 
         // === VÉRIFIER SI LE LIVRET EST ACCESSIBLE ===
-        // Le livret est accessible si son niveau <= niveau de l'étudiant
         var estAccessible = livret.niveau <= niveauEtudiant;
-        
-        // Si le livret est de niveau 1, il est toujours accessible
-        // Si le livret est de niveau supérieur, on vérifie si TOUS les livrets de niveau inférieur sont complétés
-        // Pour simplifier, on considère qu'un livret est accessible si son niveau <= niveauEtudiant
 
         var classeVerrouille = '';
         var badgeVerrou = '';
@@ -578,8 +613,6 @@
 
         if (!estAccessible) {
           classeVerrouille = ' verrouille';
-          // Enlever la couleur et mettre en noir/blanc
-          couleur = '#888888';
           badgeVerrou = `
             <div class="badge-verrou">
               <span class="icone-cadenas">🔒</span>
@@ -592,6 +625,15 @@
           onclickAttr = 'onclick="window.location.href=\'/medit/livret.html?cat=${encodeURIComponent(livret.nom)}\'"';
         }
 
+        // Si le livret n'a pas de posts (livret vide), on le montre quand même mais sans progression
+        var leconsText = lecons > 0 ? lecons + ' leçon' + (lecons > 1 ? 's' : '') : 'À venir';
+        var progressionText = '';
+        if (lecons > 0) {
+          progressionText = estAccessible ? validees + '/' + lecons + ' validée' + (validees > 1 ? 's' : '') : '🔒 Verrouillé';
+        } else {
+          progressionText = '📖 Bientôt disponible';
+        }
+
         html += `
           <div class="carte-livret${classeVerrouille}" 
                style="background: ${couleur}; border-color: ${couleur};"
@@ -600,8 +642,8 @@
             ${badgeVerrou}
             <div class="contenu-livret">
               <span class="titre-livret">${livret.nom}</span>
-              <span class="nb-lecons">${lecons} leçon${lecons > 1 ? 's' : ''}</span>
-              <span class="sous-titre-livret">${estAccessible ? validees + '/' + lecons + ' validée' + (validees > 1 ? 's' : '') : '🔒 Verrouillé'}</span>
+              <span class="nb-lecons">${leconsText}</span>
+              <span class="sous-titre-livret">${progressionText}</span>
             </div>
             <div class="progression-livret">
               <div class="barre" style="width: ${estAccessible ? pourcentage : 0}%;"></div>
