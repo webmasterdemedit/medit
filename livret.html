@@ -622,65 +622,115 @@
 }
 
     function genererImpression(post, contenu) {
-      var printHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>${post.titre || 'Lecture'}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            @page { margin: 2.5cm; size: A4; }
-            body {
-              font-family: 'Georgia', 'Times New Roman', Times, serif;
-              background: #faf8f5;
-              color: #1a1a1a;
-              font-size: 11.5pt;
-              line-height: 1.8;
-              padding: 20px;
-            }
-            h1 { font-size: 18pt; text-align: center; margin-bottom: 6px; }
-            .meta { text-align: center; font-size: 10pt; color: #6a6a6a; margin-bottom: 16px; }
-            .contenu { max-width: 100%; }
-            .contenu p { text-indent: 2em; margin-bottom: 6px; text-align: justify; }
-            .footer { text-align: center; font-size: 8pt; color: #8a7a6a; margin-top: 20px; border-top: 1px solid #d4c9b8; padding-top: 10px; }
-            .no-print { display: none; }
-            @media print { .no-print { display: none; } }
-          </style>
-        </head>
-        <body>
-          <h1>${post.titre || 'Lecture'}</h1>
-          <div class="meta">${post.categorie || ''} · Niveau ${post.niveau || 0}</div>
-          <div class="contenu">
-      `;
+  // Nettoyer le contenu
+  var cleanContent = contenu
+    .replace(/<[^>]*>/g, '') // Supprimer les balises HTML
+    .replace(/\|/g, ' ') // Remplacer les séparateurs
+    .trim();
 
-      var slides = contenu.split(' | ').filter(function(s) { return s.trim() !== ''; });
-      slides.forEach(function(slide) {
-        var paras = slide.split('\n').filter(function(p) { return p.trim() !== ''; });
-        paras.forEach(function(p) {
-          printHtml += '<p>' + p.trim() + '</p>';
-        });
-      });
+  var printHtml = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="UTF-8">
+      <title>${post.titre || 'Lecture'}</title>
+      <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        @page { 
+          margin: 2.5cm; 
+          size: A4;
+        }
+        body {
+          font-family: 'Georgia', 'Times New Roman', Times, serif;
+          background: #faf8f5;
+          color: #1a1a1a;
+          font-size: 11.5pt;
+          line-height: 1.8;
+          padding: 20px;
+          max-width: 800px;
+          margin: 0 auto;
+        }
+        h1 { 
+          font-size: 18pt; 
+          text-align: center; 
+          margin-bottom: 10px;
+          color: #2d6a4f;
+          border-bottom: 2px solid #2d6a4f;
+          padding-bottom: 10px;
+        }
+        .meta { 
+          text-align: center; 
+          font-size: 10pt; 
+          color: #6a6a6a; 
+          margin-bottom: 20px;
+        }
+        .contenu { 
+          max-width: 100%; 
+        }
+        .contenu p { 
+          text-indent: 2em; 
+          margin-bottom: 8px; 
+          text-align: justify; 
+        }
+        .footer { 
+          text-align: center; 
+          font-size: 8pt; 
+          color: #8a7a6a; 
+          margin-top: 30px; 
+          border-top: 1px solid #d4c9b8; 
+          padding-top: 15px;
+        }
+        .no-print { display: none; }
+        @media print { 
+          body { padding: 0; }
+          .no-print { display: none; }
+        }
+      </style>
+    </head>
+    <body>
+      <h1>${post.titre || 'Lecture'}</h1>
+      <div class="meta">${post.categorie || ''} · Niveau ${post.niveau || 0}</div>
+      <div class="contenu">
+  `;
 
-      printHtml += `
-          </div>
-          <div class="footer">Qiraat · Imprimé le ${new Date().toLocaleDateString('fr-FR')}</div>
-          <script>
-            window.onload = function() { window.print(); }
-          <\/script>
-        </body>
-        </html>
-      `;
+  // Découper le contenu en paragraphes
+  var paragraphs = cleanContent.split('\n').filter(function(p) { 
+    return p.trim() !== ''; 
+  });
+  
+  paragraphs.forEach(function(p) {
+    printHtml += '<p>' + p.trim() + '</p>';
+  });
 
-      var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes');
-      if (!win) {
-        alert('Veuillez autoriser les pop-ups pour imprimer.');
-        return;
-      }
-      win.document.write(printHtml);
-      win.document.close();
-    }
+  printHtml += `
+      </div>
+      <div class="footer">
+        Qiraat · Imprimé le ${new Date().toLocaleDateString('fr-FR', { 
+          day: '2-digit', 
+          month: 'long', 
+          year: 'numeric',
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </div>
+      <script>
+        window.onload = function() { 
+          setTimeout(function() { window.print(); }, 500);
+        }
+      <\/script>
+    </body>
+    </html>
+  `;
 
+  var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,menubar=yes');
+  if (!win) {
+    alert('Veuillez autoriser les pop-ups pour imprimer.');
+    return;
+  }
+  
+  win.document.write(printHtml);
+  win.document.close();
+}
     // ============================================================
     // OUVERTURE MODAL ANNOTATIONS
     // ============================================================
