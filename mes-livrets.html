@@ -168,52 +168,6 @@
       width: 0%;
     }
 
-    /* ===== CARTE VERROUILLÉE ===== */
-    .carte-livret.verrouille {
-      filter: grayscale(1);
-      opacity: 0.7;
-      cursor: not-allowed;
-      border-color: #999;
-    }
-
-    .carte-livret.verrouille:hover {
-      transform: none;
-      border-color: #999;
-    }
-
-    .carte-livret .badge-verrou {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 10;
-      background: rgba(0, 0, 0, 0.75);
-      color: #fff;
-      padding: 8px 16px;
-      font-size: 12px;
-      font-family: 'Roboto', sans-serif;
-      font-weight: 400;
-      text-align: center;
-      max-width: 85%;
-      border-radius: 0;
-      pointer-events: none;
-      letter-spacing: 0.3px;
-      line-height: 1.4;
-    }
-
-    .carte-livret .badge-verrou .icone-cadenas {
-      display: block;
-      font-size: 24px;
-      margin-bottom: 4px;
-    }
-
-    .carte-livret .badge-verrou .petit-texte {
-      font-size: 10px;
-      opacity: 0.8;
-      display: block;
-      margin-top: 2px;
-    }
-
     /* ===== VIDE ===== */
     .vide-livrets {
       grid-column: 1 / -1;
@@ -299,15 +253,6 @@
         top: 10px;
         right: 10px;
         padding: 2px 10px;
-      }
-
-      .carte-livret .badge-verrou {
-        font-size: 10px;
-        padding: 6px 12px;
-      }
-
-      .carte-livret .badge-verrou .icone-cadenas {
-        font-size: 18px;
       }
 
       .stats-ligne {
@@ -410,7 +355,7 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
-    var livretsData = {};
+    var livretsData = {};        // { "Nom du livret": "couleur" }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
@@ -546,7 +491,7 @@
 
       livrets.forEach(function(livret) {
         // === RÉCUPÉRER LA COULEUR DEPUIS livretsData ===
-        var couleur = livretsData[livret.nom] || '#2d6a4f';
+        var couleur = livretsData[livret.nom] || '#2d6a4f'; // fallback vert par défaut
 
         var lecons = livret.lecons || 0;
 
@@ -564,47 +509,18 @@
 
         var pourcentage = lecons > 0 ? Math.round((validees / lecons) * 100) : 0;
 
-        // === VÉRIFIER SI LE LIVRET EST ACCESSIBLE ===
-        // Le livret est accessible si son niveau <= niveau de l'étudiant
-        var estAccessible = livret.niveau <= niveauEtudiant;
-        
-        // Si le livret est de niveau 1, il est toujours accessible
-        // Si le livret est de niveau supérieur, on vérifie si TOUS les livrets de niveau inférieur sont complétés
-        // Pour simplifier, on considère qu'un livret est accessible si son niveau <= niveauEtudiant
-
-        var classeVerrouille = '';
-        var badgeVerrou = '';
-        var onclickAttr = '';
-
-        if (!estAccessible) {
-          classeVerrouille = ' verrouille';
-          // Enlever la couleur et mettre en noir/blanc
-          couleur = '#888888';
-          badgeVerrou = `
-            <div class="badge-verrou">
-              <span class="icone-cadenas">🔒</span>
-              Niveau ${livret.niveau}
-              <span class="petit-texte">Complétez les livrets de niveau inférieur</span>
-            </div>
-          `;
-          onclickAttr = 'onclick="event.stopPropagation(); alert(\'Veuillez compléter les livrets de niveau inférieur pour accéder à ce niveau.\');"';
-        } else {
-          onclickAttr = 'onclick="window.location.href=\'/medit/livret.html?cat=${encodeURIComponent(livret.nom)}\'"';
-        }
-
         html += `
-          <div class="carte-livret${classeVerrouille}" 
+          <div class="carte-livret" 
                style="background: ${couleur}; border-color: ${couleur};"
-               ${onclickAttr}>
+               onclick="window.location.href='/medit/livret.html?cat=${encodeURIComponent(livret.nom)}'">
             <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
-            ${badgeVerrou}
             <div class="contenu-livret">
               <span class="titre-livret">${livret.nom}</span>
               <span class="nb-lecons">${lecons} leçon${lecons > 1 ? 's' : ''}</span>
-              <span class="sous-titre-livret">${estAccessible ? validees + '/' + lecons + ' validée' + (validees > 1 ? 's' : '') : '🔒 Verrouillé'}</span>
+              <span class="sous-titre-livret">${validees}/${lecons} validée${validees > 1 ? 's' : ''}</span>
             </div>
             <div class="progression-livret">
-              <div class="barre" style="width: ${estAccessible ? pourcentage : 0}%;"></div>
+              <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
         `;
