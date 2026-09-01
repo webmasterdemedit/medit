@@ -30,7 +30,7 @@
       border-bottom: 1px solid var(--border);
     }
 
-    /* ===== COUVERTURE MINIATURE ===== */
+    /* ===== COUVERTURE MINIATURE (style carte mes-livrets) ===== */
     .couverture-mini {
       flex-shrink: 0;
       width: 200px;
@@ -40,60 +40,115 @@
       align-items: center;
       justify-content: center;
       text-align: center;
-      padding: 20px;
-      color: #ffffff;
+      padding: 0;
+      color: #1a1a1a;
       border: 1px solid var(--border);
       position: relative;
       overflow: hidden;
       background: var(--bg);
+      cursor: default;
     }
 
     .couverture-mini .contenu-couv {
       position: relative;
       z-index: 2;
+      padding: 24px 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .couverture-mini .titre-wrapper {
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100%;
-      width: 100%;
+      gap: 4px;
+      margin-top: 30px;
     }
 
     .couverture-mini .titre-couv {
       font-family: 'Georgia', serif;
-      font-size: 24px;
+      font-size: 22px;
       font-weight: 700;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.3px;
+      margin-bottom: 0;
       line-height: 1.2;
-      margin-bottom: 6px;
-      color: #ffffff;
+      max-width: 90%;
+      color: #1a1a1a;
+      text-align: center;
     }
 
-    .couverture-mini .nb-lecons-couv {
-      font-size: 14px;
-      font-weight: 300;
-      opacity: 0.85;
-      padding: 4px 16px;
-      margin-top: 4px;
-      color: rgba(255, 255, 255, 0.85);
-      background: rgba(0, 0, 0, 0.15);
+    .couverture-mini .sous-titre-couv {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.8;
+      margin-top: 8px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.3;
+      text-align: center;
     }
 
-    .couverture-mini .niveau-couv {
+    .couverture-mini .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding-bottom: 10px;
+    }
+
+    .couverture-mini .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+
+    .couverture-mini .edition-date {
+      font-size: 10px;
+      opacity: 1;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
+    }
+
+    .couverture-mini .badge-niveau-couv {
       position: absolute;
-      top: 12px;
-      right: 12px;
+      top: 14px;
+      right: 14px;
       z-index: 3;
-      padding: 2px 12px;
+      padding: 3px 12px;
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.5px;
-      color: rgba(255, 255, 255, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.10);
-      background: rgba(0, 0, 0, 0.20);
+      color: rgba(26, 26, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.70);
     }
 
-    /* ===== DESCRIPTION ===== */
+    .couverture-mini .progression-couv {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .couverture-mini .progression-couv .barre {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    /* ===== DESCRIPTION À DROITE ===== */
     .description-livret {
       flex: 1;
       padding-top: 4px;
@@ -108,11 +163,16 @@
       letter-spacing: 0.3px;
     }
 
-    .description-livret .sous-titre-desc {
+    .description-livret .pre-requis {
       font-size: 13px;
       color: var(--text-secondary);
       margin-bottom: 10px;
       font-weight: 300;
+    }
+
+    .description-livret .pre-requis strong {
+      font-weight: 500;
+      color: var(--text);
     }
 
     .description-livret .texte-desc {
@@ -429,10 +489,6 @@
         font-size: 17px;
       }
 
-      .couverture-mini .nb-lecons-couv {
-        font-size: 12px;
-      }
-
       .description-livret .texte-desc {
         font-size: 14px;
       }
@@ -597,7 +653,22 @@
     var livretsData = {};
 
     // ============================================================
-    // FONCTIONS D'IMPRESSION (copiées de mes-livrets.html)
+    // FORMATER LA DATE
+    // ============================================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var date = new Date(dateStr);
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        return mois[date.getMonth()] + ' ' + date.getFullYear();
+      } catch(e) {
+        return dateStr;
+      }
+    }
+
+    // ============================================================
+    // FONCTIONS D'IMPRESSION
     // ============================================================
 
     function imprimerArticle(articleId, titre) {
@@ -717,7 +788,6 @@
         }
       });
 
-      // Date de création du post
       var dateCreation = post.date || '';
       var dateCreationStr = '';
       if (dateCreation) {
@@ -729,7 +799,6 @@
         }
       }
 
-      // Date d'impression
       var dateImpression = new Date();
       var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric'
@@ -903,7 +972,6 @@
           <div class="page">
       `;
 
-      // ===== EN-TÊTE =====
       printHtml += `
         <h1>${post.titre || 'Lecture'}</h1>
         <div class="sous-titre">${post.categorie || 'Sans catégorie'}</div>
@@ -914,7 +982,6 @@
         </div>
       `;
 
-      // ===== ZONE DE LECTURE =====
       printHtml += `<div class="zone-lecture">`;
 
       if (slidesArray.length > 0) {
@@ -930,13 +997,11 @@
 
       printHtml += `</div>`;
 
-      // ===== ZONE EXERCICES =====
       printHtml += `<div class="zone-exercices">`;
 
       var hasExercice = false;
       var questionNum = 1;
 
-      // --- QUIZ ---
       if (quiz.trim() !== '') {
         hasExercice = true;
         var quizs = parserQuizsPourImpression(quiz);
@@ -954,7 +1019,6 @@
         });
       }
 
-      // --- QUESTION OUVERTE ---
       if (openQuestion.trim() !== '') {
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
@@ -968,7 +1032,6 @@
         questionNum++;
       }
 
-      // --- ORDRE ---
       if (ordre.trim() !== '') {
         hasExercice = true;
         var ordreItems = parserOrdrePourImpression(ordre);
@@ -983,7 +1046,6 @@
         printHtml += `</div>`;
       }
 
-      // --- CARTE ---
       if (carte.trim() !== '') {
         hasExercice = true;
         var carteData = parserCartePourImpression(carte);
@@ -998,7 +1060,6 @@
         }
       }
 
-      // --- RETENIR ---
       if (retenir.trim() !== '') {
         hasExercice = true;
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
@@ -1018,7 +1079,6 @@
 
       printHtml += `</div>`;
 
-      // ===== PIED DE PAGE =====
       printHtml += `
             <div class="pied-page">
               <div>Qiraat</div>
@@ -1144,15 +1204,20 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES COULEURS DES LIVRETS ===
+          // Récupérer les livrets complets
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
               data.livrets.forEach(function(l) {
-                if (l.titre && l.couleur) {
-                  livretsData[l.titre] = l.couleur;
-                }
+                livretsData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  preRequis: l.preRequis || '',
+                  description: l.description || ''
+                };
               });
+              console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
             }
           }
 
@@ -1165,19 +1230,23 @@
 
           afficherLivret();
         })
-        .catch(function() {
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
-            // Récupérer les livrets depuis le cache
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
                 cache.livrets.forEach(function(l) {
-                  if (l.titre && l.couleur) {
-                    livretsData[l.titre] = l.couleur;
-                  }
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    sousTitre: l.sousTitre || '',
+                    date: l.date || '',
+                    preRequis: l.preRequis || '',
+                    description: l.description || ''
+                  };
                 });
               }
             }
@@ -1200,12 +1269,12 @@
     // AFFICHER LE LIVRET
     // ============================================================
     function afficherLivret() {
-      // === FILTRER LES POSTS PAR CATÉGORIE ===
+      // Filtrer les posts par catégorie
       var postsFiltres = postsData.filter(function(p) {
         return (p.categorie || 'Sans catégorie') === categorieActuelle;
       });
 
-      // === TRIER LES POSTS ===
+      // Trier les posts
       postsFiltres.sort(function(a, b) {
         return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
       });
@@ -1223,11 +1292,10 @@
         return;
       }
 
-      // === TROUVER LE NIVEAU ET LE NOMBRE DE LEÇONS ===
       var niveauLivret = postsFiltres[0].niveau || 1;
       var totalLecons = postsFiltres.length;
 
-      // === COMPTER LES LEÇONS VALIDÉES ===
+      // Compter les leçons validées
       var validees = 0;
       postsFiltres.forEach(function(post) {
         var reponse = toutesLesReponses[post.id];
@@ -1239,32 +1307,46 @@
         }
       });
 
-      // === DÉTERMINER LA COULEUR DEPUIS livretsData ===
-      var couleur = livretsData[categorieActuelle] || '#2d6a4f';
+      // Récupérer les infos du livret
+      var livretInfo = livretsData[categorieActuelle] || {};
+      var couleur = livretInfo.couleur || '#2d6a4f';
+      var sousTitre = livretInfo.sousTitre || '';
+      var dateLivret = livretInfo.date || '';
+      var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalLecons + ' leçons.';
+      var preRequis = livretInfo.preRequis || '';
 
-      // === DESCRIPTION PAR DÉFAUT ===
-      var description = 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalLecons + ' leçons. Chaque leçon vous guidera pas à pas dans l\'apprentissage.';
+      var dateFormatee = formatDate(dateLivret);
+      var pourcentage = totalLecons > 0 ? Math.round((validees / totalLecons) * 100) : 0;
 
-      // === AFFICHER L'ENTÊTE ===
+      // === ENTÊTE ===
       var enteteHtml = `
         <div class="entete-livret">
           <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
-            <span class="niveau-couv">Niveau ${niveauLivret}</span>
+            <span class="badge-niveau-couv">Niveau ${niveauLivret}</span>
             <div class="contenu-couv">
-              <span class="titre-couv">${categorieActuelle}</span>
-              <span class="nb-lecons-couv">${totalLecons} leçon${totalLecons > 1 ? 's' : ''}</span>
+              <div class="titre-wrapper">
+                <span class="titre-couv">${categorieActuelle}</span>
+                ${sousTitre ? `<span class="sous-titre-couv">${sousTitre}</span>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              </div>
+            </div>
+            <div class="progression-couv">
+              <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
           <div class="description-livret">
             <h2>${categorieActuelle}</h2>
-            <div class="sous-titre-desc">${totalLecons} leçon${totalLecons > 1 ? 's' : ''} · ${validees} validée${validees > 1 ? 's' : ''}</div>
+            ${preRequis ? `<div class="pre-requis"><strong>Pré-requis :</strong> ${preRequis}</div>` : ''}
             <div class="texte-desc">
               <p>${description}</p>
             </div>
             <div class="stats-livret">
-              <span class="stat-item">Leçons totales : <span class="nombre">${totalLecons}</span></span>
+              <span class="stat-item">Leçons : <span class="nombre">${totalLecons}</span></span>
               <span class="stat-item">Validées : <span class="nombre">${validees}</span></span>
-              <span class="stat-item">Progression : <span class="nombre">${totalLecons > 0 ? Math.round((validees / totalLecons) * 100) : 0}%</span></span>
+              <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
             </div>
           </div>
         </div>
