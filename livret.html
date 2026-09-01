@@ -622,115 +622,359 @@
 }
 
     function genererImpression(post, contenu) {
-  // Nettoyer le contenu
-  var cleanContent = contenu
-    .replace(/<[^>]*>/g, '') // Supprimer les balises HTML
-    .replace(/\|/g, ' ') // Remplacer les séparateurs
-    .trim();
+      var parts = contenu.split(' | ');
+      
+      var slidesArray = [];
+      var quiz = '';
+      var openQuestion = '';
+      var ordre = '';
+      var carte = '';
+      var retenir = '';
+      
+      parts.forEach(function(part) {
+        part = part.trim();
+        if (part.startsWith('q:')) {
+          quiz = part;
+        } else if (part.startsWith('qs:')) {
+          openQuestion = part;
+        } else if (part.startsWith('o:')) {
+          ordre = part;
+        } else if (part.startsWith('r:')) {
+          carte = part;
+        } else if (part.startsWith('#')) {
+          retenir = part;
+        } else {
+          var cleanText = part.replace(/\r\n/g, '\n').trim();
+          if (cleanText) {
+            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+            subSlides.forEach(function(sub) {
+              slidesArray.push(sub.trim());
+            });
+          }
+        }
+      });
 
-  var printHtml = `
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <meta charset="UTF-8">
-      <title>${post.titre || 'Lecture'}</title>
-      <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        @page { 
-          margin: 2.5cm; 
-          size: A4;
+      // Date de création du post
+      var dateCreation = post.date || '';
+      var dateCreationStr = '';
+      if (dateCreation) {
+        var d = new Date(dateCreation);
+        if (!isNaN(d.getTime())) {
+          dateCreationStr = d.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric'
+          });
         }
-        body {
-          font-family: 'Georgia', 'Times New Roman', Times, serif;
-          background: #faf8f5;
-          color: #1a1a1a;
-          font-size: 11.5pt;
-          line-height: 1.8;
-          padding: 20px;
-          max-width: 800px;
-          margin: 0 auto;
-        }
-        h1 { 
-          font-size: 18pt; 
-          text-align: center; 
-          margin-bottom: 10px;
-          color: #2d6a4f;
-          border-bottom: 2px solid #2d6a4f;
-          padding-bottom: 10px;
-        }
-        .meta { 
-          text-align: center; 
-          font-size: 10pt; 
-          color: #6a6a6a; 
-          margin-bottom: 20px;
-        }
-        .contenu { 
-          max-width: 100%; 
-        }
-        .contenu p { 
-          text-indent: 2em; 
-          margin-bottom: 8px; 
-          text-align: justify; 
-        }
-        .footer { 
-          text-align: center; 
-          font-size: 8pt; 
-          color: #8a7a6a; 
-          margin-top: 30px; 
-          border-top: 1px solid #d4c9b8; 
-          padding-top: 15px;
-        }
-        .no-print { display: none; }
-        @media print { 
-          body { padding: 0; }
-          .no-print { display: none; }
-        }
-      </style>
-    </head>
-    <body>
-      <h1>${post.titre || 'Lecture'}</h1>
-      <div class="meta">${post.categorie || ''} · Niveau ${post.niveau || 0}</div>
-      <div class="contenu">
-  `;
+      }
 
-  // Découper le contenu en paragraphes
-  var paragraphs = cleanContent.split('\n').filter(function(p) { 
-    return p.trim() !== ''; 
-  });
-  
-  paragraphs.forEach(function(p) {
-    printHtml += '<p>' + p.trim() + '</p>';
-  });
+      // Date d'impression
+      var dateImpression = new Date();
+      var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+      var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+        hour: '2-digit', minute: '2-digit'
+      });
 
-  printHtml += `
-      </div>
-      <div class="footer">
-        Qiraat · Imprimé le ${new Date().toLocaleDateString('fr-FR', { 
-          day: '2-digit', 
-          month: 'long', 
-          year: 'numeric',
-          hour: '2-digit',
-          minute: '2-digit'
-        })}
-      </div>
-      <script>
-        window.onload = function() { 
-          setTimeout(function() { window.print(); }, 500);
+      var printHtml = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>${post.titre || 'Lecture'}</title>
+          <style>
+            * { margin: 0; padding: 0; box-sizing: border-box; }
+            @page {
+              margin: 2cm 2cm 1.5cm 2cm;
+              size: A4;
+            }
+            body {
+              font-family: 'Times New Roman', Times, serif;
+              background: white;
+              color: black;
+              font-size: 12pt;
+              line-height: 1.7;
+            }
+            .page {
+              max-width: 100%;
+              min-height: 100vh;
+              display: flex;
+              flex-direction: column;
+            }
+            
+            h1 {
+              font-size: 20pt;
+              font-weight: bold;
+              text-align: center;
+              text-transform: uppercase;
+              letter-spacing: 1.5px;
+              margin-bottom: 4px;
+            }
+            .sous-titre {
+              text-align: center;
+              font-size: 11pt;
+              font-style: italic;
+              margin-bottom: 4px;
+              color: #444;
+            }
+            .meta-ligne {
+              text-align: center;
+              font-size: 10pt;
+              color: #555;
+              margin-bottom: 18px;
+              border-bottom: 1px solid #ccc;
+              padding-bottom: 10px;
+            }
+            .meta-ligne span {
+              margin: 0 8px;
+            }
+            .meta-ligne .sep {
+              color: #ccc;
+            }
+            
+            .zone-lecture {
+              flex: 1;
+              padding: 6px 0;
+            }
+            .slide {
+              margin-bottom: 14px;
+            }
+            .slide p {
+              font-size: 13pt;
+              margin-bottom: 8px;
+              text-align: justify;
+              text-indent: 2em;
+            }
+            .slide p:first-of-type {
+              text-indent: 0;
+            }
+            
+            .zone-exercices {
+              border-top: 1px solid #ccc;
+              padding-top: 10px;
+              margin-top: 12px;
+              font-size: 10pt;
+              line-height: 1.5;
+              color: #333;
+            }
+            .zone-exercices .titre-exo {
+              font-weight: bold;
+              font-size: 10pt;
+              text-transform: uppercase;
+              letter-spacing: 0.5px;
+              margin-bottom: 4px;
+            }
+            .exo-quiz {
+              margin-bottom: 6px;
+            }
+            .exo-quiz .q {
+              font-weight: bold;
+            }
+            .exo-quiz .reponses {
+              padding-left: 16px;
+            }
+            .exo-quiz .reponses .r {
+              display: inline-block;
+              margin-right: 14px;
+            }
+            .exo-quiz .case {
+              display: inline-block;
+              width: 12px;
+              height: 12px;
+              border: 1px solid #000;
+              margin-right: 3px;
+              background: white;
+            }
+            .exo-ordre {
+              margin-bottom: 6px;
+            }
+            .exo-ordre .item {
+              display: inline-block;
+              margin-right: 10px;
+              font-style: italic;
+            }
+            .exo-ordre .item::before {
+              content: "— ";
+            }
+            .exo-carte {
+              margin-bottom: 6px;
+              border: 1px solid #ccc;
+              padding: 4px 10px;
+              background: #f9f9f9;
+            }
+            .exo-carte .recto {
+              font-weight: bold;
+            }
+            .exo-carte .verso-vide {
+              color: #999;
+              font-style: italic;
+              font-size: 9pt;
+            }
+            .exo-retenir {
+              margin-top: 4px;
+            }
+            .exo-retenir .mot {
+              display: inline-block;
+              padding: 1px 8px;
+              margin: 1px 4px 1px 0;
+              border: 1px solid #999;
+              font-weight: bold;
+              font-size: 9pt;
+            }
+            .pied-page {
+              text-align: center;
+              font-size: 9pt;
+              color: #666;
+              margin-top: 6px;
+              padding-top: 6px;
+              border-top: 1px solid #ddd;
+            }
+            .pied-page .imprime-le {
+              font-style: italic;
+              font-size: 8pt;
+              color: #999;
+              margin-top: 2px;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="page">
+      `;
+
+      // ===== EN-TÊTE =====
+      printHtml += `
+        <h1>${post.titre || 'Lecture'}</h1>
+        <div class="sous-titre">${post.categorie || 'Sans catégorie'}</div>
+        <div class="meta-ligne">
+          <span>Créé le : ${dateCreationStr || '—'}</span>
+          <span class="sep">|</span>
+          <span>Niveau ${post.niveau || 0}</span>
+        </div>
+      `;
+
+      // ===== ZONE DE LECTURE =====
+      printHtml += `<div class="zone-lecture">`;
+
+      if (slidesArray.length > 0) {
+        slidesArray.forEach(function(slide, idx) {
+          printHtml += `<div class="slide">`;
+          var paragraphs = slide.split('\n').filter(function(p) { return p.trim() !== ''; });
+          paragraphs.forEach(function(p) {
+            printHtml += `<p>${p.trim()}</p>`;
+          });
+          printHtml += `</div>`;
+        });
+      }
+
+      printHtml += `</div>`;
+
+      // ===== ZONE EXERCICES =====
+      printHtml += `<div class="zone-exercices">`;
+
+      var hasExercice = false;
+      var questionNum = 1;
+
+      // --- QUIZ ---
+      if (quiz.trim() !== '') {
+        hasExercice = true;
+        var quizs = parserQuizsPourImpression(quiz);
+        printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
+        quizs.forEach(function(q, qi) {
+          printHtml += `<div class="exo-quiz">`;
+          printHtml += `<span class="q">${questionNum}.</span> ${q.question}`;
+          printHtml += `<div class="reponses">`;
+          q.reponses.forEach(function(rep) {
+            printHtml += `<span class="r"><span class="case"></span> ${rep.lettre}. ${rep.texte}</span>`;
+          });
+          printHtml += `</div>`;
+          printHtml += `</div>`;
+          questionNum++;
+        });
+      }
+
+      // --- QUESTION OUVERTE (comme une question de compréhension) ---
+      if (openQuestion.trim() !== '') {
+        hasExercice = true;
+        var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
+        if (quiz.trim() === '') {
+          printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
         }
-      <\/script>
-    </body>
-    </html>
-  `;
+        printHtml += `<div class="exo-quiz">`;
+        printHtml += `<span class="q">${questionNum}.</span> ${qsTexte}`;
+        printHtml += `<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>`;
+        printHtml += `</div>`;
+        questionNum++;
+      }
 
-  var win = window.open('', '_blank', 'width=900,height=700,scrollbars=yes,menubar=yes');
-  if (!win) {
-    alert('Veuillez autoriser les pop-ups pour imprimer.');
-    return;
-  }
-  
-  win.document.write(printHtml);
-  win.document.close();
-}
+      // --- ORDRE ---
+      if (ordre.trim() !== '') {
+        hasExercice = true;
+        var ordreItems = parserOrdrePourImpression(ordre);
+        if (quiz.trim() === '' && openQuestion.trim() === '') {
+          printHtml += `<div class="titre-exo">Exercices</div>`;
+        }
+        printHtml += `<div class="exo-ordre" style="margin-top:6px;">`;
+        printHtml += `<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l'ordre :</div>`;
+        ordreItems.forEach(function(item, idx) {
+          printHtml += `<span class="item">${item}</span>`;
+        });
+        printHtml += `</div>`;
+      }
+
+      // --- CARTE ---
+      if (carte.trim() !== '') {
+        hasExercice = true;
+        var carteData = parserCartePourImpression(carte);
+        if (carteData) {
+          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') {
+            printHtml += `<div class="titre-exo">Exercices</div>`;
+          }
+          printHtml += `<div class="exo-carte" style="margin-top:6px;">`;
+          printHtml += `<div class="recto">${carteData.recto}</div>`;
+          printHtml += `<div class="verso-vide">(Espace pour écrire la réponse)</div>`;
+          printHtml += `</div>`;
+        }
+      }
+
+      // --- RETENIR ---
+      if (retenir.trim() !== '') {
+        hasExercice = true;
+        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+        if (mots.length > 0) {
+          printHtml += `<div class="titre-exo" style="margin-top:8px;">Mots à retenir</div>`;
+          printHtml += `<div class="exo-retenir">`;
+          mots.forEach(function(mot) {
+            printHtml += `<span class="mot">${mot}</span>`;
+          });
+          printHtml += `</div>`;
+        }
+      }
+
+      if (!hasExercice) {
+        printHtml += `<div style="height:2px;"></div>`;
+      }
+
+      printHtml += `</div>`;
+
+      // ===== PIED DE PAGE =====
+      printHtml += `
+            <div class="pied-page">
+              <div>Qiraat</div>
+              <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+      var win = window.open('', '_blank', 'width=1000,height=800,scrollbars=yes');
+      if (!win) {
+        alert('Veuillez autoriser les pop-ups pour imprimer.');
+        return;
+      }
+      win.document.write(printHtml);
+      win.document.close();
+    }
+
     // ============================================================
     // OUVERTURE MODAL ANNOTATIONS
     // ============================================================
