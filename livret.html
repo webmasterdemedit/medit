@@ -184,7 +184,7 @@
       letter-spacing: 0.3px;
     }
 
-    /* ===== CARTE POST (reprise de mes-textes) ===== */
+    /* ===== CARTE POST ===== */
     .carte-post {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -274,6 +274,7 @@
       font-family: 'Roboto', sans-serif;
       background: transparent;
       border: 1px solid var(--border);
+      border-radius: 4px;
       cursor: pointer;
       color: var(--text-secondary);
       transition: all 0.2s;
@@ -539,7 +540,7 @@
 
   <div class="page page-livret">
 
-    <a href="/medit/mes-livrets.html" class="btn-retour">← Retour aux livrets</a>
+    <a href="/medit/mes-textes.html" class="btn-retour">← Retour aux textes</a>
 
     <div id="enteteLivret">
       <div class="loader">
@@ -595,31 +596,93 @@
     var categorieActuelle = '';
     var livretsData = {};
 
-   function imprimerArticle(articleId, titre) {
-  // Vérifier si CONFIG existe (avec majuscule)
-  if (typeof CONFIG === 'undefined' || !CONFIG.SCRIPT_URL) {
-    alert('Erreur de configuration : impossible de contacter le serveur.');
-    console.error('CONFIG non défini ou SCRIPT_URL manquant');
-    return;
-  }
-  
-  var url = CONFIG.SCRIPT_URL;
+    // ============================================================
+    // FONCTIONS D'IMPRESSION (copiées de mes-textes.html)
+    // ============================================================
 
-  fetch(url + '?action=getPost&id=' + encodeURIComponent(articleId))
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (!data.success || !data.post) {
-        alert('Impossible de charger le contenu.');
-        return;
+    function imprimerArticle(articleId, titre) {
+      var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
+      
+      fetch(url + '?action=getPost&id=' + encodeURIComponent(articleId))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (!data.success || !data.post) {
+            alert('Impossible de charger le contenu.');
+            return;
+          }
+          var post = data.post;
+          var contenu = post.contenu || '';
+          genererImpression(post, contenu);
+        })
+        .catch(function(error) {
+          alert('Erreur : ' + error.message);
+        });
+    }
+
+    function parserQuizsPourImpression(quizTexte) {
+      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var quizs = [];
+      var currentQuiz = null;
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        if (ligne.match(/^q:/i)) {
+          if (currentQuiz && currentQuiz.reponses.length > 0) {
+            quizs.push(currentQuiz);
+          }
+          currentQuiz = {
+            question: ligne.replace(/^q:\s*/i, '').trim() || 'Question',
+            reponses: []
+          };
+        } else if (currentQuiz) {
+          var texteRep = ligne;
+          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
+          } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
+          }
+          if (texteRep) {
+            currentQuiz.reponses.push({ 
+              texte: texteRep || 'Réponse', 
+              lettre: lettres[currentQuiz.reponses.length] || '?'
+            });
+          }
+        }
       }
-      var post = data.post;
-      var contenu = post.contenu || '';
-      genererImpression(post, contenu);
-    })
-    .catch(function(error) {
-      alert('Erreur : ' + error.message);
-    });
-}
+      
+      if (currentQuiz && currentQuiz.reponses.length > 0) {
+        quizs.push(currentQuiz);
+      }
+      return quizs;
+    }
+
+    function parserOrdrePourImpression(ordreTexte) {
+      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var elements = [];
+      for (var i = 0; i < lignes.length; i++) {
+        var match = lignes[i].match(/^(\d+)\s+(.+)/);
+        if (match) {
+          elements.push(match[2]);
+        }
+      }
+      return elements;
+    }
+
+    function parserCartePourImpression(carteTexte) {
+      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var recto = '', verso = '';
+      for (var i = 0; i < lignes.length; i++) {
+        var l = lignes[i];
+        if (l.toLowerCase().startsWith('r:')) {
+          recto = l.replace(/^r:\s*/i, '').trim();
+        } else if (l.toLowerCase().startsWith('v:')) {
+          verso = l.replace(/^v:\s*/i, '').trim();
+        }
+      }
+      if (!recto) return null;
+      return { recto: recto, verso: verso };
+    }
 
     function genererImpression(post, contenu) {
       var parts = contenu.split(' | ');
@@ -891,7 +954,7 @@
         });
       }
 
-      // --- QUESTION OUVERTE (comme une question de compréhension) ---
+      // --- QUESTION OUVERTE ---
       if (openQuestion.trim() !== '') {
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
@@ -1062,7 +1125,7 @@
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
             <p>Veuillez sélectionner un livret depuis la page d'accueil.</p>
-            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+            <a href="/medit/mes-textes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux textes</a>
           </div>
         `;
         document.getElementById('contenuLecons').innerHTML = '';
@@ -1153,7 +1216,7 @@
             <span class="icone">◈</span>
             <h4>Aucune leçon</h4>
             <p>Ce livret ne contient pas encore de leçons accessibles à votre niveau (${niveauEtudiant}).</p>
-            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+            <a href="/medit/mes-textes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux textes</a>
           </div>
         `;
         document.getElementById('contenuLecons').innerHTML = '';
@@ -1292,14 +1355,14 @@
 
             var reponseOuverte = reponse.reponseOuverte || '';
             if (reponseOuverte && reponseOuverte.trim() !== '') {
-              questionHtml = '<span class="badge-icone">Question envoyée</span>';
+              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
             } else if (hasQuestion) {
               questionHtml = '<span class="badge-icone">Question non envoyée</span>';
             }
 
             var annotations = reponse.annotations || '';
             if (annotations && annotations.trim() !== '') {
-              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté</span>';
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + post.id + '\', \'' + post.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
             } else {
               annoteHtml = '<span class="badge-icone">Non annoté</span>';
             }
@@ -1313,7 +1376,7 @@
 
           metaHtml = resultatHtml + questionHtml + annoteHtml;
         } else {
-          metaHtml = '<span class="badge-icone">Nb questions : ' + nbQuestions + '</span>';
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
         }
 
         var dateHtml = '';
@@ -1350,7 +1413,7 @@
           imprimerHtml = `
             <div class="btn-wrap">
               <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerArticle('${post.id}', '${post.titre.replace(/'/g, "\\'")}')">
-                Imprimer la page
+                🖨️ Imprimer
               </button>
             </div>
           `;
