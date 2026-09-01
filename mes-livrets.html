@@ -105,23 +105,31 @@
       height: 100%;
     }
 
+    .carte-livret .titre-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 20px;
+    }
+
     .carte-livret .titre-livret {
       font-family: 'Georgia', serif;
       font-size: 22px;
       font-weight: 700;
       letter-spacing: 0.3px;
-      margin-bottom: 6px;
+      margin-bottom: 0;
       line-height: 1.2;
       max-width: 90%;
-      color: #1a1a1a;   
+      color: #1a1a1a;
     }
 
     .carte-livret .sous-titre-livret {
       font-size: 13px;
-      font-weight: 300;
-      opacity: 0.85;
-      margin-top: 4px;
-      color: rgba(26, 26, 26, 0.85);
+      font-weight: 500;
+      opacity: 0.8;
+      margin-top: 8px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.3;
     }
 
     .carte-livret .edition-info {
@@ -145,8 +153,9 @@
 
     .carte-livret .edition-date {
       font-size: 10px;
-      opacity: 0.4;
-      color: rgba(26, 26, 26, 0.4);
+      opacity: 1;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
     }
 
     .carte-livret .badge-niveau {
@@ -363,7 +372,7 @@
     // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
-    var livretsData = {};        // { "Nom du livret": { couleur, sousTitre, date, preRequis } }
+    var livretsData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
@@ -399,7 +408,6 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES DONNÉES DES LIVRETS ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
@@ -474,7 +482,6 @@
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // === EXTRAIRE LES CATÉGORIES DES POSTS ===
       var categories = {};
       var totalLecons = 0;
 
@@ -495,12 +502,10 @@
 
       var livrets = Object.values(categories);
 
-      // Trier par niveau puis par nom
       livrets.sort(function(a, b) {
         return a.niveau - b.niveau || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
-      // Mettre à jour les stats
       document.getElementById('totalLivrets').textContent = livrets.length;
       document.getElementById('totalLecons').textContent = totalLecons;
 
@@ -518,7 +523,6 @@
       var html = '<div class="grille-livrets">';
 
       livrets.forEach(function(livret) {
-        // === RÉCUPÉRER LES DONNÉES DEPUIS livretsData ===
         var data = livretsData[livret.nom] || {};
         var couleur = data.couleur || '#2d6a4f';
         var sousTitre = data.sousTitre || '';
@@ -526,7 +530,6 @@
 
         var lecons = livret.lecons || 0;
 
-        // Compter les leçons validées
         var validees = 0;
         livret.posts.forEach(function(post) {
           var reponse = toutesLesReponses[post.id];
@@ -547,7 +550,7 @@
                onclick="window.location.href='/medit/livret.html?cat=${encodeURIComponent(livret.nom)}'">
             <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
             <div class="contenu-livret">
-              <div>
+              <div class="titre-wrapper">
                 <span class="titre-livret">${livret.nom}</span>
                 ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
               </div>
