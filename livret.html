@@ -595,27 +595,31 @@
     var categorieActuelle = '';
     var livretsData = {};
 
-    // ============================================================
-    // IMPRESSION
-    // ============================================================
     function imprimerArticle(articleId, titre) {
-      var url = config.scriptUrl;
+  // Vérifier si config existe
+  if (typeof config === 'undefined' || !config.scriptUrl) {
+    alert('Erreur de configuration : impossible de contacter le serveur.');
+    console.error('config non défini ou scriptUrl manquant');
+    return;
+  }
+  
+  var url = config.scriptUrl;
 
-      fetch(url + '?action=getPost&id=' + encodeURIComponent(articleId))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (!data.success || !data.post) {
-            alert('Impossible de charger le contenu.');
-            return;
-          }
-          var post = data.post;
-          var contenu = post.contenu || '';
-          genererImpression(post, contenu);
-        })
-        .catch(function(error) {
-          alert('Erreur : ' + error.message);
-        });
-    }
+  fetch(url + '?action=getPost&id=' + encodeURIComponent(articleId))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (!data.success || !data.post) {
+        alert('Impossible de charger le contenu.');
+        return;
+      }
+      var post = data.post;
+      var contenu = post.contenu || '';
+      genererImpression(post, contenu);
+    })
+    .catch(function(error) {
+      alert('Erreur : ' + error.message);
+    });
+}
 
     function genererImpression(post, contenu) {
       var printHtml = `
