@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
-    /* ===== PAGE LIVRETS ===== */
     .page-livrets {
       max-width: 1200px;
       margin: 0 auto;
@@ -33,7 +32,6 @@
       font-weight: 300;
     }
 
-    /* ===== STATS ===== */
     .stats-ligne {
       display: flex;
       gap: 20px;
@@ -57,7 +55,6 @@
       margin-left: 6px;
     }
 
-    /* ===== GRILLE DES LIVRETS ===== */
     .grille-livrets {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -65,7 +62,6 @@
       margin-top: 10px;
     }
 
-    /* ===== CARTE LIVRET ===== */
     .carte-livret {
       position: relative;
       border-radius: 0;
@@ -168,7 +164,6 @@
       width: 0%;
     }
 
-    /* ===== CARTE VERROUILLÉE ===== */
     .carte-livret.verrouille {
       filter: grayscale(1);
       opacity: 0.7;
@@ -214,7 +209,6 @@
       margin-top: 2px;
     }
 
-    /* ===== VIDE ===== */
     .vide-livrets {
       grid-column: 1 / -1;
       text-align: center;
@@ -242,7 +236,6 @@
       margin-top: 4px;
     }
 
-    /* ===== LOADER ===== */
     .loader {
       text-align: center;
       padding: 40px 20px;
@@ -262,7 +255,6 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 640px) {
       .page-livrets {
         padding: 12px 16px 30px;
@@ -405,18 +397,12 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // DONNÉES
-    // ============================================================
     var toutesLesReponses = {};
     var postsData = [];
-    var livretsData = {};        // { "Nom du livret": { couleur, niveau, description, nbChapitres } }
+    var livretsData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
-    // ============================================================
-    // CHARGEMENT
-    // ============================================================
     function chargerLivrets() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -431,7 +417,6 @@
           niveauEtudiant = data.niveau || 0;
           postsData = data.posts || [];
 
-          // === RÉCUPÉRER LES DONNÉES DES LIVRETS (couleur, niveau, description, nbChapitres) ===
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
@@ -445,7 +430,6 @@
                   };
                 }
               });
-              console.log('📚 ' + data.livrets.length + ' livrets chargés');
             }
           }
 
@@ -468,7 +452,6 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             postsData = cache.posts || [];
-            // Récupérer les livrets depuis le cache
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
@@ -503,15 +486,11 @@
         });
     }
 
-    // ============================================================
-    // AFFICHER LES LIVRETS
-    // ============================================================
     function afficherLivrets() {
       var container = document.getElementById('contenu');
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // === COMPTER LES LEÇONS PAR CATÉGORIE (parmi les posts de l'étudiant) ===
       var categoriesFromPosts = {};
       var totalLecons = 0;
 
@@ -528,10 +507,8 @@
         totalLecons++;
       });
 
-      // === CONSTRUIRE LA LISTE COMPLÈTE DES LIVRETS (depuis livretsData + posts) ===
       var livrets = [];
 
-      // 1. Ajouter tous les livrets depuis livretsData
       for (var titre in livretsData) {
         var info = livretsData[titre];
         var posts = categoriesFromPosts[titre] ? categoriesFromPosts[titre].posts : [];
@@ -548,7 +525,6 @@
         });
       }
 
-      // 2. Ajouter les catégories qui existent dans posts mais pas dans livretsData
       for (var cat in categoriesFromPosts) {
         var existeDeja = livrets.some(function(l) { return l.nom === cat; });
         if (!existeDeja) {
@@ -564,12 +540,10 @@
         }
       }
 
-      // Trier par niveau puis par nom
       livrets.sort(function(a, b) {
         return a.niveau - b.niveau || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
-      // Mettre à jour les stats
       document.getElementById('totalLivrets').textContent = livrets.length;
       document.getElementById('totalLecons').textContent = totalLecons;
 
@@ -590,7 +564,6 @@
         var couleur = livret.couleur || '#2d6a4f';
         var lecons = livret.lecons || 0;
 
-        // Compter les leçons validées
         var validees = 0;
         livret.posts.forEach(function(post) {
           var reponse = toutesLesReponses[post.id];
@@ -625,7 +598,6 @@
           onclickAttr = 'onclick="window.location.href=\'/medit/livret.html?cat=${encodeURIComponent(livret.nom)}\'"';
         }
 
-        // Si le livret n'a pas de posts (livret vide), on le montre quand même mais sans progression
         var leconsText = lecons > 0 ? lecons + ' leçon' + (lecons > 1 ? 's' : '') : 'À venir';
         var progressionText = '';
         if (lecons > 0) {
@@ -656,9 +628,6 @@
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
     function demarrer() {
       chargerLivrets();
     }
