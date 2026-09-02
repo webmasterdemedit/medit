@@ -158,7 +158,7 @@
   <div class="pagination-text" id="pagination">1 / 1</div>
 
   <script>
-    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoRmyN_c7FxRlngDcseQeAlPU2GL8TK9JEge7K4VLHYXOboug8vdVsxqinfQAZmGVE/exec';
+    // Utiliser CONFIG.SCRIPT_URL défini dans config.js var SCRIPT_URL = CONFIG.SCRIPT_URL;
 
     var etat = {
       chapitreId: null,
@@ -1258,8 +1258,15 @@
     // FERMER
     // ============================================================
     function fermerLiseuse() {
-      window.location.href = '/medit/mes-livrets.html';
-    }
+  // Récupérer la catégorie du chapitre pour revenir au bon livret
+  var categorie = etat.chapitre ? etat.chapitre.categorie : '';
+  if (categorie) {
+    window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
+  } else {
+    // Fallback si pas de catégorie
+    window.location.href = '/medit/mes-livrets.html';
+  }
+}
 
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
