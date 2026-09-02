@@ -11,9 +11,6 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ============================================================
-       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
-       ============================================================ */
     .progress-dots {
       display: flex !important;
       justify-content: center !important;
@@ -42,16 +39,8 @@
       border-color: var(--border, #ccc) !important;
       background: transparent !important;
     }
-
-    /* Slide = carré */
-    .progress-dot.type-slide {
-      border-radius: 50% !important;
-    }
-    /* Quiz = cercle */
-    .progress-dot.type-quiz {
-      border-radius: 50% !important;
-    }
-    /* Open = triangle */
+    .progress-dot.type-slide { border-radius: 50% !important; }
+    .progress-dot.type-quiz { border-radius: 50% !important; }
     .progress-dot.type-open {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 0% 100%, 100% 100%) !important;
@@ -67,7 +56,6 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    /* Ordre = losange */
     .progress-dot.type-ordre {
       border-radius: 0 !important;
       transform: rotate(45deg) !important;
@@ -85,13 +73,11 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    /* Carte = rectangle */
     .progress-dot.type-carte {
       border-radius: 0 !important;
       width: 18px !important;
       height: 12px !important;
     }
-    /* Retenir = étoile */
     .progress-dot.type-retenir {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
@@ -108,21 +94,51 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
+    .progress-legend { display: none !important; }
+    .slide-wrapper { display: none !important; }
+    .slide-wrapper.active { display: block !important; }
+    .slide-content { position: relative !important; }
 
-    /* Légende cachée */
-    .progress-legend {
-      display: none !important;
+    .resultat-global {
+      margin: 12px 0 16px 0;
+      padding: 16px 20px;
+      border: 1px solid var(--border);
+      text-align: center;
     }
+    .resultat-global .score {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .resultat-global .pourcentage {
+      font-size: 16px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+    .resultat-global .statut {
+      font-size: 18px;
+      font-weight: 600;
+      margin-top: 4px;
+    }
+    .resultat-global .statut.valide { color: var(--text); }
+    .resultat-global .statut.non-valide { color: var(--text-secondary); }
 
-    /* Slide wrapper - pour que les points soient visibles */
-    .slide-wrapper {
-      display: none !important;
+    .btn-recommencer {
+      display: block;
+      width: 100%;
+      margin-top: 12px;
+      padding: 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-size: 15px;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: all 0.3s;
     }
-    .slide-wrapper.active {
-      display: block !important;
-    }
-    .slide-content {
-      position: relative !important;
+    .btn-recommencer:hover {
+      background: var(--bg-hover);
+      color: var(--text);
     }
   </style>
 </head>
@@ -146,8 +162,6 @@
       <div class="spinner"></div>
       <span>Chargement...</span>
     </div>
-
-    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
       <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
@@ -162,7 +176,6 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // Utiliser CONFIG.SCRIPT_URL défini dans config.js
     var SCRIPT_URL = CONFIG.SCRIPT_URL;
 
     var etat = {
@@ -171,17 +184,14 @@
       slides: [],
       currentIndex: 0,
       reponsesQuiz: {},
-      totalBonnes: 0,
-      totalQuestions: 0,
-      statutFinal: null,
-      enTransition: false,
       notes: {},
       ordreValide: {},
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
-      carteCourante: null,
-      questionEnvoyee: false
+      questionEnvoyee: false,
+      tempsDebut: null,
+      tempsTotal: 0
     };
 
     // ============================================================
@@ -229,6 +239,7 @@
       var id = params.get('id');
       if (!id) { afficherErreur('Aucun identifiant.'); return; }
       etat.chapitreId = id;
+      etat.tempsDebut = Date.now();
       chargerChapitre(id);
 
       var initialSize = getSavedFontSize();
@@ -243,32 +254,26 @@
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
-        .then(function(r) { 
-          if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
-          return r.json(); 
+        .then(function(r) {
+          if (!r.ok) throw new Error('Erreur réseau: ' + r.status);
+          return r.json();
         })
         .then(function(data) {
-          console.log('📦 Données reçues du serveur:', data);
-          
           if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
-          
+
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
-          
-          console.log('📄 Contenu brut:', contenu);
-          
           var parts = contenu.split(' | ');
-          
+
           var slidesArray = [];
           var quiz = '';
           var openQuestion = '';
           var ordre = '';
           var carte = '';
           var retenir = '';
-          
+
           parts.forEach(function(part) {
             part = part.trim();
-            
             if (part.startsWith('q:')) {
               quiz = part;
             } else if (part.startsWith('qs:')) {
@@ -289,32 +294,22 @@
               }
             }
           });
-          
-          console.log('📊 Slides array (' + slidesArray.length + ' slides):', slidesArray);
-          console.log('📊 Quiz:', quiz);
-          console.log('📊 OpenQ:', openQuestion);
-          console.log('📊 Ordre:', ordre);
-          console.log('📊 Carte:', carte);
-          console.log('📊 Retenir:', retenir);
-          
+
           etat.chapitre = chapitre;
-          
           preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-          
-          console.log('📊 Slides générés:', etat.slides);
-          
+
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
             return;
           }
-          
+
           recupererNotes();
           afficherSlides();
           verifierValidationGlobale();
         })
-        .catch(function(error) { 
+        .catch(function(error) {
           console.error('❌ Erreur:', error);
-          afficherErreur(error.message); 
+          afficherErreur(error.message);
         });
     }
 
@@ -323,13 +318,13 @@
     // ============================================================
     function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
       var slidesFinal = [];
-      
+
       slidesArray.forEach(function(texteSlide) {
         if (texteSlide.trim() !== '') {
           slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
         }
       });
-      
+
       if (quiz.trim() !== '') {
         var quizsParsed = parserQuizs(quiz);
         quizsParsed.forEach(function(qp) {
@@ -338,55 +333,52 @@
           }
         });
       }
-      
+
       if (openQuestion.trim() !== '') {
         slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
       }
-      
+
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
         if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({ 
-            type: 'ordre', 
+          slidesFinal.push({
+            type: 'ordre',
             elements: ordreParsed.elements,
             consigne: ordreParsed.consigne,
-            index: slidesFinal.length 
+            index: slidesFinal.length
           });
         }
       }
-      
+
       if (carte.trim() !== '') {
         var carteParsed = parserCarte(carte);
         if (carteParsed) {
           slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
         }
       }
-      
+
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
           slidesFinal.push({ type: 'retenir', mots: mots });
         }
       }
-      
-      console.log('✅ Slides construits :', slidesFinal);
+
       etat.slides = slidesFinal;
     }
 
     // ============================================================
-    // PARSEUR QUIZ
+    // PARSEURS
     // ============================================================
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return [];
-      
+
       var quizs = [];
       var currentQuiz = null;
-      
+
       for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i];
-        var trimmed = ligne.trim();
-        
+        var trimmed = lignes[i].trim();
         if (trimmed.match(/^q:/i)) {
           if (currentQuiz && currentQuiz.reponses.length > 0) {
             quizs.push(currentQuiz);
@@ -399,7 +391,7 @@
           var isCorrect = false;
           var isFaux = false;
           var texteRep = trimmed;
-          
+
           if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
             isCorrect = true;
             texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
@@ -407,7 +399,7 @@
             isFaux = true;
             texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
           }
-          
+
           if (isCorrect || isFaux) {
             currentQuiz.reponses.push({
               texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
@@ -416,17 +408,14 @@
           }
         }
       }
-      
+
       if (currentQuiz && currentQuiz.reponses.length > 0) {
         quizs.push(currentQuiz);
       }
-      
+
       return quizs;
     }
 
-    // ============================================================
-    // PARSEURS SPÉCIFIQUES
-    // ============================================================
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
@@ -449,7 +438,7 @@
       var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var recto = '';
       var verso = '';
-      
+
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         if (ligne.toLowerCase().startsWith('r:')) {
@@ -458,7 +447,7 @@
           verso = ligne.replace(/^v:\s*/i, '').trim() || 'Réponse';
         }
       }
-      
+
       if (recto === '') return null;
       return { recto: recto, verso: verso };
     }
@@ -489,6 +478,60 @@
     }
 
     // ============================================================
+    // CALCULER LE RÉSULTAT GLOBAL
+    // ============================================================
+    function calculerResultatGlobal() {
+      var totalBonnes = 0;
+      var totalQuestions = 0;
+
+      // Quiz
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          totalQuestions++;
+          if (rep.correct) totalBonnes++;
+        }
+      });
+
+      // Ordre
+      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
+      ordreSlides.forEach(function(o) {
+        var elements = o.elements || [];
+        if (etat.ordreValide[o.index]) {
+          totalBonnes += elements.length;
+          totalQuestions += elements.length;
+        } else if (elements.length > 0) {
+          totalQuestions += elements.length;
+        }
+      });
+
+      // Cartes
+      totalBonnes += etat.cartesBonnes;
+      totalQuestions += etat.cartesTotal;
+
+      // Question ouverte
+      if (etat.questionEnvoyee) {
+        totalBonnes++;
+        totalQuestions++;
+      }
+
+      // Retenir (si déjà appris)
+      // sera ajouté via le bouton "J'ai appris"
+
+      var pourcentage = totalQuestions > 0 ? Math.round((totalBonnes / totalQuestions) * 100) : 0;
+      var estValide = pourcentage >= 65;
+
+      return {
+        totalBonnes: totalBonnes,
+        totalQuestions: totalQuestions,
+        pourcentage: pourcentage,
+        estValide: estValide,
+        aDesActivites: quizSlides.length > 0 || ordreSlides.length > 0 || etat.cartesTotal > 0
+      };
+    }
+
+    // ============================================================
     // AFFICHER LES SLIDES
     // ============================================================
     function afficherSlides() {
@@ -503,7 +546,6 @@
         return;
       }
 
-      // --- Points de progression ---
       var progressHtml = '<div class="progress-dots">';
       etat.slides.forEach(function(slide, idx) {
         var typeClass = 'type-' + slide.type;
@@ -512,7 +554,6 @@
       });
       progressHtml += '</div>';
 
-      // --- Slides ---
       var html = progressHtml;
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
@@ -528,6 +569,17 @@
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
+
+          // Si c'est le dernier slide et qu'il n'y a pas de "retenir" ni d'activités
+          var estDernierSlide = index === etat.slides.length - 1;
+          var aRetenir = etat.slides.some(function(s) { return s.type === 'retenir'; });
+          var aDesActivites = etat.slides.some(function(s) {
+            return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
+          });
+
+          if (estDernierSlide && !aRetenir && !aDesActivites) {
+            html += '<button class="btn-fermer-slide" onclick="marquerLuEtFermer()" style="margin-top:16px;">✓ Marquer comme lu et fermer</button>';
+          }
         }
 
         if (slide.type === 'quiz') {
@@ -569,7 +621,6 @@
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
 
-      // Supprimer les anciens points aussi
       var oldDots = container.querySelectorAll('.progress-dots');
       oldDots.forEach(function(el) { el.remove(); });
 
@@ -605,7 +656,8 @@
             target.closest('.carte-container') ||
             target.closest('.carte-boutons') ||
             target.closest('.font-control-bottom') ||
-            target.closest('.progress-dots')) {
+            target.closest('.progress-dots') ||
+            target.closest('.btn-recommencer')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -689,14 +741,34 @@
 
     function afficherRetenir(slide) {
       var html = '';
-      html += '<div class="retenir-label">♡ À retenir</div>';
-      html += '<div class="retenir-mots">';
-      slide.mots.forEach(function(mot) {
-        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-      });
+      var resultat = calculerResultatGlobal();
+
+      // Afficher le résultat global AVANT les mots
+      html += '<div class="resultat-global">';
+      html += '<div class="score">' + resultat.totalBonnes + ' / ' + resultat.totalQuestions + '</div>';
+      html += '<div class="pourcentage">' + resultat.pourcentage + '%</div>';
+      html += '<div class="statut ' + (resultat.estValide ? 'valide' : 'non-valide') + '">';
+      html += resultat.estValide ? '✅ Validé' : '❌ Non validé';
       html += '</div>';
-      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-      html += '<button class="btn-fermer-slide" onclick="marquerLuEtFermer()">✓ Marquer comme lu et fermer</button>';
+      html += '</div>';
+
+      if (resultat.estValide) {
+        // Afficher les mots à retenir
+        html += '<div class="retenir-label">♡ À retenir</div>';
+        html += '<div class="retenir-mots">';
+        slide.mots.forEach(function(mot) {
+          if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+        });
+        html += '</div>';
+        html += '<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+
+        // Bouton "Fermer"
+        html += '<button class="btn-fermer-slide" onclick="sauvegarderRetenirEtFermer()" style="margin-top:12px;">✓ J\'ai appris</button>';
+      } else {
+        // Non validé → pas de mots, juste "Recommencer"
+        html += '<button class="btn-recommencer" onclick="recommencerChapitre()">🔄 Recommencer le chapitre</button>';
+      }
+
       return html;
     }
 
@@ -763,7 +835,7 @@
     }
 
     // ============================================================
-    // FONCTIONS DE NAVIGATION ET INTERACTION
+    // FONCTIONS DE NAVIGATION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -822,149 +894,6 @@
       }, 400);
     }
 
-    // ============================================================
-    // SAUVEGARDER CHAPITRE COMPLET
-    // ============================================================
-    function sauvegarderChapitreComplet() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      
-      // Quiz
-      var quizDetail = '';
-      var quizScore = '0/0';
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      if (quizSlides.length > 0) {
-        var details = [];
-        var bonnes = 0, total = 0;
-        quizSlides.forEach(function(q) {
-          var rep = etat.reponsesQuiz[q.index];
-          if (rep) {
-            total++;
-            if (rep.correct) { bonnes++; details.push('V:' + rep.reponseIndex); }
-            else { details.push('F:' + rep.reponseIndex); }
-          }
-        });
-        quizDetail = details.join('|');
-        quizScore = bonnes + '/' + total;
-      }
-
-      // Ordre
-      var ordreDetail = '';
-      var ordreScore = '0/0';
-      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
-      if (ordreSlides.length > 0) {
-        var list = document.getElementById('ordre-list-' + ordreSlides[0].index);
-        if (list) {
-          var items = list.querySelectorAll('.ordre-item');
-          var ordreDonne = [];
-          items.forEach(function(el) {
-            ordreDonne.push(el.dataset.num);
-          });
-          ordreDetail = ordreDonne.join(',');
-          
-          var bonnes = 0;
-          var total = ordreDonne.length;
-          var ordreAttendu = ordreDonne.slice().sort(function(a, b) { return a - b; });
-          for (var i = 0; i < ordreDonne.length; i++) {
-            if (parseInt(ordreDonne[i]) === parseInt(ordreAttendu[i])) bonnes++;
-          }
-          ordreScore = bonnes + '/' + total;
-        }
-      }
-
-      // Cartes
-      var cartesDetail = '';
-      var cartesScore = '0/0';
-      var carteSlides = etat.slides.filter(function(s) { return s.type === 'carte'; });
-      if (carteSlides.length > 0) {
-        var details = [];
-        carteSlides.forEach(function(c) {
-          if (etat.cartesResultats[c.index] === true) details.push('1');
-          else if (etat.cartesResultats[c.index] === false) details.push('0');
-        });
-        cartesDetail = details.join(',');
-        cartesScore = etat.cartesBonnes + '/' + etat.cartesTotal;
-      }
-
-      // Question ouverte
-      var questionDetail = '';
-      var questionScore = '0/0';
-      var openSlides = etat.slides.filter(function(s) { return s.type === 'open'; });
-      if (openSlides.length > 0) {
-        var textarea = document.getElementById('openReponse-' + openSlides[0].index);
-        if (textarea && textarea.value.trim() !== '') {
-          questionDetail = textarea.value.trim();
-          questionScore = '1/1';
-        }
-      }
-
-      // Lecture
-      var lecture = '0';
-      var aDesActivites = quizSlides.length > 0 || ordreSlides.length > 0 || carteSlides.length > 0 || openSlides.length > 0;
-      if (!aDesActivites) {
-        lecture = '1';
-      }
-
-      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&quizDetail=' + encodeURIComponent(quizDetail) +
-        '&quizScore=' + encodeURIComponent(quizScore) +
-        '&ordreDetail=' + encodeURIComponent(ordreDetail) +
-        '&ordreScore=' + encodeURIComponent(ordreScore) +
-        '&cartesDetail=' + encodeURIComponent(cartesDetail) +
-        '&cartesScore=' + encodeURIComponent(cartesScore) +
-        '&questionDetail=' + encodeURIComponent(questionDetail) +
-        '&questionScore=' + encodeURIComponent(questionScore) +
-        '&lecture=' + encodeURIComponent(lecture);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            if (data.valide === 'valide') {
-              alert('✅ Chapitre validé !');
-            } else {
-              alert('❌ Chapitre non validé (moyenne < 65%)');
-            }
-            fermerLiseuse();
-          } else {
-            alert('Erreur : ' + (data.message || 'Impossible de sauvegarder'));
-          }
-        })
-        .catch(function() {
-          alert('Erreur réseau');
-        });
-    }
-
-    function marquerLuEtFermer() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      
-      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&quizDetail=' + encodeURIComponent('') +
-        '&quizScore=' + encodeURIComponent('') +
-        '&ordreDetail=' + encodeURIComponent('') +
-        '&ordreScore=' + encodeURIComponent('') +
-        '&cartesDetail=' + encodeURIComponent('') +
-        '&cartesScore=' + encodeURIComponent('') +
-        '&questionDetail=' + encodeURIComponent('') +
-        '&questionScore=' + encodeURIComponent('') +
-        '&lecture=' + encodeURIComponent('1');
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            alert('✅ Marqué comme lu');
-          }
-          fermerLiseuse();
-        })
-        .catch(function() {
-          fermerLiseuse();
-        });
-    }
-
     function envoyerReponseOuverte(event, index) {
       if (event) event.stopPropagation();
       var textarea = document.getElementById('openReponse-' + index);
@@ -1002,172 +931,6 @@
           alert('Erreur réseau.');
           btn.disabled = false;
           btn.textContent = 'Envoyer la réponse';
-        });
-    }
-
-    function recupererStatutExistant() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.reponses) {
-            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
-            if (reponse && reponse.valide === 'valide') {
-              etat.statutFinal = 'valide';
-              mettreAJourBadge();
-            }
-          }
-        })
-        .catch(function(e) { console.error('Erreur récupération statut:', e); });
-    }
-
-    function slideSuivante() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex >= etat.slides.length - 1) return;
-
-      var slide = etat.slides[etat.currentIndex];
-
-      if (slide.type === 'quiz') {
-        var reponse = etat.reponsesQuiz[slide.index];
-        if (!reponse) return;
-        var btn = document.getElementById('btnContinuer-' + slide.index);
-        if (!btn || !btn.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'open') {
-        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
-        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'ordre') {
-        if (!etat.ordreValide[slide.index]) return;
-        var btnOrdre = document.getElementById('btnContinuerOrdre-' + slide.index);
-        if (!btnOrdre || !btnOrdre.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'carte') {
-        var btnCarte = document.getElementById('btnContinuerCarte-' + slide.index);
-        if (!btnCarte || !btnCarte.classList.contains('visible')) return;
-      }
-
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
-      if (current) current.classList.remove('active');
-      if (next) next.classList.add('active');
-      etat.currentIndex++;
-      mettreAJourPagination();
-      mettreAJourProgress();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 150);
-    }
-
-    function slidePrecedente() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex <= 0) return;
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
-      if (current) current.classList.remove('active');
-      if (prev) prev.classList.add('active');
-      etat.currentIndex--;
-      mettreAJourPagination();
-      mettreAJourProgress();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
-    }
-
-    function mettreAJourPagination() {
-      var pagination = document.getElementById('pagination');
-      if (pagination) {
-        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
-      }
-    }
-
-    function mettreAJourProgress() {
-      var dots = document.querySelectorAll('.progress-dot');
-      dots.forEach(function(dot, idx) {
-        dot.classList.remove('active', 'done');
-        if (idx < etat.currentIndex) {
-          dot.classList.add('done');
-        } else if (idx === etat.currentIndex) {
-          dot.classList.add('active');
-        }
-      });
-    }
-
-    function mettreAJourBadge() {
-      var badge = document.getElementById('badgeStatut');
-      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
-      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
-      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
-    }
-
-    // ============================================================
-    // NOTES
-    // ============================================================
-    function toggleNote(index) {
-      var area = document.getElementById('noteArea-' + index);
-      var toggle = document.getElementById('noteToggle-' + index);
-      if (!area) return;
-      if (area.classList.contains('visible')) {
-        area.classList.remove('visible');
-        toggle.classList.remove('active');
-      } else {
-        area.classList.add('visible');
-        toggle.classList.add('active');
-        var textarea = document.getElementById('noteText-' + index);
-        if (textarea) textarea.focus();
-      }
-    }
-
-    var timers = {};
-
-    function autoSaveNote(index) {
-      if (timers[index]) clearTimeout(timers[index]);
-      var indicator = document.getElementById('noteIndicator-' + index);
-      if (indicator) {
-        indicator.textContent = '⏱ Enregistrement...';
-        indicator.className = 'note-indicator';
-      }
-      timers[index] = setTimeout(function() {
-        sauvegarderNote(index);
-      }, 2000);
-    }
-
-    function sauvegarderNote(index) {
-      var textarea = document.getElementById('noteText-' + index);
-      if (!textarea) return;
-      var note = textarea.value.trim();
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveAnnotation' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&slide=' + encodeURIComponent(index) +
-        '&annotation=' + encodeURIComponent(note);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            if (data.success) {
-              indicator.textContent = '✓ Note sauvegardée';
-              indicator.className = 'note-indicator saved';
-              etat.notes[index] = note;
-            } else {
-              indicator.textContent = '⚠︎ Erreur de sauvegarde';
-              indicator.className = 'note-indicator';
-            }
-          }
-        })
-        .catch(function() {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            indicator.textContent = '⚠︎ Erreur réseau';
-            indicator.className = 'note-indicator';
-          }
         });
     }
 
@@ -1298,6 +1061,374 @@
     }
 
     // ============================================================
+    // SAUVEGARDES
+    // ============================================================
+    function calculerTempsTotal() {
+      if (etat.tempsDebut) {
+        var fin = Date.now();
+        var diffMs = fin - etat.tempsDebut;
+        var totalSec = Math.floor(diffMs / 1000);
+        var heures = String(Math.floor(totalSec / 3600)).padStart(2, '0');
+        var minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
+        var secondes = String(totalSec % 60).padStart(2, '0');
+        return heures + ':' + minutes + ':' + secondes;
+      }
+      return '00:00:00';
+    }
+
+    function sauvegarderChapitreComplet(retenirValue) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var titre = etat.chapitre ? etat.chapitre.titre || '' : '';
+
+      // Quiz
+      var quizDetail = '';
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      if (quizSlides.length > 0) {
+        var details = [];
+        quizSlides.forEach(function(q) {
+          var rep = etat.reponsesQuiz[q.index];
+          if (rep) {
+            details.push((rep.correct ? 'V' : 'F') + ':' + rep.reponseIndex);
+          }
+        });
+        quizDetail = details.join('|');
+      }
+
+      // Ordre
+      var ordreDetail = '';
+      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
+      if (ordreSlides.length > 0) {
+        var list = document.getElementById('ordre-list-' + ordreSlides[0].index);
+        if (list) {
+          var items = list.querySelectorAll('.ordre-item');
+          var ordreDonne = [];
+          items.forEach(function(el) {
+            ordreDonne.push(el.dataset.num);
+          });
+          ordreDetail = ordreDonne.join(',');
+        }
+      }
+
+      // Cartes
+      var cartesDetail = '';
+      var carteSlides = etat.slides.filter(function(s) { return s.type === 'carte'; });
+      if (carteSlides.length > 0) {
+        var details = [];
+        carteSlides.forEach(function(c) {
+          if (etat.cartesResultats[c.index] === true) details.push('1');
+          else if (etat.cartesResultats[c.index] === false) details.push('0');
+        });
+        cartesDetail = details.join(',');
+      }
+
+      // Question ouverte
+      var questionDetail = '';
+      var openSlides = etat.slides.filter(function(s) { return s.type === 'open'; });
+      if (openSlides.length > 0) {
+        var textarea = document.getElementById('openReponse-' + openSlides[0].index);
+        if (textarea && textarea.value.trim() !== '') {
+          questionDetail = textarea.value.trim();
+        }
+      }
+
+      // Lecture
+      var lecture = '0';
+      var aDesActivites = etat.slides.some(function(s) {
+        return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
+      });
+      if (!aDesActivites) {
+        lecture = '1';
+      }
+
+      // Retenir
+      var retenir = retenirValue || '0';
+
+      // Temps total
+      var tempsTotal = calculerTempsTotal();
+
+      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(titre) +
+        '&quizDetail=' + encodeURIComponent(quizDetail) +
+        '&ordreDetail=' + encodeURIComponent(ordreDetail) +
+        '&cartesDetail=' + encodeURIComponent(cartesDetail) +
+        '&questionDetail=' + encodeURIComponent(questionDetail) +
+        '&lecture=' + encodeURIComponent(lecture) +
+        '&retenir=' + encodeURIComponent(retenir) +
+        '&tempsTotal=' + encodeURIComponent(tempsTotal);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            if (data.valide === 'valide') {
+              alert('✅ Chapitre validé !');
+            } else {
+              alert('❌ Chapitre non validé (moyenne < 65%)');
+            }
+            fermerLiseuse();
+          } else {
+            alert('Erreur : ' + (data.message || 'Impossible de sauvegarder'));
+          }
+        })
+        .catch(function() {
+          alert('Erreur réseau');
+        });
+    }
+
+    function sauvegarderRetenirEtFermer() {
+      // Sauvegarder avec retenir = 1
+      sauvegarderChapitreComplet('1');
+    }
+
+    function marquerLuEtFermer() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var titre = etat.chapitre ? etat.chapitre.titre || '' : '';
+      var tempsTotal = calculerTempsTotal();
+
+      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(titre) +
+        '&quizDetail=' + encodeURIComponent('') +
+        '&ordreDetail=' + encodeURIComponent('') +
+        '&cartesDetail=' + encodeURIComponent('') +
+        '&questionDetail=' + encodeURIComponent('') +
+        '&lecture=' + encodeURIComponent('1') +
+        '&retenir=' + encodeURIComponent('') +
+        '&tempsTotal=' + encodeURIComponent(tempsTotal);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            alert('✅ Marqué comme lu');
+          }
+          fermerLiseuse();
+        })
+        .catch(function() {
+          fermerLiseuse();
+        });
+    }
+
+    function recommencerChapitre() {
+      if (confirm('Voulez-vous vraiment recommencer ce chapitre ? Toutes vos réponses seront effacées.')) {
+        // Réinitialiser l'état
+        etat.reponsesQuiz = {};
+        etat.ordreValide = {};
+        etat.cartesResultats = {};
+        etat.cartesTotal = 0;
+        etat.cartesBonnes = 0;
+        etat.questionEnvoyee = false;
+
+        // Recharger la page
+        location.reload();
+      }
+    }
+
+    // ============================================================
+    // NOTES
+    // ============================================================
+    function toggleNote(index) {
+      var area = document.getElementById('noteArea-' + index);
+      var toggle = document.getElementById('noteToggle-' + index);
+      if (!area) return;
+      if (area.classList.contains('visible')) {
+        area.classList.remove('visible');
+        toggle.classList.remove('active');
+      } else {
+        area.classList.add('visible');
+        toggle.classList.add('active');
+        var textarea = document.getElementById('noteText-' + index);
+        if (textarea) textarea.focus();
+      }
+    }
+
+    var timers = {};
+
+    function autoSaveNote(index) {
+      if (timers[index]) clearTimeout(timers[index]);
+      var indicator = document.getElementById('noteIndicator-' + index);
+      if (indicator) {
+        indicator.textContent = '⏱ Enregistrement...';
+        indicator.className = 'note-indicator';
+      }
+      timers[index] = setTimeout(function() {
+        sauvegarderNote(index);
+      }, 2000);
+    }
+
+    function sauvegarderNote(index) {
+      var textarea = document.getElementById('noteText-' + index);
+      if (!textarea) return;
+      var note = textarea.value.trim();
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&slide=' + encodeURIComponent(index) +
+        '&annotation=' + encodeURIComponent(note);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            if (data.success) {
+              indicator.textContent = '✓ Note sauvegardée';
+              indicator.className = 'note-indicator saved';
+              etat.notes[index] = note;
+            } else {
+              indicator.textContent = '⚠︎ Erreur de sauvegarde';
+              indicator.className = 'note-indicator';
+            }
+          }
+        })
+        .catch(function() {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            indicator.textContent = '⚠︎ Erreur réseau';
+            indicator.className = 'note-indicator';
+          }
+        });
+    }
+
+    // ============================================================
+    // NAVIGATION
+    // ============================================================
+    function slideSuivante() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex >= etat.slides.length - 1) {
+        // Si on est au dernier slide et que c'est un slide de lecture (sans retenir)
+        var dernier = etat.slides[etat.currentIndex];
+        if (dernier.type === 'slide') {
+          var aRetenir = etat.slides.some(function(s) { return s.type === 'retenir'; });
+          var aDesActivites = etat.slides.some(function(s) {
+            return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
+          });
+          if (!aRetenir && !aDesActivites) {
+            // Le bouton "Marquer comme lu" est déjà affiché
+            return;
+          }
+        }
+        return;
+      }
+
+      var slide = etat.slides[etat.currentIndex];
+
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) return;
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (!btn || !btn.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'open') {
+        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
+        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'ordre') {
+        if (!etat.ordreValide[slide.index]) return;
+        var btnOrdre = document.getElementById('btnContinuerOrdre-' + slide.index);
+        if (!btnOrdre || !btnOrdre.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'carte') {
+        var btnCarte = document.getElementById('btnContinuerCarte-' + slide.index);
+        if (!btnCarte || !btnCarte.classList.contains('visible')) return;
+      }
+
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
+      if (current) current.classList.remove('active');
+      if (next) next.classList.add('active');
+      etat.currentIndex++;
+      mettreAJourPagination();
+      mettreAJourProgress();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 150);
+    }
+
+    function slidePrecedente() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex <= 0) return;
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
+      if (current) current.classList.remove('active');
+      if (prev) prev.classList.add('active');
+      etat.currentIndex--;
+      mettreAJourPagination();
+      mettreAJourProgress();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
+
+    function mettreAJourPagination() {
+      var pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
+      }
+    }
+
+    function mettreAJourProgress() {
+      var dots = document.querySelectorAll('.progress-dot');
+      dots.forEach(function(dot, idx) {
+        dot.classList.remove('active', 'done');
+        if (idx < etat.currentIndex) {
+          dot.classList.add('done');
+        } else if (idx === etat.currentIndex) {
+          dot.classList.add('active');
+        }
+      });
+    }
+
+    // ============================================================
+    // VALIDATION
+    // ============================================================
+    function verifierValidationGlobale() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.valide === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+    }
+
+    function recupererStatutExistant() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
+            if (reponse && reponse.valide === 'valide') {
+              var badge = document.getElementById('badgeStatut');
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur récupération statut:', e); });
+    }
+
+    // ============================================================
     // FERMER
     // ============================================================
     function fermerLiseuse() {
@@ -1321,34 +1452,6 @@
     }
 
     // ============================================================
-    // VALIDATION GLOBALE
-    // ============================================================
-    function verifierValidationGlobale() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
-      
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.validation) {
-            var badge = document.getElementById('badgeStatut');
-            if (data.validation.global === 'valide') {
-              badge.textContent = '✓ Validé';
-              badge.className = 'badge-statut valide';
-              etat.statutFinal = 'valide';
-            } else if (data.validation.global === 'partiel') {
-              badge.textContent = '⏳ Partiel';
-              badge.className = 'badge-statut partiel';
-            } else {
-              badge.textContent = '⏱ À faire';
-              badge.className = 'badge-statut en-attente';
-            }
-          }
-        })
-        .catch(function(e) { console.error('Erreur vérification validation:', e); });
-    }
-
-    // ============================================================
     // EXPOSER LES FONCTIONS GLOBALEMENT
     // ============================================================
     window.selectionnerReponse = selectionnerReponse;
@@ -1365,6 +1468,8 @@
     window.cartePasTrouve = cartePasTrouve;
     window.marquerLuEtFermer = marquerLuEtFermer;
     window.sauvegarderChapitreComplet = sauvegarderChapitreComplet;
+    window.sauvegarderRetenirEtFermer = sauvegarderRetenirEtFermer;
+    window.recommencerChapitre = recommencerChapitre;
   </script>
 
 </body>
