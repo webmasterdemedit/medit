@@ -182,22 +182,28 @@ var DataManager = {
         return cache !== null;
     },
 
-    getArticle: function(articleId) {
+    // ============================================================
+    // RÉCUPÉRER UN CHAPITRE
+    // ============================================================
+    getChapitre: function(chapitreId) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return null;
         var cache = this.getCacheForce(id);
-        if (cache && cache.articlesComplets) {
-            return cache.articlesComplets[articleId] || null;
+        if (cache && cache.chapitresComplets) {
+            return cache.chapitresComplets[chapitreId] || null;
         }
         return null;
     },
 
-    getPosts: function() {
+    // ============================================================
+    // RÉCUPÉRER LES CHAPITRES
+    // ============================================================
+    getChapitres: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
         var cache = this.getCacheForce(id);
-        if (cache && cache.posts) {
-            return cache.posts;
+        if (cache && cache.chapitres) {
+            return cache.chapitres;
         }
         return [];
     },
@@ -350,7 +356,7 @@ var DataManager = {
     // ============================================================
     // SAUVEGARDER ORDRE
     // ============================================================
-    sauvegarderOrdre: function(articleId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    sauvegarderOrdre: function(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -358,7 +364,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&titre=' + encodeURIComponent(titre) +
             '&ordreDonne=' + encodeURIComponent(ordreDonne) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -380,7 +386,7 @@ var DataManager = {
     // ============================================================
     // SAUVEGARDER CARTES ANKI
     // ============================================================
-    sauvegarderCarte: function(articleId, titre, cartes, bonnes, total, tempsPasse) {
+    sauvegarderCarte: function(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -388,7 +394,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&titre=' + encodeURIComponent(titre) +
             '&cartes=' + encodeURIComponent(cartes) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -411,27 +417,27 @@ var DataManager = {
     // ANNOTATIONS & QUIZ
     // ============================================================
 
-    getAnnotations: function(articleId) {
+    getAnnotations: function(chapitreId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].articleId === articleId) {
+            if (reponses[i].chapitreId === chapitreId) {
                 return reponses[i].annotations || '';
             }
         }
         return '';
     },
 
-    getReviseStatus: function(articleId) {
+    getReviseStatus: function(chapitreId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].articleId === articleId) {
+            if (reponses[i].chapitreId === chapitreId) {
                 return reponses[i].revise === '1' || reponses[i].revise === 1 || reponses[i].revise === true;
             }
         }
         return false;
     },
 
-    marquerRevise: function(articleId, revise) {
+    marquerRevise: function(chapitreId, revise) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -439,7 +445,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&revise=' + encodeURIComponent(revise ? '1' : '0');
 
         return fetch(url)
@@ -455,10 +461,10 @@ var DataManager = {
     },
 
     // ============================================================
-    // GESTION DES POSTS
+    // GESTION DES CHAPITRES
     // ============================================================
 
-    ajouterPost: function(titre, niveau, categorie, contenu, question) {
+    ajouterChapitre: function(titre, niveau, categorie, contenu, question) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -478,7 +484,7 @@ var DataManager = {
             params[key] = elements[i] || '';
         }
 
-        var url = CONFIG.SCRIPT_URL + '?action=addPost' +
+        var url = CONFIG.SCRIPT_URL + '?action=addChapitre' +
             '&titre=' + encodeURIComponent(params.titre) +
             '&niveau=' + encodeURIComponent(params.niveau) +
             '&categorie=' + encodeURIComponent(params.categorie) +
@@ -501,13 +507,13 @@ var DataManager = {
             });
     },
 
-    modifierPost: function(id, titre, niveau, categorie, contenu, question, statut) {
+    modifierChapitre: function(id, titre, niveau, categorie, contenu, question, statut) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
             return Promise.reject('Non connecté');
         }
 
-        var url = CONFIG.SCRIPT_URL + '?action=updatePost' +
+        var url = CONFIG.SCRIPT_URL + '?action=updateChapitre' +
             '&id=' + encodeURIComponent(id) +
             '&titre=' + encodeURIComponent(titre) +
             '&niveau=' + encodeURIComponent(niveau) +
@@ -528,13 +534,13 @@ var DataManager = {
             });
     },
 
-    supprimerPost: function(id) {
+    supprimerChapitre: function(id) {
         var userId = localStorage.getItem('etudiant_id');
         if (!userId) {
             return Promise.reject('Non connecté');
         }
 
-        var url = CONFIG.SCRIPT_URL + '?action=deletePost&id=' + encodeURIComponent(id);
+        var url = CONFIG.SCRIPT_URL + '?action=deleteChapitre&id=' + encodeURIComponent(id);
 
         return fetch(url)
             .then(function(r) { return r.json(); })
@@ -552,7 +558,7 @@ var DataManager = {
     // SAUVEGARDES
     // ============================================================
 
-    sauvegarderAnnotation: function(articleId, slide, annotation) {
+    sauvegarderAnnotation: function(chapitreId, slide, annotation) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -560,7 +566,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&slide=' + encodeURIComponent(slide) +
             '&annotation=' + encodeURIComponent(annotation);
 
@@ -576,7 +582,7 @@ var DataManager = {
             });
     },
 
-    sauvegarderReponseOuverte: function(articleId, reponse) {
+    sauvegarderReponseOuverte: function(chapitreId, reponse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -584,7 +590,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&reponseOuverte=' + encodeURIComponent(reponse);
 
         return fetch(url)
@@ -599,7 +605,7 @@ var DataManager = {
             });
     },
 
-    sauvegarderQuiz: function(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
+    sauvegarderQuiz: function(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -607,7 +613,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&titre=' + encodeURIComponent(titre) +
             '&choixQcm=' + encodeURIComponent(choixQcm) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -626,7 +632,7 @@ var DataManager = {
             });
     },
 
-    sauvegarderLecture: function(articleId, titre) {
+    sauvegarderLecture: function(chapitreId, titre) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
@@ -634,7 +640,7 @@ var DataManager = {
 
         var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
             '&nom=' + encodeURIComponent(id) +
-            '&articleId=' + encodeURIComponent(articleId) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
             '&titre=' + encodeURIComponent(titre);
 
         return fetch(url)
@@ -658,8 +664,8 @@ function chargerDonnees(force) {
     return DataManager.charger(force);
 }
 
-function getArticlesDuNiveau() {
-    return DataManager.getPosts();
+function getChapitresDuNiveau() {
+    return DataManager.getChapitres();
 }
 
 function getReponsesEtudiant() {
@@ -710,38 +716,38 @@ function getMessages() {
     return DataManager.getMessages();
 }
 
-function sauvegarderOrdre(articleId, titre, ordreDonne, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderOrdre(articleId, titre, ordreDonne, bonnes, total, tempsPasse);
+function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
 }
 
-function sauvegarderCarte(articleId, titre, cartes, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderCarte(articleId, titre, cartes, bonnes, total, tempsPasse);
+function sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse);
 }
 
-function getAnnotations(articleId) {
-    return DataManager.getAnnotations(articleId);
+function getAnnotations(chapitreId) {
+    return DataManager.getAnnotations(chapitreId);
 }
 
-function getReviseStatus(articleId) {
-    return DataManager.getReviseStatus(articleId);
+function getReviseStatus(chapitreId) {
+    return DataManager.getReviseStatus(chapitreId);
 }
 
-function marquerRevise(articleId, revise) {
-    return DataManager.marquerRevise(articleId, revise);
+function marquerRevise(chapitreId, revise) {
+    return DataManager.marquerRevise(chapitreId, revise);
 }
 
-function sauvegarderAnnotation(articleId, slide, annotation) {
-    return DataManager.sauvegarderAnnotation(articleId, slide, annotation);
+function sauvegarderAnnotation(chapitreId, slide, annotation) {
+    return DataManager.sauvegarderAnnotation(chapitreId, slide, annotation);
 }
 
-function sauvegarderReponseOuverte(articleId, reponse) {
-    return DataManager.sauvegarderReponseOuverte(articleId, reponse);
+function sauvegarderReponseOuverte(chapitreId, reponse) {
+    return DataManager.sauvegarderReponseOuverte(chapitreId, reponse);
 }
 
-function sauvegarderQuiz(articleId, titre, choixQcm, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderQuiz(articleId, titre, choixQcm, bonnes, total, tempsPasse);
+function sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse);
 }
 
-function sauvegarderLecture(articleId, titre) {
-    return DataManager.sauvegarderLecture(articleId, titre);
+function sauvegarderLecture(chapitreId, titre) {
+    return DataManager.sauvegarderLecture(chapitreId, titre);
 }
