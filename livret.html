@@ -1140,31 +1140,36 @@
       document.body.appendChild(modal);
     }
 
-    function fermerAnnotations() {
-      var modal = document.getElementById('modalAnnotations');
-      if (modal) modal.remove();
-    }
-
-    // ============================================================
-    // EST CHAPITRE LU ?
-    // ============================================================
     function estChapitreLu(chapitre) {
-      var reponse = toutesLesReponses[chapitre.id];
-      if (!reponse) {
-        for (var key in toutesLesReponses) {
-          if (toutesLesReponses[key].titre === chapitre.titre) {
-            reponse = toutesLesReponses[key];
-            break;
-          }
-        }
+  // Récupérer la réponse pour ce chapitre
+  var reponse = toutesLesReponses[chapitre.id];
+  
+  // Si pas de réponse, essayer par titre (fallback)
+  if (!reponse) {
+    for (var key in toutesLesReponses) {
+      if (toutesLesReponses[key].titre === chapitre.titre) {
+        reponse = toutesLesReponses[key];
+        break;
       }
-      if (!reponse) return false;
-      var bonnes = parseInt(reponse.bonnes) || 0;
-      var total = parseInt(reponse.total) || 0;
-      if (total === 1 && bonnes === 1) return true;
-      if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
-      return false;
     }
+  }
+  
+  if (!reponse) return false;
+  
+  // ✅ PRIORITÉ : Utiliser le champ 'valide' (colonne O)
+  if (reponse.valide === 'valide') {
+    return true;
+  }
+  
+  // Fallback : calculer à partir de bonnes/total (pour compatibilité)
+  var bonnes = parseInt(reponse.bonnes) || 0;
+  var total = parseInt(reponse.total) || 0;
+  
+  if (total === 1 && bonnes === 1) return true;
+  if (total > 0 && bonnes >= Math.ceil(total / 2)) return true;
+  
+  return false;
+}
 
     function estChapitreAccessible(chapitres, index) {
       if (index === 0) return true;
