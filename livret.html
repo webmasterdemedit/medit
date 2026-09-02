@@ -1401,26 +1401,19 @@
         var estValide = false;
 
         if (reponse) {
-  var bonnes = parseInt(reponse.bonnes) || 0;
-  var total = parseInt(reponse.total) || 0;
-  dateValidation = reponse.date || '';
-  retenir = reponse.retenir || '';
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          dateValidation = reponse.date || '';
+          retenir = reponse.retenir || '';
 
-  // ✅ Utiliser le champ 'valide' en priorité
-  if (reponse.valide === 'valide') {
-    estLu = true;
-    estValide = true;
-  } else {
-    // Fallback : calculer à partir de bonnes/total
-    if (total === 1 && bonnes === 1) {
-      estLu = true;
-      estValide = true;
-    } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
-      estLu = true;
-      estValide = true;
-    }
-  }
-}
+          if (total === 1 && bonnes === 1) {
+            estLu = true;
+            estValide = true;
+          } else if (total > 0 && bonnes >= Math.ceil(total / 2)) {
+            estLu = true;
+            estValide = true;
+          }
+        }
 
         var estAccessible = estChapitreAccessible(chapitres, i);
         var estBloque = !estAccessible;
