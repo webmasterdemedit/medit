@@ -11,6 +11,9 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
+    /* ============================================================
+       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
+       ============================================================ */
     .progress-dots {
       display: flex !important;
       justify-content: center !important;
@@ -39,8 +42,16 @@
       border-color: var(--border, #ccc) !important;
       background: transparent !important;
     }
-    .progress-dot.type-slide { border-radius: 50% !important; }
-    .progress-dot.type-quiz { border-radius: 50% !important; }
+
+    /* Slide = carré */
+    .progress-dot.type-slide {
+      border-radius: 50% !important;
+    }
+    /* Quiz = cercle */
+    .progress-dot.type-quiz {
+      border-radius: 50% !important;
+    }
+    /* Open = triangle */
     .progress-dot.type-open {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 0% 100%, 100% 100%) !important;
@@ -56,6 +67,7 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
+    /* Ordre = losange */
     .progress-dot.type-ordre {
       border-radius: 0 !important;
       transform: rotate(45deg) !important;
@@ -73,11 +85,13 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
+    /* Carte = rectangle */
     .progress-dot.type-carte {
       border-radius: 0 !important;
       width: 18px !important;
       height: 12px !important;
     }
+    /* Retenir = étoile */
     .progress-dot.type-retenir {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
@@ -94,51 +108,21 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    .progress-legend { display: none !important; }
-    .slide-wrapper { display: none !important; }
-    .slide-wrapper.active { display: block !important; }
-    .slide-content { position: relative !important; }
 
-    .resultat-global {
-      margin: 12px 0 16px 0;
-      padding: 16px 20px;
-      border: 1px solid var(--border);
-      text-align: center;
+    /* Légende cachée */
+    .progress-legend {
+      display: none !important;
     }
-    .resultat-global .score {
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-    }
-    .resultat-global .pourcentage {
-      font-size: 16px;
-      color: var(--text-secondary);
-      margin-top: 2px;
-    }
-    .resultat-global .statut {
-      font-size: 18px;
-      font-weight: 600;
-      margin-top: 4px;
-    }
-    .resultat-global .statut.valide { color: var(--text); }
-    .resultat-global .statut.non-valide { color: var(--text-secondary); }
 
-    .btn-recommencer {
-      display: block;
-      width: 100%;
-      margin-top: 12px;
-      padding: 12px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-secondary);
-      font-size: 15px;
-      font-family: 'Roboto', sans-serif;
-      cursor: pointer;
-      transition: all 0.3s;
+    /* Slide wrapper - pour que les points soient visibles */
+    .slide-wrapper {
+      display: none !important;
     }
-    .btn-recommencer:hover {
-      background: var(--bg-hover);
-      color: var(--text);
+    .slide-wrapper.active {
+      display: block !important;
+    }
+    .slide-content {
+      position: relative !important;
     }
   </style>
 </head>
@@ -162,6 +146,8 @@
       <div class="spinner"></div>
       <span>Chargement...</span>
     </div>
+
+    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
       <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
@@ -171,12 +157,8 @@
 
   <div class="pagination-text" id="pagination">1 / 1</div>
 
-  <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
-  <script src="/medit/data-manager.js"></script>
-
   <script>
-    var SCRIPT_URL = CONFIG.SCRIPT_URL;
+    var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxoRmyN_c7FxRlngDcseQeAlPU2GL8TK9JEge7K4VLHYXOboug8vdVsxqinfQAZmGVE/exec';
 
     var etat = {
       chapitreId: null,
@@ -184,14 +166,16 @@
       slides: [],
       currentIndex: 0,
       reponsesQuiz: {},
+      totalBonnes: 0,
+      totalQuestions: 0,
+      statutFinal: null,
+      enTransition: false,
       notes: {},
       ordreValide: {},
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
-      questionEnvoyee: false,
-      tempsDebut: null,
-      tempsTotal: 0
+      carteCourante: null
     };
 
     // ============================================================
@@ -239,7 +223,6 @@
       var id = params.get('id');
       if (!id) { afficherErreur('Aucun identifiant.'); return; }
       etat.chapitreId = id;
-      etat.tempsDebut = Date.now();
       chargerChapitre(id);
 
       var initialSize = getSavedFontSize();
@@ -254,26 +237,32 @@
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
-        .then(function(r) {
-          if (!r.ok) throw new Error('Erreur réseau: ' + r.status);
-          return r.json();
+        .then(function(r) { 
+          if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
+          return r.json(); 
         })
         .then(function(data) {
+          console.log('📦 Données reçues du serveur:', data);
+          
           if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
-
+          
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
+          
+          console.log('📄 Contenu brut:', contenu);
+          
           var parts = contenu.split(' | ');
-
+          
           var slidesArray = [];
           var quiz = '';
           var openQuestion = '';
           var ordre = '';
           var carte = '';
           var retenir = '';
-
+          
           parts.forEach(function(part) {
             part = part.trim();
+            
             if (part.startsWith('q:')) {
               quiz = part;
             } else if (part.startsWith('qs:')) {
@@ -294,22 +283,32 @@
               }
             }
           });
-
+          
+          console.log('📊 Slides array (' + slidesArray.length + ' slides):', slidesArray);
+          console.log('📊 Quiz:', quiz);
+          console.log('📊 OpenQ:', openQuestion);
+          console.log('📊 Ordre:', ordre);
+          console.log('📊 Carte:', carte);
+          console.log('📊 Retenir:', retenir);
+          
           etat.chapitre = chapitre;
+          
           preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-
+          
+          console.log('📊 Slides générés:', etat.slides);
+          
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
             return;
           }
-
+          
           recupererNotes();
           afficherSlides();
           verifierValidationGlobale();
         })
-        .catch(function(error) {
+        .catch(function(error) { 
           console.error('❌ Erreur:', error);
-          afficherErreur(error.message);
+          afficherErreur(error.message); 
         });
     }
 
@@ -318,13 +317,13 @@
     // ============================================================
     function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
       var slidesFinal = [];
-
+      
       slidesArray.forEach(function(texteSlide) {
         if (texteSlide.trim() !== '') {
           slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
         }
       });
-
+      
       if (quiz.trim() !== '') {
         var quizsParsed = parserQuizs(quiz);
         quizsParsed.forEach(function(qp) {
@@ -333,52 +332,55 @@
           }
         });
       }
-
+      
       if (openQuestion.trim() !== '') {
         slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
       }
-
+      
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
         if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({
-            type: 'ordre',
+          slidesFinal.push({ 
+            type: 'ordre', 
             elements: ordreParsed.elements,
             consigne: ordreParsed.consigne,
-            index: slidesFinal.length
+            index: slidesFinal.length 
           });
         }
       }
-
+      
       if (carte.trim() !== '') {
         var carteParsed = parserCarte(carte);
         if (carteParsed) {
           slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
         }
       }
-
+      
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
           slidesFinal.push({ type: 'retenir', mots: mots });
         }
       }
-
+      
+      console.log('✅ Slides construits :', slidesFinal);
       etat.slides = slidesFinal;
     }
 
     // ============================================================
-    // PARSEURS
+    // PARSEUR QUIZ
     // ============================================================
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return [];
-
+      
       var quizs = [];
       var currentQuiz = null;
-
+      
       for (var i = 0; i < lignes.length; i++) {
-        var trimmed = lignes[i].trim();
+        var ligne = lignes[i];
+        var trimmed = ligne.trim();
+        
         if (trimmed.match(/^q:/i)) {
           if (currentQuiz && currentQuiz.reponses.length > 0) {
             quizs.push(currentQuiz);
@@ -391,7 +393,7 @@
           var isCorrect = false;
           var isFaux = false;
           var texteRep = trimmed;
-
+          
           if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
             isCorrect = true;
             texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
@@ -399,7 +401,7 @@
             isFaux = true;
             texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
           }
-
+          
           if (isCorrect || isFaux) {
             currentQuiz.reponses.push({
               texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
@@ -408,14 +410,17 @@
           }
         }
       }
-
+      
       if (currentQuiz && currentQuiz.reponses.length > 0) {
         quizs.push(currentQuiz);
       }
-
+      
       return quizs;
     }
 
+    // ============================================================
+    // PARSEURS SPÉCIFIQUES
+    // ============================================================
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
@@ -438,7 +443,7 @@
       var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var recto = '';
       var verso = '';
-
+      
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         if (ligne.toLowerCase().startsWith('r:')) {
@@ -447,7 +452,7 @@
           verso = ligne.replace(/^v:\s*/i, '').trim() || 'Réponse';
         }
       }
-
+      
       if (recto === '') return null;
       return { recto: recto, verso: verso };
     }
@@ -478,57 +483,6 @@
     }
 
     // ============================================================
-    // CALCULER LE RÉSULTAT GLOBAL
-    // ============================================================
-    function calculerResultatGlobal() {
-      var totalBonnes = 0;
-      var totalQuestions = 0;
-
-      // Quiz
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) {
-          totalQuestions++;
-          if (rep.correct) totalBonnes++;
-        }
-      });
-
-      // Ordre
-      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
-      ordreSlides.forEach(function(o) {
-        var elements = o.elements || [];
-        if (etat.ordreValide[o.index]) {
-          totalBonnes += elements.length;
-          totalQuestions += elements.length;
-        } else if (elements.length > 0) {
-          totalQuestions += elements.length;
-        }
-      });
-
-      // Cartes
-      totalBonnes += etat.cartesBonnes;
-      totalQuestions += etat.cartesTotal;
-
-      // Question ouverte
-      if (etat.questionEnvoyee) {
-        totalBonnes++;
-        totalQuestions++;
-      }
-
-      var pourcentage = totalQuestions > 0 ? Math.round((totalBonnes / totalQuestions) * 100) : 0;
-      var estValide = pourcentage >= 65;
-
-      return {
-        totalBonnes: totalBonnes,
-        totalQuestions: totalQuestions,
-        pourcentage: pourcentage,
-        estValide: estValide,
-        aDesActivites: quizSlides.length > 0 || ordreSlides.length > 0 || etat.cartesTotal > 0
-      };
-    }
-
-    // ============================================================
     // AFFICHER LES SLIDES
     // ============================================================
     function afficherSlides() {
@@ -543,6 +497,7 @@
         return;
       }
 
+      // --- Points de progression ---
       var progressHtml = '<div class="progress-dots">';
       etat.slides.forEach(function(slide, idx) {
         var typeClass = 'type-' + slide.type;
@@ -551,6 +506,7 @@
       });
       progressHtml += '</div>';
 
+      // --- Slides ---
       var html = progressHtml;
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
@@ -566,17 +522,6 @@
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-
-          // Si c'est le dernier slide et qu'il n'y a pas de "retenir" ni d'activités
-          var estDernierSlide = index === etat.slides.length - 1;
-          var aRetenir = etat.slides.some(function(s) { return s.type === 'retenir'; });
-          var aDesActivites = etat.slides.some(function(s) {
-            return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
-          });
-
-          if (estDernierSlide && !aRetenir && !aDesActivites) {
-            html += '<button class="btn-fermer-slide" onclick="marquerLuEtFermer()" style="margin-top:16px;">✓ Marquer comme lu et fermer</button>';
-          }
         }
 
         if (slide.type === 'quiz') {
@@ -618,6 +563,7 @@
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
 
+      // Supprimer les anciens points aussi
       var oldDots = container.querySelectorAll('.progress-dots');
       oldDots.forEach(function(el) { el.remove(); });
 
@@ -653,8 +599,7 @@
             target.closest('.carte-container') ||
             target.closest('.carte-boutons') ||
             target.closest('.font-control-bottom') ||
-            target.closest('.progress-dots') ||
-            target.closest('.btn-recommencer')) {
+            target.closest('.progress-dots')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -738,34 +683,14 @@
 
     function afficherRetenir(slide) {
       var html = '';
-      var resultat = calculerResultatGlobal();
-
-      // Afficher le résultat global AVANT les mots
-      html += '<div class="resultat-global">';
-      html += '<div class="score">' + resultat.totalBonnes + ' / ' + resultat.totalQuestions + '</div>';
-      html += '<div class="pourcentage">' + resultat.pourcentage + '%</div>';
-      html += '<div class="statut ' + (resultat.estValide ? 'valide' : 'non-valide') + '">';
-      html += resultat.estValide ? '✅ Validé' : '❌ Non validé';
+      html += '<div class="retenir-label">♡ À retenir</div>';
+      html += '<div class="retenir-mots">';
+      slide.mots.forEach(function(mot) {
+        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+      });
       html += '</div>';
-      html += '</div>';
-
-      if (resultat.estValide) {
-        // Afficher les mots à retenir
-        html += '<div class="retenir-label">♡ À retenir</div>';
-        html += '<div class="retenir-mots">';
-        slide.mots.forEach(function(mot) {
-          if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-        });
-        html += '</div>';
-        html += '<p style="font-family:Inter,sans-serif;font-size:13px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-
-        // Bouton "Fermer"
-        html += '<button class="btn-fermer-slide" onclick="sauvegarderRetenirEtFermer()" style="margin-top:12px;">✓ J\'ai appris</button>';
-      } else {
-        // Non validé → pas de mots, juste "Recommencer"
-        html += '<button class="btn-recommencer" onclick="recommencerChapitre()">🔄 Recommencer le chapitre</button>';
-      }
-
+      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
       return html;
     }
 
@@ -832,7 +757,7 @@
     }
 
     // ============================================================
-    // FONCTIONS DE NAVIGATION
+    // FONCTIONS DE NAVIGATION ET INTERACTION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -889,6 +814,58 @@
       setTimeout(function() {
         btnContinuer.classList.add('visible');
       }, 400);
+      verifierQuizComplets();
+    }
+
+    function verifierQuizComplets() {
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      var tousRepondus = quizSlides.every(function(q) {
+        return etat.reponsesQuiz[q.index] !== undefined;
+      });
+      if (!tousRepondus) return;
+      var totalBonnes = 0, totalQuestions = 0;
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
+      });
+      etat.totalBonnes = totalBonnes;
+      etat.totalQuestions = totalQuestions;
+      var seuil = Math.ceil(totalQuestions / 2);
+      etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
+      if (totalQuestions === 0) etat.statutFinal = 'en-attente';
+      mettreAJourBadge();
+      sauvegarderQuiz();
+    }
+
+    function mettreAJourBadge() {
+      var badge = document.getElementById('badgeStatut');
+      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
+      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
+      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
+    }
+
+    function sauvegarderQuiz() {
+      if (!etat.chapitreId) return;
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var choixQcm = '';
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          if (choixQcm) choixQcm += '|';
+          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
+        }
+      });
+      var url = SCRIPT_URL + '?action=saveQuiz' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Quiz') +
+        '&choixQcm=' + encodeURIComponent(choixQcm) +
+        '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
+        '&total=' + encodeURIComponent(etat.totalQuestions);
+      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) console.log('✓ Quiz sauvegardé');
+      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
     function envoyerReponseOuverte(event, index) {
@@ -914,7 +891,6 @@
             confirmation.classList.add('visible');
             textarea.disabled = true;
             btn.textContent = '✓ Envoyé';
-            etat.questionEnvoyee = true;
             setTimeout(function() {
               btnContinuer.classList.add('visible');
             }, 400);
@@ -931,385 +907,30 @@
         });
     }
 
-    // ============================================================
-    // ORDRE
-    // ============================================================
-    function deplacerOrdre(btn, direction, index) {
-      var item = btn.closest('.ordre-item');
-      var list = item.closest('.ordre-list');
-      var items = list.querySelectorAll('.ordre-item');
-      var currentIdx = Array.from(items).indexOf(item);
-      var newIdx = currentIdx + direction;
-
-      if (newIdx < 0 || newIdx >= items.length) return;
-
-      if (direction < 0) {
-        list.insertBefore(item, items[newIdx]);
-      } else {
-        list.insertBefore(items[newIdx], item);
-      }
-
-      var allItems = list.querySelectorAll('.ordre-item');
-      allItems.forEach(function(el, idx) {
-        var numSpan = el.querySelector('.ordre-num');
-        if (numSpan) {
-          var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-          numSpan.textContent = '#' + lettres[idx];
-        }
-        var upBtn = el.querySelector('.ordre-boutons button:first-child');
-        var downBtn = el.querySelector('.ordre-boutons button:last-child');
-        if (upBtn) upBtn.disabled = (idx === 0);
-        if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
-      });
-
-      var resultat = document.getElementById('ordreResultat-' + index);
-      if (resultat) {
-        resultat.textContent = '';
-        resultat.className = 'ordre-resultat';
-      }
-      etat.ordreValide[index] = false;
-      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
-      if (btnContinuer) btnContinuer.classList.remove('visible');
-    }
-
-    function validerOrdre(index) {
-      var list = document.getElementById('ordre-list-' + index);
-      if (!list) return;
-      var items = list.querySelectorAll('.ordre-item');
-      var ordreDonne = [];
-      var ordreAttendu = [];
-
-      items.forEach(function(el) {
-        ordreDonne.push(parseInt(el.dataset.num));
-        ordreAttendu.push(parseInt(el.dataset.num));
-      });
-
-      ordreAttendu.sort(function(a, b) { return a - b; });
-
-      var correct = true;
-      for (var i = 0; i < ordreDonne.length; i++) {
-        if (ordreDonne[i] !== ordreAttendu[i]) {
-          correct = false;
-          break;
-        }
-      }
-
-      var resultat = document.getElementById('ordreResultat-' + index);
-      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
-      var btnValider = document.getElementById('btnValiderOrdre-' + index);
-
-      if (correct) {
-        resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
-        resultat.className = 'ordre-resultat correct';
-        etat.ordreValide[index] = true;
-        if (btnContinuer) btnContinuer.classList.add('visible');
-        if (btnValider) btnValider.disabled = true;
-      } else {
-        resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
-        resultat.className = 'ordre-resultat incorrect';
-        etat.ordreValide[index] = false;
-      }
-    }
-
-    // ============================================================
-    // CARTES
-    // ============================================================
-    function retournerCarte(index) {
-      var inner = document.getElementById('carteInner-' + index);
-      if (!inner) return;
-      if (inner.classList.contains('retournee')) return;
-
-      inner.classList.add('retournee');
-      var boutons = document.getElementById('carteBoutons-' + index);
-      if (boutons) boutons.classList.add('visible');
-    }
-
-    function carteTrouve(index) {
-      var resultat = document.getElementById('carteResultat-' + index);
-      var boutons = document.getElementById('carteBoutons-' + index);
-      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
-
-      if (etat.cartesResultats[index] !== null) return;
-
-      etat.cartesResultats[index] = true;
-      etat.cartesBonnes++;
-      etat.cartesTotal++;
-
-      resultat.textContent = '☑ Bien joué !';
-      resultat.style.color = 'var(--text)';
-      if (boutons) boutons.classList.remove('visible');
-      if (btnContinuer) btnContinuer.classList.add('visible');
-    }
-
-    function cartePasTrouve(index) {
-      var resultat = document.getElementById('carteResultat-' + index);
-      var boutons = document.getElementById('carteBoutons-' + index);
-      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
-
-      if (etat.cartesResultats[index] !== null) return;
-
-      etat.cartesResultats[index] = false;
-      etat.cartesTotal++;
-
-      resultat.textContent = '☹ Pas de problème, retenez bien la réponse.';
-      resultat.style.color = 'var(--text-secondary)';
-      if (boutons) boutons.classList.remove('visible');
-      if (btnContinuer) btnContinuer.classList.add('visible');
-    }
-
-    // ============================================================
-    // SAUVEGARDES
-    // ============================================================
-    function calculerTempsTotal() {
-      if (etat.tempsDebut) {
-        var fin = Date.now();
-        var diffMs = fin - etat.tempsDebut;
-        var totalSec = Math.floor(diffMs / 1000);
-        var heures = String(Math.floor(totalSec / 3600)).padStart(2, '0');
-        var minutes = String(Math.floor((totalSec % 3600) / 60)).padStart(2, '0');
-        var secondes = String(totalSec % 60).padStart(2, '0');
-        return heures + ':' + minutes + ':' + secondes;
-      }
-      return '00:00:00';
-    }
-
-    function sauvegarderChapitreComplet(retenirValue) {
+    function recupererStatutExistant() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var titre = etat.chapitre ? etat.chapitre.titre || '' : '';
-
-      // Quiz
-      var quizDetail = '';
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      if (quizSlides.length > 0) {
-        var details = [];
-        quizSlides.forEach(function(q) {
-          var rep = etat.reponsesQuiz[q.index];
-          if (rep) {
-            details.push((rep.correct ? 'V' : 'F') + ':' + rep.reponseIndex);
-          }
-        });
-        quizDetail = details.join('|');
-      }
-
-      // Ordre
-      var ordreDetail = '';
-      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
-      if (ordreSlides.length > 0) {
-        var list = document.getElementById('ordre-list-' + ordreSlides[0].index);
-        if (list) {
-          var items = list.querySelectorAll('.ordre-item');
-          var ordreDonne = [];
-          items.forEach(function(el) {
-            ordreDonne.push(el.dataset.num);
-          });
-          ordreDetail = ordreDonne.join(',');
-        }
-      }
-
-      // Cartes
-      var cartesDetail = '';
-      var carteSlides = etat.slides.filter(function(s) { return s.type === 'carte'; });
-      if (carteSlides.length > 0) {
-        var details = [];
-        carteSlides.forEach(function(c) {
-          if (etat.cartesResultats[c.index] === true) details.push('1');
-          else if (etat.cartesResultats[c.index] === false) details.push('0');
-        });
-        cartesDetail = details.join(',');
-      }
-
-      // Question ouverte
-      var questionDetail = '';
-      var openSlides = etat.slides.filter(function(s) { return s.type === 'open'; });
-      if (openSlides.length > 0) {
-        var textarea = document.getElementById('openReponse-' + openSlides[0].index);
-        if (textarea && textarea.value.trim() !== '') {
-          questionDetail = textarea.value.trim();
-        }
-      }
-
-      // Lecture
-      var lecture = '0';
-      var aDesActivites = etat.slides.some(function(s) {
-        return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
-      });
-      if (!aDesActivites) {
-        lecture = '1';
-      }
-
-      // Retenir
-      var retenir = retenirValue || '0';
-
-      // Temps total
-      var tempsTotal = calculerTempsTotal();
-
-      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&titre=' + encodeURIComponent(titre) +
-        '&quizDetail=' + encodeURIComponent(quizDetail) +
-        '&ordreDetail=' + encodeURIComponent(ordreDetail) +
-        '&cartesDetail=' + encodeURIComponent(cartesDetail) +
-        '&questionDetail=' + encodeURIComponent(questionDetail) +
-        '&lecture=' + encodeURIComponent(lecture) +
-        '&retenir=' + encodeURIComponent(retenir) +
-        '&tempsTotal=' + encodeURIComponent(tempsTotal);
-
-      fetch(url)
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data.success) {
-            if (data.valide === 'valide') {
-              alert('✅ Chapitre validé !');
-            } else {
-              alert('❌ Chapitre non validé (moyenne < 65%)');
-            }
-            fermerLiseuse();
-          } else {
-            alert('Erreur : ' + (data.message || 'Impossible de sauvegarder'));
-          }
-        })
-        .catch(function() {
-          alert('Erreur réseau');
-        });
-    }
-
-    function sauvegarderRetenirEtFermer() {
-      // Sauvegarder avec retenir = 1
-      sauvegarderChapitreComplet('1');
-    }
-
-    function marquerLuEtFermer() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var titre = etat.chapitre ? etat.chapitre.titre || '' : '';
-      var tempsTotal = calculerTempsTotal();
-
-      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&titre=' + encodeURIComponent(titre) +
-        '&quizDetail=' + encodeURIComponent('') +
-        '&ordreDetail=' + encodeURIComponent('') +
-        '&cartesDetail=' + encodeURIComponent('') +
-        '&questionDetail=' + encodeURIComponent('') +
-        '&lecture=' + encodeURIComponent('1') +
-        '&retenir=' + encodeURIComponent('') +
-        '&tempsTotal=' + encodeURIComponent(tempsTotal);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            alert('✅ Marqué comme lu');
-          }
-          fermerLiseuse();
-        })
-        .catch(function() {
-          fermerLiseuse();
-        });
-    }
-
-    function recommencerChapitre() {
-      if (confirm('Voulez-vous vraiment recommencer ce chapitre ? Toutes vos réponses seront effacées.')) {
-        // Réinitialiser l'état
-        etat.reponsesQuiz = {};
-        etat.ordreValide = {};
-        etat.cartesResultats = {};
-        etat.cartesTotal = 0;
-        etat.cartesBonnes = 0;
-        etat.questionEnvoyee = false;
-
-        // Recharger la page
-        location.reload();
-      }
-    }
-
-    // ============================================================
-    // NOTES
-    // ============================================================
-    function toggleNote(index) {
-      var area = document.getElementById('noteArea-' + index);
-      var toggle = document.getElementById('noteToggle-' + index);
-      if (!area) return;
-      if (area.classList.contains('visible')) {
-        area.classList.remove('visible');
-        toggle.classList.remove('active');
-      } else {
-        area.classList.add('visible');
-        toggle.classList.add('active');
-        var textarea = document.getElementById('noteText-' + index);
-        if (textarea) textarea.focus();
-      }
-    }
-
-    var timers = {};
-
-    function autoSaveNote(index) {
-      if (timers[index]) clearTimeout(timers[index]);
-      var indicator = document.getElementById('noteIndicator-' + index);
-      if (indicator) {
-        indicator.textContent = '⏱ Enregistrement...';
-        indicator.className = 'note-indicator';
-      }
-      timers[index] = setTimeout(function() {
-        sauvegarderNote(index);
-      }, 2000);
-    }
-
-    function sauvegarderNote(index) {
-      var textarea = document.getElementById('noteText-' + index);
-      if (!textarea) return;
-      var note = textarea.value.trim();
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveAnnotation' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&slide=' + encodeURIComponent(index) +
-        '&annotation=' + encodeURIComponent(note);
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            if (data.success) {
-              indicator.textContent = '✓ Note sauvegardée';
-              indicator.className = 'note-indicator saved';
-              etat.notes[index] = note;
-            } else {
-              indicator.textContent = '⚠︎ Erreur de sauvegarde';
-              indicator.className = 'note-indicator';
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
+            if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
+              var seuil = Math.ceil(reponse.total / 2);
+              if (reponse.bonnes >= seuil) {
+                etat.statutFinal = 'valide';
+                etat.totalBonnes = reponse.bonnes;
+                etat.totalQuestions = reponse.total;
+                mettreAJourBadge();
+              }
             }
           }
         })
-        .catch(function() {
-          var indicator = document.getElementById('noteIndicator-' + index);
-          if (indicator) {
-            indicator.textContent = '⚠︎ Erreur réseau';
-            indicator.className = 'note-indicator';
-          }
-        });
+        .catch(function(e) { console.error('Erreur récupération statut:', e); });
     }
 
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
     function slideSuivante() {
       if (etat.enTransition) return;
-      if (etat.currentIndex >= etat.slides.length - 1) {
-        // Si on est au dernier slide et que c'est un slide de lecture (sans retenir)
-        var dernier = etat.slides[etat.currentIndex];
-        if (dernier.type === 'slide') {
-          var aRetenir = etat.slides.some(function(s) { return s.type === 'retenir'; });
-          var aDesActivites = etat.slides.some(function(s) {
-            return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte' || s.type === 'open';
-          });
-          if (!aRetenir && !aDesActivites) {
-            // Le bouton "Marquer comme lu" est déjà affiché
-            return;
-          }
-        }
-        return;
-      }
+      if (etat.currentIndex >= etat.slides.length - 1) return;
 
       var slide = etat.slides[etat.currentIndex];
 
@@ -1385,56 +1006,259 @@
     }
 
     // ============================================================
-    // VALIDATION
+    // NOTES
     // ============================================================
-    function verifierValidationGlobale() {
+    function toggleNote(index) {
+      var area = document.getElementById('noteArea-' + index);
+      var toggle = document.getElementById('noteToggle-' + index);
+      if (!area) return;
+      if (area.classList.contains('visible')) {
+        area.classList.remove('visible');
+        toggle.classList.remove('active');
+      } else {
+        area.classList.add('visible');
+        toggle.classList.add('active');
+        var textarea = document.getElementById('noteText-' + index);
+        if (textarea) textarea.focus();
+      }
+    }
+
+    var timers = {};
+
+    function autoSaveNote(index) {
+      if (timers[index]) clearTimeout(timers[index]);
+      var indicator = document.getElementById('noteIndicator-' + index);
+      if (indicator) {
+        indicator.textContent = '⏱ Enregistrement...';
+        indicator.className = 'note-indicator';
+      }
+      timers[index] = setTimeout(function() {
+        sauvegarderNote(index);
+      }, 2000);
+    }
+
+    function sauvegarderNote(index) {
+      var textarea = document.getElementById('noteText-' + index);
+      if (!textarea) return;
+      var note = textarea.value.trim();
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&slide=' + encodeURIComponent(index) +
+        '&annotation=' + encodeURIComponent(note);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            if (data.success) {
+              indicator.textContent = '✓ Note sauvegardée';
+              indicator.className = 'note-indicator saved';
+              etat.notes[index] = note;
+            } else {
+              indicator.textContent = '⚠︎ Erreur de sauvegarde';
+              indicator.className = 'note-indicator';
+            }
+          }
+        })
+        .catch(function() {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            indicator.textContent = '⚠︎ Erreur réseau';
+            indicator.className = 'note-indicator';
+          }
+        });
+    }
+
+    // ============================================================
+    // ORDRE
+    // ============================================================
+    function deplacerOrdre(btn, direction, index) {
+      var item = btn.closest('.ordre-item');
+      var list = item.closest('.ordre-list');
+      var items = list.querySelectorAll('.ordre-item');
+      var currentIdx = Array.from(items).indexOf(item);
+      var newIdx = currentIdx + direction;
+
+      if (newIdx < 0 || newIdx >= items.length) return;
+
+      if (direction < 0) {
+        list.insertBefore(item, items[newIdx]);
+      } else {
+        list.insertBefore(items[newIdx], item);
+      }
+
+      var allItems = list.querySelectorAll('.ordre-item');
+      allItems.forEach(function(el, idx) {
+        var numSpan = el.querySelector('.ordre-num');
+        if (numSpan) {
+          var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+          numSpan.textContent = '#' + lettres[idx];
+        }
+        var upBtn = el.querySelector('.ordre-boutons button:first-child');
+        var downBtn = el.querySelector('.ordre-boutons button:last-child');
+        if (upBtn) upBtn.disabled = (idx === 0);
+        if (downBtn) downBtn.disabled = (idx === allItems.length - 1);
+      });
+
+      var resultat = document.getElementById('ordreResultat-' + index);
+      if (resultat) {
+        resultat.textContent = '';
+        resultat.className = 'ordre-resultat';
+      }
+      etat.ordreValide[index] = false;
+      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+      if (btnContinuer) btnContinuer.classList.remove('visible');
+    }
+
+    function validerOrdre(index) {
+      var list = document.getElementById('ordre-list-' + index);
+      if (!list) return;
+      var items = list.querySelectorAll('.ordre-item');
+      var ordreDonne = [];
+      var ordreAttendu = [];
+
+      items.forEach(function(el) {
+        ordreDonne.push(parseInt(el.dataset.num));
+        ordreAttendu.push(parseInt(el.dataset.num));
+      });
+
+      ordreAttendu.sort(function(a, b) { return a - b; });
+
+      var correct = true;
+      for (var i = 0; i < ordreDonne.length; i++) {
+        if (ordreDonne[i] !== ordreAttendu[i]) {
+          correct = false;
+          break;
+        }
+      }
+
+      var resultat = document.getElementById('ordreResultat-' + index);
+      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+      var btnValider = document.getElementById('btnValiderOrdre-' + index);
+
+      if (correct) {
+        resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
+        resultat.className = 'ordre-resultat correct';
+        etat.ordreValide[index] = true;
+        sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
+        if (btnContinuer) btnContinuer.classList.add('visible');
+        if (btnValider) btnValider.disabled = true;
+      } else {
+        resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
+        resultat.className = 'ordre-resultat incorrect';
+        etat.ordreValide[index] = false;
+        sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
+      }
+    }
+
+    function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveOrdre' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Ordre') +
+        '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
 
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data.success && data.validation) {
-            var badge = document.getElementById('badgeStatut');
-            if (data.validation.valide === 'valide') {
-              badge.textContent = '✓ Validé';
-              badge.className = 'badge-statut valide';
-            } else {
-              badge.textContent = '⏱ À faire';
-              badge.className = 'badge-statut en-attente';
-            }
-          }
+          if (data.success) console.log('✓ Ordre sauvegardé');
         })
-        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+        .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
-    function recupererStatutExistant() {
+    // ============================================================
+    // CARTES
+    // ============================================================
+    function retournerCarte(index) {
+      var inner = document.getElementById('carteInner-' + index);
+      if (!inner) return;
+      if (inner.classList.contains('retournee')) return;
+
+      inner.classList.add('retournee');
+      var boutons = document.getElementById('carteBoutons-' + index);
+      if (boutons) boutons.classList.add('visible');
+    }
+
+    function carteTrouve(index) {
+      var resultat = document.getElementById('carteResultat-' + index);
+      var boutons = document.getElementById('carteBoutons-' + index);
+      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
+
+      if (etat.cartesResultats[index] !== null) return;
+
+      etat.cartesResultats[index] = true;
+      etat.cartesBonnes++;
+      etat.cartesTotal++;
+
+      resultat.textContent = '☑ Bien joué !';
+      resultat.style.color = 'var(--text)';
+      if (boutons) boutons.classList.remove('visible');
+      if (btnContinuer) btnContinuer.classList.add('visible');
+
+      sauvegarderCarte(index);
+    }
+
+    function cartePasTrouve(index) {
+      var resultat = document.getElementById('carteResultat-' + index);
+      var boutons = document.getElementById('carteBoutons-' + index);
+      var btnContinuer = document.getElementById('btnContinuerCarte-' + index);
+
+      if (etat.cartesResultats[index] !== null) return;
+
+      etat.cartesResultats[index] = false;
+      etat.cartesTotal++;
+
+      resultat.textContent = '☹ Pas de problème, retenez bien la réponse.';
+      resultat.style.color = 'var(--text-secondary)';
+      if (boutons) boutons.classList.remove('visible');
+      if (btnContinuer) btnContinuer.classList.add('visible');
+
+      sauvegarderCarte(index);
+    }
+
+    function sauvegarderCarte(index) {
+      var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
+      if (!slide) return;
+
+      var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
+      var resultats = [];
+      toutesLesCartes.forEach(function(c) {
+        if (etat.cartesResultats[c.index] === true) resultats.push('1');
+        else if (etat.cartesResultats[c.index] === false) resultats.push('0');
+        else resultats.push('?');
+      });
+
+      var cartesStr = resultats.join(',');
+      var bonnes = etat.cartesBonnes;
+      var total = etat.cartesTotal;
+
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+      var url = SCRIPT_URL + '?action=saveCarte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Cartes') +
+        '&cartes=' + encodeURIComponent(cartesStr) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+
+      fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
-          if (data.success && data.reponses) {
-            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
-            if (reponse && reponse.valide === 'valide') {
-              var badge = document.getElementById('badgeStatut');
-              badge.textContent = '✓ Validé';
-              badge.className = 'badge-statut valide';
-            }
-          }
+          if (data.success) console.log('✓ Cartes sauvegardées');
         })
-        .catch(function(e) { console.error('Erreur récupération statut:', e); });
+        .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
 
     // ============================================================
     // FERMER
     // ============================================================
     function fermerLiseuse() {
-      var categorie = etat.chapitre ? etat.chapitre.categorie : '';
-      if (categorie) {
-        window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
-      } else {
-        window.location.href = '/medit/mes-livrets.html';
-      }
+      window.location.href = '/medit/mes-livrets.html';
     }
 
     function afficherErreur(message) {
@@ -1463,10 +1287,30 @@
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
-    window.marquerLuEtFermer = marquerLuEtFermer;
-    window.sauvegarderChapitreComplet = sauvegarderChapitreComplet;
-    window.sauvegarderRetenirEtFermer = sauvegarderRetenirEtFermer;
-    window.recommencerChapitre = recommencerChapitre;
+
+    function verifierValidationGlobale() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.global === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            } else if (data.validation.global === 'partiel') {
+              badge.textContent = '⏳ Partiel';
+              badge.className = 'badge-statut partiel';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+    }
   </script>
 
 </body>
