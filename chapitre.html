@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#121212" />
-  <title>Lecture</title>
+  <title>Chapitre - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>⬜⬜⬜</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
@@ -39,13 +39,13 @@
       background: var(--text, #111) !important;
     }
     .progress-dot.done {
-  border-color: var(--border, #ccc) !important;
-  background: transparent !important;
-}
+      border-color: var(--border, #ccc) !important;
+      background: transparent !important;
+    }
 
     /* Slide = carré */
     .progress-dot.type-slide {
-     border-radius: 50% !important;
+      border-radius: 50% !important;
     }
     /* Quiz = cercle */
     .progress-dot.type-quiz {
@@ -161,8 +161,8 @@
     var SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwikOxY7w84iLlEYS1rYzZcCGvz_mvkpol8rim0DPv5rPQYXBHw4BdbynMMXSgXhrN9/exec';
 
     var etat = {
-      postId: null,
-      post: null,
+      chapitreId: null,
+      chapitre: null,
       slides: [],
       currentIndex: 0,
       reponsesQuiz: {},
@@ -222,8 +222,8 @@
       var params = new URLSearchParams(window.location.search);
       var id = params.get('id');
       if (!id) { afficherErreur('Aucun identifiant.'); return; }
-      etat.postId = id;
-      chargerPost(id);
+      etat.chapitreId = id;
+      chargerChapitre(id);
 
       var initialSize = getSavedFontSize();
       setFontSize(initialSize);
@@ -233,10 +233,10 @@
     });
 
     // ============================================================
-    // CHARGER LE POST
+    // CHARGER LE CHAPITRE
     // ============================================================
-    function chargerPost(id) {
-      fetch(SCRIPT_URL + '?action=getPost&id=' + encodeURIComponent(id))
+    function chargerChapitre(id) {
+      fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
         .then(function(r) { 
           if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
           return r.json(); 
@@ -244,10 +244,10 @@
         .then(function(data) {
           console.log('📦 Données reçues du serveur:', data);
           
-          if (!data.success || !data.post) throw new Error(data.message || 'Texte introuvable');
+          if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
           
-          var post = data.post;
-          var contenu = post.contenu || '';
+          var chapitre = data.chapitre;
+          var contenu = chapitre.contenu || '';
           
           console.log('📄 Contenu brut:', contenu);
           
@@ -291,20 +291,20 @@
           console.log('📊 Carte:', carte);
           console.log('📊 Retenir:', retenir);
           
-          etat.post = post;
+          etat.chapitre = chapitre;
           
-          preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir);
+          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir);
           
           console.log('📊 Slides générés:', etat.slides);
           
           if (etat.slides.length === 0) {
-            afficherErreur('Aucun contenu trouvé dans ce post.');
+            afficherErreur('Aucun contenu trouvé dans ce chapitre.');
             return;
           }
           
           recupererNotes();
           afficherSlides();
-              verifierValidationGlobale();  // ← AJOUTER CETTE LIGNE
+          verifierValidationGlobale();
         })
         .catch(function(error) { 
           console.error('❌ Erreur:', error);
@@ -315,7 +315,7 @@
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerSlidesV2(post, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
+    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
       var slidesFinal = [];
       
       slidesArray.forEach(function(texteSlide) {
@@ -466,7 +466,7 @@
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success && data.reponses) {
-            var reponse = data.reponses.find(function(r) { return r.articleId === etat.postId; });
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
             if (reponse && reponse.annotations) {
               var parts = reponse.annotations.split('|');
               for (var i = 0; i < parts.length; i++) {
@@ -487,13 +487,13 @@
     // ============================================================
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
-      var post = etat.post;
-      document.getElementById('metaTitre').textContent = post.titre || 'Sans titre';
-      document.getElementById('metaCategorie').textContent = post.categorie || 'Sans catégorie';
-      document.getElementById('metaNiveau').textContent = 'Niveau ' + (post.niveau || 0);
+      var chapitre = etat.chapitre;
+      document.getElementById('metaTitre').textContent = chapitre.titre || 'Sans titre';
+      document.getElementById('metaCategorie').textContent = chapitre.categorie || 'Sans catégorie';
+      document.getElementById('metaNiveau').textContent = 'Niveau ' + (chapitre.niveau || 0);
 
       if (etat.slides.length === 0) {
-        container.innerHTML = '<div class="lecture-error"><div class="icone">⬜⬜⬜</div><h2>Aucun contenu</h2><p>Ce texte ne contient aucune slide.</p></div>';
+        container.innerHTML = '<div class="lecture-error"><div class="icone">⬜⬜⬜</div><h2>Aucun contenu</h2><p>Ce chapitre ne contient aucune slide.</p></div>';
         return;
       }
 
@@ -717,7 +717,7 @@
         var texte = shuffled[i].replace(/^-\d+-/, '').trim();
         html += '<div class="ordre-item" data-pos="' + i + '" data-num="' + numValue + '">';
         var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-html += '<span class="ordre-num">#' + lettres[i] + '</span>';
+        html += '<span class="ordre-num">#' + lettres[i] + '</span>';
         html += '<span class="ordre-texte">' + texte + '</span>';
         html += '<div class="ordre-boutons">';
         html += '<button onclick="deplacerOrdre(this, -1, ' + index + ')" ' + (i === 0 ? 'disabled' : '') + '>↑</button>';
@@ -845,7 +845,7 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
     }
 
     function sauvegarderQuiz() {
-      if (!etat.postId) return;
+      if (!etat.chapitreId) return;
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var choixQcm = '';
       var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
@@ -858,8 +858,8 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       });
       var url = SCRIPT_URL + '?action=saveQuiz' +
         '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Quiz') +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Quiz') +
         '&choixQcm=' + encodeURIComponent(choixQcm) +
         '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
         '&total=' + encodeURIComponent(etat.totalQuestions);
@@ -880,7 +880,7 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveReponseOuverte' +
         '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
         '&reponseOuverte=' + encodeURIComponent(reponse);
       fetch(url)
         .then(function(r) { return r.json(); })
@@ -913,7 +913,7 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
         .then(function(r) { return r.json(); })
         .then(function(data) {
           if (data.success && data.reponses) {
-            var reponse = data.reponses.find(function(r) { return r.articleId === etat.postId; });
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
             if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
               var seuil = Math.ceil(reponse.total / 2);
               if (reponse.bonnes >= seuil) {
@@ -1044,7 +1044,7 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveAnnotation' +
         '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
         '&slide=' + encodeURIComponent(index) +
         '&annotation=' + encodeURIComponent(note);
       fetch(url)
@@ -1092,8 +1092,10 @@ html += '<span class="ordre-num">#' + lettres[i] + '</span>';
       var allItems = list.querySelectorAll('.ordre-item');
       allItems.forEach(function(el, idx) {
         var numSpan = el.querySelector('.ordre-num');
-        if (numSpan) var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
-numSpan.textContent = '#' + lettres[idx];
+        if (numSpan) {
+          var lettres = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+          numSpan.textContent = '#' + lettres[idx];
+        }
         var upBtn = el.querySelector('.ordre-boutons button:first-child');
         var downBtn = el.querySelector('.ordre-boutons button:last-child');
         if (upBtn) upBtn.disabled = (idx === 0);
@@ -1155,8 +1157,8 @@ numSpan.textContent = '#' + lettres[idx];
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveOrdre' +
         '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Ordre') +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Ordre') +
         '&ordreDonne=' + encodeURIComponent(ordreDonne) +
         '&bonnes=' + encodeURIComponent(bonnes) +
         '&total=' + encodeURIComponent(total);
@@ -1238,8 +1240,8 @@ numSpan.textContent = '#' + lettres[idx];
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveCarte' +
         '&nom=' + encodeURIComponent(nom) +
-        '&articleId=' + encodeURIComponent(etat.postId) +
-        '&titre=' + encodeURIComponent(etat.post.titre || 'Cartes') +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Cartes') +
         '&cartes=' + encodeURIComponent(cartesStr) +
         '&bonnes=' + encodeURIComponent(bonnes) +
         '&total=' + encodeURIComponent(total);
@@ -1263,7 +1265,7 @@ numSpan.textContent = '#' + lettres[idx];
       document.getElementById('slidesContainer').innerHTML = `
         <div class="lecture-error">
           <div class="icone">⬜⬜⬜</div>
-          <h2>Texte introuvable</h2>
+          <h2>Chapitre introuvable</h2>
           <p>${message || 'Le chapitre n\'existe pas.'}</p>
           <a href="/medit/mes-livrets.html" class="btn-retour">← Retour</a>
         </div>
@@ -1287,28 +1289,28 @@ numSpan.textContent = '#' + lettres[idx];
     window.cartePasTrouve = cartePasTrouve;
 
     function verifierValidationGlobale() {
-  var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-  var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&articleId=' + encodeURIComponent(etat.postId);
-  
-  fetch(url)
-    .then(function(r) { return r.json(); })
-    .then(function(data) {
-      if (data.success && data.validation) {
-        var badge = document.getElementById('badgeStatut');
-        if (data.validation.global === 'valide') {
-          badge.textContent = '✓ Validé';
-          badge.className = 'badge-statut valide';
-        } else if (data.validation.global === 'partiel') {
-          badge.textContent = '⏳ Partiel';
-          badge.className = 'badge-statut partiel';
-        } else {
-          badge.textContent = '⏱ À faire';
-          badge.className = 'badge-statut en-attente';
-        }
-      }
-    })
-    .catch(function(e) { console.error('Erreur vérification validation:', e); });
-}
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.global === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            } else if (data.validation.global === 'partiel') {
+              badge.textContent = '⏳ Partiel';
+              badge.className = 'badge-statut partiel';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+    }
   </script>
 
 </body>
