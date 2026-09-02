@@ -339,7 +339,7 @@
       </div>
       <div class="stat-item">
         <span>Chapitres total :</span>
-        <span class="nombre" id="totalLecons">0</span>
+        <span class="nombre" id="totalChapitres">0</span>
       </div>
       <div class="stat-item">
         <span>Votre niveau :</span>
@@ -388,7 +388,7 @@
     // DONNÉES
     // ============================================================
     var toutesLesReponses = {};
-    var postsData = [];
+    var chapitresData = [];
     var livretsData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
@@ -423,7 +423,7 @@
       DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
-          postsData = data.posts || [];
+          chapitresData = data.posts || [];
 
           livretsData = {};
           if (data.livrets) {
@@ -444,12 +444,12 @@
           toutesLesReponses = {};
           if (data.reponses) {
             data.reponses.forEach(function(r) {
-              toutesLesReponses[r.articleId] = r;
+              toutesLesReponses[r.chapitreId] = r;
             });
           }
 
           document.getElementById('totalLivrets').textContent = '0';
-          document.getElementById('totalLecons').textContent = '0';
+          document.getElementById('totalChapitres').textContent = '0';
           document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
 
           afficherLivrets();
@@ -459,7 +459,7 @@
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            postsData = cache.posts || [];
+            chapitresData = cache.posts || [];
             if (cache.livrets) {
               if (Array.isArray(cache.livrets)) {
                 livretsData = {};
@@ -502,21 +502,21 @@
       if (loader) loader.style.display = 'none';
 
       var categories = {};
-      var totalLecons = 0;
+      var totalChapitres = 0;
 
-      postsData.forEach(function(post) {
-        var cat = post.categorie || 'Sans catégorie';
+      chapitresData.forEach(function(chapitre) {
+        var cat = chapitre.categorie || 'Sans catégorie';
         if (!categories[cat]) {
           categories[cat] = {
             nom: cat,
-            niveau: post.niveau || 1,
-            lecons: 0,
-            posts: []
+            niveau: chapitre.niveau || 1,
+            chapitres: 0,
+            chapitresListe: []
           };
         }
-        categories[cat].lecons++;
-        categories[cat].posts.push(post);
-        totalLecons++;
+        categories[cat].chapitres++;
+        categories[cat].chapitresListe.push(chapitre);
+        totalChapitres++;
       });
 
       var livrets = Object.values(categories);
@@ -526,7 +526,7 @@
       });
 
       document.getElementById('totalLivrets').textContent = livrets.length;
-      document.getElementById('totalLecons').textContent = totalLecons;
+      document.getElementById('totalChapitres').textContent = totalChapitres;
 
       if (livrets.length === 0) {
         container.innerHTML = `
@@ -548,11 +548,11 @@
         var date = data.date || '';
         var auteur = data.auteur || '';
 
-        var lecons = livret.lecons || 0;
+        var nbChapitres = livret.chapitres || 0;
 
         var validees = 0;
-        livret.posts.forEach(function(post) {
-          var reponse = toutesLesReponses[post.id];
+        livret.chapitresListe.forEach(function(chapitre) {
+          var reponse = toutesLesReponses[chapitre.id];
           if (reponse) {
             var bonnes = parseInt(reponse.bonnes) || 0;
             var total = parseInt(reponse.total) || 0;
@@ -561,7 +561,7 @@
           }
         });
 
-        var pourcentage = lecons > 0 ? Math.round((validees / lecons) * 100) : 0;
+        var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
         var dateFormatee = formatDate(date);
 
         html += `
