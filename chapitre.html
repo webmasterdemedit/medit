@@ -156,13 +156,14 @@
   </div>
 
   <div class="pagination-text" id="pagination">1 / 1</div>
-<script src="/medit/config.js"></script>
-<script src="/medit/auth.js"></script>
-<script src="/medit/data-manager.js"></script>
-  
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
   <script>
     // Utiliser CONFIG.SCRIPT_URL défini dans config.js
-var SCRIPT_URL = CONFIG.SCRIPT_URL;
+    var SCRIPT_URL = CONFIG.SCRIPT_URL;
 
     var etat = {
       chapitreId: null,
@@ -179,7 +180,8 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
-      carteCourante: null
+      carteCourante: null,
+      questionEnvoyee: false
     };
 
     // ============================================================
@@ -694,7 +696,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       });
       html += '</div>';
       html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+      html += '<button class="btn-fermer-slide" onclick="marquerLuEtFermer()">✓ Marquer comme lu et fermer</button>';
       return html;
     }
 
@@ -818,58 +820,149 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       setTimeout(function() {
         btnContinuer.classList.add('visible');
       }, 400);
-      verifierQuizComplets();
     }
 
-    function verifierQuizComplets() {
-      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      var tousRepondus = quizSlides.every(function(q) {
-        return etat.reponsesQuiz[q.index] !== undefined;
-      });
-      if (!tousRepondus) return;
-      var totalBonnes = 0, totalQuestions = 0;
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
-      });
-      etat.totalBonnes = totalBonnes;
-      etat.totalQuestions = totalQuestions;
-      var seuil = Math.ceil(totalQuestions / 2);
-      etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
-      if (totalQuestions === 0) etat.statutFinal = 'en-attente';
-      mettreAJourBadge();
-      sauvegarderQuiz();
-    }
-
-    function mettreAJourBadge() {
-      var badge = document.getElementById('badgeStatut');
-      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
-      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
-      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
-    }
-
-    function sauvegarderQuiz() {
-      if (!etat.chapitreId) return;
+    // ============================================================
+    // SAUVEGARDER CHAPITRE COMPLET
+    // ============================================================
+    function sauvegarderChapitreComplet() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var choixQcm = '';
+      
+      // Quiz
+      var quizDetail = '';
+      var quizScore = '0/0';
       var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-      quizSlides.forEach(function(q) {
-        var rep = etat.reponsesQuiz[q.index];
-        if (rep) {
-          if (choixQcm) choixQcm += '|';
-          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
+      if (quizSlides.length > 0) {
+        var details = [];
+        var bonnes = 0, total = 0;
+        quizSlides.forEach(function(q) {
+          var rep = etat.reponsesQuiz[q.index];
+          if (rep) {
+            total++;
+            if (rep.correct) { bonnes++; details.push('V:' + rep.reponseIndex); }
+            else { details.push('F:' + rep.reponseIndex); }
+          }
+        });
+        quizDetail = details.join('|');
+        quizScore = bonnes + '/' + total;
+      }
+
+      // Ordre
+      var ordreDetail = '';
+      var ordreScore = '0/0';
+      var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
+      if (ordreSlides.length > 0) {
+        var list = document.getElementById('ordre-list-' + ordreSlides[0].index);
+        if (list) {
+          var items = list.querySelectorAll('.ordre-item');
+          var ordreDonne = [];
+          items.forEach(function(el) {
+            ordreDonne.push(el.dataset.num);
+          });
+          ordreDetail = ordreDonne.join(',');
+          
+          var bonnes = 0;
+          var total = ordreDonne.length;
+          var ordreAttendu = ordreDonne.slice().sort(function(a, b) { return a - b; });
+          for (var i = 0; i < ordreDonne.length; i++) {
+            if (parseInt(ordreDonne[i]) === parseInt(ordreAttendu[i])) bonnes++;
+          }
+          ordreScore = bonnes + '/' + total;
         }
-      });
-      var url = SCRIPT_URL + '?action=saveQuiz' +
+      }
+
+      // Cartes
+      var cartesDetail = '';
+      var cartesScore = '0/0';
+      var carteSlides = etat.slides.filter(function(s) { return s.type === 'carte'; });
+      if (carteSlides.length > 0) {
+        var details = [];
+        carteSlides.forEach(function(c) {
+          if (etat.cartesResultats[c.index] === true) details.push('1');
+          else if (etat.cartesResultats[c.index] === false) details.push('0');
+        });
+        cartesDetail = details.join(',');
+        cartesScore = etat.cartesBonnes + '/' + etat.cartesTotal;
+      }
+
+      // Question ouverte
+      var questionDetail = '';
+      var questionScore = '0/0';
+      var openSlides = etat.slides.filter(function(s) { return s.type === 'open'; });
+      if (openSlides.length > 0) {
+        var textarea = document.getElementById('openReponse-' + openSlides[0].index);
+        if (textarea && textarea.value.trim() !== '') {
+          questionDetail = textarea.value.trim();
+          questionScore = '1/1';
+        }
+      }
+
+      // Lecture
+      var lecture = '0';
+      var aDesActivites = quizSlides.length > 0 || ordreSlides.length > 0 || carteSlides.length > 0 || openSlides.length > 0;
+      if (!aDesActivites) {
+        lecture = '1';
+      }
+
+      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
         '&nom=' + encodeURIComponent(nom) +
         '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Quiz') +
-        '&choixQcm=' + encodeURIComponent(choixQcm) +
-        '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
-        '&total=' + encodeURIComponent(etat.totalQuestions);
-      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
-        if (data.success) console.log('✓ Quiz sauvegardé');
-      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
+        '&quizDetail=' + encodeURIComponent(quizDetail) +
+        '&quizScore=' + encodeURIComponent(quizScore) +
+        '&ordreDetail=' + encodeURIComponent(ordreDetail) +
+        '&ordreScore=' + encodeURIComponent(ordreScore) +
+        '&cartesDetail=' + encodeURIComponent(cartesDetail) +
+        '&cartesScore=' + encodeURIComponent(cartesScore) +
+        '&questionDetail=' + encodeURIComponent(questionDetail) +
+        '&questionScore=' + encodeURIComponent(questionScore) +
+        '&lecture=' + encodeURIComponent(lecture);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            if (data.valide === 'valide') {
+              alert('✅ Chapitre validé !');
+            } else {
+              alert('❌ Chapitre non validé (moyenne < 65%)');
+            }
+            fermerLiseuse();
+          } else {
+            alert('Erreur : ' + (data.message || 'Impossible de sauvegarder'));
+          }
+        })
+        .catch(function() {
+          alert('Erreur réseau');
+        });
+    }
+
+    function marquerLuEtFermer() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      
+      var url = SCRIPT_URL + '?action=saveChapitreComplet' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&quizDetail=' + encodeURIComponent('') +
+        '&quizScore=' + encodeURIComponent('') +
+        '&ordreDetail=' + encodeURIComponent('') +
+        '&ordreScore=' + encodeURIComponent('') +
+        '&cartesDetail=' + encodeURIComponent('') +
+        '&cartesScore=' + encodeURIComponent('') +
+        '&questionDetail=' + encodeURIComponent('') +
+        '&questionScore=' + encodeURIComponent('') +
+        '&lecture=' + encodeURIComponent('1');
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) {
+            alert('✅ Marqué comme lu');
+          }
+          fermerLiseuse();
+        })
+        .catch(function() {
+          fermerLiseuse();
+        });
     }
 
     function envoyerReponseOuverte(event, index) {
@@ -895,6 +988,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
             confirmation.classList.add('visible');
             textarea.disabled = true;
             btn.textContent = '✓ Envoyé';
+            etat.questionEnvoyee = true;
             setTimeout(function() {
               btnContinuer.classList.add('visible');
             }, 400);
@@ -918,14 +1012,9 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         .then(function(data) {
           if (data.success && data.reponses) {
             var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
-            if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
-              var seuil = Math.ceil(reponse.total / 2);
-              if (reponse.bonnes >= seuil) {
-                etat.statutFinal = 'valide';
-                etat.totalBonnes = reponse.bonnes;
-                etat.totalQuestions = reponse.total;
-                mettreAJourBadge();
-              }
+            if (reponse && reponse.valide === 'valide') {
+              etat.statutFinal = 'valide';
+              mettreAJourBadge();
             }
           }
         })
@@ -1007,6 +1096,13 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           dot.classList.add('active');
         }
       });
+    }
+
+    function mettreAJourBadge() {
+      var badge = document.getElementById('badgeStatut');
+      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
+      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
+      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
     }
 
     // ============================================================
@@ -1146,33 +1242,13 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         resultat.textContent = '✌︎︎ Tous les éléments sont bien placés !';
         resultat.className = 'ordre-resultat correct';
         etat.ordreValide[index] = true;
-        sauvegarderOrdre(index, ordreDonne.join(','), 1, ordreDonne.length);
         if (btnContinuer) btnContinuer.classList.add('visible');
         if (btnValider) btnValider.disabled = true;
       } else {
         resultat.textContent = '✋︎ L\'ordre n\'est pas correct. Réessayez.';
         resultat.className = 'ordre-resultat incorrect';
         etat.ordreValide[index] = false;
-        sauvegarderOrdre(index, ordreDonne.join(','), 0, ordreDonne.length);
       }
-    }
-
-    function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveOrdre' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Ordre') +
-        '&ordreDonne=' + encodeURIComponent(ordreDonne) +
-        '&bonnes=' + encodeURIComponent(bonnes) +
-        '&total=' + encodeURIComponent(total);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) console.log('✓ Ordre sauvegardé');
-        })
-        .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
     // ============================================================
@@ -1203,8 +1279,6 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       resultat.style.color = 'var(--text)';
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
-
-      sauvegarderCarte(index);
     }
 
     function cartePasTrouve(index) {
@@ -1221,56 +1295,19 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       resultat.style.color = 'var(--text-secondary)';
       if (boutons) boutons.classList.remove('visible');
       if (btnContinuer) btnContinuer.classList.add('visible');
-
-      sauvegarderCarte(index);
-    }
-
-    function sauvegarderCarte(index) {
-      var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
-      if (!slide) return;
-
-      var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
-      var resultats = [];
-      toutesLesCartes.forEach(function(c) {
-        if (etat.cartesResultats[c.index] === true) resultats.push('1');
-        else if (etat.cartesResultats[c.index] === false) resultats.push('0');
-        else resultats.push('?');
-      });
-
-      var cartesStr = resultats.join(',');
-      var bonnes = etat.cartesBonnes;
-      var total = etat.cartesTotal;
-
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=saveCarte' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
-        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Cartes') +
-        '&cartes=' + encodeURIComponent(cartesStr) +
-        '&bonnes=' + encodeURIComponent(bonnes) +
-        '&total=' + encodeURIComponent(total);
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) console.log('✓ Cartes sauvegardées');
-        })
-        .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
 
     // ============================================================
     // FERMER
     // ============================================================
     function fermerLiseuse() {
-  // Récupérer la catégorie du chapitre pour revenir au bon livret
-  var categorie = etat.chapitre ? etat.chapitre.categorie : '';
-  if (categorie) {
-    window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
-  } else {
-    // Fallback si pas de catégorie
-    window.location.href = '/medit/mes-livrets.html';
-  }
-}
+      var categorie = etat.chapitre ? etat.chapitre.categorie : '';
+      if (categorie) {
+        window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
+      } else {
+        window.location.href = '/medit/mes-livrets.html';
+      }
+    }
 
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
@@ -1281,6 +1318,34 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           <a href="/medit/mes-livrets.html" class="btn-retour">← Retour</a>
         </div>
       `;
+    }
+
+    // ============================================================
+    // VALIDATION GLOBALE
+    // ============================================================
+    function verifierValidationGlobale() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.global === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+              etat.statutFinal = 'valide';
+            } else if (data.validation.global === 'partiel') {
+              badge.textContent = '⏳ Partiel';
+              badge.className = 'badge-statut partiel';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
     }
 
     // ============================================================
@@ -1298,30 +1363,8 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
-
-    function verifierValidationGlobale() {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
-      
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success && data.validation) {
-            var badge = document.getElementById('badgeStatut');
-            if (data.validation.global === 'valide') {
-              badge.textContent = '✓ Validé';
-              badge.className = 'badge-statut valide';
-            } else if (data.validation.global === 'partiel') {
-              badge.textContent = '⏳ Partiel';
-              badge.className = 'badge-statut partiel';
-            } else {
-              badge.textContent = '⏱ À faire';
-              badge.className = 'badge-statut en-attente';
-            }
-          }
-        })
-        .catch(function(e) { console.error('Erreur vérification validation:', e); });
-    }
+    window.marquerLuEtFermer = marquerLuEtFermer;
+    window.sauvegarderChapitreComplet = sauvegarderChapitreComplet;
   </script>
 
 </body>
