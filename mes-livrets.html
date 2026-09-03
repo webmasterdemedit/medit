@@ -10,7 +10,6 @@
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
-    /* ===== PAGE LIVRETS ===== */
     .page-livrets {
       max-width: 1200px;
       margin: 0 auto;
@@ -33,7 +32,6 @@
       font-weight: 300;
     }
 
-    /* ===== STATS ===== */
     .stats-ligne {
       display: flex;
       gap: 20px;
@@ -41,7 +39,6 @@
       margin-bottom: 28px;
       padding: 12px 20px;
       background: var(--bg-hover);
-      border-radius: 0;
       border: 1px solid var(--border);
     }
 
@@ -57,7 +54,6 @@
       margin-left: 6px;
     }
 
-    /* ===== GRILLE DES LIVRETS ===== */
     .grille-livrets {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -65,7 +61,6 @@
       margin-top: 10px;
     }
 
-    /* ===== CARTE LIVRET ===== */
     .carte-livret {
       position: relative;
       border-radius: 0;
@@ -203,9 +198,9 @@
       width: 0%;
     }
 
-    /* ===== LIVRETS VERROUILLÉS ===== */
+    /* === UNIQUEMENT AJOUT POUR VERROUILLÉ === */
     .carte-livret.verrouille {
-      filter: grayscale(0.9) opacity(0.5);
+      filter: grayscale(1) opacity(0.4);
       cursor: not-allowed;
       pointer-events: none;
     }
@@ -215,22 +210,6 @@
       border-color: var(--border);
     }
 
-    .carte-livret.verrouille .badge-verrou {
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 5;
-      font-size: 40px;
-      opacity: 0.7;
-      background: rgba(0,0,0,0.3);
-      border-radius: 50%;
-      padding: 12px;
-      color: white;
-      text-shadow: 0 2px 8px rgba(0,0,0,0.5);
-      pointer-events: none;
-    }
-
     .section-verrouillee {
       margin-top: 40px;
       padding-top: 20px;
@@ -238,14 +217,12 @@
     }
 
     .section-verrouillee .titre-section {
-      font-size: 16px;
-      font-weight: 500;
+      font-size: 15px;
+      font-weight: 400;
       color: var(--text-secondary);
-      margin-bottom: 16px;
-      letter-spacing: 0.5px;
+      margin-bottom: 14px;
     }
 
-    /* ===== VIDE ===== */
     .vide-livrets {
       grid-column: 1 / -1;
       text-align: center;
@@ -273,7 +250,6 @@
       margin-top: 4px;
     }
 
-    /* ===== LOADER ===== */
     .loader {
       text-align: center;
       padding: 40px 20px;
@@ -293,68 +269,23 @@
       to { transform: rotate(360deg); }
     }
 
-    /* ===== RESPONSIVE ===== */
     @media (max-width: 640px) {
-      .page-livrets {
-        padding: 12px 16px 30px;
-      }
-
-      .page-livrets h1 {
-        font-size: 22px;
-      }
-
-      .grille-livrets {
-        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-        gap: 16px;
-      }
-
-      .carte-livret {
-        height: 280px;
-      }
-
-      .carte-livret .titre-livret {
-        font-size: 17px;
-      }
-
-      .carte-livret .sous-titre-livret {
-        font-size: 11px;
-      }
-
-      .carte-livret .auteur-livret {
-        font-size: 9px;
-      }
-
-      .carte-livret .badge-niveau {
-        font-size: 10px;
-        top: 10px;
-        right: 10px;
-        padding: 2px 10px;
-      }
-
-      .stats-ligne {
-        padding: 10px 14px;
-        gap: 12px;
-        flex-wrap: wrap;
-      }
-
-      .stat-item {
-        font-size: 13px;
-      }
+      .page-livrets { padding: 12px 16px 30px; }
+      .page-livrets h1 { font-size: 22px; }
+      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
+      .carte-livret { height: 280px; }
+      .carte-livret .titre-livret { font-size: 17px; }
+      .carte-livret .sous-titre-livret { font-size: 11px; }
+      .carte-livret .auteur-livret { font-size: 9px; }
+      .carte-livret .badge-niveau { font-size: 10px; top: 10px; right: 10px; padding: 2px 10px; }
+      .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
+      .stat-item { font-size: 13px; }
     }
 
     @media (max-width: 400px) {
-      .grille-livrets {
-        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-        gap: 12px;
-      }
-
-      .carte-livret {
-        height: 240px;
-      }
-
-      .carte-livret .titre-livret {
-        font-size: 15px;
-      }
+      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
+      .carte-livret { height: 240px; }
+      .carte-livret .titre-livret { font-size: 15px; }
     }
   </style>
 
@@ -426,18 +357,12 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // DONNÉES
-    // ============================================================
     var toutesLesReponses = {};
     var chapitresData = [];
     var livretsData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
-    // ============================================================
-    // FORMATER LA DATE
-    // ============================================================
     function formatDate(dateStr) {
       if (!dateStr) return '';
       try {
@@ -450,9 +375,6 @@
       }
     }
 
-    // ============================================================
-    // CHARGEMENT
-    // ============================================================
     function chargerLivrets() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -535,9 +457,6 @@
         });
     }
 
-    // ============================================================
-    // AFFICHER LES LIVRETS
-    // ============================================================
     function afficherLivrets() {
       var container = document.getElementById('contenu');
       var loader = document.getElementById('loader');
@@ -581,102 +500,61 @@
         return;
       }
 
-      // === SÉPARER EN DEUX GROUPES ===
-      var livretsDisponibles = [];
-      var livretsVerrouilles = [];
+      var html = '<div class="grille-livrets">';
 
       livrets.forEach(function(livret) {
-        if (livret.niveau <= niveauEtudiant) {
-          livretsDisponibles.push(livret);
-        } else {
-          livretsVerrouilles.push(livret);
-        }
-      });
+        var disponible = livret.niveau <= niveauEtudiant;
+        var data = livretsData[livret.nom] || {};
+        var couleur = disponible ? (data.couleur || '#2d6a4f') : '#666666';
+        var sousTitre = data.sousTitre || '';
+        var date = data.date || '';
+        var auteur = data.auteur || '';
 
-      var html = '';
+        var nbChapitres = livret.chapitres || 0;
 
-      // === GRILLE 1 : LIVRETS DISPONIBLES ===
-      if (livretsDisponibles.length > 0) {
-        html += '<div class="grille-livrets">';
-        livretsDisponibles.forEach(function(livret) {
-          html += genererCarteLivret(livret, false);
+        var validees = 0;
+        livret.chapitresListe.forEach(function(chapitre) {
+          var reponse = toutesLesReponses[chapitre.id];
+          if (reponse) {
+            var bonnes = parseInt(reponse.bonnes) || 0;
+            var total = parseInt(reponse.total) || 0;
+            if (total === 1 && bonnes === 1) validees++;
+            else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
+          }
         });
-        html += '</div>';
-      }
 
-      // === GRILLE 2 : LIVRETS VERROUILLÉS ===
-      if (livretsVerrouilles.length > 0) {
+        var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
+        var dateFormatee = formatDate(date);
+        var classeVerrou = disponible ? '' : 'verrouille';
+
         html += `
-          <div class="section-verrouillee">
-            <div class="titre-section">🔒 Livrets à débloquer (niveaux supérieurs)</div>
-            <div class="grille-livrets">
-        `;
-        livretsVerrouilles.forEach(function(livret) {
-          html += genererCarteLivret(livret, true);
-        });
-        html += `
+          <div class="carte-livret ${classeVerrou}" 
+               style="background: ${couleur}; border-color: ${couleur};"
+               onclick="${disponible ? 'window.location.href=\'/medit/livret.html?cat=' + encodeURIComponent(livret.nom) + '\'' : ''}">
+            ${!disponible ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:36px;opacity:0.6;pointer-events:none;">🔒</div>' : ''}
+            <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
+            <div class="contenu-livret">
+              <div class="titre-wrapper">
+                ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
+                <span class="titre-livret">${livret.nom}</span>
+                ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              </div>
+            </div>
+            <div class="progression-livret">
+              <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
         `;
-      }
+      });
 
+      html += '</div>';
       container.innerHTML = html;
     }
 
-    // ============================================================
-    // GÉNÉRER UNE CARTE LIVRET
-    // ============================================================
-    function genererCarteLivret(livret, verrouille) {
-      var data = livretsData[livret.nom] || {};
-      var couleur = verrouille ? '#666666' : (data.couleur || '#2d6a4f');
-      var sousTitre = data.sousTitre || '';
-      var date = data.date || '';
-      var auteur = data.auteur || '';
-
-      var nbChapitres = livret.chapitres || 0;
-
-      var validees = 0;
-      livret.chapitresListe.forEach(function(chapitre) {
-        var reponse = toutesLesReponses[chapitre.id];
-        if (reponse) {
-          var bonnes = parseInt(reponse.bonnes) || 0;
-          var total = parseInt(reponse.total) || 0;
-          if (total === 1 && bonnes === 1) validees++;
-          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
-        }
-      });
-
-      var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
-      var dateFormatee = formatDate(date);
-      var classeVerrou = verrouille ? 'verrouille' : '';
-
-      return `
-        <div class="carte-livret ${classeVerrou}" 
-             style="background: ${couleur}; border-color: ${couleur};"
-             onclick="${verrouille ? '' : 'window.location.href=\'/medit/livret.html?cat=' + encodeURIComponent(livret.nom) + '\''}">
-          ${verrouille ? '<div class="badge-verrou">🔒</div>' : ''}
-          <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
-          <div class="contenu-livret">
-            <div class="titre-wrapper">
-              ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
-              <span class="titre-livret">${livret.nom}</span>
-              ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
-            </div>
-            <div class="edition-info">
-              <span class="edition-nom">Qiraat Édition</span>
-              ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
-            </div>
-          </div>
-          <div class="progression-livret">
-            <div class="barre" style="width: ${pourcentage}%;"></div>
-          </div>
-        </div>
-      `;
-    }
-
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
     function demarrer() {
       chargerLivrets();
     }
