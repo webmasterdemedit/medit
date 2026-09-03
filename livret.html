@@ -10,12 +10,17 @@
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
+    /* ============================================================
+       PAGE LIVRET - VUE DÉTAIL
+       ============================================================ */
+
     .page-livret {
       max-width: 1100px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
 
+    /* ===== EN-TÊTE DU LIVRET ===== */
     .entete-livret {
       display: flex;
       gap: 32px;
@@ -25,6 +30,7 @@
       border-bottom: 1px solid var(--border);
     }
 
+    /* ===== COUVERTURE MINIATURE (style carte mes-livrets) ===== */
     .couverture-mini {
       flex-shrink: 0;
       width: 200px;
@@ -124,19 +130,6 @@
       background: rgba(255, 255, 255, 0.70);
     }
 
-    .couverture-mini .badge-complet {
-      position: absolute;
-      top: 14px;
-      left: 14px;
-      z-index: 3;
-      padding: 3px 10px;
-      font-size: 10px;
-      font-weight: 600;
-      letter-spacing: 0.5px;
-      color: #fff;
-      background: #2d6a4f;
-    }
-
     .couverture-mini .progression-couv {
       position: absolute;
       bottom: 0;
@@ -155,6 +148,7 @@
       width: 0%;
     }
 
+    /* ===== DESCRIPTION À DROITE ===== */
     .description-livret {
       flex: 1;
       padding-top: 4px;
@@ -192,6 +186,7 @@
       margin-bottom: 8px;
     }
 
+    /* ===== STATS DU LIVRET ===== */
     .stats-livret {
       display: flex;
       gap: 24px;
@@ -214,6 +209,7 @@
       margin-left: 4px;
     }
 
+    /* ===== BOUTON RETOUR ===== */
     .btn-retour {
       display: inline-block;
       margin-bottom: 16px;
@@ -234,6 +230,7 @@
       color: var(--text);
     }
 
+    /* ===== LISTE DES CHAPITRES ===== */
     .section-chapitres {
       margin-top: 8px;
     }
@@ -247,6 +244,7 @@
       letter-spacing: 0.3px;
     }
 
+    /* ===== CARTE CHAPITRE ===== */
     .carte-chapitre {
       background: var(--bg);
       border: 1px solid var(--border);
@@ -260,7 +258,7 @@
       cursor: pointer;
     }
 
-    .carte-chapitre:hover:not(.bloque) {
+    .carte-chapitre:hover {
       border-color: var(--border-hover);
     }
 
@@ -273,13 +271,6 @@
       font-weight: 500;
       font-size: 15px;
       color: var(--text);
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .carte-chapitre .titre .icone-validite {
-      font-size: 16px;
     }
 
     .carte-chapitre .meta {
@@ -298,12 +289,6 @@
       font-size: 11px;
       color: var(--text-secondary);
       border: 1px solid var(--border);
-    }
-
-    .carte-chapitre .meta .badge-icone.valide {
-      background: #2d6a4f;
-      color: #fff;
-      border-color: #2d6a4f;
     }
 
     .carte-chapitre .meta .badge-icone.clickable {
@@ -390,15 +375,13 @@
       margin-left: 4px;
     }
 
+    /* ===== CHAPITRE BLOQUÉ ===== */
     .carte-chapitre.bloque {
       opacity: 0.55;
       cursor: not-allowed;
     }
 
-    .carte-chapitre.valide {
-      border-left: 3px solid #2d6a4f;
-    }
-
+    /* ===== VIDE ===== */
     .vide-chapitres {
       text-align: center;
       padding: 40px 20px;
@@ -424,6 +407,7 @@
       font-size: 14px;
     }
 
+    /* ===== LOADER ===== */
     .loader {
       text-align: center;
       padding: 40px 20px;
@@ -443,6 +427,80 @@
       to { transform: rotate(360deg); }
     }
 
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 768px) {
+      .page-livret {
+        padding: 12px 16px 30px;
+      }
+
+      .entete-livret {
+        flex-direction: column;
+        align-items: center;
+        gap: 20px;
+        padding-bottom: 18px;
+      }
+
+      .couverture-mini {
+        width: 160px;
+        height: 220px;
+      }
+
+      .couverture-mini .titre-couv {
+        font-size: 20px;
+      }
+
+      .description-livret {
+        width: 100%;
+        text-align: center;
+      }
+
+      .description-livret h2 {
+        font-size: 20px;
+      }
+
+      .stats-livret {
+        justify-content: center;
+        gap: 16px;
+      }
+
+      .carte-chapitre {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 6px;
+      }
+
+      .carte-chapitre .statut {
+        text-align: left;
+        min-width: unset;
+      }
+
+      .carte-chapitre .btn-wrap {
+        justify-content: flex-start;
+      }
+    }
+
+    @media (max-width: 400px) {
+      .couverture-mini {
+        width: 140px;
+        height: 190px;
+      }
+
+      .couverture-mini .titre-couv {
+        font-size: 17px;
+      }
+
+      .description-livret .texte-desc {
+        font-size: 14px;
+      }
+
+      .stats-livret .stat-item {
+        font-size: 12px;
+      }
+    }
+
+    /* ============================================================
+       MODAL (pour les annotations)
+       ============================================================ */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -523,76 +581,6 @@
       background: var(--bg-active);
       color: var(--text);
     }
-
-    @media (max-width: 768px) {
-      .page-livret {
-        padding: 12px 16px 30px;
-      }
-
-      .entete-livret {
-        flex-direction: column;
-        align-items: center;
-        gap: 20px;
-        padding-bottom: 18px;
-      }
-
-      .couverture-mini {
-        width: 160px;
-        height: 220px;
-      }
-
-      .couverture-mini .titre-couv {
-        font-size: 20px;
-      }
-
-      .description-livret {
-        width: 100%;
-        text-align: center;
-      }
-
-      .description-livret h2 {
-        font-size: 20px;
-      }
-
-      .stats-livret {
-        justify-content: center;
-        gap: 16px;
-      }
-
-      .carte-chapitre {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 6px;
-      }
-
-      .carte-chapitre .statut {
-        text-align: left;
-        min-width: unset;
-      }
-
-      .carte-chapitre .btn-wrap {
-        justify-content: flex-start;
-      }
-    }
-
-    @media (max-width: 400px) {
-      .couverture-mini {
-        width: 140px;
-        height: 190px;
-      }
-
-      .couverture-mini .titre-couv {
-        font-size: 17px;
-      }
-
-      .description-livret .texte-desc {
-        font-size: 14px;
-      }
-
-      .stats-livret .stat-item {
-        font-size: 12px;
-      }
-    }
   </style>
 
   <script>
@@ -654,6 +642,9 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
+    // ============================================================
+    // DONNÉES
+    // ============================================================
     var toutesLesReponses = {};
     var chapitresData = [];
     var niveauEtudiant = 0;
@@ -661,6 +652,9 @@
     var categorieActuelle = '';
     var livretsData = {};
 
+    // ============================================================
+    // FORMATER LA DATE
+    // ============================================================
     function formatDate(dateStr) {
       if (!dateStr) return '';
       try {
@@ -673,63 +667,10 @@
       }
     }
 
-    function formatDateHeure(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var date = new Date(dateStr);
-        if (isNaN(date.getTime())) return '';
-        return date.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: 'long', year: 'numeric'
-        }) + ' à ' + date.toLocaleTimeString('fr-FR', {
-          hour: '2-digit', minute: '2-digit'
-        });
-      } catch(e) {
-        return dateStr;
-      }
-    }
+    // ============================================================
+    // FONCTIONS D'IMPRESSION
+    // ============================================================
 
-    // ============================================================
-    // VALIDATION D'UN CHAPITRE
-    // ============================================================
-    function estChapitreValide(chapitre) {
-      var reponse = toutesLesReponses[chapitre.id];
-      if (!reponse) return false;
-      
-      // Vérifier que le quiz est validé (si présent)
-      if (chapitre.hasQuiz) {
-        if (!reponse.quiz || reponse.quiz !== '1') return false;
-      }
-      
-      // Vérifier que l'ordre est validé (si présent)
-      if (chapitre.ordre && chapitre.ordre > 0) {
-        if (!reponse.ordre || reponse.ordre !== '1') return false;
-      }
-      
-      // Vérifier que la carte est validée (si présente)
-      if (chapitre.carte && chapitre.carte > 0) {
-        if (!reponse.carte || reponse.carte !== '1') return false;
-      }
-      
-      // Si le chapitre n'a pas d'activités, il est considéré comme non validé
-      if (!chapitre.hasQuiz && !chapitre.ordre && !chapitre.carte) {
-        return false;
-      }
-      
-      return true;
-    }
-
-    // ============================================================
-    // VÉRIFIER SI LE CHAPITRE EST ACCESSIBLE
-    // ============================================================
-    function estChapitreAccessible(chapitres, index) {
-      if (index === 0) return true;
-      var chapitrePrecedent = chapitres[index - 1];
-      return estChapitreValide(chapitrePrecedent);
-    }
-
-    // ============================================================
-    // IMPRESSION
-    // ============================================================
     function imprimerChapitre(chapitreId, titre) {
       var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
       
@@ -1158,7 +1099,7 @@
     }
 
     // ============================================================
-    // ANNOTATIONS
+    // OUVERTURE MODAL ANNOTATIONS
     // ============================================================
     function ouvrirAnnotations(chapitreId, titre) {
       var reponse = toutesLesReponses[chapitreId] || null;
@@ -1205,6 +1146,35 @@
     }
 
     // ============================================================
+    // EST CHAPITRE LU ?
+    // ============================================================
+    function estChapitreLu(chapitre) {
+  var reponses = toutesLesReponses[chapitre.id] || [];
+  
+  if (reponses.length === 0) {
+    console.log('❌ Chapitre ' + chapitre.titre + ' : aucune réponse');
+    return false;
+  }
+  
+  // Vérifier si TOUTES les réponses sont valides
+  for (var i = 0; i < reponses.length; i++) {
+    if (reponses[i].valide !== 'valide') {
+      console.log('❌ ' + reponses[i].type + ' non valide');
+      return false;
+    }
+  }
+  
+  console.log('✅ Chapitre ' + chapitre.titre + ' : TOUT est validé !');
+  return true;
+}
+
+    function estChapitreAccessible(chapitres, index) {
+      if (index === 0) return true;
+      var chapitrePrecedent = chapitres[index - 1];
+      return estChapitreLu(chapitrePrecedent);
+    }
+
+    // ============================================================
     // CHARGEMENT
     // ============================================================
     function chargerLivret() {
@@ -1236,6 +1206,7 @@
           niveauEtudiant = data.niveau || 0;
           chapitresData = data.chapitres || [];
 
+          // Récupérer les livrets complets
           livretsData = {};
           if (data.livrets) {
             if (Array.isArray(data.livrets)) {
@@ -1248,15 +1219,20 @@
                   description: l.description || ''
                 };
               });
+              console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
             }
           }
 
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.chapitreId] = r;
-            });
-          }
+         toutesLesReponses = {};
+if (data.reponses) {
+  data.reponses.forEach(function(r) {
+    if (!toutesLesReponses[r.chapitreId]) {
+      toutesLesReponses[r.chapitreId] = [];
+    }
+    toutesLesReponses[r.chapitreId].push(r);
+  });
+}
+console.log('🔍 Réponses pour ce chapitre :', toutesLesReponses['post_1788175117477']);
 
           afficherLivret();
         })
@@ -1299,10 +1275,12 @@
     // AFFICHER LE LIVRET
     // ============================================================
     function afficherLivret() {
+      // Filtrer les chapitres par catégorie
       var chapitresFiltres = chapitresData.filter(function(p) {
         return (p.categorie || 'Sans catégorie') === categorieActuelle;
       });
 
+      // Trier les chapitres
       chapitresFiltres.sort(function(a, b) {
         return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
       });
@@ -1323,13 +1301,19 @@
       var niveauLivret = chapitresFiltres[0].niveau || 1;
       var totalChapitres = chapitresFiltres.length;
 
+      // Compter les chapitres validés
       var validees = 0;
       chapitresFiltres.forEach(function(chapitre) {
-        if (estChapitreValide(chapitre)) {
-          validees++;
+        var reponse = toutesLesReponses[chapitre.id];
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          if (total === 1 && bonnes === 1) validees++;
+          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
         }
       });
 
+      // Récupérer les infos du livret
       var livretInfo = livretsData[categorieActuelle] || {};
       var couleur = livretInfo.couleur || '#2d6a4f';
       var sousTitre = livretInfo.sousTitre || '';
@@ -1339,12 +1323,11 @@
 
       var dateFormatee = formatDate(dateLivret);
       var pourcentage = totalChapitres > 0 ? Math.round((validees / totalChapitres) * 100) : 0;
-      var estComplet = totalChapitres > 0 && validees === totalChapitres;
 
+      // === ENTÊTE ===
       var enteteHtml = `
         <div class="entete-livret">
           <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
-            ${estComplet ? '<span class="badge-complet">✅ Complet</span>' : ''}
             <span class="badge-niveau-couv">Niveau ${niveauLivret}</span>
             <div class="contenu-couv">
               <div class="titre-wrapper">
@@ -1376,6 +1359,8 @@
       `;
 
       document.getElementById('enteteLivret').innerHTML = enteteHtml;
+
+      // === AFFICHER LES CHAPITRES ===
       afficherChapitres(chapitresFiltres);
     }
 
@@ -1400,44 +1385,106 @@
 
       for (var i = 0; i < chapitres.length; i++) {
         var chapitre = chapitres[i];
-        var reponse = toutesLesReponses[chapitre.id] || null;
-        
-        var estValide = estChapitreValide(chapitre);
-        var estAccessible = estChapitreAccessible(chapitres, i);
-        var estBloque = !estAccessible;
+        var reponse = toutesLesReponses[chapitre.id];
+
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === chapitre.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
 
         var dateValidation = '';
         var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        var reponses = toutesLesReponses[chapitre.id] || [];
+if (reponses.length > 0) {
+  var toutesValides = true;
+  for (var i = 0; i < reponses.length; i++) {
+    if (reponses[i].valide !== 'valide') {
+      toutesValides = false;
+      break;
+    }
+    if (reponses[i].date) dateValidation = reponses[i].date;
+    if (reponses[i].retenir) retenir = reponses[i].retenir;
+  }
+  
+  if (toutesValides) {
+    estLu = true;
+    estValide = true;
+  }
+}
+
+        var estAccessible = estChapitreAccessible(chapitres, i);
+        var estBloque = !estAccessible;
+
         var hasQuiz = chapitre.hasQuiz || false;
         var hasQuestion = chapitre.hasQuestion || false;
         var mots = chapitre.mots || 0;
 
-        if (reponse) {
-          if (reponse.date) dateValidation = reponse.date;
-          if (reponse.retenir) retenir = reponse.retenir;
-        }
+        var nbQuestions = 0;
+        if (hasQuiz) nbQuestions++;
+        if (hasQuestion) nbQuestions++;
 
         var metaHtml = '';
-        var badgeValide = '';
 
-        if (estValide) {
-          badgeValide = '<span class="badge-icone valide">✅ Validé</span>';
-          if (dateValidation) {
-            badgeValide += '<span class="badge-icone">📅 ' + formatDateHeure(dateValidation) + '</span>';
+        if (estLu) {
+          var resultatHtml = '';
+          var questionHtml = '';
+          var annoteHtml = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var total = reponse.total || 0;
+            if (total > 0) {
+              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+            }
+
+            var reponseOuverte = reponse.reponseOuverte || '';
+            if (reponseOuverte && reponseOuverte.trim() !== '') {
+              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
+            } else if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+
+            var annotations = reponse.annotations || '';
+            if (annotations && annotations.trim() !== '') {
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + chapitre.id + '\', \'' + chapitre.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+            } else {
+              annoteHtml = '<span class="badge-icone">Non annoté</span>';
+            }
+          } else {
+            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+            if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+            annoteHtml = '<span class="badge-icone">Non annoté</span>';
           }
+
+          metaHtml = resultatHtml + questionHtml + annoteHtml;
+        } else {
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
         }
 
-        // Badges d'activités
-        var badgesActivites = '';
-        if (hasQuiz) badgesActivites += '<span class="badge-icone">📝 Quiz</span>';
-        if (hasQuestion) badgesActivites += '<span class="badge-icone">📖 Question</span>';
-        if (chapitre.ordre && chapitre.ordre > 0) badgesActivites += '<span class="badge-icone">🔢 Ordre</span>';
-        if (chapitre.carte && chapitre.carte > 0) badgesActivites += '<span class="badge-icone">🃏 Carte</span>';
+        var dateHtml = '';
+        var dateLabelHtml = '';
 
-        var statusBadges = badgeValide + badgesActivites;
-
-        if (estBloque) {
-          statusBadges += '<span class="badge-icone">🔒 Verrouillé</span>';
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
+          }
         }
 
         var retenirHtml = '';
@@ -1453,7 +1500,7 @@
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
         var imprimerHtml = '';
-        if (!estBloque && estValide) {
+        if (!estBloque && estLu) {
           imprimerHtml = `
             <div class="btn-wrap">
               <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}')">
@@ -1463,35 +1510,32 @@
           `;
         }
 
-        var classeCarte = 'carte-chapitre';
-        if (estBloque) classeCarte += ' bloque';
-        if (estValide) classeCarte += ' valide';
-
-        var iconeValidite = estValide ? '✅' : (estBloque ? '🔒' : '📖');
+        var carteClass = 'carte-chapitre';
+        var iconeCadenas = '';
         var onClickAttr = '';
-        
+
         if (estBloque) {
+          carteClass += ' bloque';
+          iconeCadenas = '🔒︎︎ ';
           onClickAttr = 'onclick="alert(\'Vous devez d\'abord valider le chapitre précédent.\');"';
         } else {
           onClickAttr = 'onclick="window.location.href=\'/medit/chapitre.html?id=' + chapitre.id + '\'"';
         }
 
         html += `
-          <div class="${classeCarte}" ${onClickAttr}>
+          <div class="${carteClass}" ${onClickAttr}>
             <div class="infos">
-              <div class="titre">
-                <span class="icone-validite">${iconeValidite}</span>
-                ${chapitre.titre}
-              </div>
+              <div class="titre">${iconeCadenas}${chapitre.titre}</div>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${chapitre.niveau}</span>
-                ${statusBadges}
+                ${metaHtml}
                 ${motsHtml}
                 ${retenirHtml}
               </div>
             </div>
             <div class="statut">
-              ${estValide && dateValidation ? '<span class="date-label">Validé le :</span><span class="date-validation"> ' + formatDateHeure(dateValidation) + '</span>' : ''}
+              ${dateLabelHtml}
+              ${dateHtml}
             </div>
             ${imprimerHtml}
           </div>
@@ -1514,35 +1558,6 @@
     } else {
       demarrer();
     }
-
-    // Rafraîchir périodiquement pour mettre à jour les validations
-    setInterval(function() {
-      var id = localStorage.getItem('etudiant_id');
-      if (id) {
-        DataManager.charger()
-          .then(function(data) {
-            var nouvellesReponses = {};
-            if (data.reponses) {
-              data.reponses.forEach(function(r) {
-                nouvellesReponses[r.chapitreId] = r;
-              });
-            }
-            // Vérifier si des changements ont eu lieu
-            var changed = false;
-            for (var key in nouvellesReponses) {
-              if (!toutesLesReponses[key] || JSON.stringify(toutesLesReponses[key]) !== JSON.stringify(nouvellesReponses[key])) {
-                changed = true;
-                break;
-              }
-            }
-            if (changed) {
-              toutesLesReponses = nouvellesReponses;
-              afficherLivret();
-            }
-          })
-          .catch(function() {});
-      }
-    }, 10000);
   </script>
 
 </body>
