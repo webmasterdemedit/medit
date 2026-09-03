@@ -1,314 +1,383 @@
 // ============================================================
-// DATA-MANAGER.JS - Gestion centralisée des données
+// data-manager.js - SANS CACHE (toujours frais)
 // ============================================================
 
-var DataManager = (function() {
-    'use strict';
+var DataManager = {
 
-    var URL_API = 'https://script.google.com/macros/s/AKfycbzZk0N8gCWR2l7duId1oGgP_srqO8m38lB5YhQPQYoeQwJ7YhFnSWaZ88JIVFJxVgR8/exec';
-    var cache = null;
-    var dernierAppel = 0;
-    var DELAI_MIN = 500;
-
-    function getUrl() {
-        return URL_API;
-    }
-
-    function setUrl(url) {
-        URL_API = url;
-        console.log('🔧 URL API mise à jour:', url);
-    }
-
-    function getCacheForce(id) {
-        if (cache && cache.id === id) {
-            return cache.data;
+    // ============================================================
+    // CHARGER - Toujours depuis le serveur
+    // ============================================================
+    charger: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
         }
+
+        console.log('🌐 Chargement depuis le serveur...');
+        var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return DataManager.ajouterLivrets(data);
+                } else {
+                    throw new Error(data.message || 'Erreur de chargement');
+                }
+            })
+            .then(function(data) {
+                // === RÉCUPÉRER TOUS LES CHAPITRES (sans filtre niveau) ===
+                return DataManager.ajouterTousChapitres(data);
+            })
+            .then(function(data) {
+                console.log('✅ Données chargées');
+                return data;
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur:', error);
+                throw error;
+            });
+    },
+
+    // ============================================================
+    // AJOUTER LES LIVRETS
+    // ============================================================
+    ajouterLivrets: function(data) {
+        if (data.livrets && data.livrets.length > 0) {
+            console.log('📚 ' + data.livrets.length + ' livrets déjà présents');
+            return Promise.resolve(data);
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=getLivrets';
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success && result.livrets) {
+                    data.livrets = result.livrets;
+                    console.log('📚 ' + data.livrets.length + ' livrets chargés');
+                } else {
+                    data.livrets = [];
+                    console.log('📚 Aucun livret trouvé');
+                }
+                return data;
+            })
+            .catch(function(err) {
+                console.warn('⚠️ Erreur chargement livrets:', err);
+                data.livrets = [];
+                return data;
+            });
+    },
+
+    // ============================================================
+    // AJOUTER TOUS LES CHAPITRES (sans filtre niveau)
+    // ============================================================
+    ajouterTousChapitres: function(data) {
+        var url = CONFIG.SCRIPT_URL + '?action=getChapitresTous';
+
+        console.log('📡 Récupération de tous les chapitres...');
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success && result.chapitres) {
+                    // On garde les chapitres filtrés dans data.chapitres (pour la logique existante)
+                    // Et on ajoute data.tousLesChapitres pour les livrets verrouillés
+                    data.tousLesChapitres = result.chapitres;
+                    console.log('📚 ' + result.chapitres.length + ' chapitres (tous niveaux) chargés');
+                } else {
+                    data.tousLesChapitres = [];
+                    console.log('📚 Aucun chapitre trouvé');
+                }
+                return data;
+            })
+            .catch(function(err) {
+                console.warn('⚠️ Erreur chargement tous les chapitres:', err);
+                data.tousLesChapitres = [];
+                return data;
+            });
+    },
+
+    // ============================================================
+    // RÉCUPÉRER LES DONNÉES
+    // ============================================================
+    getChapitre: function(chapitreId) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return null;
         return null;
-    }
+    },
 
-    function getCache() {
-        return cache ? cache.data : null;
-    }
+    getChapitres: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return [];
+        return [];
+    },
 
-    function charger() {
-        return new Promise(function(resolve, reject) {
-            var id = localStorage.getItem('etudiant_id');
-            if (!id) {
-                reject(new Error('Utilisateur non connecté'));
-                return;
-            }
+    getLivrets: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return [];
+        return [];
+    },
 
-            var maintenant = Date.now();
-            if (cache && cache.id === id && (maintenant - cache.timestamp) < 30000) {
-                console.log('📦 Données en cache (30s)');
-                resolve(cache.data);
-                return;
-            }
+    getReponses: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return [];
+        return [];
+    },
 
-            if (maintenant - dernierAppel < DELAI_MIN) {
-                console.log('⏳ Attente du délai minimum...');
-                setTimeout(function() {
-                    charger().then(resolve).catch(reject);
-                }, DELAI_MIN - (maintenant - dernierAppel));
-                return;
-            }
+    getNiveau: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return 0;
+        return 0;
+    },
 
-            dernierAppel = maintenant;
+    getDescriptionNiveau: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        return '';
+    },
 
-            var params = 'action=getTout&nom=' + encodeURIComponent(id);
-            var url = URL_API + '?' + params;
+    getDateInscription: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return null;
+        return null;
+    },
 
-            console.log('📡 Chargement des données depuis le serveur...');
+    getContact: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        return '';
+    },
 
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Erreur HTTP: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(result) {
-                if (result.success) {
-                    console.log('✅ Données chargées avec succès');
+    getMessagePerso: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        return '';
+    },
 
-                    // Construire la map des réponses
-                    var reponsesMap = {};
-                    if (result.reponses) {
-                        result.reponses.forEach(function(r) {
-                            reponsesMap[r.chapitreId] = r;
-                        });
-                    }
+    getDisciplines: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        return '';
+    },
 
-                    // Ajouter la validation aux chapitres
-                    if (result.chapitres) {
-                        result.chapitres.forEach(function(chapitre) {
-                            var reponse = reponsesMap[chapitre.id];
-                            if (reponse) {
-                                var quizOk = reponse.quiz === '1';
-                                var ordreOk = reponse.ordre === '1';
-                                var carteOk = reponse.carte === '1';
-                                var aUneActivite = reponse.quiz || reponse.ordre || reponse.carte;
-                                
-                                if (aUneActivite && quizOk && ordreOk && carteOk) {
-                                    chapitre.valide = true;
-                                } else {
-                                    chapitre.valide = false;
-                                }
-                            } else {
-                                chapitre.valide = false;
-                            }
-                        });
-                    }
+    getMdp: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return '';
+        return '';
+    },
 
-                    // Mettre en cache
-                    cache = {
-                        id: id,
-                        data: result,
-                        timestamp: maintenant
-                    };
+    // ============================================================
+    // SAUVEGARDES
+    // ============================================================
+    sauvegarderOrdre: function(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
 
-                    resolve(result);
+        var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
                 } else {
-                    reject(new Error(result.message || 'Erreur inconnue'));
+                    throw new Error(data.message || 'Erreur');
                 }
-            })
-            .catch(function(error) {
-                console.error('❌ Erreur de chargement:', error);
-                reject(error);
             });
-        });
-    }
+    },
 
-    function sauvegarder(action, params) {
-        return new Promise(function(resolve, reject) {
-            var id = localStorage.getItem('etudiant_id');
-            if (!id) {
-                reject(new Error('Utilisateur non connecté'));
-                return;
-            }
+    sauvegarderCarte: function(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
 
-            params.nom = id;
-            params.action = action;
+        var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&cartes=' + encodeURIComponent(cartes) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
 
-            var url = URL_API + '?' + Object.keys(params)
-                .map(function(key) {
-                    return key + '=' + encodeURIComponent(params[key]);
-                })
-                .join('&');
-
-            console.log('💾 Sauvegarde:', action, params);
-
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Erreur HTTP: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(result) {
-                if (result.success) {
-                    console.log('✅ Sauvegarde réussie:', action);
-                    // Invalider le cache
-                    cache = null;
-                    resolve(result);
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
                 } else {
-                    reject(new Error(result.message || 'Erreur lors de la sauvegarde'));
+                    throw new Error(data.message || 'Erreur');
                 }
-            })
-            .catch(function(error) {
-                console.error('❌ Erreur de sauvegarde:', error);
-                reject(error);
             });
-        });
-    }
+    },
 
-    // Méthodes spécifiques
-    function saveQuiz(chapitreId, bonnes, total) {
-        return sauvegarder('saveQuiz', {
-            chapitreId: chapitreId,
-            bonnes: bonnes,
-            total: total
-        });
-    }
+    sauvegarderAnnotation: function(chapitreId, slide, annotation) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
 
-    function saveOrdre(chapitreId, bonnes, total) {
-        return sauvegarder('saveOrdre', {
-            chapitreId: chapitreId,
-            bonnes: bonnes,
-            total: total
-        });
-    }
+        var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&slide=' + encodeURIComponent(slide) +
+            '&annotation=' + encodeURIComponent(annotation);
 
-    function saveCarte(chapitreId, bonnes, total) {
-        return sauvegarder('saveCarte', {
-            chapitreId: chapitreId,
-            bonnes: bonnes,
-            total: total
-        });
-    }
-
-    function saveReponseOuverte(chapitreId, reponse) {
-        return sauvegarder('saveReponseOuverte', {
-            chapitreId: chapitreId,
-            reponseOuverte: reponse
-        });
-    }
-
-    function saveAnnotation(chapitreId, slide, annotation) {
-        return sauvegarder('saveAnnotation', {
-            chapitreId: chapitreId,
-            slide: slide,
-            annotation: annotation
-        });
-    }
-
-    function saveLecture(chapitreId) {
-        return sauvegarder('saveLecture', {
-            chapitreId: chapitreId
-        });
-    }
-
-    function markRevised(chapitreId, revise) {
-        return sauvegarder('markRevised', {
-            chapitreId: chapitreId,
-            revise: revise
-        });
-    }
-
-    function getValidationGlobale(chapitreId) {
-        return new Promise(function(resolve, reject) {
-            var id = localStorage.getItem('etudiant_id');
-            if (!id) {
-                reject(new Error('Utilisateur non connecté'));
-                return;
-            }
-
-            var params = 'action=getValidationGlobale&nom=' + encodeURIComponent(id) + 
-                         '&chapitreId=' + encodeURIComponent(chapitreId);
-            var url = URL_API + '?' + params;
-
-            fetch(url, {
-                method: 'GET',
-                headers: {
-                    'Accept': 'application/json'
-                }
-            })
-            .then(function(response) {
-                if (!response.ok) {
-                    throw new Error('Erreur HTTP: ' + response.status);
-                }
-                return response.json();
-            })
-            .then(function(result) {
-                if (result.success) {
-                    resolve(result.validation);
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
                 } else {
-                    reject(new Error(result.message || 'Erreur'));
+                    throw new Error(data.message || 'Erreur');
                 }
-            })
-            .catch(function(error) {
-                reject(error);
             });
-        });
+    },
+
+    sauvegarderReponseOuverte: function(chapitreId, reponse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&reponseOuverte=' + encodeURIComponent(reponse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur');
+                }
+            });
+    },
+
+    sauvegarderQuiz: function(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&choixQcm=' + encodeURIComponent(choixQcm) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur');
+                }
+            });
+    },
+
+    sauvegarderLecture: function(chapitreId, titre) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur');
+                }
+            });
+    },
+
+    marquerRevise: function(chapitreId, revise) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&revise=' + encodeURIComponent(revise ? '1' : '0');
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur');
+                }
+            });
+    },
+
+    // ============================================================
+    // UTILITAIRES
+    // ============================================================
+    rafraichir: function() {
+        return this.charger();
+    },
+
+    invalider: function() {
+        console.log('🗑️ Cache vidé (plus utilisé)');
+    },
+
+    aUnCache: function() {
+        return false;
     }
+};
 
-    function rafraichir() {
-        cache = null;
-        return charger();
-    }
+// ============================================================
+// FONCTIONS GLOBALES
+// ============================================================
 
-    // Fonction utilitaire pour normaliser
-    function normaliserChaine(str) {
-        if (!str) return '';
-        return str
-            .toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-            .trim();
-    }
+function chargerDonnees() { return DataManager.charger(); }
+function getChapitresDuNiveau() { return DataManager.getChapitres(); }
+function getReponsesEtudiant() { return DataManager.getReponses(); }
+function getNiveauEtudiant() { return DataManager.getNiveau(); }
+function getDescriptionNiveau() { return DataManager.getDescriptionNiveau(); }
+function getDateInscription() { return DataManager.getDateInscription(); }
+function getContact() { return DataManager.getContact(); }
+function getMessagePerso() { return DataManager.getMessagePerso(); }
+function getDisciplines() { return DataManager.getDisciplines(); }
+function getMdp() { return DataManager.getMdp(); }
+function getLivrets() { return DataManager.getLivrets(); }
 
-    // API publique
-    return {
-        getUrl: getUrl,
-        setUrl: setUrl,
-        getCache: getCache,
-        getCacheForce: getCacheForce,
-        charger: charger,
-        sauvegarder: sauvegarder,
-        saveQuiz: saveQuiz,
-        saveOrdre: saveOrdre,
-        saveCarte: saveCarte,
-        saveReponseOuverte: saveReponseOuverte,
-        saveAnnotation: saveAnnotation,
-        saveLecture: saveLecture,
-        markRevised: markRevised,
-        getValidationGlobale: getValidationGlobale,
-        rafraichir: rafraichir,
-        normaliserChaine: normaliserChaine,
-        estChapitreValide: function(chapitre, reponsesMap) {
-            var reponse = reponsesMap ? reponsesMap[chapitre.id] : null;
-            if (!reponse) return false;
-            
-            var quizOk = reponse.quiz === '1';
-            var ordreOk = reponse.ordre === '1';
-            var carteOk = reponse.carte === '1';
-            var aUneActivite = reponse.quiz || reponse.ordre || reponse.carte;
-            
-            if (!aUneActivite) return false;
-            return quizOk && ordreOk && carteOk;
-        }
-    };
-})();
-
-// Exposer DataManager globalement
-window.DataManager = DataManager;
+function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
+}
+function sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse);
+}
+function sauvegarderAnnotation(chapitreId, slide, annotation) {
+    return DataManager.sauvegarderAnnotation(chapitreId, slide, annotation);
+}
+function sauvegarderReponseOuverte(chapitreId, reponse) {
+    return DataManager.sauvegarderReponseOuverte(chapitreId, reponse);
+}
+function sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse);
+}
+function sauvegarderLecture(chapitreId, titre) {
+    return DataManager.sauvegarderLecture(chapitreId, titre);
+}
+function marquerRevise(chapitreId, revise) {
+    return DataManager.marquerRevise(chapitreId, revise);
+}
+function getAnnotations(chapitreId) {
+    return DataManager.getAnnotations(chapitreId);
+}
+function getReviseStatus(chapitreId) {
+    return DataManager.getReviseStatus(chapitreId);
+}
