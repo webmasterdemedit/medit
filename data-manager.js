@@ -26,6 +26,10 @@ var DataManager = {
                 }
             })
             .then(function(data) {
+                // === RÉCUPÉRER TOUS LES CHAPITRES (sans filtre niveau) ===
+                return DataManager.ajouterTousChapitres(data);
+            })
+            .then(function(data) {
                 console.log('✅ Données chargées');
                 return data;
             })
@@ -66,29 +70,51 @@ var DataManager = {
     },
 
     // ============================================================
+    // AJOUTER TOUS LES CHAPITRES (sans filtre niveau)
+    // ============================================================
+    ajouterTousChapitres: function(data) {
+        var url = CONFIG.SCRIPT_URL + '?action=getChapitresTous';
+
+        console.log('📡 Récupération de tous les chapitres...');
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(result) {
+                if (result.success && result.chapitres) {
+                    // On garde les chapitres filtrés dans data.chapitres (pour la logique existante)
+                    // Et on ajoute data.tousLesChapitres pour les livrets verrouillés
+                    data.tousLesChapitres = result.chapitres;
+                    console.log('📚 ' + result.chapitres.length + ' chapitres (tous niveaux) chargés');
+                } else {
+                    data.tousLesChapitres = [];
+                    console.log('📚 Aucun chapitre trouvé');
+                }
+                return data;
+            })
+            .catch(function(err) {
+                console.warn('⚠️ Erreur chargement tous les chapitres:', err);
+                data.tousLesChapitres = [];
+                return data;
+            });
+    },
+
+    // ============================================================
     // RÉCUPÉRER LES DONNÉES
     // ============================================================
     getChapitre: function(chapitreId) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return null;
-        // On ne peut pas avoir de cache, on retourne null
-        // Il faut appeler charger() d'abord
         return null;
     },
 
     getChapitres: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-        // On ne peut pas avoir de cache, on retourne []
-        // Il faut appeler charger() d'abord
         return [];
     },
 
     getLivrets: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-        // On ne peut pas avoir de cache, on retourne []
-        // Il faut appeler charger() d'abord
         return [];
     },
 
@@ -305,7 +331,6 @@ var DataManager = {
 
     invalider: function() {
         console.log('🗑️ Cache vidé (plus utilisé)');
-        // On ne fait rien, il n'y a plus de cache
     },
 
     aUnCache: function() {
