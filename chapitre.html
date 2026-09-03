@@ -12,7 +12,7 @@
 
   <style>
     /* ============================================================
-       PROGRESSION
+       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
        ============================================================ */
     .progress-dots {
       display: flex !important;
@@ -42,8 +42,16 @@
       border-color: var(--border, #ccc) !important;
       background: transparent !important;
     }
-    .progress-dot.type-slide { border-radius: 50% !important; }
-    .progress-dot.type-quiz { border-radius: 50% !important; }
+
+    /* Slide = carré */
+    .progress-dot.type-slide {
+      border-radius: 50% !important;
+    }
+    /* Quiz = cercle */
+    .progress-dot.type-quiz {
+      border-radius: 50% !important;
+    }
+    /* Open = triangle */
     .progress-dot.type-open {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 0% 100%, 100% 100%) !important;
@@ -59,6 +67,7 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
+    /* Ordre = losange */
     .progress-dot.type-ordre {
       border-radius: 0 !important;
       transform: rotate(45deg) !important;
@@ -76,11 +85,13 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
+    /* Carte = rectangle */
     .progress-dot.type-carte {
       border-radius: 0 !important;
       width: 18px !important;
       height: 12px !important;
     }
+    /* Retenir = étoile */
     .progress-dot.type-retenir {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
@@ -97,502 +108,21 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    .progress-legend { display: none !important; }
-    .slide-wrapper { display: none !important; }
-    .slide-wrapper.active { display: block !important; }
-    .slide-content { position: relative !important; }
 
-    /* ============================================================
-       BOUTON LU
-       ============================================================ */
-    .btn-lu-container {
-      text-align: center;
-      margin: 20px 0 10px 0;
-    }
-    .btn-lu {
-      padding: 12px 36px;
-      font-size: 16px;
-      font-family: 'Inter', sans-serif;
-      background: var(--text, #111);
-      color: var(--bg, #fff);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      letter-spacing: 0.5px;
-    }
-    .btn-lu:hover {
-      opacity: 0.8;
-      transform: scale(1.02);
-    }
-    .btn-lu:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
-    }
-    .btn-lu.valide {
-      background: #2d6a4f;
+    /* Légende cachée */
+    .progress-legend {
+      display: none !important;
     }
 
-    /* ============================================================
-       STATUT GLOBAL
-       ============================================================ */
-    .statut-global-badge {
-      display: inline-block;
-      padding: 4px 14px;
-      font-size: 12px;
-      font-weight: 500;
-      font-family: 'Inter', sans-serif;
-      letter-spacing: 0.5px;
-      border: 1px solid var(--border);
+    /* Slide wrapper - pour que les points soient visibles */
+    .slide-wrapper {
+      display: none !important;
     }
-    .statut-global-badge.valide {
-      background: #2d6a4f;
-      color: #fff;
-      border-color: #2d6a4f;
+    .slide-wrapper.active {
+      display: block !important;
     }
-    .statut-global-badge.non-valide {
-      background: #9e2a2b;
-      color: #fff;
-      border-color: #9e2a2b;
-    }
-    .statut-global-badge.en-attente {
-      background: var(--bg-hover);
-      color: var(--text-secondary);
-      border-color: var(--border);
-    }
-
-    /* ============================================================
-       QUIZ 65%
-       ============================================================ */
-    .quiz-seuil-info {
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-align: center;
-      margin-top: 4px;
-      font-family: 'Inter', sans-serif;
-    }
-
-    /* ============================================================
-       AUTRES STYLES (inchangés)
-       ============================================================ */
-    .lecture-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 12px 24px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg);
-      position: sticky;
-      top: 0;
-      z-index: 10;
-    }
-    .meta-left { display: flex; flex-direction: column; gap: 2px; }
-    .cat-niveau { font-size: 12px; color: var(--text-secondary); font-family: 'Inter', sans-serif; }
-    .titre { font-size: 18px; font-weight: 600; font-family: 'Merriweather', serif; color: var(--text); }
-    .actions { display: flex; align-items: center; gap: 12px; }
-    .badge-statut {
-      padding: 4px 12px;
-      font-size: 12px;
-      font-family: 'Inter', sans-serif;
-      border: 1px solid var(--border);
-    }
-    .badge-statut.valide { background: #2d6a4f; color: #fff; border-color: #2d6a4f; }
-    .badge-statut.partiel { background: #b9770e; color: #fff; border-color: #b9770e; }
-    .badge-statut.en-attente { background: var(--bg-hover); color: var(--text-secondary); border-color: var(--border); }
-    .btn-close {
-      background: none;
-      border: none;
-      font-size: 22px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      padding: 0 4px;
-    }
-    .btn-close:hover { color: var(--text); }
-
-    .slides-container {
-  position: relative;
-  max-width: 100%;  /* ← ou 1200px pour rester lisible */
-  margin: 0 auto;
-  padding: 10px 24px 70px 24px;
-  min-height: 70vh;
-}
     .slide-content {
-      font-size: 18px;
-      line-height: 1.8;
-      font-family: 'Merriweather', serif;
-      padding: 10px 0;
-      max-width: 100%;
-  width: 100%;
-    }
-    .slide-content p { margin-bottom: 12px; }
-
-    .quiz-question {
-      font-weight: 600;
-      font-size: 1.1em;
-      margin-bottom: 16px;
-      font-family: 'Merriweather', serif;
-    }
-    .quiz-reponses { display: flex; flex-direction: column; gap: 8px; }
-    .quiz-reponse {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 10px 14px;
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
-      background: var(--bg);
-    }
-    .quiz-reponse:hover { border-color: var(--text); }
-    .quiz-reponse .lettre {
-      font-weight: 600;
-      color: var(--text-secondary);
-      min-width: 24px;
-    }
-    .quiz-reponse .result-icon { margin-left: auto; font-size: 18px; }
-    .quiz-reponse.correcte { border-color: #2d6a4f; background: rgba(45, 106, 79, 0.1); }
-    .quiz-reponse.incorrecte { border-color: #9e2a2b; background: rgba(158, 42, 43, 0.1); }
-    .quiz-reponse.selectionnee { border-color: var(--text); }
-    .quiz-feedback {
-      margin-top: 12px;
-      padding: 10px 14px;
-      background: var(--bg-hover);
-      border-left: 3px solid var(--border);
-      display: none;
-      font-family: 'Inter', sans-serif;
-    }
-    .quiz-feedback.visible { display: block; }
-    .bonne-reponse { color: #2d6a4f; }
-    .mauvaise-reponse { color: #9e2a2b; }
-
-    .btn-continuer {
-      display: none;
-      margin-top: 16px;
-      padding: 10px 28px;
-      font-family: 'Inter', sans-serif;
-      background: var(--text);
-      color: var(--bg);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-      font-size: 14px;
-    }
-    .btn-continuer.visible { display: inline-block; }
-    .btn-continuer:hover { opacity: 0.8; }
-
-    .open-question-text {
-      font-size: 1.05em;
-      font-weight: 500;
-      margin-bottom: 12px;
-      font-family: 'Merriweather', serif;
-    }
-    .open-question-text textarea {
-      width: 100%;
-      min-height: 120px;
-      padding: 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 15px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      resize: vertical;
-    }
-    .btn-envoyer-reponse {
-      margin-top: 10px;
-      padding: 10px 24px;
-      font-family: 'Inter', sans-serif;
-      background: var(--text);
-      color: var(--bg);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn-envoyer-reponse:hover { opacity: 0.8; }
-    .btn-envoyer-reponse:disabled { opacity: 0.5; cursor: not-allowed; }
-    .reponse-confirmation {
-      display: none;
-      margin-top: 10px;
-      padding: 8px 14px;
-      background: rgba(45, 106, 79, 0.15);
-      border-left: 3px solid #2d6a4f;
-      font-family: 'Inter', sans-serif;
-      color: #2d6a4f;
-    }
-    .reponse-confirmation.visible { display: block; }
-
-    .retenir-label {
-      font-size: 14px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
-      font-family: 'Inter', sans-serif;
-    }
-    .retenir-mots {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      padding: 10px 0;
-    }
-    .retenir-mot {
-      padding: 6px 16px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      font-family: 'Merriweather', serif;
-      font-size: 0.95em;
-    }
-
-    .ordre-list {
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      margin: 10px 0;
-    }
-    .ordre-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 14px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .ordre-num {
-      font-weight: 600;
-      color: var(--text-secondary);
-      min-width: 30px;
-      font-family: 'Inter', sans-serif;
-    }
-    .ordre-texte { flex: 1; font-family: 'Merriweather', serif; }
-    .ordre-boutons {
-      display: flex;
-      gap: 4px;
-    }
-    .ordre-boutons button {
-      padding: 2px 10px;
-      font-size: 14px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      color: var(--text);
-      font-family: 'Inter', sans-serif;
-    }
-    .ordre-boutons button:hover:not(:disabled) { background: var(--text); color: var(--bg); }
-    .ordre-boutons button:disabled { opacity: 0.3; cursor: not-allowed; }
-    .btn-valider-ordre {
-      margin-top: 10px;
-      padding: 10px 24px;
-      font-family: 'Inter', sans-serif;
-      background: var(--text);
-      color: var(--bg);
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-    .btn-valider-ordre:hover { opacity: 0.8; }
-    .btn-valider-ordre:disabled { opacity: 0.5; cursor: not-allowed; }
-    .ordre-resultat {
-      margin-top: 10px;
-      padding: 8px 14px;
-      font-family: 'Inter', sans-serif;
-      display: none;
-    }
-    .ordre-resultat.correct { display: block; color: #2d6a4f; background: rgba(45, 106, 79, 0.1); }
-    .ordre-resultat.incorrect { display: block; color: #9e2a2b; background: rgba(158, 42, 43, 0.1); }
-
-    .carte-indicateur {
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-family: 'Inter', sans-serif;
-      margin-bottom: 12px;
-    }
-    .carte-container {
-      perspective: 1000px;
-      width: 100%;
-      max-width: 100% !important;
-      margin: 0 auto;
-      cursor: pointer;
-      height: 200px;
-    }
-    .carte-inner {
-      position: relative;
-      width: 100%;
-      height: 100%;
-      transition: transform 0.6s;
-      transform-style: preserve-3d;
-    }
-    .carte-inner.retournee { transform: rotateY(180deg); }
-    .carte-face {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      backface-visibility: hidden;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      text-align: center;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      font-family: 'Merriweather', serif;
-      font-size: 1.1em;
-    }
-    .carte-verso {
-      transform: rotateY(180deg);
-      background: var(--bg-hover);
-    }
-    .carte-boutons {
-      display: none;
-      justify-content: center;
-      gap: 12px;
-      margin-top: 16px;
-    }
-    .carte-boutons.visible { display: flex; }
-    .carte-boutons button {
-      padding: 8px 20px;
-      font-family: 'Inter', sans-serif;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      cursor: pointer;
-      transition: all 0.2s;
-      color: var(--text);
-    }
-    .carte-boutons button:hover { background: var(--text); color: var(--bg); }
-    .btn-trouve { background: #2d6a4f !important; color: #fff !important; border-color: #2d6a4f !important; }
-    .btn-trouve:hover { opacity: 0.8; }
-    .carte-resultat {
-      margin-top: 10px;
-      text-align: center;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-    }
-
-    .note-toggle {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: 18px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      opacity: 0.6;
-      transition: all 0.2s;
-      z-index: 2;
-      background: var(--bg);
-      padding: 4px 10px;
-      border: 1px solid var(--border);
-    }
-    .note-toggle:hover { opacity: 1; }
-    .note-toggle.active { opacity: 1; color: var(--text); }
-    .note-area {
-      display: none;
-      margin-top: 12px;
-      padding: 10px;
-      border: 1px solid var(--border);
-      background: var(--bg-hover);
-    }
-    .note-area.visible { display: block; }
-    .note-area textarea {
-      width: 100%;
-      min-height: 60px;
-      padding: 8px;
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      resize: vertical;
-    }
-    .note-indicator {
-      font-size: 11px;
-      color: var(--text-secondary);
-      margin-top: 4px;
-      font-family: 'Inter', sans-serif;
-    }
-    .note-indicator.saved { color: #2d6a4f; }
-
-    .pagination-text {
-      text-align: center;
-      font-size: 13px;
-      color: var(--text-secondary);
-      font-family: 'Inter', sans-serif;
-      padding: 12px 0 6px 0;
-      border-top: 1px solid var(--border);
-      margin-top: 10px;
-    }
-
-    .font-control-bottom {
-      position: fixed;
-      bottom: 20px;
-      right: 20px;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      padding: 4px 8px;
-      z-index: 20;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    .font-control-bottom button {
-      background: none;
-      border: none;
-      font-size: 18px;
-      cursor: pointer;
-      color: var(--text);
-      padding: 0 6px;
-      font-family: 'Inter', sans-serif;
-    }
-    .font-control-bottom button:hover { opacity: 0.7; }
-    .font-control-bottom .size-indicator {
-      font-size: 13px;
-      min-width: 28px;
-      text-align: center;
-      font-family: 'Inter', sans-serif;
-      color: var(--text-secondary);
-    }
-
-    .lecture-loader {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .lecture-error {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .lecture-error .icone { font-size: 48px; display: block; margin-bottom: 12px; }
-    .lecture-error h2 { font-size: 22px; margin-bottom: 8px; }
-    .lecture-error p { color: var(--text-secondary); }
-    .btn-retour {
-      display: inline-block;
-      margin-top: 16px;
-      padding: 8px 24px;
-      border: 1px solid var(--border);
-      text-decoration: none;
-      color: var(--text-secondary);
-      font-family: 'Inter', sans-serif;
-    }
-    .btn-retour:hover { background: var(--bg-hover); color: var(--text); }
-
-    @media (max-width: 640px) {
-      .slides-container { padding: 10px 14px 70px 14px; }
-      .lecture-header { padding: 10px 14px; flex-wrap: wrap; gap: 6px; }
-      .titre { font-size: 16px; }
-      .carte-container { height: 160px; }
-      .font-control-bottom { bottom: 10px; right: 10px; }
+      position: relative !important;
     }
   </style>
 </head>
@@ -606,8 +136,7 @@
       <div class="titre" id="metaTitre">Chargement...</div>
     </div>
     <div class="actions">
-      <span class="badge-statut" id="badgeStatut">⏱ À faire</span>
-      <span class="statut-global-badge en-attente" id="statutGlobalBadge">⏳ En attente</span>
+      <span class="badge-statut" id="badgeStatut"></span>
       <button class="btn-close" id="btnFermer">✕</button>
     </div>
   </header>
@@ -615,24 +144,25 @@
   <div class="slides-container" id="slidesContainer">
     <div class="lecture-loader" id="lectureLoader">
       <div class="spinner"></div>
-      <span>Chargement du chapitre...</span>
+      <span>Chargement...</span>
     </div>
 
+    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
-      <button id="fontDecreaseBottom" title="Réduire">−</button>
+      <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
-      <button id="fontIncreaseBottom" title="Augmenter">+</button>
+      <button id="fontIncreaseBottom" title="Augmenter la taille du texte">+</button>
     </div>
   </div>
 
   <div class="pagination-text" id="pagination">1 / 1</div>
-
-  <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
-  <script src="/medit/data-manager.js"></script>
-
+<script src="/medit/config.js"></script>
+<script src="/medit/auth.js"></script>
+<script src="/medit/data-manager.js"></script>
+  
   <script>
-    var SCRIPT_URL = CONFIG.SCRIPT_URL;
+    // Utiliser CONFIG.SCRIPT_URL défini dans config.js
+var SCRIPT_URL = CONFIG.SCRIPT_URL;
 
     var etat = {
       chapitreId: null,
@@ -649,13 +179,11 @@
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
-      reponsesExistantes: null,
-      statutLu: false,
-      exercicesSauvegardes: {}
+      carteCourante: null
     };
 
     // ============================================================
-    // GESTION DE LA POLICE
+    // GESTION DE LA TAILLE DE POLICE
     // ============================================================
     var FONT_SIZE_KEY = 'medit_font_size';
     var FONT_SIZE_MIN = 12;
@@ -684,60 +212,72 @@
       });
     }
 
+    function increaseFont() {
+      var current = getSavedFontSize();
+      setFontSize(current + 2);
+    }
+
+    function decreaseFont() {
+      var current = getSavedFontSize();
+      setFontSize(current - 2);
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      var params = new URLSearchParams(window.location.search);
+      var id = params.get('id');
+      if (!id) { afficherErreur('Aucun identifiant.'); return; }
+      etat.chapitreId = id;
+      chargerChapitre(id);
+
+      var initialSize = getSavedFontSize();
+      setFontSize(initialSize);
+
+      document.getElementById('fontIncreaseBottom').addEventListener('click', increaseFont);
+      document.getElementById('fontDecreaseBottom').addEventListener('click', decreaseFont);
+    });
+
     // ============================================================
-    // CHARGER LE CHAPITRE (1 REQUÊTE)
+    // CHARGER LE CHAPITRE
     // ============================================================
     function chargerChapitre(id) {
-      var nom = localStorage.getItem('etudiant_id') || '';
-      if (!nom) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
-
-      etat.chapitreId = id;
-
-      fetch(SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(nom))
-        .then(function(r) { return r.json(); })
+      fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
+        .then(function(r) { 
+          if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
+          return r.json(); 
+        })
         .then(function(data) {
-          if (!data.success) {
-            throw new Error(data.message || 'Erreur de chargement');
-          }
-
-          // 1️⃣ Récupérer le chapitre depuis chapitresComplets
-          var chapitre = data.chapitresComplets && data.chapitresComplets[id];
-          if (!chapitre) {
-            throw new Error('Chapitre introuvable');
-          }
-
-          etat.chapitre = chapitre;
-          etat.chapitreId = id;
-
-          // 2️⃣ Récupérer les réponses existantes
-          etat.reponsesExistantes = null;
-          if (data.reponses) {
-            for (var i = 0; i < data.reponses.length; i++) {
-              if (data.reponses[i].chapitre === chapitre.titre) {
-                etat.reponsesExistantes = data.reponses[i];
-                break;
-              }
-            }
-          }
-
-          // 3️⃣ Construire les slides
+          console.log('📦 Données reçues du serveur:', data);
+          
+          if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
+          
+          var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
+          
+          console.log('📄 Contenu brut:', contenu);
+          
+          var parts = contenu.split(' | ');
+          
           var slidesArray = [];
-          var quiz = chapitre.quiz || '';
-          var openQuestion = chapitre.question_ouverte || '';
-          var retenir = chapitre.retenir || '';
+          var quiz = '';
+          var openQuestion = '';
           var ordre = '';
           var carte = '';
-
-          var parts = contenu.split(' | ');
+          var retenir = '';
+          
           parts.forEach(function(part) {
             part = part.trim();
-            if (part.startsWith('o:')) ordre = part;
-            else if (part.startsWith('r:')) carte = part;
-            else if (!part.startsWith('q:') && !part.startsWith('qs:') && !part.startsWith('#')) {
+            
+            if (part.startsWith('q:')) {
+              quiz = part;
+            } else if (part.startsWith('qs:')) {
+              openQuestion = part;
+            } else if (part.startsWith('o:')) {
+              ordre = part;
+            } else if (part.startsWith('r:')) {
+              carte = part;
+            } else if (part.startsWith('#')) {
+              retenir = part;
+            } else {
               var cleanText = part.replace(/\r\n/g, '\n').trim();
               if (cleanText) {
                 var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
@@ -747,42 +287,32 @@
               }
             }
           });
-
+          
+          console.log('📊 Slides array (' + slidesArray.length + ' slides):', slidesArray);
+          console.log('📊 Quiz:', quiz);
+          console.log('📊 OpenQ:', openQuestion);
+          console.log('📊 Ordre:', ordre);
+          console.log('📊 Carte:', carte);
+          console.log('📊 Retenir:', retenir);
+          
+          etat.chapitre = chapitre;
+          
           preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-
+          
+          console.log('📊 Slides générés:', etat.slides);
+          
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
             return;
           }
-
-          // 4️⃣ Charger les notes existantes
-          if (etat.reponsesExistantes && etat.reponsesExistantes.exercices) {
-            var exercices = etat.reponsesExistantes.exercices;
-            // Notes
-            if (exercices.annotations && exercices.annotations.detail) {
-              var partsNotes = exercices.annotations.detail.split('|');
-              for (var j = 0; j < partsNotes.length; j++) {
-                var kv = partsNotes[j].split(':');
-                if (kv.length === 2 && kv[0].startsWith('slide')) {
-                  var slideNum = parseInt(kv[0].replace('slide', ''));
-                  etat.notes[slideNum] = kv[1];
-                }
-              }
-            }
-            // Statut Lu
-            if (exercices.lu && exercices.lu.statut === 'valide') {
-              etat.statutLu = true;
-            }
-          }
-
-          // 5️⃣ Afficher
+          
+          recupererNotes();
           afficherSlides();
-          mettreAJourStatutGlobal();
-
+          verifierValidationGlobale();
         })
-        .catch(function(error) {
+        .catch(function(error) { 
           console.error('❌ Erreur:', error);
-          afficherErreur(error.message);
+          afficherErreur(error.message); 
         });
     }
 
@@ -791,13 +321,13 @@
     // ============================================================
     function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
       var slidesFinal = [];
-
+      
       slidesArray.forEach(function(texteSlide) {
         if (texteSlide.trim() !== '') {
           slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
         }
       });
-
+      
       if (quiz.trim() !== '') {
         var quizsParsed = parserQuizs(quiz);
         quizsParsed.forEach(function(qp) {
@@ -806,63 +336,55 @@
           }
         });
       }
-
+      
       if (openQuestion.trim() !== '') {
         slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
       }
-
+      
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
         if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({
-            type: 'ordre',
+          slidesFinal.push({ 
+            type: 'ordre', 
             elements: ordreParsed.elements,
             consigne: ordreParsed.consigne,
-            index: slidesFinal.length
+            index: slidesFinal.length 
           });
         }
       }
-
+      
       if (carte.trim() !== '') {
         var carteParsed = parserCarte(carte);
         if (carteParsed) {
           slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
         }
       }
-
+      
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
           slidesFinal.push({ type: 'retenir', mots: mots });
         }
       }
-
-      // 🔥 Vérifier si le chapitre a des exercices
-      var aExercice = slidesFinal.some(function(s) {
-        return s.type === 'quiz' || s.type === 'ordre' || s.type === 'carte';
-      });
-
-      // Si pas d'exercice, ajouter un slide "Lu"
-      if (!aExercice) {
-        slidesFinal.push({ type: 'lu', index: slidesFinal.length });
-      }
-
+      
+      console.log('✅ Slides construits :', slidesFinal);
       etat.slides = slidesFinal;
     }
 
     // ============================================================
-    // PARSEURS
+    // PARSEUR QUIZ
     // ============================================================
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return [];
-
+      
       var quizs = [];
       var currentQuiz = null;
-
+      
       for (var i = 0; i < lignes.length; i++) {
-        var trimmed = lignes[i].trim();
-
+        var ligne = lignes[i];
+        var trimmed = ligne.trim();
+        
         if (trimmed.match(/^q:/i)) {
           if (currentQuiz && currentQuiz.reponses.length > 0) {
             quizs.push(currentQuiz);
@@ -873,16 +395,18 @@
           };
         } else if (currentQuiz) {
           var isCorrect = false;
+          var isFaux = false;
           var texteRep = trimmed;
-
+          
           if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
             isCorrect = true;
             texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
           } else if (/^f\s/i.test(trimmed) || /^-f-\s*/.test(trimmed) || trimmed.toLowerCase() === 'f') {
+            isFaux = true;
             texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
           }
-
-          if (texteRep) {
+          
+          if (isCorrect || isFaux) {
             currentQuiz.reponses.push({
               texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
               correct: isCorrect
@@ -890,14 +414,17 @@
           }
         }
       }
-
+      
       if (currentQuiz && currentQuiz.reponses.length > 0) {
         quizs.push(currentQuiz);
       }
-
+      
       return quizs;
     }
 
+    // ============================================================
+    // PARSEURS SPÉCIFIQUES
+    // ============================================================
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
@@ -920,7 +447,7 @@
       var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var recto = '';
       var verso = '';
-
+      
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         if (ligne.toLowerCase().startsWith('r:')) {
@@ -929,9 +456,34 @@
           verso = ligne.replace(/^v:\s*/i, '').trim() || 'Réponse';
         }
       }
-
+      
       if (recto === '') return null;
       return { recto: recto, verso: verso };
+    }
+
+    // ============================================================
+    // RÉCUPÉRER LES NOTES
+    // ============================================================
+    function recupererNotes() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
+            if (reponse && reponse.annotations) {
+              var parts = reponse.annotations.split('|');
+              for (var i = 0; i < parts.length; i++) {
+                var kv = parts[i].split(':');
+                if (kv.length === 2 && kv[0].startsWith('slide')) {
+                  var slideNum = parseInt(kv[0].replace('slide', ''));
+                  etat.notes[slideNum] = kv[1];
+                }
+              }
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur récupération notes:', e); });
     }
 
     // ============================================================
@@ -940,7 +492,6 @@
     function afficherSlides() {
       var container = document.getElementById('slidesContainer');
       var chapitre = etat.chapitre;
-
       document.getElementById('metaTitre').textContent = chapitre.titre || 'Sans titre';
       document.getElementById('metaCategorie').textContent = chapitre.categorie || 'Sans catégorie';
       document.getElementById('metaNiveau').textContent = 'Niveau ' + (chapitre.niveau || 0);
@@ -950,7 +501,7 @@
         return;
       }
 
-      // Points de progression
+      // --- Points de progression ---
       var progressHtml = '<div class="progress-dots">';
       etat.slides.forEach(function(slide, idx) {
         var typeClass = 'type-' + slide.type;
@@ -959,7 +510,7 @@
       });
       progressHtml += '</div>';
 
-      // Slides
+      // --- Slides ---
       var html = progressHtml;
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
@@ -970,17 +521,11 @@
         else if (slide.type === 'retenir') html += ' retenir-content';
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
-        else if (slide.type === 'lu') html += ' lu-content';
         html += '" id="slideContent-' + index + '">';
 
         if (slide.type === 'slide') {
           var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
           html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
-          html += '<div class="note-area" id="noteArea-' + index + '">';
-          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
-          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
-          html += '</div>';
         }
 
         if (slide.type === 'quiz') {
@@ -1003,8 +548,12 @@
           html += afficherRetenir(slide);
         }
 
-        if (slide.type === 'lu') {
-          html += afficherLu();
+        if (slide.type === 'slide') {
+          html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
+          html += '<div class="note-area" id="noteArea-' + index + '">';
+          html += '<textarea id="noteText-' + index + '" placeholder="Écrire une note sur ce slide..." oninput="autoSaveNote(' + index + ')"></textarea>';
+          html += '<div class="note-indicator" id="noteIndicator-' + index + '">◉ Enregistrement automatique</div>';
+          html += '</div>';
         }
 
         html += '</div>';
@@ -1015,9 +564,10 @@
       var loader = document.getElementById('lectureLoader');
       if (loader) loader.style.display = 'none';
 
-      // Nettoyer les anciens éléments
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
+
+      // Supprimer les anciens points aussi
       var oldDots = container.querySelectorAll('.progress-dots');
       oldDots.forEach(function(el) { el.remove(); });
 
@@ -1027,7 +577,6 @@
         container.insertBefore(tempDiv.firstChild, controls);
       }
 
-      // Restaurer les notes
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -1040,7 +589,6 @@
         }
       }
 
-      // Navigation
       container.addEventListener('click', function(e) {
         var target = e.target;
         if (target.closest('.quiz-reponse') ||
@@ -1055,8 +603,7 @@
             target.closest('.carte-container') ||
             target.closest('.carte-boutons') ||
             target.closest('.font-control-bottom') ||
-            target.closest('.progress-dots') ||
-            target.closest('.btn-lu')) {
+            target.closest('.progress-dots')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -1095,15 +642,7 @@
         fermerLiseuse();
       });
 
-      document.getElementById('fontIncreaseBottom').addEventListener('click', function() {
-        var current = getSavedFontSize();
-        setFontSize(current + 2);
-      });
-      document.getElementById('fontDecreaseBottom').addEventListener('click', function() {
-        var current = getSavedFontSize();
-        setFontSize(current - 2);
-      });
-
+      recupererStatutExistant();
       mettreAJourPagination();
       mettreAJourProgress();
 
@@ -1111,13 +650,10 @@
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = currentSize + 'px';
       });
-
-      // Appliquer les statuts existants
-      appliquerStatutsExistants();
     }
 
     // ============================================================
-    // AFFICHER LES SLIDES SPÉCIFIQUES
+    // FONCTIONS D'AFFICHAGE
     // ============================================================
     function afficherQuiz(slide) {
       var html = '';
@@ -1132,7 +668,6 @@
         html += '</div>';
       });
       html += '</div>';
-      html += '<div class="quiz-seuil-info">✓ Validation à 65% de bonnes réponses</div>';
       html += '<div class="quiz-feedback" id="quizFeedback-' + slide.index + '">';
       html += '<div class="bonne-reponse" id="quizBonneReponse-' + slide.index + '"></div>';
       html += '</div>';
@@ -1145,7 +680,7 @@
       html += '<div class="open-question-text">' + (slide.question || 'Question ouverte') + '</div>';
       html += '<textarea id="openReponse-' + slide.index + '" placeholder="Écrivez votre réponse ici..."></textarea>';
       html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
-      html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">✓ Réponse enregistrée</div>';
+      html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
       html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
       return html;
     }
@@ -1218,152 +753,30 @@
       html += '<button onclick="cartePasTrouve(' + index + ')">◻ Je n\'ai pas trouvé</button>';
       html += '</div>';
       html += '<div class="carte-resultat" id="carteResultat-' + index + '"></div>';
+      html += '<div class="carte-progression" id="carteProgression-' + index + '"></div>';
       html += '<button class="btn-continuer" id="btnContinuerCarte-' + index + '" onclick="slideSuivante()">Continuer →</button>';
 
       etat.cartesResultats[index] = null;
       return html;
     }
 
-    function afficherLu() {
-      var dejaLu = etat.statutLu;
-      var html = '';
-      html += '<div style="text-align:center;padding:20px 0;">';
-      html += '<div style="font-size:48px;margin-bottom:16px;">📖</div>';
-      html += '<h2 style="font-family:Merriweather,serif;font-weight:400;margin-bottom:8px;">Ce chapitre ne contient pas d\'exercices</h2>';
-      html += '<p style="font-family:Inter,sans-serif;color:var(--text-secondary);margin-bottom:20px;">Cliquez sur le bouton ci-dessous pour le marquer comme lu.</p>';
-      html += '<div class="btn-lu-container">';
-      html += '<button class="btn-lu' + (dejaLu ? ' valide' : '') + '" id="btnLu" onclick="marquerLu()" ' + (dejaLu ? 'disabled' : '') + '>';
-      html += dejaLu ? '✓ Chapitre marqué comme lu' : '☑ J\'ai lu ce chapitre';
-      html += '</button>';
-      html += '</div>';
-      html += '<button class="btn-continuer" id="btnContinuerLu" onclick="fermerLiseuse()">Fermer le chapitre</button>';
-      html += '</div>';
-      return html;
-    }
-
     // ============================================================
-    // APPLIQUER LES STATUTS EXISTANTS
-    // ============================================================
-    function appliquerStatutsExistants() {
-      var rep = etat.reponsesExistantes;
-      if (!rep || !rep.exercices) return;
-
-      var exercices = rep.exercices;
-
-      // Quiz
-      if (exercices.quiz && exercices.quiz.statut === 'valide') {
-        var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
-        quizSlides.forEach(function(q) {
-          etat.reponsesQuiz[q.index] = { correct: true };
-          var btn = document.getElementById('btnContinuer-' + q.index);
-          if (btn) btn.classList.add('visible');
-          var feedback = document.getElementById('quizFeedback-' + q.index);
-          if (feedback) {
-            feedback.classList.add('visible');
-            var bonne = document.getElementById('quizBonneReponse-' + q.index);
-            if (bonne) {
-              bonne.textContent = '✓ Déjà validé (vous avez ' + (exercices.quiz.detail || '') + ')';
-              bonne.className = 'bonne-reponse';
-            }
-          }
-        });
-      }
-
-      // Ordre
-      if (exercices.ordre && exercices.ordre.statut === 'valide') {
-        var ordreSlides = etat.slides.filter(function(s) { return s.type === 'ordre'; });
-        ordreSlides.forEach(function(o) {
-          etat.ordreValide[o.index] = true;
-          var resultat = document.getElementById('ordreResultat-' + o.index);
-          if (resultat) {
-            resultat.textContent = '✓ Déjà validé (' + (exercices.ordre.detail || '') + ')';
-            resultat.className = 'ordre-resultat correct';
-          }
-          var btn = document.getElementById('btnContinuerOrdre-' + o.index);
-          if (btn) btn.classList.add('visible');
-          var valider = document.getElementById('btnValiderOrdre-' + o.index);
-          if (valider) valider.disabled = true;
-        });
-      }
-
-      // Carte
-      if (exercices.carte && exercices.carte.statut === 'valide') {
-        var carteSlides = etat.slides.filter(function(s) { return s.type === 'carte'; });
-        carteSlides.forEach(function(c) {
-          etat.cartesResultats[c.index] = true;
-          var resultat = document.getElementById('carteResultat-' + c.index);
-          if (resultat) {
-            resultat.textContent = '✓ Déjà validé (' + (exercices.carte.detail || '') + ')';
-            resultat.style.color = 'var(--text)';
-          }
-          var btn = document.getElementById('btnContinuerCarte-' + c.index);
-          if (btn) btn.classList.add('visible');
-          var boutons = document.getElementById('carteBoutons-' + c.index);
-          if (boutons) boutons.classList.remove('visible');
-        });
-      }
-
-      // Ouvert
-      if (exercices.ouvert && exercices.ouvert.statut === 'envoye') {
-        var openSlides = etat.slides.filter(function(s) { return s.type === 'open'; });
-        openSlides.forEach(function(o) {
-          var confirmation = document.getElementById('openConfirmation-' + o.index);
-          if (confirmation) confirmation.classList.add('visible');
-          var textarea = document.getElementById('openReponse-' + o.index);
-          if (textarea) {
-            textarea.disabled = true;
-            textarea.value = exercices.ouvert.detail || '✓ Réponse envoyée';
-          }
-          var btn = document.getElementById('btnContinuerOpen-' + o.index);
-          if (btn) btn.classList.add('visible');
-          var envoyer = document.querySelector('#slide-' + o.index + ' .btn-envoyer-reponse');
-          if (envoyer) {
-            envoyer.disabled = true;
-            envoyer.textContent = '✓ Envoyé';
-          }
-        });
-      }
-
-      // Lu
-      if (exercices.lu && exercices.lu.statut === 'valide') {
-        etat.statutLu = true;
-        var btnLu = document.getElementById('btnLu');
-        if (btnLu) {
-          btnLu.textContent = '✓ Chapitre marqué comme lu';
-          btnLu.className = 'btn-lu valide';
-          btnLu.disabled = true;
-        }
-        var btnContinuer = document.getElementById('btnContinuerLu');
-        if (btnContinuer) {
-          btnContinuer.classList.add('visible');
-        }
-      }
-
-      mettreAJourStatutGlobal();
-    }
-
-    // ============================================================
-    // INTERACTIONS
+    // FONCTIONS DE NAVIGATION ET INTERACTION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
       var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
       if (!slide) return;
       if (etat.reponsesQuiz[quizIndex]) return;
-
       var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
       if (!slideEl) return;
-
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var reponse = slide.reponses[reponseIndex];
-
       reponses.forEach(function(el, idx) {
         el.classList.remove('selectionnee');
         if (idx === reponseIndex) el.classList.add('selectionnee');
       });
-
       etat.reponsesQuiz[quizIndex] = { reponseIndex: reponseIndex, correct: reponse.correct };
-
       setTimeout(function() {
         afficherFeedbackQuiz(quizIndex);
       }, 300);
@@ -1374,45 +787,25 @@
       if (!slide) return;
       var reponseData = etat.reponsesQuiz[quizIndex];
       if (!reponseData) return;
-
       var slideEl = document.getElementById('slide-' + etat.slides.indexOf(slide));
       if (!slideEl) return;
-
       var reponses = slideEl.querySelectorAll('.quiz-reponse');
       var feedback = document.getElementById('quizFeedback-' + quizIndex);
       var bonneReponse = document.getElementById('quizBonneReponse-' + quizIndex);
       var btnContinuer = document.getElementById('btnContinuer-' + quizIndex);
-
-      var total = slide.reponses.length;
-      var bonnes = 0;
-
       reponses.forEach(function(el, idx) {
         el.classList.remove('correcte', 'incorrecte');
         var icon = el.querySelector('.result-icon');
-        if (slide.reponses[idx] && slide.reponses[idx].correct) {
-          bonnes++;
-          if (idx === reponseData.reponseIndex && reponseData.correct) {
-            el.classList.add('correcte');
-            icon.textContent = '✓';
-          } else if (idx === reponseData.reponseIndex && !reponseData.correct) {
-            el.classList.add('incorrecte');
-            icon.textContent = '✗';
-          } else {
-            el.classList.add('correcte');
-            icon.textContent = '✓';
-          }
-        } else if (idx === reponseData.reponseIndex && !reponseData.correct) {
-          el.classList.add('incorrecte');
-          icon.textContent = '✗';
+        if (idx === reponseData.reponseIndex) {
+          if (reponseData.correct) { el.classList.add('correcte'); icon.textContent = '✓'; }
+          else { el.classList.add('incorrecte'); icon.textContent = '✗'; }
+        } else if (slide.reponses[idx] && slide.reponses[idx].correct) {
+          el.classList.add('correcte');
+          icon.textContent = '✓';
         } else {
           icon.textContent = '';
         }
       });
-
-      // Calcul du vrai nombre de bonnes
-      var bonnesTotal = slide.reponses.filter(function(r) { return r.correct; }).length;
-      var bonnesTrouvees = reponseData.correct ? 1 : 0;
-
       if (reponseData.correct) {
         bonneReponse.textContent = '✓ Bonne réponse !';
         bonneReponse.className = 'bonne-reponse';
@@ -1421,184 +814,265 @@
         bonneReponse.textContent = '✗ La bonne réponse était : "' + (bonne ? bonne.texte : '—') + '"';
         bonneReponse.className = 'mauvaise-reponse';
       }
-
       feedback.classList.add('visible');
-
-      // Sauvegarder le quiz avec 65%
-      sauvegarderQuiz(quizIndex);
-
       setTimeout(function() {
         btnContinuer.classList.add('visible');
       }, 400);
+      verifierQuizComplets();
     }
 
-    function sauvegarderQuiz(quizIndex) {
-      var slide = etat.slides.find(function(s) { return s.type === 'quiz' && s.index === quizIndex; });
-      if (!slide) return;
-
-      var total = slide.reponses.length;
-      var bonnes = 0;
-      for (var i = 0; i < slide.reponses.length; i++) {
-        if (slide.reponses[i].correct) bonnes++;
-      }
-
-      var seuil = Math.ceil(total * 0.65);
-      var statut = (bonnes >= seuil) ? 'valide' : 'non-valide';
-      var detail = bonnes + '/' + total;
-
-      sauvegarderExercice('quiz', statut, detail);
+    function verifierQuizComplets() {
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      var tousRepondus = quizSlides.every(function(q) {
+        return etat.reponsesQuiz[q.index] !== undefined;
+      });
+      if (!tousRepondus) return;
+      var totalBonnes = 0, totalQuestions = 0;
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) { totalQuestions++; if (rep.correct) totalBonnes++; }
+      });
+      etat.totalBonnes = totalBonnes;
+      etat.totalQuestions = totalQuestions;
+      var seuil = Math.ceil(totalQuestions / 2);
+      etat.statutFinal = (totalQuestions > 0 && totalBonnes >= seuil) ? 'valide' : 'non-valide';
+      if (totalQuestions === 0) etat.statutFinal = 'en-attente';
+      mettreAJourBadge();
+      sauvegarderQuiz();
     }
 
-    // ============================================================
-    // SAUVEGARDE EXERCICE (DYNAMIQUE)
-    // ============================================================
-    function sauvegarderExercice(type, statut, detail) {
+    function mettreAJourBadge() {
+      var badge = document.getElementById('badgeStatut');
+      if (etat.statutFinal === 'valide') { badge.textContent = '✓ Validé'; badge.className = 'badge-statut valide'; }
+      else if (etat.statutFinal === 'non-valide') { badge.textContent = '✗ À relire'; badge.className = 'badge-statut non-valide'; }
+      else { badge.textContent = '⏱ En cours'; badge.className = 'badge-statut en-attente'; }
+    }
+
+    function sauvegarderQuiz() {
+      if (!etat.chapitreId) return;
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var chapitre = etat.chapitre.titre || 'Sans titre';
-
-      var url = SCRIPT_URL + '?action=saveExercice' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&chapitre=' + encodeURIComponent(chapitre) +
-        '&exercice=' + encodeURIComponent(type) +
-        '&statut=' + encodeURIComponent(statut) +
-        '&detail=' + encodeURIComponent(detail || '');
-
-      fetch(url)
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data.success) {
-            console.log('✓ ' + type + ' sauvegardé');
-            mettreAJourStatutGlobal();
-          }
-        })
-        .catch(function(e) { console.error('Erreur sauvegarde:', e); });
-    }
-
-    // ============================================================
-    // STATUT GLOBAL
-    // ============================================================
-    function mettreAJourStatutGlobal() {
-      var rep = etat.reponsesExistantes;
-      var badge = document.getElementById('statutGlobalBadge');
-
-      // Types d'exercices qui comptent pour la validation
-      var typesAValider = ['quiz', 'ordre', 'carte'];
-      var typesPresent = [];
-
-      etat.slides.forEach(function(slide) {
-        if (typesAValider.indexOf(slide.type) !== -1) {
-          if (typesPresent.indexOf(slide.type) === -1) {
-            typesPresent.push(slide.type);
-          }
+      var choixQcm = '';
+      var quizSlides = etat.slides.filter(function(s) { return s.type === 'quiz'; });
+      quizSlides.forEach(function(q) {
+        var rep = etat.reponsesQuiz[q.index];
+        if (rep) {
+          if (choixQcm) choixQcm += '|';
+          choixQcm += (rep.correct ? 'V' : 'F') + ':' + (rep.reponseIndex + 1);
         }
       });
-
-      // Si le chapitre n'a que des slides (pas d'exercices) ou juste "lu"
-      if (typesPresent.length === 0) {
-        if (etat.statutLu) {
-          badge.textContent = '✅ Validé';
-          badge.className = 'statut-global-badge valide';
-        } else {
-          badge.textContent = '⏳ En attente';
-          badge.className = 'statut-global-badge en-attente';
-        }
-        return;
-      }
-
-      // Vérifier les statuts
-      var tousValides = true;
-      var exercices = rep && rep.exercices ? rep.exercices : {};
-
-      for (var i = 0; i < typesPresent.length; i++) {
-        var type = typesPresent[i];
-        var exercice = exercices[type];
-        if (!exercice || exercice.statut !== 'valide') {
-          tousValides = false;
-          break;
-        }
-      }
-
-      if (tousValides) {
-        badge.textContent = '✅ Validé';
-        badge.className = 'statut-global-badge valide';
-        // Sauvegarder le statut global
-        sauvegarderExercice('global', 'valide', 'tous les exercices sont validés');
-      } else {
-        // Vérifier si au moins un exercice est commencé
-        var aCommence = false;
-        for (var key in exercices) {
-          if (exercices[key] && exercices[key].statut) {
-            aCommence = true;
-            break;
-          }
-        }
-
-        if (aCommence) {
-          badge.textContent = '⏳ Partiel';
-          badge.className = 'statut-global-badge non-valide';
-          sauvegarderExercice('global', 'non-valide', 'certains exercices ne sont pas validés');
-        } else {
-          badge.textContent = '⏳ En attente';
-          badge.className = 'statut-global-badge en-attente';
-        }
-      }
+      var url = SCRIPT_URL + '?action=saveQuiz' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Quiz') +
+        '&choixQcm=' + encodeURIComponent(choixQcm) +
+        '&bonnes=' + encodeURIComponent(etat.totalBonnes) +
+        '&total=' + encodeURIComponent(etat.totalQuestions);
+      fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+        if (data.success) console.log('✓ Quiz sauvegardé');
+      }).catch(function(e) { console.error('Erreur sauvegarde:', e); });
     }
 
-    // ============================================================
-    // BOUTON LU
-    // ============================================================
-    function marquerLu() {
-      if (etat.statutLu) return;
-
-      etat.statutLu = true;
-      sauvegarderExercice('lu', 'valide', 'lu');
-
-      var btn = document.getElementById('btnLu');
-      if (btn) {
-        btn.textContent = '✓ Chapitre marqué comme lu';
-        btn.className = 'btn-lu valide';
-        btn.disabled = true;
-      }
-
-      var btnContinuer = document.getElementById('btnContinuerLu');
-      if (btnContinuer) {
-        btnContinuer.classList.add('visible');
-      }
-
-      mettreAJourStatutGlobal();
-    }
-
-    // ============================================================
-    // REPONSE OUVERTE
-    // ============================================================
     function envoyerReponseOuverte(event, index) {
       if (event) event.stopPropagation();
-
       var textarea = document.getElementById('openReponse-' + index);
       if (!textarea) return;
-
       var reponse = textarea.value.trim();
-      if (!reponse) {
-        alert('Veuillez écrire une réponse.');
-        return;
-      }
-
+      if (!reponse) { alert('Veuillez écrire une réponse.'); return; }
       var btn = textarea.parentElement.querySelector('.btn-envoyer-reponse');
       btn.disabled = true;
       btn.textContent = 'Envoi...';
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveReponseOuverte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&reponseOuverte=' + encodeURIComponent(reponse);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var confirmation = document.getElementById('openConfirmation-' + index);
+          var btnContinuer = document.getElementById('btnContinuerOpen-' + index);
+          if (data.success) {
+            confirmation.classList.add('visible');
+            textarea.disabled = true;
+            btn.textContent = '✓ Envoyé';
+            setTimeout(function() {
+              btnContinuer.classList.add('visible');
+            }, 400);
+          } else {
+            alert('Erreur : ' + (data.message || 'Impossible d\'envoyer.'));
+            btn.disabled = false;
+            btn.textContent = 'Envoyer la réponse';
+          }
+        })
+        .catch(function(e) {
+          alert('Erreur réseau.');
+          btn.disabled = false;
+          btn.textContent = 'Envoyer la réponse';
+        });
+    }
 
-      sauvegarderExercice('ouvert', 'envoye', reponse);
+    function recupererStatutExistant() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      fetch(SCRIPT_URL + '?action=getReponses&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.reponses) {
+            var reponse = data.reponses.find(function(r) { return r.chapitreId === etat.chapitreId; });
+            if (reponse && reponse.bonnes > 0 && reponse.total > 0) {
+              var seuil = Math.ceil(reponse.total / 2);
+              if (reponse.bonnes >= seuil) {
+                etat.statutFinal = 'valide';
+                etat.totalBonnes = reponse.bonnes;
+                etat.totalQuestions = reponse.total;
+                mettreAJourBadge();
+              }
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur récupération statut:', e); });
+    }
 
-      var confirmation = document.getElementById('openConfirmation-' + index);
-      var btnContinuer = document.getElementById('btnContinuerOpen-' + index);
+    function slideSuivante() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex >= etat.slides.length - 1) return;
 
-      confirmation.classList.add('visible');
-      textarea.disabled = true;
-      btn.textContent = '✓ Envoyé';
+      var slide = etat.slides[etat.currentIndex];
 
+      if (slide.type === 'quiz') {
+        var reponse = etat.reponsesQuiz[slide.index];
+        if (!reponse) return;
+        var btn = document.getElementById('btnContinuer-' + slide.index);
+        if (!btn || !btn.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'open') {
+        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
+        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'ordre') {
+        if (!etat.ordreValide[slide.index]) return;
+        var btnOrdre = document.getElementById('btnContinuerOrdre-' + slide.index);
+        if (!btnOrdre || !btnOrdre.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'carte') {
+        var btnCarte = document.getElementById('btnContinuerCarte-' + slide.index);
+        if (!btnCarte || !btnCarte.classList.contains('visible')) return;
+      }
+
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
+      if (current) current.classList.remove('active');
+      if (next) next.classList.add('active');
+      etat.currentIndex++;
+      mettreAJourPagination();
+      mettreAJourProgress();
       setTimeout(function() {
-        btnContinuer.classList.add('visible');
-      }, 400);
+        etat.enTransition = false;
+      }, 150);
+    }
+
+    function slidePrecedente() {
+      if (etat.enTransition) return;
+      if (etat.currentIndex <= 0) return;
+      etat.enTransition = true;
+      var current = document.getElementById('slide-' + etat.currentIndex);
+      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
+      if (current) current.classList.remove('active');
+      if (prev) prev.classList.add('active');
+      etat.currentIndex--;
+      mettreAJourPagination();
+      mettreAJourProgress();
+      setTimeout(function() {
+        etat.enTransition = false;
+      }, 850);
+    }
+
+    function mettreAJourPagination() {
+      var pagination = document.getElementById('pagination');
+      if (pagination) {
+        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
+      }
+    }
+
+    function mettreAJourProgress() {
+      var dots = document.querySelectorAll('.progress-dot');
+      dots.forEach(function(dot, idx) {
+        dot.classList.remove('active', 'done');
+        if (idx < etat.currentIndex) {
+          dot.classList.add('done');
+        } else if (idx === etat.currentIndex) {
+          dot.classList.add('active');
+        }
+      });
+    }
+
+    // ============================================================
+    // NOTES
+    // ============================================================
+    function toggleNote(index) {
+      var area = document.getElementById('noteArea-' + index);
+      var toggle = document.getElementById('noteToggle-' + index);
+      if (!area) return;
+      if (area.classList.contains('visible')) {
+        area.classList.remove('visible');
+        toggle.classList.remove('active');
+      } else {
+        area.classList.add('visible');
+        toggle.classList.add('active');
+        var textarea = document.getElementById('noteText-' + index);
+        if (textarea) textarea.focus();
+      }
+    }
+
+    var timers = {};
+
+    function autoSaveNote(index) {
+      if (timers[index]) clearTimeout(timers[index]);
+      var indicator = document.getElementById('noteIndicator-' + index);
+      if (indicator) {
+        indicator.textContent = '⏱ Enregistrement...';
+        indicator.className = 'note-indicator';
+      }
+      timers[index] = setTimeout(function() {
+        sauvegarderNote(index);
+      }, 2000);
+    }
+
+    function sauvegarderNote(index) {
+      var textarea = document.getElementById('noteText-' + index);
+      if (!textarea) return;
+      var note = textarea.value.trim();
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveAnnotation' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&slide=' + encodeURIComponent(index) +
+        '&annotation=' + encodeURIComponent(note);
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            if (data.success) {
+              indicator.textContent = '✓ Note sauvegardée';
+              indicator.className = 'note-indicator saved';
+              etat.notes[index] = note;
+            } else {
+              indicator.textContent = '⚠︎ Erreur de sauvegarde';
+              indicator.className = 'note-indicator';
+            }
+          }
+        })
+        .catch(function() {
+          var indicator = document.getElementById('noteIndicator-' + index);
+          if (indicator) {
+            indicator.textContent = '⚠︎ Erreur réseau';
+            indicator.className = 'note-indicator';
+          }
+        });
     }
 
     // ============================================================
@@ -1638,52 +1112,70 @@
         resultat.className = 'ordre-resultat';
       }
       etat.ordreValide[index] = false;
-
       var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
       if (btnContinuer) btnContinuer.classList.remove('visible');
     }
 
     function validerOrdre(index) {
-      var list = document.getElementById('ordre-list-' + index);
-      if (!list) return;
+  var list = document.getElementById('ordre-list-' + index);
+  if (!list) return;
+  var items = list.querySelectorAll('.ordre-item');
+  var ordreDonne = [];
+  var ordreAttendu = [];
 
-      var items = list.querySelectorAll('.ordre-item');
-      var ordreDonne = [];
-      var ordreAttendu = [];
+  items.forEach(function(el) {
+    ordreDonne.push(parseInt(el.dataset.num));
+    ordreAttendu.push(parseInt(el.dataset.num));
+  });
 
-      items.forEach(function(el) {
-        ordreDonne.push(parseInt(el.dataset.num));
-        ordreAttendu.push(parseInt(el.dataset.num));
-      });
+  ordreAttendu.sort(function(a, b) { return a - b; });
 
-      ordreAttendu.sort(function(a, b) { return a - b; });
+  // ✅ COMPTER LE NOMBRE DE BONNES PLACEMENTS
+  var bonnes = 0;
+  for (var i = 0; i < ordreDonne.length; i++) {
+    if (ordreDonne[i] === ordreAttendu[i]) {
+      bonnes++;
+    }
+  }
 
-      var bonnes = 0;
-      for (var i = 0; i < ordreDonne.length; i++) {
-        if (ordreDonne[i] === ordreAttendu[i]) {
-          bonnes++;
-        }
-      }
+  var correct = (bonnes === ordreDonne.length); // Tous bien placés ?
 
-      var correct = (bonnes === ordreDonne.length);
+  var resultat = document.getElementById('ordreResultat-' + index);
+  var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+  var btnValider = document.getElementById('btnValiderOrdre-' + index);
 
-      var resultat = document.getElementById('ordreResultat-' + index);
-      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
-      var btnValider = document.getElementById('btnValiderOrdre-' + index);
+  if (correct) {
+    resultat.textContent = '✌︎ Tous les éléments sont bien placés !';
+    resultat.className = 'ordre-resultat correct';
+    etat.ordreValide[index] = true;
+    // ✅ ENVOYER LE VRAI NOMBRE DE BONNES
+    sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
+    if (btnContinuer) btnContinuer.classList.add('visible');
+    if (btnValider) btnValider.disabled = true;
+  } else {
+    resultat.textContent = '✋︎ ' + bonnes + '/' + ordreDonne.length + ' bien placés. Réessayez.';
+    resultat.className = 'ordre-resultat incorrect';
+    etat.ordreValide[index] = false;
+    // ✅ ENVOYER LE VRAI NOMBRE DE BONNES
+    sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
+  }
+}
+    function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveOrdre' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Ordre') +
+        '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
 
-      if (correct) {
-        resultat.textContent = '✌︎ Tous les éléments sont bien placés !';
-        resultat.className = 'ordre-resultat correct';
-        etat.ordreValide[index] = true;
-        sauvegarderExercice('ordre', 'valide', bonnes + '/' + ordreDonne.length);
-        if (btnContinuer) btnContinuer.classList.add('visible');
-        if (btnValider) btnValider.disabled = true;
-      } else {
-        resultat.textContent = '✋︎ ' + bonnes + '/' + ordreDonne.length + ' bien placés. Réessayez.';
-        resultat.className = 'ordre-resultat incorrect';
-        etat.ordreValide[index] = false;
-        sauvegarderExercice('ordre', 'non-valide', bonnes + '/' + ordreDonne.length);
-      }
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) console.log('✓ Ordre sauvegardé');
+        })
+        .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
     // ============================================================
@@ -1707,6 +1199,8 @@
       if (etat.cartesResultats[index] !== null) return;
 
       etat.cartesResultats[index] = true;
+      etat.cartesBonnes++;
+      etat.cartesTotal++;
 
       resultat.textContent = '☑ Bien joué !';
       resultat.style.color = 'var(--text)';
@@ -1724,6 +1218,7 @@
       if (etat.cartesResultats[index] !== null) return;
 
       etat.cartesResultats[index] = false;
+      etat.cartesTotal++;
 
       resultat.textContent = '☹ Pas de problème, retenez bien la réponse.';
       resultat.style.color = 'var(--text-secondary)';
@@ -1734,187 +1229,52 @@
     }
 
     function sauvegarderCarte(index) {
-      var toutesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
-      var total = toutesCartes.length;
-      var bonnes = 0;
+      var slide = etat.slides.find(function(s) { return s.type === 'carte' && s.index === index; });
+      if (!slide) return;
 
-      toutesCartes.forEach(function(c) {
-        if (etat.cartesResultats[c.index] === true) bonnes++;
+      var toutesLesCartes = etat.slides.filter(function(s) { return s.type === 'carte'; });
+      var resultats = [];
+      toutesLesCartes.forEach(function(c) {
+        if (etat.cartesResultats[c.index] === true) resultats.push('1');
+        else if (etat.cartesResultats[c.index] === false) resultats.push('0');
+        else resultats.push('?');
       });
 
-      var seuil = Math.ceil(total * 0.65);
-      var statut = (bonnes >= seuil) ? 'valide' : 'non-valide';
-      var detail = bonnes + '/' + total;
+      var cartesStr = resultats.join(',');
+      var bonnes = etat.cartesBonnes;
+      var total = etat.cartesTotal;
 
-      sauvegarderExercice('carte', statut, detail);
-    }
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveCarte' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Cartes') +
+        '&cartes=' + encodeURIComponent(cartesStr) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
 
-    // ============================================================
-    // NOTES
-    // ============================================================
-    function toggleNote(index) {
-      var area = document.getElementById('noteArea-' + index);
-      var toggle = document.getElementById('noteToggle-' + index);
-      if (!area) return;
-
-      if (area.classList.contains('visible')) {
-        area.classList.remove('visible');
-        toggle.classList.remove('active');
-      } else {
-        area.classList.add('visible');
-        toggle.classList.add('active');
-        var textarea = document.getElementById('noteText-' + index);
-        if (textarea) textarea.focus();
-      }
-    }
-
-    var timers = {};
-
-    function autoSaveNote(index) {
-      if (timers[index]) clearTimeout(timers[index]);
-
-      var indicator = document.getElementById('noteIndicator-' + index);
-      if (indicator) {
-        indicator.textContent = '⏱ Enregistrement...';
-        indicator.className = 'note-indicator';
-      }
-
-      timers[index] = setTimeout(function() {
-        sauvegarderNote(index);
-      }, 2000);
-    }
-
-    function sauvegarderNote(index) {
-      var textarea = document.getElementById('noteText-' + index);
-      if (!textarea) return;
-
-      var note = textarea.value.trim();
-
-      // Sauvegarder via saveExercice
-      var annotationsExistantes = etat.notes;
-      annotationsExistantes[index] = note;
-
-      var notesStr = '';
-      for (var key in annotationsExistantes) {
-        if (annotationsExistantes[key]) {
-          if (notesStr) notesStr += '|';
-          notesStr += 'slide' + key + ':' + annotationsExistantes[key];
-        }
-      }
-
-      sauvegarderExercice('annotations', 'sauvegardee', notesStr);
-
-      var indicator = document.getElementById('noteIndicator-' + index);
-      if (indicator) {
-        indicator.textContent = '✓ Note sauvegardée';
-        indicator.className = 'note-indicator saved';
-      }
-    }
-
-    // ============================================================
-    // NAVIGATION
-    // ============================================================
-    function slideSuivante() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex >= etat.slides.length - 1) return;
-
-      var slide = etat.slides[etat.currentIndex];
-
-      if (slide.type === 'quiz') {
-        var reponse = etat.reponsesQuiz[slide.index];
-        if (!reponse) return;
-        var btn = document.getElementById('btnContinuer-' + slide.index);
-        if (!btn || !btn.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'open') {
-        var btnOpen = document.getElementById('btnContinuerOpen-' + slide.index);
-        if (!btnOpen || !btnOpen.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'ordre') {
-        if (!etat.ordreValide[slide.index]) return;
-        var btnOrdre = document.getElementById('btnContinuerOrdre-' + slide.index);
-        if (!btnOrdre || !btnOrdre.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'carte') {
-        var btnCarte = document.getElementById('btnContinuerCarte-' + slide.index);
-        if (!btnCarte || !btnCarte.classList.contains('visible')) return;
-      }
-
-      if (slide.type === 'lu') {
-        // Pour le slide "lu", on vérifie si le bouton "Continuer" est visible
-        var btnLu = document.getElementById('btnContinuerLu');
-        if (!btnLu || !btnLu.classList.contains('visible')) return;
-      }
-
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var next = document.getElementById('slide-' + (etat.currentIndex + 1));
-      if (current) current.classList.remove('active');
-      if (next) next.classList.add('active');
-      etat.currentIndex++;
-      mettreAJourPagination();
-      mettreAJourProgress();
-
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 150);
-    }
-
-    function slidePrecedente() {
-      if (etat.enTransition) return;
-      if (etat.currentIndex <= 0) return;
-
-      etat.enTransition = true;
-      var current = document.getElementById('slide-' + etat.currentIndex);
-      var prev = document.getElementById('slide-' + (etat.currentIndex - 1));
-      if (current) current.classList.remove('active');
-      if (prev) prev.classList.add('active');
-      etat.currentIndex--;
-      mettreAJourPagination();
-      mettreAJourProgress();
-
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
-    }
-
-    function mettreAJourPagination() {
-      var pagination = document.getElementById('pagination');
-      if (pagination) {
-        pagination.textContent = (etat.currentIndex + 1) + ' / ' + etat.slides.length;
-      }
-    }
-
-    function mettreAJourProgress() {
-      var dots = document.querySelectorAll('.progress-dot');
-      dots.forEach(function(dot, idx) {
-        dot.classList.remove('active', 'done');
-        if (idx < etat.currentIndex) {
-          dot.classList.add('done');
-        } else if (idx === etat.currentIndex) {
-          dot.classList.add('active');
-        }
-      });
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) console.log('✓ Cartes sauvegardées');
+        })
+        .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
 
     // ============================================================
     // FERMER
     // ============================================================
     function fermerLiseuse() {
-      var categorie = etat.chapitre ? etat.chapitre.categorie : '';
-      if (categorie) {
-        window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
-      } else {
-        window.location.href = '/medit/mes-livrets.html';
-      }
-    }
+  // Récupérer la catégorie du chapitre pour revenir au bon livret
+  var categorie = etat.chapitre ? etat.chapitre.categorie : '';
+  if (categorie) {
+    window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
+  } else {
+    // Fallback si pas de catégorie
+    window.location.href = '/medit/mes-livrets.html';
+  }
+}
 
-    // ============================================================
-    // ERREUR
-    // ============================================================
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
         <div class="lecture-error">
@@ -1927,7 +1287,7 @@
     }
 
     // ============================================================
-    // EXPOSER LES FONCTIONS
+    // EXPOSER LES FONCTIONS GLOBALEMENT
     // ============================================================
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
@@ -1941,21 +1301,31 @@
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
-    window.marquerLu = marquerLu;
 
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
-    document.addEventListener('DOMContentLoaded', function() {
-      var params = new URLSearchParams(window.location.search);
-      var id = params.get('id');
-      if (!id) { afficherErreur('Aucun identifiant.'); return; }
-
-      var initialSize = getSavedFontSize();
-      setFontSize(initialSize);
-
-      chargerChapitre(id);
-    });
+    function verifierValidationGlobale() {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
+      
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success && data.validation) {
+            var badge = document.getElementById('badgeStatut');
+            if (data.validation.global === 'valide') {
+              badge.textContent = '✓ Validé';
+              badge.className = 'badge-statut valide';
+            } else if (data.validation.global === 'partiel') {
+              badge.textContent = '⏳ Partiel';
+              badge.className = 'badge-statut partiel';
+            } else {
+              badge.textContent = '⏱ À faire';
+              badge.className = 'badge-statut en-attente';
+            }
+          }
+        })
+        .catch(function(e) { console.error('Erreur vérification validation:', e); });
+    }
   </script>
+
 </body>
 </html>
