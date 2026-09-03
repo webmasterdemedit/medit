@@ -1146,24 +1146,27 @@
     }
 
     // ============================================================
-    // EST CHAPITRE LU ? - CORRIGÉ
+    // EST CHAPITRE LU ?
     // ============================================================
     function estChapitreLu(chapitre) {
-      var reponses = toutesLesReponses[chapitre.id] || [];
-      
-      if (reponses.length === 0) {
-        return false;
-      }
-      
-      // Vérifier si TOUTES les réponses sont valides
-      for (var i = 0; i < reponses.length; i++) {
-        if (reponses[i].valide !== 'valide') {
-          return false;
-        }
-      }
-      
-      return true;
+  var reponses = toutesLesReponses[chapitre.id] || [];
+  
+  if (reponses.length === 0) {
+    console.log('❌ Chapitre ' + chapitre.titre + ' : aucune réponse');
+    return false;
+  }
+  
+  // Vérifier si TOUTES les réponses sont valides
+  for (var i = 0; i < reponses.length; i++) {
+    if (reponses[i].valide !== 'valide') {
+      console.log('❌ ' + reponses[i].type + ' non valide');
+      return false;
     }
+  }
+  
+  console.log('✅ Chapitre ' + chapitre.titre + ' : TOUT est validé !');
+  return true;
+}
 
     function estChapitreAccessible(chapitres, index) {
       if (index === 0) return true;
@@ -1220,19 +1223,16 @@
             }
           }
 
-          // ============================================================
-          // CORRECTION : Stocker TOUTES les réponses dans un tableau
-          // ============================================================
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              if (!toutesLesReponses[r.chapitreId]) {
-                toutesLesReponses[r.chapitreId] = [];
-              }
-              toutesLesReponses[r.chapitreId].push(r);
-            });
-          }
-          console.log('🔍 Toutes les réponses (tableau) :', toutesLesReponses);
+         toutesLesReponses = {};
+if (data.reponses) {
+  data.reponses.forEach(function(r) {
+    if (!toutesLesReponses[r.chapitreId]) {
+      toutesLesReponses[r.chapitreId] = [];
+    }
+    toutesLesReponses[r.chapitreId].push(r);
+  });
+}
+console.log('🔍 Réponses pour ce chapitre :', toutesLesReponses['post_1788175117477']);
 
           afficherLivret();
         })
@@ -1304,8 +1304,12 @@
       // Compter les chapitres validés
       var validees = 0;
       chapitresFiltres.forEach(function(chapitre) {
-        if (estChapitreLu(chapitre)) {
-          validees++;
+        var reponse = toutesLesReponses[chapitre.id];
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          if (total === 1 && bonnes === 1) validees++;
+          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
         }
       });
 
@@ -1361,7 +1365,7 @@
     }
 
     // ============================================================
-    // AFFICHER LES CHAPITRES - CORRIGÉ
+    // AFFICHER LES CHAPITRES
     // ============================================================
     function afficherChapitres(chapitres) {
       var container = document.getElementById('contenuChapitres');
@@ -1381,30 +1385,39 @@
 
       for (var i = 0; i < chapitres.length; i++) {
         var chapitre = chapitres[i];
-        var reponses = toutesLesReponses[chapitre.id] || [];
-        
+        var reponse = toutesLesReponses[chapitre.id];
+
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === chapitre.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
+
         var dateValidation = '';
         var retenir = '';
         var estLu = false;
         var estValide = false;
 
-        // Vérifier si TOUTES les réponses sont valides
-        if (reponses.length > 0) {
-          var toutesValides = true;
-          for (var j = 0; j < reponses.length; j++) {
-            if (reponses[j].valide !== 'valide') {
-              toutesValides = false;
-              break;
-            }
-            if (reponses[j].date) dateValidation = reponses[j].date;
-            if (reponses[j].retenir) retenir = reponses[j].retenir;
-          }
-          
-          if (toutesValides) {
-            estLu = true;
-            estValide = true;
-          }
-        }
+        var reponses = toutesLesReponses[chapitre.id] || [];
+if (reponses.length > 0) {
+  var toutesValides = true;
+  for (var i = 0; i < reponses.length; i++) {
+    if (reponses[i].valide !== 'valide') {
+      toutesValides = false;
+      break;
+    }
+    if (reponses[i].date) dateValidation = reponses[i].date;
+    if (reponses[i].retenir) retenir = reponses[i].retenir;
+  }
+  
+  if (toutesValides) {
+    estLu = true;
+    estValide = true;
+  }
+}
 
         var estAccessible = estChapitreAccessible(chapitres, i);
         var estBloque = !estAccessible;
@@ -1424,9 +1437,7 @@
           var questionHtml = '';
           var annoteHtml = '';
 
-          if (reponses.length > 0) {
-            // Prendre la première réponse pour les infos
-            var reponse = reponses[0];
+          if (reponse) {
             var bonnes = reponse.bonnes || 0;
             var total = reponse.total || 0;
             if (total > 0) {
