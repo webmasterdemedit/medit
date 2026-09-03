@@ -1135,61 +1135,7 @@
         });
     }
 
-    // ============================================================
-    // RAFRAÎCHIR
-    // ============================================================
-    function rafraichir() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) return;
-
-      var btn = document.querySelector('.btn-rafraichir');
-      if (!btn) return;
-
-      btn.textContent = '...';
-      btn.disabled = true;
-      btn.style.opacity = '0.6';
-
-      DataManager.rafraichir()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          toutesLesReponses = data.reponses || [];
-          descriptionNiveau = data.description || 'Aucune description.';
-
-          dateInscription = data.dateInscription || 'Non renseignée';
-          contact = data.contact || 'Non renseigné';
-          disciplines = data.disciplines || 'Non renseigné';
-          messagePerso = data.messagePerso || 'Aucun message';
-
-          afficherProfil();
-          afficherActivite();
-          afficherHistorique();
-
-          // Si on est sur l'onglet messagerie, recharger les messages
-          var activeTab = document.querySelector('.tab-content-compte.active');
-          if (activeTab && activeTab.id === 'tab-messagerie') {
-            chargerMessages();
-          }
-
-          btn.textContent = '✓';
-          btn.style.background = 'var(--bg-hover)';
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          setTimeout(function() {
-            btn.textContent = '⟳ Rafraîchir';
-            btn.style.background = 'transparent';
-          }, 1500);
-        })
-        .catch(function() {
-          btn.textContent = '✗';
-          btn.disabled = false;
-          btn.style.opacity = '1';
-          setTimeout(function() {
-            btn.textContent = '⟳ Rafraîchir';
-          }, 1500);
-        });
-    }
-
-    // ============================================================
+   // ============================================================
     // INIT
     // ============================================================
     function demarrer() {
