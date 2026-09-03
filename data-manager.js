@@ -1,25 +1,16 @@
 // ============================================================
-// data-manager.js - Gestion centralisée des données
+// data-manager.js - SANS CACHE (toujours frais)
 // ============================================================
 
 var DataManager = {
-    DUREE_CACHE: 60,
 
     // ============================================================
-    // CHARGER - Version simplifiée (admin comme les autres)
+    // CHARGER - Toujours depuis le serveur
     // ============================================================
-    charger: function(force) {
+    charger: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
             return Promise.reject('Non connecté');
-        }
-
-        if (!force) {
-            var cache = this.getCache(id);
-            if (cache) {
-                console.log('📦 Données chargées depuis le cache');
-                return Promise.resolve(cache);
-            }
         }
 
         console.log('🌐 Chargement depuis le serveur...');
@@ -35,17 +26,11 @@ var DataManager = {
                 }
             })
             .then(function(data) {
-                DataManager.setCache(id, data);
-                console.log('✅ Données chargées et mises en cache');
+                console.log('✅ Données chargées');
                 return data;
             })
             .catch(function(error) {
                 console.error('❌ Erreur:', error);
-                var cache = DataManager.getCacheForce(id);
-                if (cache) {
-                    console.log('⚠️ Utilisation du cache expiré (hors ligne)');
-                    return cache;
-                }
                 throw error;
             });
     },
@@ -81,175 +66,77 @@ var DataManager = {
     },
 
     // ============================================================
-    // CACHE
-    // ============================================================
-    getCache: function(id) {
-        try {
-            var cache = localStorage.getItem('cache_complet_' + id);
-            if (!cache) return null;
-            cache = JSON.parse(cache);
-            var age = (Date.now() - cache.timestamp) / 60000;
-            if (age > this.DUREE_CACHE) {
-                console.log('⏰ Cache expiré (', Math.round(age), 'min)');
-                return null;
-            }
-            return cache.data;
-        } catch(e) {
-            return null;
-        }
-    },
-
-    getCacheForce: function(id) {
-        try {
-            var cache = localStorage.getItem('cache_complet_' + id);
-            if (!cache) return null;
-            cache = JSON.parse(cache);
-            return cache.data;
-        } catch(e) {
-            return null;
-        }
-    },
-
-    setCache: function(id, data) {
-        try {
-            localStorage.setItem('cache_complet_' + id, JSON.stringify({
-                data: data,
-                timestamp: Date.now()
-            }));
-        } catch(e) {
-            console.warn('Impossible de sauvegarder le cache:', e);
-        }
-    },
-
-    rafraichir: function() {
-        return this.charger(true);
-    },
-
-    invalider: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (id) {
-            localStorage.removeItem('cache_complet_' + id);
-            console.log('🗑️ Cache vidé');
-        }
-    },
-
-    aUnCache: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return false;
-        var cache = localStorage.getItem('cache_complet_' + id);
-        return cache !== null;
-    },
-
-    // ============================================================
     // RÉCUPÉRER LES DONNÉES
     // ============================================================
     getChapitre: function(chapitreId) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return null;
-        var cache = this.getCacheForce(id);
-        if (cache && cache.chapitresComplets) {
-            return cache.chapitresComplets[chapitreId] || null;
-        }
+        // On ne peut pas avoir de cache, on retourne null
+        // Il faut appeler charger() d'abord
         return null;
     },
 
     getChapitres: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-        var cache = this.getCacheForce(id);
-        if (cache && cache.chapitres) {
-            return cache.chapitres;
-        }
+        // On ne peut pas avoir de cache, on retourne []
+        // Il faut appeler charger() d'abord
         return [];
     },
 
     getLivrets: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-        var cache = this.getCacheForce(id);
-        if (cache && cache.livrets) {
-            return cache.livrets;
-        }
+        // On ne peut pas avoir de cache, on retourne []
+        // Il faut appeler charger() d'abord
         return [];
     },
 
     getReponses: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return [];
-        var cache = this.getCacheForce(id);
-        if (cache && cache.reponses) {
-            return cache.reponses;
-        }
         return [];
     },
 
     getNiveau: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return 0;
-        var cache = this.getCacheForce(id);
-        if (cache && cache.niveau !== undefined) {
-            return cache.niveau;
-        }
         return 0;
     },
 
     getDescriptionNiveau: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-        var cache = this.getCacheForce(id);
-        if (cache && cache.description) {
-            return cache.description;
-        }
         return '';
     },
 
     getDateInscription: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return null;
-        var cache = this.getCacheForce(id);
-        if (cache && cache.dateInscription) {
-            return cache.dateInscription;
-        }
         return null;
     },
 
     getContact: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-        var cache = this.getCacheForce(id);
-        if (cache && cache.contact) {
-            return cache.contact;
-        }
         return '';
     },
 
     getMessagePerso: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-        var cache = this.getCacheForce(id);
-        if (cache && cache.messagePerso) {
-            return cache.messagePerso;
-        }
         return '';
     },
 
     getDisciplines: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-        var cache = this.getCacheForce(id);
-        if (cache && cache.disciplines) {
-            return cache.disciplines;
-        }
         return '';
     },
 
     getMdp: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return '';
-        var cache = this.getCacheForce(id);
-        if (cache && cache.mdp) {
-            return cache.mdp;
-        }
         return '';
     },
 
@@ -273,7 +160,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -298,7 +184,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -320,7 +205,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -341,7 +225,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -366,7 +249,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -387,7 +269,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
@@ -408,12 +289,27 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    DataManager.invalider();
                     return data;
                 } else {
                     throw new Error(data.message || 'Erreur');
                 }
             });
+    },
+
+    // ============================================================
+    // UTILITAIRES
+    // ============================================================
+    rafraichir: function() {
+        return this.charger();
+    },
+
+    invalider: function() {
+        console.log('🗑️ Cache vidé (plus utilisé)');
+        // On ne fait rien, il n'y a plus de cache
+    },
+
+    aUnCache: function() {
+        return false;
     }
 };
 
@@ -421,7 +317,7 @@ var DataManager = {
 // FONCTIONS GLOBALES
 // ============================================================
 
-function chargerDonnees(force) { return DataManager.charger(force); }
+function chargerDonnees() { return DataManager.charger(); }
 function getChapitresDuNiveau() { return DataManager.getChapitres(); }
 function getReponsesEtudiant() { return DataManager.getReponses(); }
 function getNiveauEtudiant() { return DataManager.getNiveau(); }
