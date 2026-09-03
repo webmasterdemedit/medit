@@ -1234,12 +1234,16 @@
             }
           }
 
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.chapitreId] = r;
-            });
-          }
+         toutesLesReponses = {};
+if (data.reponses) {
+  data.reponses.forEach(function(r) {
+    if (!toutesLesReponses[r.chapitreId]) {
+      toutesLesReponses[r.chapitreId] = [];
+    }
+    toutesLesReponses[r.chapitreId].push(r);
+  });
+}
+console.log('🔍 Réponses pour ce chapitre :', toutesLesReponses['post_1788175117477']);
 
           afficherLivret();
         })
