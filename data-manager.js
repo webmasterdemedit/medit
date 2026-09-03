@@ -1,12 +1,9 @@
 // ============================================================
-// data-manager.js - SANS CACHE (toujours frais)
+// data-manager.js - OPTIMISÉ (1 seule requête)
 // ============================================================
 
 var DataManager = {
 
-    // ============================================================
-    // CHARGER - Toujours depuis le serveur
-    // ============================================================
     charger: function() {
         var id = localStorage.getItem('etudiant_id');
         if (!id) {
@@ -14,24 +11,28 @@ var DataManager = {
         }
 
         console.log('🌐 Chargement depuis le serveur...');
+        
+        // 🔥 UNE SEULE REQUÊTE qui récupère TOUT
         var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
 
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    return DataManager.ajouterLivrets(data);
+                    // On s'assure que les données sont complètes
+                    data.livrets = data.livrets || [];
+                    data.chapitres = data.chapitres || [];
+                    data.reponses = data.reponses || [];
+                    data.niveau = data.niveau || 0;
+                    
+                    console.log('✅ Données chargées en 1 requête');
+                    console.log('📚 ' + data.livrets.length + ' livrets');
+                    console.log('📖 ' + data.chapitres.length + ' chapitres');
+                    console.log('✏️ ' + data.reponses.length + ' réponses');
+                    return data;
                 } else {
                     throw new Error(data.message || 'Erreur de chargement');
                 }
-            })
-            .then(function(data) {
-                // === RÉCUPÉRER TOUS LES CHAPITRES (sans filtre niveau) ===
-                return DataManager.ajouterTousChapitres(data);
-            })
-            .then(function(data) {
-                console.log('✅ Données chargées');
-                return data;
             })
             .catch(function(error) {
                 console.error('❌ Erreur:', error);
@@ -40,134 +41,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // AJOUTER LES LIVRETS
-    // ============================================================
-    ajouterLivrets: function(data) {
-        if (data.livrets && data.livrets.length > 0) {
-            console.log('📚 ' + data.livrets.length + ' livrets déjà présents');
-            return Promise.resolve(data);
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=getLivrets';
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(result) {
-                if (result.success && result.livrets) {
-                    data.livrets = result.livrets;
-                    console.log('📚 ' + data.livrets.length + ' livrets chargés');
-                } else {
-                    data.livrets = [];
-                    console.log('📚 Aucun livret trouvé');
-                }
-                return data;
-            })
-            .catch(function(err) {
-                console.warn('⚠️ Erreur chargement livrets:', err);
-                data.livrets = [];
-                return data;
-            });
-    },
-
-    // ============================================================
-    // AJOUTER TOUS LES CHAPITRES (sans filtre niveau)
-    // ============================================================
-    ajouterTousChapitres: function(data) {
-        var url = CONFIG.SCRIPT_URL + '?action=getChapitresTous';
-
-        console.log('📡 Récupération de tous les chapitres...');
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(result) {
-                if (result.success && result.chapitres) {
-                    // On garde les chapitres filtrés dans data.chapitres (pour la logique existante)
-                    // Et on ajoute data.tousLesChapitres pour les livrets verrouillés
-                    data.tousLesChapitres = result.chapitres;
-                    console.log('📚 ' + result.chapitres.length + ' chapitres (tous niveaux) chargés');
-                } else {
-                    data.tousLesChapitres = [];
-                    console.log('📚 Aucun chapitre trouvé');
-                }
-                return data;
-            })
-            .catch(function(err) {
-                console.warn('⚠️ Erreur chargement tous les chapitres:', err);
-                data.tousLesChapitres = [];
-                return data;
-            });
-    },
-
-    // ============================================================
-    // RÉCUPÉRER LES DONNÉES
-    // ============================================================
-    getChapitre: function(chapitreId) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return null;
-        return null;
-    },
-
-    getChapitres: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return [];
-        return [];
-    },
-
-    getLivrets: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return [];
-        return [];
-    },
-
-    getReponses: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return [];
-        return [];
-    },
-
-    getNiveau: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return 0;
-        return 0;
-    },
-
-    getDescriptionNiveau: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return '';
-        return '';
-    },
-
-    getDateInscription: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return null;
-        return null;
-    },
-
-    getContact: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return '';
-        return '';
-    },
-
-    getMessagePerso: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return '';
-        return '';
-    },
-
-    getDisciplines: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return '';
-        return '';
-    },
-
-    getMdp: function() {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return '';
-        return '';
-    },
-
-    // ============================================================
-    // SAUVEGARDES
+    // SAUVEGARDES (inchangées)
     // ============================================================
     sauvegarderOrdre: function(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
@@ -330,7 +204,7 @@ var DataManager = {
     },
 
     invalider: function() {
-        console.log('🗑️ Cache vidé (plus utilisé)');
+        console.log('🗑️ Cache vidé');
     },
 
     aUnCache: function() {
@@ -343,17 +217,6 @@ var DataManager = {
 // ============================================================
 
 function chargerDonnees() { return DataManager.charger(); }
-function getChapitresDuNiveau() { return DataManager.getChapitres(); }
-function getReponsesEtudiant() { return DataManager.getReponses(); }
-function getNiveauEtudiant() { return DataManager.getNiveau(); }
-function getDescriptionNiveau() { return DataManager.getDescriptionNiveau(); }
-function getDateInscription() { return DataManager.getDateInscription(); }
-function getContact() { return DataManager.getContact(); }
-function getMessagePerso() { return DataManager.getMessagePerso(); }
-function getDisciplines() { return DataManager.getDisciplines(); }
-function getMdp() { return DataManager.getMdp(); }
-function getLivrets() { return DataManager.getLivrets(); }
-
 function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
     return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
 }
@@ -374,10 +237,4 @@ function sauvegarderLecture(chapitreId, titre) {
 }
 function marquerRevise(chapitreId, revise) {
     return DataManager.marquerRevise(chapitreId, revise);
-}
-function getAnnotations(chapitreId) {
-    return DataManager.getAnnotations(chapitreId);
-}
-function getReviseStatus(chapitreId) {
-    return DataManager.getReviseStatus(chapitreId);
 }
