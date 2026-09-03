@@ -10,8 +10,6 @@
       </div>
     </div>
     <nav class="header-nav" id="headerNav">
-      <!-- ADMIN : visible uniquement si admin -->
-      <a href="/medit/admin.html" class="header-link" id="adminLink" style="display:none;">Admin</a>
       <a href="/medit/mes-livrets.html" class="header-link">Mes livrets</a>
       <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
       <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
@@ -29,27 +27,4 @@ window.deconnecter = function() {
     window.location.href = '/medit/index.html';
   }
 };
-
-// === AFFICHER LE LIEN ADMIN SI L'UTILISATEUR EST ADMIN ===
-(function() {
-  var id = localStorage.getItem('etudiant_id');
-  var adminLink = document.getElementById('adminLink');
-  if (adminLink) {
-    if (id === 'admin') {
-      adminLink.style.display = 'inline-block';
-    } else {
-      adminLink.style.display = 'none';
-    }
-  }
-})();
-
-// Auto-injection
-(function() {
-  if (document.querySelector('.site-header')) {
-    return;
-  }
-  var headerHTML = document.currentScript.previousElementSibling.outerHTML;
-  document.body.innerHTML = headerHTML + document.body.innerHTML;
-  document.currentScript.remove();
-})();
 </script>
