@@ -35,7 +35,7 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // === NOUVEAU : Ajouter la feuille "Livrets" si elle existe ===
+                    // === AJOUTER LES LIVRETS DEPUIS LA FEUILLE DÉDIÉE ===
                     return DataManager.ajouterLivrets(data);
                 } else {
                     throw new Error(data.message || 'Erreur de chargement');
@@ -73,7 +73,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // === NOUVEAU : Ajouter la feuille "Livrets" si elle existe ===
                     return DataManager.ajouterLivrets(data);
                 } else {
                     throw new Error(data.message || 'Erreur de chargement');
@@ -90,41 +89,41 @@ var DataManager = {
     },
 
     // ============================================================
-    // NOUVEAU : AJOUTER LES LIVRETS DEPUIS LA FEUILLE DÉDIÉE
+    // AJOUTER LES LIVRETS - CORRIGÉ
     // ============================================================
     ajouterLivrets: function(data) {
-        // Si data contient déjà des livrets (feuille "Livrets"), on les garde
-        if (data.livrets) {
+        // Si data contient déjà des livrets, on les garde
+        if (data.livrets && data.livrets.length > 0) {
+            console.log('📚 ' + data.livrets.length + ' livrets déjà présents');
             return Promise.resolve(data);
         }
 
         // Sinon, on va chercher la feuille "Livrets" séparément
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            data.livrets = [];
-            return Promise.resolve(data);
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=getLivrets&nom=' + encodeURIComponent(id);
+        // ⚠️ PAS DE PARAMÈTRE nom, l'action getLivrets n'en a pas besoin !
+        var url = CONFIG.SCRIPT_URL + '?action=getLivrets';
 
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(result) {
                 if (result.success && result.livrets) {
                     data.livrets = result.livrets;
-                    console.log('📚 ' + data.livrets.length + ' livrets chargés');
+                    console.log('📚 ' + data.livrets.length + ' livrets chargés depuis la feuille Livrets');
                 } else {
                     data.livrets = [];
-                    console.log('📚 Aucune feuille "Livrets" trouvée');
+                    console.log('📚 Aucune feuille "Livrets" trouvée ou aucune donnée');
                 }
                 return data;
             })
-            .catch(function() {
+            .catch(function(err) {
+                console.warn('⚠️ Erreur chargement livrets:', err);
                 data.livrets = [];
                 return data;
             });
     },
 
+    // ============================================================
+    // CACHE
+    // ============================================================
     getCache: function(id) {
         try {
             var cache = localStorage.getItem('cache_complet_' + id);
@@ -209,7 +208,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // NOUVEAU : RÉCUPÉRER LES LIVRETS
+    // RÉCUPÉRER LES LIVRETS
     // ============================================================
     getLivrets: function() {
         var id = localStorage.getItem('etudiant_id');
@@ -461,100 +460,6 @@ var DataManager = {
     },
 
     // ============================================================
-    // GESTION DES CHAPITRES
-    // ============================================================
-
-    ajouterChapitre: function(titre, niveau, categorie, contenu, question) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
-
-        var elements = contenu.split(' | ');
-        
-        var params = {
-            titre: titre,
-            niveau: niveau,
-            categorie: categorie,
-            question: question || ''
-        };
-
-        for (var i = 0; i < elements.length; i++) {
-            var key = 'col' + (i + 1);
-            params[key] = elements[i] || '';
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=addChapitre' +
-            '&titre=' + encodeURIComponent(params.titre) +
-            '&niveau=' + encodeURIComponent(params.niveau) +
-            '&categorie=' + encodeURIComponent(params.categorie) +
-            '&question=' + encodeURIComponent(params.question);
-
-        for (var i = 0; i < elements.length; i++) {
-            var key = 'col' + (i + 1);
-            url += '&' + key + '=' + encodeURIComponent(params[key] || '');
-        }
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la création');
-                }
-            });
-    },
-
-    modifierChapitre: function(id, titre, niveau, categorie, contenu, question, statut) {
-        var userId = localStorage.getItem('etudiant_id');
-        if (!userId) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=updateChapitre' +
-            '&id=' + encodeURIComponent(id) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&niveau=' + encodeURIComponent(niveau) +
-            '&categorie=' + encodeURIComponent(categorie) +
-            '&contenu=' + encodeURIComponent(contenu) +
-            '&question=' + encodeURIComponent(question) +
-            '&statut=' + encodeURIComponent(statut);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la modification');
-                }
-            });
-    },
-
-    supprimerChapitre: function(id) {
-        var userId = localStorage.getItem('etudiant_id');
-        if (!userId) {
-            return Promise.reject('Non connecté');
-        }
-
-        var url = CONFIG.SCRIPT_URL + '?action=deleteChapitre&id=' + encodeURIComponent(id);
-
-        return fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    DataManager.invalider();
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur lors de la suppression');
-                }
-            });
-    },
-
-    // ============================================================
     // SAUVEGARDES
     // ============================================================
 
@@ -653,6 +558,100 @@ var DataManager = {
                     throw new Error(data.message || 'Erreur lors de la sauvegarde');
                 }
             });
+    },
+
+    // ============================================================
+    // GESTION DES CHAPITRES (ADMIN)
+    // ============================================================
+
+    ajouterChapitre: function(titre, niveau, categorie, contenu, question) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
+
+        var elements = contenu.split(' | ');
+        
+        var params = {
+            titre: titre,
+            niveau: niveau,
+            categorie: categorie,
+            question: question || ''
+        };
+
+        for (var i = 0; i < elements.length; i++) {
+            var key = 'col' + (i + 1);
+            params[key] = elements[i] || '';
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=addChapitre' +
+            '&titre=' + encodeURIComponent(params.titre) +
+            '&niveau=' + encodeURIComponent(params.niveau) +
+            '&categorie=' + encodeURIComponent(params.categorie) +
+            '&question=' + encodeURIComponent(params.question);
+
+        for (var i = 0; i < elements.length; i++) {
+            var key = 'col' + (i + 1);
+            url += '&' + key + '=' + encodeURIComponent(params[key] || '');
+        }
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la création');
+                }
+            });
+    },
+
+    modifierChapitre: function(id, titre, niveau, categorie, contenu, question, statut) {
+        var userId = localStorage.getItem('etudiant_id');
+        if (!userId) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=updateChapitre' +
+            '&id=' + encodeURIComponent(id) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&niveau=' + encodeURIComponent(niveau) +
+            '&categorie=' + encodeURIComponent(categorie) +
+            '&contenu=' + encodeURIComponent(contenu) +
+            '&question=' + encodeURIComponent(question) +
+            '&statut=' + encodeURIComponent(statut);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la modification');
+                }
+            });
+    },
+
+    supprimerChapitre: function(id) {
+        var userId = localStorage.getItem('etudiant_id');
+        if (!userId) {
+            return Promise.reject('Non connecté');
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=deleteChapitre&id=' + encodeURIComponent(id);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    DataManager.invalider();
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur lors de la suppression');
+                }
+            });
     }
 };
 
@@ -699,10 +698,6 @@ function getDisciplines() {
 function getMdp() {
     return DataManager.getMdp();
 }
-
-// ============================================================
-// NOUVELLES FONCTIONS UTILITAIRES POUR LES LIVRETS
-// ============================================================
 
 function getLivrets() {
     return DataManager.getLivrets();
