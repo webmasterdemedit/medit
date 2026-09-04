@@ -30,6 +30,7 @@ var DataManager = {
                     data.description = data.description || '';
                     data.mdp = data.mdp || '';
                     data.contact = data.contact || '';
+                    data.auteur = data.auteur || '';
                     data.dateInscription = data.dateInscription || '';
                     data.messagePerso = data.messagePerso || '';
                     data.disciplines = data.disciplines || '';
