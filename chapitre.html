@@ -1326,6 +1326,39 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         .catch(function(e) { console.error('Erreur vérification validation:', e); });
     }
   </script>
+<script>
+// ============================================================
+// DÉTECTION AUTO DE L'ARABE SUR TOUTE LA PAGE
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // Fonction pour détecter les caractères arabes
+    function detectArabic(text) {
+        return /[\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]/.test(text);
+    }
 
+    // Parcourir tous les éléments texte de la page
+    var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, div, span, li, blockquote, a, button, label, td, th, strong, em, b, i, small');
+
+    elements.forEach(function(el) {
+        // Ignorer les éléments qui contiennent déjà un attribut lang
+        if (el.hasAttribute('lang')) return;
+        
+        // Ignorer les éléments vides ou avec seulement des espaces
+        var text = el.textContent || '';
+        if (text.trim() === '') return;
+        
+        // Vérifier si le texte contient des caractères arabes
+        if (detectArabic(text)) {
+            el.setAttribute('lang', 'ar');
+            // Si l'élément a des enfants, ajouter aussi lang="ar" sur les enfants texte
+            el.querySelectorAll('*').forEach(function(child) {
+                if (!child.hasAttribute('lang') && detectArabic(child.textContent || '')) {
+                    child.setAttribute('lang', 'ar');
+                }
+            });
+        }
+    });
+});
+</script>
 </body>
 </html>
