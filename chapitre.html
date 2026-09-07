@@ -523,10 +523,29 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         else if (slide.type === 'carte') html += ' carte-content';
         html += '" id="slideContent-' + index + '">';
 
-        if (slide.type === 'slide') {
-          var paragraphs = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
-          html += paragraphs.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
-        }
+       if (slide.type === 'slide') {
+    var lignes = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
+    
+    // Vérifier si c'est un tableau (au moins 2 lignes avec |)
+    var lignesAvecBarre = lignes.filter(function(l) { return l.includes('|'); });
+    
+    if (lignesAvecBarre.length >= 2) {
+        // C'est un tableau ! Construire la table
+        html += '<table class="tableau-slide">';
+        lignes.forEach(function(l) {
+            var cellules = l.split('|').map(function(c) { return c.trim(); });
+            html += '<tr>';
+            cellules.forEach(function(c) {
+                html += '<td>' + c + '</td>';
+            });
+            html += '</tr>';
+        });
+        html += '</table>';
+    } else {
+        // Sinon, afficher comme des paragraphes normaux
+        html += lignes.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
+    }
+}
 
         if (slide.type === 'quiz') {
           html += afficherQuiz(slide);
