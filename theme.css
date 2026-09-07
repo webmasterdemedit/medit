@@ -1243,51 +1243,34 @@ input:focus, textarea:focus, select:focus {
 }
 
 /* ============================================================
-   ARABE - DÉTECTION ET STYLE AUTO (TOUT LE SITE)
+   APPLICATION AUTO DE JANNA LT BOLD À TOUT TEXTE ARABE
+   Détection par attributs ajoutés automatiquement
    ============================================================ */
 
-/* 1. Force la police Janna sur tout élément contenant du texte arabe */
+/* Tout élément avec lang="ar" ou dir="rtl" (ajoutés par JS) */
 [lang="ar"],
 [dir="rtl"],
-.arabic-text,
-.verset-auto {
-    font-family: var(--font-arabic) !important;
+[lang="ar"] *,
+[dir="rtl"] * {
+    font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
     direction: rtl !important;
-    text-align: right !important;
     unicode-bidi: embed !important;
 }
 
-/* 2. Gestion des éléments qui MÉLANGENT arabe + français */
-[lang="ar"] *,
-[dir="rtl"] * {
-    font-family: inherit !important;
-}
-
-/* 3. Exception : les éléments qui doivent rester en français */
-[lang="ar"] .traduction-auto,
-[lang="ar"] .reference-auto,
-[lang="ar"] .no-arabic {
-    font-family: var(--font-serif) !important;
-    direction: ltr !important;
-    text-align: left !important;
-}
-
-/* 4. Pour les paragraphes qui contiennent de l'arabe mêlé à du français */
-p:has([lang="ar"]),
-div:has([lang="ar"]) {
-    direction: ltr;
-}
-
-/* 5. Forcer l'alignement à droite pour les blocs de verset */
-.verset-blok-auto {
+/* Pour les paragraphes et titres contenant de l'arabe */
+[lang="ar"] p,
+[dir="rtl"] p,
+[lang="ar"] h1, [lang="ar"] h2, [lang="ar"] h3,
+[dir="rtl"] h1, [dir="rtl"] h2, [dir="rtl"] h3 {
+    font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
     direction: rtl !important;
 }
 
-/* 6. Correction pour les guillemets et parenthèses en arabe */
-[lang="ar"] .traduction-auto,
-[lang="ar"] .reference-auto {
-    direction: ltr !important;
-    text-align: left !important;
+/* Pour les spans et divs qui contiennent de l'arabe */
+span[lang="ar"],
+span[dir="rtl"],
+div[lang="ar"],
+div[dir="rtl"] {
+    direction: rtl !important;
+    unicode-bidi: embed !important;
 }
-
-
