@@ -1334,13 +1334,23 @@ setTimeout(function() {
     }
 
 function detecterArabe() {
-    var elements = document.querySelectorAll('body *');
+    var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, td, th, label, button, a, div.quiz-question, div.open-question-text, span.retenir-mot, div.carte-face, div.slide-content p');
+    
     elements.forEach(function(el) {
         var texte = el.textContent || '';
         if (texte.trim() === '') return;
+        
+        // Détecter l'arabe
         if (/[\u0600-\u06FF]/.test(texte)) {
-            if (!el.hasAttribute('lang')) el.setAttribute('lang', 'ar');
-            if (!el.hasAttribute('dir')) el.setAttribute('dir', 'rtl');
+            // Ajouter les attributs
+            el.setAttribute('lang', 'ar');
+            el.setAttribute('dir', 'rtl');
+            
+            // FORCER la police en style inline (priorité maximale)
+            el.style.fontFamily = "'Janna LT Bold', 'Traditional Arabic', serif";
+            el.style.direction = 'rtl';
+            
+            console.log('✅ Arabe détecté sur:', el.tagName, '| Texte:', texte.substring(0, 30) + '...');
         }
     });
 }
