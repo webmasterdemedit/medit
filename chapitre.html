@@ -1325,6 +1325,24 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         })
         .catch(function(e) { console.error('Erreur vérification validation:', e); });
     }
-
+<script>
+function detecterArabe() {
+    var elements = document.querySelectorAll('body *');
+    elements.forEach(function(el) {
+        var texte = el.textContent || '';
+        if (texte.trim() === '') return;
+        if (/[\u0600-\u06FF]/.test(texte)) {
+            if (!el.hasAttribute('lang')) el.setAttribute('lang', 'ar');
+            if (!el.hasAttribute('dir')) el.setAttribute('dir', 'rtl');
+        }
+    });
+}
+document.addEventListener('DOMContentLoaded', function() {
+    detecterArabe();
+});
+window.detecterArabeSurNouveauxElements = function() {
+    detecterArabe();
+};
+</script>
 </body>
 </html>
