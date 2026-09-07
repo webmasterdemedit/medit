@@ -576,7 +576,14 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       while (tempDiv.firstChild) {
         container.insertBefore(tempDiv.firstChild, controls);
       }
-
+// ✅ Détecter l'arabe après l'injection des slides
+setTimeout(function() {
+    if (typeof detecterArabe === 'function') {
+        detecterArabe();
+        console.log('🔄 Détection arabe relancée après injection des slides');
+    }
+}, 50);
+    
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
