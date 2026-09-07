@@ -523,28 +523,52 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         else if (slide.type === 'carte') html += ' carte-content';
         html += '" id="slideContent-' + index + '">';
 
-       if (slide.type === 'slide') {
+  if (slide.type === 'slide') {
     var lignes = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
     
-    // Vérifier si c'est un tableau (au moins 2 lignes avec |)
-    var lignesAvecBarre = lignes.filter(function(l) { return l.includes('|'); });
+    var resultatHtml = '';
+    var lignesTableau = [];
     
-    if (lignesAvecBarre.length >= 2) {
-        // C'est un tableau ! Construire la table
-        html += '<table class="tableau-slide">';
-        lignes.forEach(function(l) {
-            var cellules = l.split('|').map(function(c) { return c.trim(); });
-            html += '<tr>';
+    lignes.forEach(function(l) {
+        if (l.includes('|')) {
+            // Si la ligne a |, on la garde pour le tableau
+            lignesTableau.push(l);
+        } else {
+            // Si la ligne n'a pas |, on affiche d'abord le tableau précédent (s'il existe)
+            if (lignesTableau.length > 0) {
+                // Construire le tableau
+                resultatHtml += '<table class="tableau-slide">';
+                lignesTableau.forEach(function(ligneTableau) {
+                    var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
+                    resultatHtml += '<tr>';
+                    cellules.forEach(function(c) {
+                        resultatHtml += '<td>' + c + '</td>';
+                    });
+                    resultatHtml += '</tr>';
+                });
+                resultatHtml += '</table>';
+                lignesTableau = []; // Vider le tableau
+            }
+            // Puis afficher le paragraphe normal
+            resultatHtml += '<p>' + l.trim() + '</p>';
+        }
+    });
+    
+    // Afficher le dernier tableau s'il reste des lignes
+    if (lignesTableau.length > 0) {
+        resultatHtml += '<table class="tableau-slide">';
+        lignesTableau.forEach(function(ligneTableau) {
+            var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
+            resultatHtml += '<tr>';
             cellules.forEach(function(c) {
-                html += '<td>' + c + '</td>';
+                resultatHtml += '<td>' + c + '</td>';
             });
-            html += '</tr>';
+            resultatHtml += '</tr>';
         });
-        html += '</table>';
-    } else {
-        // Sinon, afficher comme des paragraphes normaux
-        html += lignes.map(function(p) { return '<p>' + p.trim() + '</p>'; }).join('');
+        resultatHtml += '</table>';
     }
+    
+    html += resultatHtml;
 }
 
         if (slide.type === 'quiz') {
