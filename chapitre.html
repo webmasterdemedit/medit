@@ -542,15 +542,15 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
                     var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
                     resultatHtml += '<tr>';
                     cellules.forEach(function(c) {
-                        resultatHtml += '<td>' + c + '</td>';
+                        resultatHtml += '<td>' + formaterTexte(c) + '</td>';
                     });
                     resultatHtml += '</tr>';
                 });
                 resultatHtml += '</table>';
                 lignesTableau = []; // Vider le tableau
             }
-            // Puis afficher le paragraphe normal
-            resultatHtml += '<p>' + l.trim() + '</p>';
+            // Puis afficher le paragraphe normal (avec formatage)
+            resultatHtml += '<p>' + formaterTexte(l.trim()) + '</p>';
         }
     });
     
@@ -561,7 +561,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
             var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
             resultatHtml += '<tr>';
             cellules.forEach(function(c) {
-                resultatHtml += '<td>' + c + '</td>';
+                resultatHtml += '<td>' + formaterTexte(c) + '</td>';
             });
             resultatHtml += '</tr>';
         });
@@ -1403,6 +1403,28 @@ document.addEventListener('DOMContentLoaded', function() {
 window.detecterArabeSurNouveauxElements = function() {
     detecterArabe();
 };
+    function formaterTexte(texte) {
+    // 1. Remplacer les paires de "" par « » 
+    var i = 0;
+    texte = texte.replace(/""/g, function(match) {
+        i++;
+        return i % 2 === 1 ? '«' : '»';
+    });
+    
+    // 2. Mettre en italique le texte entre « et »
+    texte = texte.replace(/«([^»]*)»/g, '<em>« $1 »</em>');
+    
+    // 3. Gras avec **
+    texte = texte.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+    
+    // 4. Italique avec *
+    texte = texte.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+    
+    // 5. Gras + Italique avec ***
+    texte = texte.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+    
+    return texte;
+}
 </script>
 </body>
 </html>
