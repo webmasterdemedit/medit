@@ -1242,4 +1242,52 @@ input:focus, textarea:focus, select:focus {
     font-display: swap;
 }
 
+/* ============================================================
+   ARABE - DÉTECTION ET STYLE AUTO (TOUT LE SITE)
+   ============================================================ */
+
+/* 1. Force la police Janna sur tout élément contenant du texte arabe */
+[lang="ar"],
+[dir="rtl"],
+.arabic-text,
+.verset-auto {
+    font-family: var(--font-arabic) !important;
+    direction: rtl !important;
+    text-align: right !important;
+    unicode-bidi: embed !important;
+}
+
+/* 2. Gestion des éléments qui MÉLANGENT arabe + français */
+[lang="ar"] *,
+[dir="rtl"] * {
+    font-family: inherit !important;
+}
+
+/* 3. Exception : les éléments qui doivent rester en français */
+[lang="ar"] .traduction-auto,
+[lang="ar"] .reference-auto,
+[lang="ar"] .no-arabic {
+    font-family: var(--font-serif) !important;
+    direction: ltr !important;
+    text-align: left !important;
+}
+
+/* 4. Pour les paragraphes qui contiennent de l'arabe mêlé à du français */
+p:has([lang="ar"]),
+div:has([lang="ar"]) {
+    direction: ltr;
+}
+
+/* 5. Forcer l'alignement à droite pour les blocs de verset */
+.verset-blok-auto {
+    direction: rtl !important;
+}
+
+/* 6. Correction pour les guillemets et parenthèses en arabe */
+[lang="ar"] .traduction-auto,
+[lang="ar"] .reference-auto {
+    direction: ltr !important;
+    text-align: left !important;
+}
+
 
