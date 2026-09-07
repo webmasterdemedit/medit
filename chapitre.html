@@ -1325,42 +1325,6 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         })
         .catch(function(e) { console.error('Erreur vérification validation:', e); });
     }
-  </script>
-// Détection automatique de l'arabe et application de la police
-function detecterArabe() {
-    // Parcourir tous les éléments du body
-    var elements = document.querySelectorAll('body *');
-    
-    elements.forEach(function(el) {
-        // Ignorer les éléments vides ou qui contiennent uniquement des espaces
-        var texte = el.textContent || '';
-        if (texte.trim() === '') return;
-        
-        // Vérifier si le texte contient des caractères arabes (Unicode : \u0600-\u06FF)
-        var contientArabe = /[\u0600-\u06FF]/.test(texte);
-        
-        if (contientArabe) {
-            // Si l'élément a déjà un attribut lang, on le garde
-            if (!el.hasAttribute('lang')) {
-                el.setAttribute('lang', 'ar');
-            }
-            // Si l'élément n'a pas de direction, on ajoute rtl
-            if (!el.hasAttribute('dir')) {
-                el.setAttribute('dir', 'rtl');
-            }
-        }
-    });
-}
 
-// Exécuter la détection au chargement
-document.addEventListener('DOMContentLoaded', function() {
-    detecterArabe();
-});
-
-// Pour les contenus chargés dynamiquement (ex: slides)
-function detecterArabeSurNouveauxElements() {
-    // On peut relancer la détection après chaque mise à jour du DOM
-    detecterArabe();
-}
 </body>
 </html>
