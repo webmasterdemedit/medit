@@ -642,28 +642,41 @@
     // ============================================================
     // IMPRESSION
     // ============================================================
-    function imprimerArticle(articleId, titre) {
-  // Chercher l'article dans les données déjà chargées
-  var post = null;
-  for (var i = 0; i < postsData.length; i++) {
-    if (postsData[i].id === articleId) {
-      post = postsData[i];
-      break;
+    function imprimerChapitre(chapitreId, titre) {
+  // Chercher le chapitre dans chapitresData (déjà chargé)
+  var chapitre = null;
+  if (typeof chapitresData !== 'undefined' && chapitresData.length > 0) {
+    for (var i = 0; i < chapitresData.length; i++) {
+      if (chapitresData[i].id === chapitreId) {
+        chapitre = chapitresData[i];
+        break;
+      }
     }
   }
   
-  if (!post) {
-    alert('Article "' + titre + '" non trouvé.');
+  // Fallback: chercher dans DataManager
+  if (!chapitre) {
+    var tousLesChapitres = DataManager.getTousLesChapitres();
+    for (var i = 0; i < tousLesChapitres.length; i++) {
+      if (tousLesChapitres[i].id === chapitreId) {
+        chapitre = tousLesChapitres[i];
+        break;
+      }
+    }
+  }
+  
+  if (!chapitre) {
+    alert('Chapitre "' + titre + '" non trouvé.');
     return;
   }
   
-  var contenu = post.contenu || '';
+  var contenu = chapitre.contenu || '';
   if (!contenu) {
-    alert('Cet article ne contient pas de texte à imprimer.');
+    alert('Ce chapitre ne contient pas de texte à imprimer.');
     return;
   }
   
-  genererImpression(post, contenu);
+  genererImpression(chapitre, contenu);
 }
 
     function parserQuizsPourImpression(quizTexte) {
