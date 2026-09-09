@@ -642,24 +642,29 @@
     // ============================================================
     // IMPRESSION
     // ============================================================
-    function imprimerChapitre(chapitreId, titre) {
-      var url = 'https://script.google.com/macros/s/AKfycbxkB3GmKI8olDeB4-12FHHzmpe1cQPl9FroBx0yBRDBeI0UY5nITpEnSLfK_0qfo6p1/exec';
-      
-      fetch(url + '?action=getChapitre&id=' + encodeURIComponent(chapitreId))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (!data.success || !data.chapitre) {
-            alert('Impossible de charger le contenu.');
-            return;
-          }
-          var chapitre = data.chapitre;
-          var contenu = chapitre.contenu || '';
-          genererImpression(chapitre, contenu);
-        })
-        .catch(function(error) {
-          alert('Erreur : ' + error.message);
-        });
+    function imprimerArticle(articleId, titre) {
+  // Chercher l'article dans les données déjà chargées
+  var post = null;
+  for (var i = 0; i < postsData.length; i++) {
+    if (postsData[i].id === articleId) {
+      post = postsData[i];
+      break;
     }
+  }
+  
+  if (!post) {
+    alert('Article "' + titre + '" non trouvé.');
+    return;
+  }
+  
+  var contenu = post.contenu || '';
+  if (!contenu) {
+    alert('Cet article ne contient pas de texte à imprimer.');
+    return;
+  }
+  
+  genererImpression(post, contenu);
+}
 
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
