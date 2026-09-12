@@ -990,6 +990,44 @@
               font-weight: bold;
               font-size: 9pt;
             }
+                        /* ===== RELIER ===== */
+            .exo-relier {
+              margin-top: 8px;
+            }
+            .exo-relier .consigne-relier {
+              font-weight: bold;
+              margin-bottom: 6px;
+            }
+            .exo-relier .relier-grid {
+              display: flex;
+              justify-content: space-between;
+              gap: 40px;
+            }
+            .exo-relier .relier-col {
+              flex: 1;
+            }
+            .exo-relier .relier-item {
+              display: flex;
+              align-items: center;
+              gap: 8px;
+              padding: 4px 0;
+              border-bottom: 1px dotted #999;
+            }
+            .exo-relier .relier-col.gauche .relier-item {
+              justify-content: flex-end;
+            }
+            .exo-relier .relier-col.droite .relier-item {
+              justify-content: flex-start;
+            }
+            .exo-relier .point {
+              width: 10px;
+              height: 10px;
+              border: 1.5px solid #000;
+              border-radius: 50%;
+              background: white;
+              flex-shrink: 0;
+              box-sizing: border-box;
+            }
             .pied-page {
               text-align: center;
               font-size: 9pt;
@@ -1100,28 +1138,39 @@
         }
       }
 
-      if (relier.trim() !== '') {
+            if (relier.trim() !== '') {
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
         if (relierData) {
           if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
             printHtml += `<div class="titre-exo">Exercices</div>`;
           }
-          printHtml += `<div style="margin-top:8px;">`;
-          printHtml += `<div style="font-weight:bold;margin-bottom:6px;">${relierData.consigne}</div>`;
-          printHtml += `<div style="display:flex;justify-content:space-between;gap:40px;">`;
-          printHtml += `<div style="flex:1;">`;
+          printHtml += `<div class="exo-relier">`;
+          printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
+          printHtml += `<div class="relier-grid">`;
+
+          // Colonne gauche
+          printHtml += `<div class="relier-col gauche">`;
           for (var rg = 0; rg < relierData.paires.length; rg++) {
-            printHtml += `<div style="padding:4px 0;border-bottom:1px dotted #999;">${relierData.paires[rg].gauche}</div>`;
+            printHtml += `<div class="relier-item">`;
+            printHtml += `<span>${relierData.paires[rg].gauche}</span>`;
+            printHtml += `<span class="point"></span>`;
+            printHtml += `</div>`;
           }
           printHtml += `</div>`;
-          printHtml += `<div style="flex:1;">`;
+
+          // Colonne droite (mélangée)
+          printHtml += `<div class="relier-col droite">`;
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
-            printHtml += `<div style="padding:4px 0;border-bottom:1px dotted #999;">${relierData.droitesMelangees[rd]}</div>`;
+            printHtml += `<div class="relier-item">`;
+            printHtml += `<span class="point"></span>`;
+            printHtml += `<span>${relierData.droitesMelangees[rd]}</span>`;
+            printHtml += `</div>`;
           }
           printHtml += `</div>`;
-          printHtml += `</div>`;
-          printHtml += `</div>`;
+
+          printHtml += `</div>`; // relier-grid
+          printHtml += `</div>`; // exo-relier
         }
       }
 
