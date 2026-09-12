@@ -119,7 +119,25 @@
 
     .slide-wrapper { display: none !important; }
     .slide-wrapper.active { display: block !important; }
-    .slide-content { position: relative !important; }
+    .slide-content {
+      position: relative !important;
+      padding-top: 12px !important;
+      padding-bottom: 70px !important;
+    }
+
+    /* Bouton annotation en bas */
+    .note-toggle {
+      position: absolute !important;
+      bottom: 12px !important;
+      right: 18px !important;
+      top: auto !important;
+    }
+    .note-area {
+      position: relative !important;
+      bottom: auto !important;
+      margin-top: 8px !important;
+      margin-bottom: 12px !important;
+    }
 
     /* ============================================================
        RELIER - EXERCICE (points + traits)
@@ -147,8 +165,8 @@
       z-index: 1;
     }
     .relier-svg line {
-       stroke: #111 !important;
-  stroke-width: 2 !important;
+      stroke: var(--text, #111);
+      stroke-width: 1.5;
       stroke-linecap: round;
     }
     .relier-svg line.erreur {
@@ -831,15 +849,6 @@
         }
       });
 
-      var scrollTimeout = null;
-      container.addEventListener('wheel', function(e) {
-        e.preventDefault();
-        if (scrollTimeout) return;
-        scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
-        if (e.deltaY > 0) slideSuivante();
-        else slidePrecedente();
-      }, { passive: false });
-
       document.addEventListener('keydown', function(e) {
         if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
           e.preventDefault();
@@ -988,8 +997,6 @@
 
       var zoneRect = zone.getBoundingClientRect();
       svg.setAttribute('viewBox', '0 0 ' + zoneRect.width + ' ' + zoneRect.height);
-      svg.setAttribute('width', zoneRect.width);
-svg.setAttribute('height', zoneRect.height);
       svg.innerHTML = '';
 
       var associations = etat.relierAssociations[slideIndex] || {};
@@ -1443,9 +1450,7 @@ svg.setAttribute('height', zoneRect.height);
       etat.currentIndex++;
       mettreAJourPagination();
       mettreAJourProgress();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 150);
+      etat.enTransition = false;
     }
 
     function slidePrecedente() {
@@ -1459,9 +1464,7 @@ svg.setAttribute('height', zoneRect.height);
       etat.currentIndex--;
       mettreAJourPagination();
       mettreAJourProgress();
-      setTimeout(function() {
-        etat.enTransition = false;
-      }, 850);
+      etat.enTransition = false;
     }
 
     function mettreAJourPagination() {
