@@ -1142,6 +1142,28 @@
           printHtml += `</div>`;
         }
       }
+            if (relier.trim() !== '') {
+        hasExercice = true;
+        var relierData = parserRelierPourImpression(relier);
+        if (relierData) {
+          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
+            printHtml += `<div class="titre-exo">Exercices</div>`;
+          }
+          printHtml += `<div class="exo-relier" style="margin-top:8px;">`;
+          printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
+          printHtml += `<table>`;
+          for (var ri = 0; ri < relierData.paires.length; ri++) {
+            var lettre = String.fromCharCode(65 + ri); // A, B, C...
+            printHtml += `<tr>`;
+            printHtml += `<td class="col-gauche"><span class="num-gauche">${ri + 1}.</span>${relierData.paires[ri].gauche}</td>`;
+            printHtml += `<td class="col-reponse"><span class="case-vide"></span></td>`;
+            printHtml += `<td class="col-droite"><span class="lettre-droite">${lettre}.</span>${relierData.droitesMelangees[ri]}</td>`;
+            printHtml += `</tr>`;
+          }
+          printHtml += `</table>`;
+          printHtml += `</div>`;
+        }
+      }
 
       if (retenir.trim() !== '') {
         hasExercice = true;
