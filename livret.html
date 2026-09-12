@@ -744,7 +744,7 @@
       return { recto: recto, verso: verso };
     }
 
-        function parserRelierPourImpression(relierTexte) {
+    function parserRelierPourImpression(relierTexte) {
       var lignes = relierTexte.split('\n')
         .map(function(l) { return l.trim(); })
         .filter(function(l) { return l !== ''; });
@@ -781,7 +781,7 @@
     function genererImpression(chapitre, contenu) {
       var parts = contenu.split(' | ');
       
-                  var slidesArray = [];
+      var slidesArray = [];
       var quiz = '';
       var openQuestion = '';
       var ordre = '';
@@ -903,8 +903,7 @@
               text-indent: 2em;
             }
            
-            
-                        .zone-exercices {
+            .zone-exercices {
               margin-top: 16px;
               padding-top: 14px;
               border-top: 1px solid #d4c9b8;
@@ -990,52 +989,6 @@
               border: 1px solid #999;
               font-weight: bold;
               font-size: 9pt;
-            }
-                        /* ===== RELIER ===== */
-            .exo-relier {
-              margin-top: 6px;
-              break-inside: avoid;
-            }
-            .exo-relier .consigne-relier {
-              font-weight: bold;
-              margin-bottom: 4px;
-            }
-            .exo-relier table {
-              width: 100%;
-              border-collapse: collapse;
-            }
-            .exo-relier td {
-              padding: 4px 6px;
-              vertical-align: top;
-              border-bottom: 1px dotted #999;
-            }
-            .exo-relier td.col-gauche {
-              width: 38%;
-            }
-            .exo-relier td.col-reponse {
-              width: 12%;
-              text-align: center;
-              color: #999;
-            }
-            .exo-relier td.col-droite {
-              width: 50%;
-            }
-            .exo-relier .num-gauche {
-              display: inline-block;
-              width: 18px;
-              font-weight: bold;
-            }
-            .exo-relier .lettre-droite {
-              display: inline-block;
-              width: 18px;
-              font-weight: bold;
-            }
-            .exo-relier .case-vide {
-              display: inline-block;
-              width: 14px;
-              height: 14px;
-              border: 1px solid #000;
-              background: white;
             }
             .pied-page {
               text-align: center;
@@ -1146,25 +1099,28 @@
           printHtml += `</div>`;
         }
       }
-            if (relier.trim() !== '') {
+
+      if (relier.trim() !== '') {
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
         if (relierData) {
           if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
             printHtml += `<div class="titre-exo">Exercices</div>`;
           }
-          printHtml += `<div class="exo-relier" style="margin-top:8px;">`;
-          printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
-          printHtml += `<table>`;
-          for (var ri = 0; ri < relierData.paires.length; ri++) {
-            var lettre = String.fromCharCode(65 + ri); // A, B, C...
-            printHtml += `<tr>`;
-            printHtml += `<td class="col-gauche"><span class="num-gauche">${ri + 1}.</span>${relierData.paires[ri].gauche}</td>`;
-            printHtml += `<td class="col-reponse"><span class="case-vide"></span></td>`;
-            printHtml += `<td class="col-droite"><span class="lettre-droite">${lettre}.</span>${relierData.droitesMelangees[ri]}</td>`;
-            printHtml += `</tr>`;
+          printHtml += `<div style="margin-top:8px;">`;
+          printHtml += `<div style="font-weight:bold;margin-bottom:6px;">${relierData.consigne}</div>`;
+          printHtml += `<div style="display:flex;justify-content:space-between;gap:40px;">`;
+          printHtml += `<div style="flex:1;">`;
+          for (var rg = 0; rg < relierData.paires.length; rg++) {
+            printHtml += `<div style="padding:4px 0;border-bottom:1px dotted #999;">${relierData.paires[rg].gauche}</div>`;
           }
-          printHtml += `</table>`;
+          printHtml += `</div>`;
+          printHtml += `<div style="flex:1;">`;
+          for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
+            printHtml += `<div style="padding:4px 0;border-bottom:1px dotted #999;">${relierData.droitesMelangees[rd]}</div>`;
+          }
+          printHtml += `</div>`;
+          printHtml += `</div>`;
           printHtml += `</div>`;
         }
       }
