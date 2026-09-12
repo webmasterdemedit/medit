@@ -744,6 +744,40 @@
       return { recto: recto, verso: verso };
     }
 
+        function parserRelierPourImpression(relierTexte) {
+      var lignes = relierTexte.split('\n')
+        .map(function(l) { return l.trim(); })
+        .filter(function(l) { return l !== ''; });
+
+      if (lignes.length === 0) return null;
+
+      var consigne = lignes[0].replace(/^l:\s*/i, '').trim() || 'Relie les éléments';
+      var paires = [];
+
+      for (var i = 1; i < lignes.length; i++) {
+        var idx = lignes[i].indexOf('-');
+        if (idx === -1) continue;
+        var gauche = lignes[i].substring(0, idx).trim();
+        var droite = lignes[i].substring(idx + 1).trim();
+        if (gauche && droite) {
+          paires.push({ gauche: gauche, droite: droite });
+        }
+      }
+
+      if (paires.length === 0) return null;
+
+      // Mélanger la colonne de droite (indépendamment de la gauche)
+      var droitesMelangees = paires.map(function(p) { return p.droite; });
+      for (var j = droitesMelangees.length - 1; j > 0; j--) {
+        var k = Math.floor(Math.random() * (j + 1));
+        var tmp = droitesMelangees[j];
+        droitesMelangees[j] = droitesMelangees[k];
+        droitesMelangees[k] = tmp;
+      }
+
+      return { consigne: consigne, paires: paires, droitesMelangees: droitesMelangees };
+    }
+
     function genererImpression(chapitre, contenu) {
       var parts = contenu.split(' | ');
       
