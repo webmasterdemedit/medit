@@ -967,7 +967,8 @@
 
         etat.relierSelection = null;
 
-        dessinerTraits(slideIndex);
+        // Dessin différé pour laisser le layout se stabiliser
+        setTimeout(function() { dessinerTraits(slideIndex); }, 50);
 
         var total = etat.slides[slideIndex].paires.length;
         var associees = Object.keys(etat.relierAssociations[slideIndex]).length;
@@ -986,39 +987,54 @@
       var svg = document.getElementById('relierSvg-' + slideIndex);
       if (!zone || !svg) return;
 
-      var zoneRect = zone.getBoundingClientRect();
-      svg.setAttribute('viewBox', '0 0 ' + zoneRect.width + ' ' + zoneRect.height);
-      svg.setAttribute('width', zoneRect.width);
-svg.setAttribute('height', zoneRect.height);
-      svg.innerHTML = '';
+      // Forcer le layout
+      void zone.offsetHeight;
 
-      var associations = etat.relierAssociations[slideIndex] || {};
+      requestAnimationFrame(function() {
+        var zoneRect = zone.getBoundingClientRect();
 
-      for (var gaucheIdx in associations) {
-        var droiteIdx = associations[gaucheIdx];
+        // Si le slide n'est pas encore visible, réessayer plus tard
+        if (zoneRect.width === 0 || zoneRect.height === 0) {
+          setTimeout(function() { dessinerTraits(slideIndex); }, 100);
+          return;
+        }
 
-        var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"] .point');
-        var droiteEl = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"] .point');
-        if (!gaucheEl || !droiteEl) continue;
+        svg.setAttribute('viewBox', '0 0 ' + zoneRect.width + ' ' + zoneRect.height);
+        svg.setAttribute('width', zoneRect.width);
+        svg.setAttribute('height', zoneRect.height);
+        svg.innerHTML = '';
 
-        var gRect = gaucheEl.getBoundingClientRect();
-        var dRect = droiteEl.getBoundingClientRect();
+        var associations = etat.relierAssociations[slideIndex] || {};
 
-        var x1 = gRect.left + gRect.width / 2 - zoneRect.left;
-        var y1 = gRect.top + gRect.height / 2 - zoneRect.top;
-        var x2 = dRect.left + dRect.width / 2 - zoneRect.left;
-        var y2 = dRect.top + dRect.height / 2 - zoneRect.top;
+        for (var gaucheIdx in associations) {
+          var droiteIdx = associations[gaucheIdx];
 
-        var ligne = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        ligne.setAttribute('x1', x1);
-        ligne.setAttribute('y1', y1);
-        ligne.setAttribute('x2', x2);
-        ligne.setAttribute('y2', y2);
-        ligne.setAttribute('data-gauche', gaucheIdx);
-        ligne.setAttribute('data-droite', droiteIdx);
+          var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"] .point');
+          var droiteEl = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"] .point');
+          if (!gaucheEl || !droiteEl) continue;
 
-        svg.appendChild(ligne);
-      }
+          var gRect = gaucheEl.getBoundingClientRect();
+          var dRect = droiteEl.getBoundingClientRect();
+
+          var x1 = gRect.left + gRect.width / 2 - zoneRect.left;
+          var y1 = gRect.top + gRect.height / 2 - zoneRect.top;
+          var x2 = dRect.left + dRect.width / 2 - zoneRect.left;
+          var y2 = dRect.top + dRect.height / 2 - zoneRect.top;
+
+          // Vérifier que les coordonnées sont valides
+          if (isNaN(x1) || isNaN(y1) || isNaN(x2) || isNaN(y2)) continue;
+
+          var ligne = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+          ligne.setAttribute('x1', x1);
+          ligne.setAttribute('y1', y1);
+          ligne.setAttribute('x2', x2);
+          ligne.setAttribute('y2', y2);
+          ligne.setAttribute('data-gauche', gaucheIdx);
+          ligne.setAttribute('data-droite', droiteIdx);
+
+          svg.appendChild(ligne);
+        }
+      });
     }
 
     window.addEventListener('resize', function() {
