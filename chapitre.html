@@ -43,15 +43,8 @@
       background: transparent !important;
     }
 
-    /* Slide = carré */
-    .progress-dot.type-slide {
-      border-radius: 50% !important;
-    }
-    /* Quiz = cercle */
-    .progress-dot.type-quiz {
-      border-radius: 50% !important;
-    }
-    /* Open = triangle */
+    .progress-dot.type-slide { border-radius: 50% !important; }
+    .progress-dot.type-quiz { border-radius: 50% !important; }
     .progress-dot.type-open {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 0% 100%, 100% 100%) !important;
@@ -67,7 +60,6 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    /* Ordre = losange */
     .progress-dot.type-ordre {
       border-radius: 0 !important;
       transform: rotate(45deg) !important;
@@ -85,13 +77,11 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-    /* Carte = rectangle */
     .progress-dot.type-carte {
       border-radius: 0 !important;
       width: 18px !important;
       height: 12px !important;
     }
-    /* Retenir = étoile */
     .progress-dot.type-retenir {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
@@ -108,21 +98,123 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-
-    /* Légende cachée */
-    .progress-legend {
-      display: none !important;
+    /* Relier = deux points reliés (petit trait) */
+    .progress-dot.type-relier {
+      border-radius: 0 !important;
+      width: 18px !important;
+      height: 4px !important;
+      margin: 6px 2px !important;
+      background: transparent !important;
+      border: none !important;
+      border-top: 2px solid var(--border, #ccc) !important;
+    }
+    .progress-dot.type-relier.active {
+      border-top-color: var(--text, #111) !important;
+    }
+    .progress-dot.type-relier.done {
+      border-top-color: var(--text-secondary, #444) !important;
     }
 
-    /* Slide wrapper - pour que les points soient visibles */
-    .slide-wrapper {
-      display: none !important;
+    .progress-legend { display: none !important; }
+
+    .slide-wrapper { display: none !important; }
+    .slide-wrapper.active { display: block !important; }
+    .slide-content { position: relative !important; }
+
+    /* ============================================================
+       RELIER - EXERCICE
+       ============================================================ */
+    .relier-consigne {
+      font-family: 'Inter', sans-serif;
+      font-size: 16px;
+      font-weight: 500;
+      text-align: center;
+      margin-bottom: 20px;
+      color: var(--text, #111);
     }
-    .slide-wrapper.active {
-      display: block !important;
+    .relier-grid {
+      display: flex;
+      justify-content: space-between;
+      gap: 40px;
+      max-width: 600px;
+      margin: 0 auto 20px;
+      position: relative;
     }
-    .slide-content {
-      position: relative !important;
+    .relier-colonne {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      flex: 1;
+    }
+    .relier-colonne.gauche { align-items: flex-end; }
+    .relier-colonne.droite { align-items: flex-start; }
+    .relier-item {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      padding: 10px 16px;
+      border: 1px solid var(--border, #ccc);
+      background: transparent;
+      cursor: pointer;
+      transition: all 0.2s;
+      color: var(--text, #111);
+      user-select: none;
+      min-width: 120px;
+      text-align: center;
+    }
+    .relier-item:hover {
+      border-color: var(--text-secondary, #444);
+    }
+    .relier-item.selectionne {
+      border-color: var(--text, #111);
+      background: var(--text, #111);
+      color: var(--bg, #fff);
+    }
+    .relier-item.associe {
+      border-color: var(--text-secondary, #444);
+      opacity: 0.55;
+      cursor: default;
+    }
+    .relier-item.associe:hover {
+      border-color: var(--text-secondary, #444);
+    }
+    .relier-item.erreur {
+      border-color: #c0392b;
+      background: rgba(192, 57, 43, 0.08);
+    }
+    .relier-resultat {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      text-align: center;
+      margin-top: 8px;
+      min-height: 20px;
+    }
+    .relier-resultat.correct { color: var(--text, #111); font-weight: 500; }
+    .relier-resultat.incorrect { color: #c0392b; }
+    .btn-valider-relier {
+      display: block;
+      margin: 16px auto 0;
+      padding: 10px 28px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      background: transparent;
+      border: 1px solid var(--border, #ccc);
+      color: var(--text, #111);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-valider-relier:hover {
+      background: var(--text, #111);
+      color: var(--bg, #fff);
+      border-color: var(--text, #111);
+    }
+    .btn-valider-relier:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .btn-valider-relier:disabled:hover {
+      background: transparent;
+      color: var(--text, #111);
+      border-color: var(--border, #ccc);
     }
   </style>
 </head>
@@ -147,7 +239,6 @@
       <span>Chargement...</span>
     </div>
 
-    <!-- Commandes de taille en bas à droite -->
     <div class="font-control-bottom" id="fontControlsBottom">
       <button id="fontDecreaseBottom" title="Réduire la taille du texte">−</button>
       <span class="size-indicator" id="fontSizeDisplayBottom">18</span>
@@ -159,10 +250,9 @@
 <script src="/medit/config.js"></script>
 <script src="/medit/auth.js"></script>
 <script src="/medit/data-manager.js"></script>
-  
+
   <script>
-    // Utiliser CONFIG.SCRIPT_URL défini dans config.js
-var SCRIPT_URL = CONFIG.SCRIPT_URL;
+    var SCRIPT_URL = CONFIG.SCRIPT_URL;
 
     var etat = {
       chapitreId: null,
@@ -179,11 +269,15 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       cartesResultats: {},
       cartesTotal: 0,
       cartesBonnes: 0,
-      carteCourante: null
+      carteCourante: null,
+      // Relier
+      relierAssociations: {},   // { indexSlide: { gaucheIdx: droiteIdx } }
+      relierSelection: null,    // { indexSlide, cote: 'gauche'|'droite', idx }
+      relierValide: {}          // { indexSlide: true/false }
     };
 
     // ============================================================
-    // GESTION DE LA TAILLE DE POLICE
+    // TAILLE DE POLICE
     // ============================================================
     var FONT_SIZE_KEY = 'medit_font_size';
     var FONT_SIZE_MIN = 12;
@@ -194,9 +288,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       var saved = localStorage.getItem(FONT_SIZE_KEY);
       if (saved) {
         var val = parseInt(saved, 10);
-        if (!isNaN(val) && val >= FONT_SIZE_MIN && val <= FONT_SIZE_MAX) {
-          return val;
-        }
+        if (!isNaN(val) && val >= FONT_SIZE_MIN && val <= FONT_SIZE_MAX) return val;
       }
       return DEFAULT_FONT_SIZE;
     }
@@ -212,15 +304,8 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       });
     }
 
-    function increaseFont() {
-      var current = getSavedFontSize();
-      setFontSize(current + 2);
-    }
-
-    function decreaseFont() {
-      var current = getSavedFontSize();
-      setFontSize(current - 2);
-    }
+    function increaseFont() { setFontSize(getSavedFontSize() + 2); }
+    function decreaseFont() { setFontSize(getSavedFontSize() - 2); }
 
     document.addEventListener('DOMContentLoaded', function() {
       var params = new URLSearchParams(window.location.search);
@@ -241,32 +326,33 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
-        .then(function(r) { 
-          if (!r.ok) throw new Error('Erreur réseau: ' + r.status); 
-          return r.json(); 
+        .then(function(r) {
+          if (!r.ok) throw new Error('Erreur réseau: ' + r.status);
+          return r.json();
         })
         .then(function(data) {
-          console.log('📦 Données reçues du serveur:', data);
-          
+          console.log('📦 Données reçues:', data);
+
           if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
-          
+
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
-          
+
           console.log('📄 Contenu brut:', contenu);
-          
+
           var parts = contenu.split(' | ');
-          
+
           var slidesArray = [];
           var quiz = '';
           var openQuestion = '';
           var ordre = '';
           var carte = '';
           var retenir = '';
-          
+          var relier = '';
+
           parts.forEach(function(part) {
             part = part.trim();
-            
+
             if (part.startsWith('q:')) {
               quiz = part;
             } else if (part.startsWith('qs:')) {
@@ -275,6 +361,8 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
               ordre = part;
             } else if (part.startsWith('r:')) {
               carte = part;
+            } else if (part.startsWith('l:')) {
+              relier = part;
             } else if (part.startsWith('#')) {
               retenir = part;
             } else {
@@ -287,47 +375,48 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
               }
             }
           });
-          
-          console.log('📊 Slides array (' + slidesArray.length + ' slides):', slidesArray);
+
+          console.log('📊 Slides:', slidesArray);
           console.log('📊 Quiz:', quiz);
           console.log('📊 OpenQ:', openQuestion);
           console.log('📊 Ordre:', ordre);
           console.log('📊 Carte:', carte);
           console.log('📊 Retenir:', retenir);
-          
+          console.log('📊 Relier:', relier);
+
           etat.chapitre = chapitre;
-          
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir);
-          
+
+          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier);
+
           console.log('📊 Slides générés:', etat.slides);
-          
+
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
             return;
           }
-          
+
           recupererNotes();
           afficherSlides();
           verifierValidationGlobale();
         })
-        .catch(function(error) { 
+        .catch(function(error) {
           console.error('❌ Erreur:', error);
-          afficherErreur(error.message); 
+          afficherErreur(error.message);
         });
     }
 
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir) {
+    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier) {
       var slidesFinal = [];
-      
+
       slidesArray.forEach(function(texteSlide) {
         if (texteSlide.trim() !== '') {
           slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
         }
       });
-      
+
       if (quiz.trim() !== '') {
         var quizsParsed = parserQuizs(quiz);
         quizsParsed.forEach(function(qp) {
@@ -336,37 +425,52 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           }
         });
       }
-      
+
       if (openQuestion.trim() !== '') {
         slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
       }
-      
+
       if (ordre.trim() !== '') {
         var ordreParsed = parserOrdre(ordre);
         if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({ 
-            type: 'ordre', 
+          slidesFinal.push({
+            type: 'ordre',
             elements: ordreParsed.elements,
             consigne: ordreParsed.consigne,
-            index: slidesFinal.length 
+            index: slidesFinal.length
           });
         }
       }
-      
+
       if (carte.trim() !== '') {
         var carteParsed = parserCarte(carte);
         if (carteParsed) {
           slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
         }
       }
-      
+
+      if (relier.trim() !== '') {
+        var relierParsed = parserRelier(relier);
+        if (relierParsed && relierParsed.paires.length > 0) {
+          // Mélanger la colonne de droite à chaque chargement
+          var droiteMelangee = melanger(relierParsed.paires.slice());
+          slidesFinal.push({
+            type: 'relier',
+            consigne: relierParsed.consigne,
+            paires: relierParsed.paires,
+            droiteMelangee: droiteMelangee,
+            index: slidesFinal.length
+          });
+        }
+      }
+
       if (retenir.trim() !== '') {
         var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
         if (mots.length > 0) {
           slidesFinal.push({ type: 'retenir', mots: mots });
         }
       }
-      
+
       console.log('✅ Slides construits :', slidesFinal);
       etat.slides = slidesFinal;
     }
@@ -377,18 +481,16 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return [];
-      
+
       var quizs = [];
       var currentQuiz = null;
-      
+
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         var trimmed = ligne.trim();
-        
+
         if (trimmed.match(/^q:/i)) {
-          if (currentQuiz && currentQuiz.reponses.length > 0) {
-            quizs.push(currentQuiz);
-          }
+          if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
           currentQuiz = {
             question: trimmed.replace(/^q:\s*/i, '').trim() || 'Question',
             reponses: []
@@ -397,7 +499,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           var isCorrect = false;
           var isFaux = false;
           var texteRep = trimmed;
-          
+
           if (/^v\s/i.test(trimmed) || /^-v-\s*/.test(trimmed) || trimmed.toLowerCase() === 'v') {
             isCorrect = true;
             texteRep = trimmed.replace(/^v\s+|-v-\s*/i, '').trim();
@@ -405,7 +507,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
             isFaux = true;
             texteRep = trimmed.replace(/^f\s+|-f-\s*/i, '').trim();
           }
-          
+
           if (isCorrect || isFaux) {
             currentQuiz.reponses.push({
               texte: texteRep || (isCorrect ? 'Vrai' : 'Faux'),
@@ -414,12 +516,56 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           }
         }
       }
-      
-      if (currentQuiz && currentQuiz.reponses.length > 0) {
-        quizs.push(currentQuiz);
-      }
-      
+
+      if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
       return quizs;
+    }
+
+    // ============================================================
+    // PARSEUR RELIER
+    // Format attendu :
+    // l: Consigne
+    // Gauche-Droite
+    // Gauche-Droite
+    // ============================================================
+    function parserRelier(relierTexte) {
+      var lignes = relierTexte.split('\n')
+        .map(function(l) { return l.trim(); })
+        .filter(function(l) { return l !== ''; });
+
+      if (lignes.length === 0) return null;
+
+      // Première ligne = consigne (avec le "l:" retiré)
+      var consigne = lignes[0].replace(/^l:\s*/i, '').trim();
+      var paires = [];
+
+      for (var i = 1; i < lignes.length; i++) {
+        var idx = lignes[i].indexOf('-');
+        if (idx === -1) continue;
+
+        var gauche = lignes[i].substring(0, idx).trim();
+        var droite = lignes[i].substring(idx + 1).trim();
+
+        if (gauche && droite) {
+          paires.push({ gauche: gauche, droite: droite });
+        }
+      }
+
+      return { consigne: consigne, paires: paires };
+    }
+
+    // ============================================================
+    // MÉLANGER (Fisher-Yates)
+    // ============================================================
+    function melanger(array) {
+      var copie = array.slice();
+      for (var i = copie.length - 1; i > 0; i--) {
+        var j = Math.floor(Math.random() * (i + 1));
+        var temp = copie[i];
+        copie[i] = copie[j];
+        copie[j] = temp;
+      }
+      return copie;
     }
 
     // ============================================================
@@ -447,7 +593,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var recto = '';
       var verso = '';
-      
+
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i];
         if (ligne.toLowerCase().startsWith('r:')) {
@@ -456,7 +602,7 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
           verso = ligne.replace(/^v:\s*/i, '').trim() || 'Réponse';
         }
       }
-      
+
       if (recto === '') return null;
       return { recto: recto, verso: verso };
     }
@@ -521,75 +667,58 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
         else if (slide.type === 'retenir') html += ' retenir-content';
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
+        else if (slide.type === 'relier') html += ' relier-content';
         html += '" id="slideContent-' + index + '">';
 
-  if (slide.type === 'slide') {
-    var lignes = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
-    
-    var resultatHtml = '';
-    var lignesTableau = [];
-    
-    lignes.forEach(function(l) {
-        if (l.includes('|')) {
-            // Si la ligne a |, on la garde pour le tableau
-            lignesTableau.push(l);
-        } else {
-            // Si la ligne n'a pas |, on affiche d'abord le tableau précédent (s'il existe)
-            if (lignesTableau.length > 0) {
-                // Construire le tableau
+        if (slide.type === 'slide') {
+          var lignes = (slide.contenu || '').split('\n').filter(function(p) { return p.trim() !== ''; });
+
+          var resultatHtml = '';
+          var lignesTableau = [];
+
+          lignes.forEach(function(l) {
+            if (l.includes('|')) {
+              lignesTableau.push(l);
+            } else {
+              if (lignesTableau.length > 0) {
                 resultatHtml += '<table class="tableau-slide">';
                 lignesTableau.forEach(function(ligneTableau) {
-                    var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
-                    resultatHtml += '<tr>';
-                    cellules.forEach(function(c) {
-                        resultatHtml += '<td>' + formaterTexte(c) + '</td>';
-                    });
-                    resultatHtml += '</tr>';
+                  var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
+                  resultatHtml += '<tr>';
+                  cellules.forEach(function(c) {
+                    resultatHtml += '<td>' + formaterTexte(c) + '</td>';
+                  });
+                  resultatHtml += '</tr>';
                 });
                 resultatHtml += '</table>';
-                lignesTableau = []; // Vider le tableau
+                lignesTableau = [];
+              }
+              resultatHtml += '<p>' + formaterTexte(l.trim()) + '</p>';
             }
-            // Puis afficher le paragraphe normal (avec formatage)
-            resultatHtml += '<p>' + formaterTexte(l.trim()) + '</p>';
-        }
-    });
-    
-    // Afficher le dernier tableau s'il reste des lignes
-    if (lignesTableau.length > 0) {
-        resultatHtml += '<table class="tableau-slide">';
-        lignesTableau.forEach(function(ligneTableau) {
-            var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
-            resultatHtml += '<tr>';
-            cellules.forEach(function(c) {
+          });
+
+          if (lignesTableau.length > 0) {
+            resultatHtml += '<table class="tableau-slide">';
+            lignesTableau.forEach(function(ligneTableau) {
+              var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
+              resultatHtml += '<tr>';
+              cellules.forEach(function(c) {
                 resultatHtml += '<td>' + formaterTexte(c) + '</td>';
+              });
+              resultatHtml += '</tr>';
             });
-            resultatHtml += '</tr>';
-        });
-        resultatHtml += '</table>';
-    }
-    
-    html += resultatHtml;
-}
+            resultatHtml += '</table>';
+          }
 
-        if (slide.type === 'quiz') {
-          html += afficherQuiz(slide);
+          html += resultatHtml;
         }
 
-        if (slide.type === 'open') {
-          html += afficherOpen(slide);
-        }
-
-        if (slide.type === 'ordre') {
-          html += afficherOrdre(slide, index);
-        }
-
-        if (slide.type === 'carte') {
-          html += afficherCarte(slide, index);
-        }
-
-        if (slide.type === 'retenir') {
-          html += afficherRetenir(slide);
-        }
+        if (slide.type === 'quiz') html += afficherQuiz(slide);
+        if (slide.type === 'open') html += afficherOpen(slide);
+        if (slide.type === 'ordre') html += afficherOrdre(slide, index);
+        if (slide.type === 'carte') html += afficherCarte(slide, index);
+        if (slide.type === 'relier') html += afficherRelier(slide, index);
+        if (slide.type === 'retenir') html += afficherRetenir(slide);
 
         if (slide.type === 'slide') {
           html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
@@ -610,7 +739,6 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       var oldWrappers = container.querySelectorAll('.slide-wrapper');
       oldWrappers.forEach(function(el) { el.remove(); });
 
-      // Supprimer les anciens points aussi
       var oldDots = container.querySelectorAll('.progress-dots');
       oldDots.forEach(function(el) { el.remove(); });
 
@@ -619,14 +747,14 @@ var SCRIPT_URL = CONFIG.SCRIPT_URL;
       while (tempDiv.firstChild) {
         container.insertBefore(tempDiv.firstChild, controls);
       }
-// ✅ Détecter l'arabe après l'injection des slides
-setTimeout(function() {
-    if (typeof detecterArabe === 'function') {
-        detecterArabe();
-        console.log('🔄 Détection arabe relancée après injection des slides');
-    }
-}, 50);
-    
+
+      setTimeout(function() {
+        if (typeof detecterArabe === 'function') {
+          detecterArabe();
+          console.log('🔄 Détection arabe relancée');
+        }
+      }, 50);
+
       for (var slideNum in etat.notes) {
         var textarea = document.getElementById('noteText-' + slideNum);
         if (textarea) {
@@ -653,7 +781,9 @@ setTimeout(function() {
             target.closest('.carte-container') ||
             target.closest('.carte-boutons') ||
             target.closest('.font-control-bottom') ||
-            target.closest('.progress-dots')) {
+            target.closest('.progress-dots') ||
+            target.closest('.relier-item') ||
+            target.closest('.btn-valider-relier')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -671,11 +801,8 @@ setTimeout(function() {
         e.preventDefault();
         if (scrollTimeout) return;
         scrollTimeout = setTimeout(function() { scrollTimeout = null; }, 900);
-        if (e.deltaY > 0) {
-          slideSuivante();
-        } else {
-          slidePrecedente();
-        }
+        if (e.deltaY > 0) slideSuivante();
+        else slidePrecedente();
       }, { passive: false });
 
       document.addEventListener('keydown', function(e) {
@@ -700,6 +827,206 @@ setTimeout(function() {
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = currentSize + 'px';
       });
+    }
+
+    // ============================================================
+    // AFFICHAGE RELIER
+    // ============================================================
+    function afficherRelier(slide, index) {
+      etat.relierAssociations[index] = {};
+      etat.relierSelection = null;
+      etat.relierValide[index] = false;
+
+      var html = '';
+      html += '<div class="relier-consigne">' + (slide.consigne || 'Relie les éléments') + '</div>';
+      html += '<div class="relier-grid" id="relierGrid-' + index + '">';
+
+      // Colonne gauche : ordre du fichier
+      html += '<div class="relier-colonne gauche">';
+      slide.paires.forEach(function(paire, i) {
+        html += '<div class="relier-item" data-cote="gauche" data-idx="' + i + '" data-slide="' + index + '" onclick="selectionnerRelier(event, ' + index + ', \'gauche\', ' + i + ')">' + paire.gauche + '</div>';
+      });
+      html += '</div>';
+
+      // Colonne droite : mélangée
+      html += '<div class="relier-colonne droite">';
+      slide.droiteMelangee.forEach(function(paire, i) {
+        html += '<div class="relier-item" data-cote="droite" data-idx="' + i + '" data-slide="' + index + '" data-gauche-original="' + escapeAttr(paire.gauche) + '" onclick="selectionnerRelier(event, ' + index + ', \'droite\', ' + i + ')">' + paire.droite + '</div>';
+      });
+      html += '</div>';
+
+      html += '</div>';
+      html += '<button class="btn-valider-relier" id="btnValiderRelier-' + index + '" onclick="validerRelier(' + index + ')" disabled>Valider les associations</button>';
+      html += '<div class="relier-resultat" id="relierResultat-' + index + '"></div>';
+      html += '<button class="btn-continuer" id="btnContinuerRelier-' + index + '" onclick="slideSuivante()">Continuer →</button>';
+
+      return html;
+    }
+
+    function escapeAttr(str) {
+      return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ============================================================
+    // INTERACTION RELIER
+    // ============================================================
+    function selectionnerRelier(event, slideIndex, cote, idx) {
+      if (event) event.stopPropagation();
+      if (etat.relierValide[slideIndex]) return;
+
+      var slideEl = document.getElementById('slide-' + slideIndex);
+      if (!slideEl) return;
+
+      var item = slideEl.querySelector('.relier-item[data-cote="' + cote + '"][data-idx="' + idx + '"]');
+      if (!item) return;
+
+      // Si l'item est déjà associé, on ne fait rien
+      if (item.classList.contains('associe')) return;
+
+      var sel = etat.relierSelection;
+
+      // Premier clic : on sélectionne
+      if (!sel || sel.slideIndex !== slideIndex) {
+        // Désélectionner l'ancien
+        slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
+        item.classList.add('selectionne');
+        etat.relierSelection = { slideIndex: slideIndex, cote: cote, idx: idx };
+        return;
+      }
+
+      // Deuxième clic : on tente d'associer
+      if (sel.slideIndex === slideIndex) {
+        // Même côté : on change la sélection
+        if (sel.cote === cote) {
+          slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
+          item.classList.add('selectionne');
+          etat.relierSelection = { slideIndex: slideIndex, cote: cote, idx: idx };
+          return;
+        }
+
+        // Côtés différents : on associe
+        var gaucheIdx = sel.cote === 'gauche' ? sel.idx : idx;
+        var droiteIdx = sel.cote === 'droite' ? sel.idx : idx;
+
+        // Vérifier que la droite n'est pas déjà associée
+        var droiteEl = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
+        if (droiteEl && droiteEl.classList.contains('associe')) {
+          // Déjà associée, on change juste la sélection
+          slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
+          item.classList.add('selectionne');
+          etat.relierSelection = { slideIndex: slideIndex, cote: cote, idx: idx };
+          return;
+        }
+
+        // Enregistrer l'association
+        etat.relierAssociations[slideIndex][gaucheIdx] = droiteIdx;
+
+        // Marquer visuellement
+        var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
+        if (gaucheEl) {
+          gaucheEl.classList.remove('selectionne');
+          gaucheEl.classList.add('associe');
+        }
+        if (droiteEl) {
+          droiteEl.classList.remove('selectionne');
+          droiteEl.classList.add('associe');
+        }
+
+        etat.relierSelection = null;
+
+        // Activer le bouton valider si toutes les paires sont associées
+        var total = etat.slides[slideIndex].paires.length;
+        var associees = Object.keys(etat.relierAssociations[slideIndex]).length;
+        var btnValider = document.getElementById('btnValiderRelier-' + slideIndex);
+        if (btnValider) btnValider.disabled = (associees < total);
+      }
+    }
+
+    function validerRelier(slideIndex) {
+      var slide = etat.slides[slideIndex];
+      if (!slide || slide.type !== 'relier') return;
+
+      var slideEl = document.getElementById('slide-' + slideIndex);
+      if (!slideEl) return;
+
+      var associations = etat.relierAssociations[slideIndex] || {};
+      var bonnes = 0;
+      var total = slide.paires.length;
+
+      // Pour chaque association gauche -> droite
+      // On retrouve la paire gauche d'origine, puis l'élément droite original
+      for (var gaucheIdx in associations) {
+        var droiteIdx = associations[gaucheIdx];
+        var gaucheOrigine = slide.paires[parseInt(gaucheIdx)].gauche;
+
+        // L'élément droite mélangé à l'index droiteIdx correspond à quelle paire originale ?
+        var droiteMelangee = slide.droiteMelangee[parseInt(droiteIdx)];
+        // Si la paire originale (gaucheOrigine, droiteMelangee.gauche) existe, c'est correct
+        if (droiteMelangee.gauche === gaucheOrigine) {
+          bonnes++;
+        } else {
+          // Marquer en erreur
+          var el = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
+          var elD = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
+          if (el) el.classList.add('erreur');
+          if (elD) elD.classList.add('erreur');
+        }
+      }
+
+      var resultat = document.getElementById('relierResultat-' + slideIndex);
+      var btnContinuer = document.getElementById('btnContinuerRelier-' + slideIndex);
+      var btnValider = document.getElementById('btnValiderRelier-' + slideIndex);
+
+      var correct = (bonnes === total);
+
+      if (correct) {
+        resultat.textContent = '✌︎ Toutes les associations sont correctes !';
+        resultat.className = 'relier-resultat correct';
+        etat.relierValide[slideIndex] = true;
+        if (btnContinuer) btnContinuer.classList.add('visible');
+        if (btnValider) btnValider.disabled = true;
+        sauvegarderRelier(slideIndex, bonnes, total);
+      } else {
+        resultat.textContent = '✋︎ ' + bonnes + '/' + total + ' bonnes associations. Réessayez.';
+        resultat.className = 'relier-resultat incorrect';
+        etat.relierValide[slideIndex] = false;
+        sauvegarderRelier(slideIndex, bonnes, total);
+
+        // Réinitialiser après 2 secondes
+        setTimeout(function() {
+          slideEl.querySelectorAll('.relier-item.erreur').forEach(function(el) {
+            el.classList.remove('erreur');
+          });
+          // Réinitialiser les associations et les classes
+          etat.relierAssociations[slideIndex] = {};
+          etat.relierSelection = null;
+          slideEl.querySelectorAll('.relier-item.associe, .relier-item.selectionne').forEach(function(el) {
+            el.classList.remove('associe', 'selectionne');
+          });
+          if (btnValider) btnValider.disabled = true;
+          if (resultat) {
+            resultat.textContent = '';
+            resultat.className = 'relier-resultat';
+          }
+        }, 2200);
+      }
+    }
+
+    function sauvegarderRelier(slideIndex, bonnes, total) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveRelier' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&titre=' + encodeURIComponent(etat.chapitre.titre || 'Relier') +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.success) console.log('✓ Relier sauvegardé');
+        })
+        .catch(function(e) { console.error('Erreur sauvegarde relier:', e); });
     }
 
     // ============================================================
@@ -811,7 +1138,7 @@ setTimeout(function() {
     }
 
     // ============================================================
-    // FONCTIONS DE NAVIGATION ET INTERACTION
+    // NAVIGATION ET INTERACTION
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -1011,6 +1338,12 @@ setTimeout(function() {
         if (!btnCarte || !btnCarte.classList.contains('visible')) return;
       }
 
+      if (slide.type === 'relier') {
+        if (!etat.relierValide[slide.index]) return;
+        var btnRelier = document.getElementById('btnContinuerRelier-' + slide.index);
+        if (!btnRelier || !btnRelier.classList.contains('visible')) return;
+      }
+
       etat.enTransition = true;
       var current = document.getElementById('slide-' + etat.currentIndex);
       var next = document.getElementById('slide-' + (etat.currentIndex + 1));
@@ -1167,49 +1500,45 @@ setTimeout(function() {
     }
 
     function validerOrdre(index) {
-  var list = document.getElementById('ordre-list-' + index);
-  if (!list) return;
-  var items = list.querySelectorAll('.ordre-item');
-  var ordreDonne = [];
-  var ordreAttendu = [];
+      var list = document.getElementById('ordre-list-' + index);
+      if (!list) return;
+      var items = list.querySelectorAll('.ordre-item');
+      var ordreDonne = [];
+      var ordreAttendu = [];
 
-  items.forEach(function(el) {
-    ordreDonne.push(parseInt(el.dataset.num));
-    ordreAttendu.push(parseInt(el.dataset.num));
-  });
+      items.forEach(function(el) {
+        ordreDonne.push(parseInt(el.dataset.num));
+        ordreAttendu.push(parseInt(el.dataset.num));
+      });
 
-  ordreAttendu.sort(function(a, b) { return a - b; });
+      ordreAttendu.sort(function(a, b) { return a - b; });
 
-  // ✅ COMPTER LE NOMBRE DE BONNES PLACEMENTS
-  var bonnes = 0;
-  for (var i = 0; i < ordreDonne.length; i++) {
-    if (ordreDonne[i] === ordreAttendu[i]) {
-      bonnes++;
+      var bonnes = 0;
+      for (var i = 0; i < ordreDonne.length; i++) {
+        if (ordreDonne[i] === ordreAttendu[i]) bonnes++;
+      }
+
+      var correct = (bonnes === ordreDonne.length);
+
+      var resultat = document.getElementById('ordreResultat-' + index);
+      var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
+      var btnValider = document.getElementById('btnValiderOrdre-' + index);
+
+      if (correct) {
+        resultat.textContent = '✌︎ Tous les éléments sont bien placés !';
+        resultat.className = 'ordre-resultat correct';
+        etat.ordreValide[index] = true;
+        sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
+        if (btnContinuer) btnContinuer.classList.add('visible');
+        if (btnValider) btnValider.disabled = true;
+      } else {
+        resultat.textContent = '✋︎ ' + bonnes + '/' + ordreDonne.length + ' bien placés. Réessayez.';
+        resultat.className = 'ordre-resultat incorrect';
+        etat.ordreValide[index] = false;
+        sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
+      }
     }
-  }
 
-  var correct = (bonnes === ordreDonne.length); // Tous bien placés ?
-
-  var resultat = document.getElementById('ordreResultat-' + index);
-  var btnContinuer = document.getElementById('btnContinuerOrdre-' + index);
-  var btnValider = document.getElementById('btnValiderOrdre-' + index);
-
-  if (correct) {
-    resultat.textContent = '✌︎ Tous les éléments sont bien placés !';
-    resultat.className = 'ordre-resultat correct';
-    etat.ordreValide[index] = true;
-    // ✅ ENVOYER LE VRAI NOMBRE DE BONNES
-    sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
-    if (btnContinuer) btnContinuer.classList.add('visible');
-    if (btnValider) btnValider.disabled = true;
-  } else {
-    resultat.textContent = '✋︎ ' + bonnes + '/' + ordreDonne.length + ' bien placés. Réessayez.';
-    resultat.className = 'ordre-resultat incorrect';
-    etat.ordreValide[index] = false;
-    // ✅ ENVOYER LE VRAI NOMBRE DE BONNES
-    sauvegarderOrdre(index, ordreDonne.join(','), bonnes, ordreDonne.length);
-  }
-}
     function sauvegarderOrdre(index, ordreDonne, bonnes, total) {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=saveOrdre' +
@@ -1315,15 +1644,13 @@ setTimeout(function() {
     // FERMER
     // ============================================================
     function fermerLiseuse() {
-  // Récupérer la catégorie du chapitre pour revenir au bon livret
-  var categorie = etat.chapitre ? etat.chapitre.categorie : '';
-  if (categorie) {
-    window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
-  } else {
-    // Fallback si pas de catégorie
-    window.location.href = '/medit/mes-livrets.html';
-  }
-}
+      var categorie = etat.chapitre ? etat.chapitre.categorie : '';
+      if (categorie) {
+        window.location.href = '/medit/livret.html?cat=' + encodeURIComponent(categorie);
+      } else {
+        window.location.href = '/medit/mes-livrets.html';
+      }
+    }
 
     function afficherErreur(message) {
       document.getElementById('slidesContainer').innerHTML = `
@@ -1337,7 +1664,7 @@ setTimeout(function() {
     }
 
     // ============================================================
-    // EXPOSER LES FONCTIONS GLOBALEMENT
+    // EXPOSER GLOBALEMENT
     // ============================================================
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
@@ -1351,11 +1678,13 @@ setTimeout(function() {
     window.retournerCarte = retournerCarte;
     window.carteTrouve = carteTrouve;
     window.cartePasTrouve = cartePasTrouve;
+    window.selectionnerRelier = selectionnerRelier;
+    window.validerRelier = validerRelier;
 
     function verifierValidationGlobale() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
       var url = SCRIPT_URL + '?action=getValidationGlobale&nom=' + encodeURIComponent(nom) + '&chapitreId=' + encodeURIComponent(etat.chapitreId);
-      
+
       fetch(url)
         .then(function(r) { return r.json(); })
         .then(function(data) {
@@ -1376,55 +1705,39 @@ setTimeout(function() {
         .catch(function(e) { console.error('Erreur vérification validation:', e); });
     }
 
-function detecterArabe() {
-    var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, td, th, label, button, a, div.quiz-question, div.open-question-text, span.retenir-mot, div.carte-face, div.slide-content p');
-    
-    elements.forEach(function(el) {
+    function detecterArabe() {
+      var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, td, th, label, button, a, div.quiz-question, div.open-question-text, span.retenir-mot, div.carte-face, div.slide-content p');
+      elements.forEach(function(el) {
         var texte = el.textContent || '';
         if (texte.trim() === '') return;
-        
-        // Détecter l'arabe
         if (/[\u0600-\u06FF]/.test(texte)) {
-            // Ajouter les attributs
-            el.setAttribute('lang', 'ar');
-            el.setAttribute('dir', 'rtl');
-            
-            // FORCER la police en style inline (priorité maximale)
-            el.style.fontFamily = "'Janna LT Bold', 'Traditional Arabic', serif";
-            el.style.direction = 'rtl';
-            
-            console.log('✅ Arabe détecté sur:', el.tagName, '| Texte:', texte.substring(0, 30) + '...');
+          el.setAttribute('lang', 'ar');
+          el.setAttribute('dir', 'rtl');
+          el.style.fontFamily = "'Janna LT Bold', 'Traditional Arabic', serif";
+          el.style.direction = 'rtl';
+          console.log('✅ Arabe détecté sur:', el.tagName, '| Texte:', texte.substring(0, 30) + '...');
         }
+      });
+    }
+    document.addEventListener('DOMContentLoaded', function() {
+      detecterArabe();
     });
-}
-document.addEventListener('DOMContentLoaded', function() {
-    detecterArabe();
-});
-window.detecterArabeSurNouveauxElements = function() {
-    detecterArabe();
-};
+    window.detecterArabeSurNouveauxElements = function() {
+      detecterArabe();
+    };
+
     function formaterTexte(texte) {
-    // 1. Remplacer les paires de " par « »
-    var i = 0;
-    texte = texte.replace(/"/g, function(match) {
+      var i = 0;
+      texte = texte.replace(/"/g, function(match) {
         i++;
         return i % 2 === 1 ? '«' : '»';
-    });
-    
-    // 2. Mettre en italique le texte entre « et »
-    texte = texte.replace(/«([^»]*)»/g, '<em>« $1 »</em>');
-    
-    // 3. Gras avec **
-    texte = texte.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
-    
-    // 4. Italique avec *
-    texte = texte.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
-    
-    // 5. Gras + Italique avec ***
-    texte = texte.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
-    
-    return texte;
-}
-</script>
+      });
+      texte = texte.replace(/«([^»]*)»/g, '<em>« $1 »</em>');
+      texte = texte.replace(/\*\*([^\*]+)\*\*/g, '<strong>$1</strong>');
+      texte = texte.replace(/\*([^\*]+)\*/g, '<em>$1</em>');
+      texte = texte.replace(/\*\*\*([^\*]+)\*\*\*/g, '<strong><em>$1</em></strong>');
+      return texte;
+    }
+  </script>
 </body>
 </html>
