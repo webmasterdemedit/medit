@@ -121,120 +121,75 @@
     .slide-wrapper.active { display: block !important; }
     .slide-content { position: relative !important; }
 
-        /* ============================================================
-       RELIER - EXERCICE (points + traits)
+    /* ============================================================
+       RELIER - EXERCICE
        ============================================================ */
     .relier-consigne {
       font-family: 'Inter', sans-serif;
       font-size: 16px;
       font-weight: 500;
       text-align: center;
-      margin-bottom: 24px;
+      margin-bottom: 20px;
       color: var(--text, #111);
-    }
-    .relier-zone {
-      position: relative;
-      max-width: 560px;
-      margin: 0 auto 20px;
-      padding: 10px 0;
-      z-index: 1;
-    }
-    .relier-svg {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      pointer-events: none;
-      z-index: 3;
-    }
-    .relier-svg line {
-      stroke: var(--text, #111);
-      stroke-width: 1.5;
-      stroke-linecap: round;
-    }
-    .relier-svg line.erreur {
-      stroke: #c0392b;
-      stroke-dasharray: 4 3;
     }
     .relier-grid {
       display: flex;
       justify-content: space-between;
-      gap: 0;
+      gap: 40px;
+      max-width: 600px;
+      margin: 0 auto 20px;
       position: relative;
-      z-index: 2;
     }
     .relier-colonne {
       display: flex;
       flex-direction: column;
-      gap: 18px;
-      flex: 0 0 auto;
-      max-width: 45%;
+      gap: 14px;
+      flex: 1;
     }
     .relier-colonne.gauche { align-items: flex-end; }
     .relier-colonne.droite { align-items: flex-start; }
-
     .relier-item {
       font-family: 'Inter', sans-serif;
       font-size: 15px;
-      padding: 4px 0;
-      color: var(--text, #111);
-      cursor: pointer;
-      user-select: none;
-      display: flex;
-      align-items: center;
-      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid var(--border, #ccc);
       background: transparent;
-      border: none;
-      transition: opacity 0.2s;
-    }
-    .relier-item .point {
-      width: 10px;
-      height: 10px;
-      border: 1.5px solid var(--text, #111);
-      border-radius: 50%;
-      background: var(--bg, #fff);
-      flex-shrink: 0;
+      cursor: pointer;
       transition: all 0.2s;
-      box-sizing: border-box;
+      color: var(--text, #111);
+      user-select: none;
+      min-width: 120px;
+      text-align: center;
     }
-    /* Point à droite de l'item gauche */
-    .relier-colonne.gauche .relier-item .point { order: 2; }
-    .relier-colonne.gauche .relier-item .texte { order: 1; }
-    /* Point à gauche de l'item droite */
-    .relier-colonne.droite .relier-item .point { order: 1; }
-    .relier-colonne.droite .relier-item .texte { order: 2; }
-
-    .relier-item:hover .texte {
-      text-decoration: underline;
-      text-decoration-style: dotted;
-      text-underline-offset: 4px;
+    .relier-item:hover {
+      border-color: var(--text-secondary, #444);
     }
-    .relier-item.selectionne .point {
+    .relier-item.selectionne {
+      border-color: var(--text, #111);
       background: var(--text, #111);
-      transform: scale(1.3);
+      color: var(--bg, #fff);
     }
     .relier-item.associe {
-      opacity: 0.5;
+      border-color: var(--text-secondary, #444);
+      opacity: 0.55;
       cursor: default;
     }
-    .relier-item.associe:hover .texte {
-      text-decoration: none;
+    .relier-item.associe:hover {
+      border-color: var(--text-secondary, #444);
     }
-    .relier-item.erreur .point {
+    .relier-item.erreur {
       border-color: #c0392b;
-      background: #c0392b;
+      background: rgba(192, 57, 43, 0.08);
     }
-
     .relier-resultat {
       font-family: 'Inter', sans-serif;
       font-size: 14px;
       text-align: center;
-      margin-top: 12px;
+      margin-top: 8px;
       min-height: 20px;
     }
     .relier-resultat.correct { color: var(--text, #111); font-weight: 500; }
     .relier-resultat.incorrect { color: #c0392b; }
-
     .btn-valider-relier {
       display: block;
       margin: 16px auto 0;
@@ -315,9 +270,10 @@
       cartesTotal: 0,
       cartesBonnes: 0,
       carteCourante: null,
-      relierAssociations: {},
-      relierSelection: null,
-      relierValide: {}
+      // Relier
+      relierAssociations: {},   // { indexSlide: { gaucheIdx: droiteIdx } }
+      relierSelection: null,    // { indexSlide, cote: 'gauche'|'droite', idx }
+      relierValide: {}          // { indexSlide: true/false }
     };
 
     // ============================================================
@@ -496,6 +452,7 @@
       if (relier.trim() !== '') {
         var relierParsed = parserRelier(relier);
         if (relierParsed && relierParsed.paires.length > 0) {
+          // Mélanger la colonne de droite à chaque chargement
           var droiteMelangee = melanger(relierParsed.paires.slice());
           slidesFinal.push({
             type: 'relier',
@@ -566,6 +523,10 @@
 
     // ============================================================
     // PARSEUR RELIER
+    // Format attendu :
+    // l: Consigne
+    // Gauche-Droite
+    // Gauche-Droite
     // ============================================================
     function parserRelier(relierTexte) {
       var lignes = relierTexte.split('\n')
@@ -574,6 +535,7 @@
 
       if (lignes.length === 0) return null;
 
+      // Première ligne = consigne (avec le "l:" retiré)
       var consigne = lignes[0].replace(/^l:\s*/i, '').trim();
       var paires = [];
 
@@ -685,6 +647,7 @@
         return;
       }
 
+      // --- Points de progression ---
       var progressHtml = '<div class="progress-dots">';
       etat.slides.forEach(function(slide, idx) {
         var typeClass = 'type-' + slide.type;
@@ -693,6 +656,7 @@
       });
       progressHtml += '</div>';
 
+      // --- Slides ---
       var html = progressHtml;
       etat.slides.forEach(function(slide, index) {
         var activeClass = index === 0 ? ' active' : '';
@@ -875,29 +839,22 @@
 
       var html = '';
       html += '<div class="relier-consigne">' + (slide.consigne || 'Relie les éléments') + '</div>';
-      html += '<div class="relier-zone" id="relierZone-' + index + '">';
-      html += '<svg class="relier-svg" id="relierSvg-' + index + '"></svg>';
       html += '<div class="relier-grid" id="relierGrid-' + index + '">';
 
+      // Colonne gauche : ordre du fichier
       html += '<div class="relier-colonne gauche">';
       slide.paires.forEach(function(paire, i) {
-        html += '<div class="relier-item" data-cote="gauche" data-idx="' + i + '" data-slide="' + index + '" onclick="selectionnerRelier(event, ' + index + ', \'gauche\', ' + i + ')">';
-        html += '<span class="texte">' + paire.gauche + '</span>';
-        html += '<span class="point"></span>';
-        html += '</div>';
+        html += '<div class="relier-item" data-cote="gauche" data-idx="' + i + '" data-slide="' + index + '" onclick="selectionnerRelier(event, ' + index + ', \'gauche\', ' + i + ')">' + paire.gauche + '</div>';
       });
       html += '</div>';
 
+      // Colonne droite : mélangée
       html += '<div class="relier-colonne droite">';
       slide.droiteMelangee.forEach(function(paire, i) {
-        html += '<div class="relier-item" data-cote="droite" data-idx="' + i + '" data-slide="' + index + '" data-gauche-original="' + escapeAttr(paire.gauche) + '" onclick="selectionnerRelier(event, ' + index + ', \'droite\', ' + i + ')">';
-        html += '<span class="point"></span>';
-        html += '<span class="texte">' + paire.droite + '</span>';
-        html += '</div>';
+        html += '<div class="relier-item" data-cote="droite" data-idx="' + i + '" data-slide="' + index + '" data-gauche-original="' + escapeAttr(paire.gauche) + '" onclick="selectionnerRelier(event, ' + index + ', \'droite\', ' + i + ')">' + paire.droite + '</div>';
       });
       html += '</div>';
 
-      html += '</div>';
       html += '</div>';
       html += '<button class="btn-valider-relier" id="btnValiderRelier-' + index + '" onclick="validerRelier(' + index + ')" disabled>Valider les associations</button>';
       html += '<div class="relier-resultat" id="relierResultat-' + index + '"></div>';
@@ -923,18 +880,23 @@
       var item = slideEl.querySelector('.relier-item[data-cote="' + cote + '"][data-idx="' + idx + '"]');
       if (!item) return;
 
+      // Si l'item est déjà associé, on ne fait rien
       if (item.classList.contains('associe')) return;
 
       var sel = etat.relierSelection;
 
+      // Premier clic : on sélectionne
       if (!sel || sel.slideIndex !== slideIndex) {
+        // Désélectionner l'ancien
         slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
         item.classList.add('selectionne');
         etat.relierSelection = { slideIndex: slideIndex, cote: cote, idx: idx };
         return;
       }
 
+      // Deuxième clic : on tente d'associer
       if (sel.slideIndex === slideIndex) {
+        // Même côté : on change la sélection
         if (sel.cote === cote) {
           slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
           item.classList.add('selectionne');
@@ -942,21 +904,25 @@
           return;
         }
 
+        // Côtés différents : on associe
         var gaucheIdx = sel.cote === 'gauche' ? sel.idx : idx;
         var droiteIdx = sel.cote === 'droite' ? sel.idx : idx;
 
+        // Vérifier que la droite n'est pas déjà associée
         var droiteEl = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
         if (droiteEl && droiteEl.classList.contains('associe')) {
+          // Déjà associée, on change juste la sélection
           slideEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
           item.classList.add('selectionne');
           etat.relierSelection = { slideIndex: slideIndex, cote: cote, idx: idx };
           return;
         }
 
-        var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
-
+        // Enregistrer l'association
         etat.relierAssociations[slideIndex][gaucheIdx] = droiteIdx;
 
+        // Marquer visuellement
+        var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
         if (gaucheEl) {
           gaucheEl.classList.remove('selectionne');
           gaucheEl.classList.add('associe');
@@ -968,67 +934,13 @@
 
         etat.relierSelection = null;
 
-        dessinerTraits(slideIndex);
-
+        // Activer le bouton valider si toutes les paires sont associées
         var total = etat.slides[slideIndex].paires.length;
         var associees = Object.keys(etat.relierAssociations[slideIndex]).length;
         var btnValider = document.getElementById('btnValiderRelier-' + slideIndex);
         if (btnValider) btnValider.disabled = (associees < total);
       }
     }
-
-    // ============================================================
-    // DESSIN DES TRAITS SVG
-    // ============================================================
-    function dessinerTraits(slideIndex) {
-      var slideEl = document.getElementById('slide-' + slideIndex);
-      if (!slideEl) return;
-      var zone = document.getElementById('relierZone-' + slideIndex);
-      var svg = document.getElementById('relierSvg-' + slideIndex);
-      if (!zone || !svg) return;
-
-      var zoneRect = zone.getBoundingClientRect();
-      svg.setAttribute('viewBox', '0 0 ' + zoneRect.width + ' ' + zoneRect.height);
-      svg.setAttribute('width', zoneRect.width);
-svg.setAttribute('height', zoneRect.height);
-      svg.innerHTML = '';
-
-      var associations = etat.relierAssociations[slideIndex] || {};
-
-      for (var gaucheIdx in associations) {
-        var droiteIdx = associations[gaucheIdx];
-
-        var gaucheEl = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"] .point');
-        var droiteEl = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"] .point');
-        if (!gaucheEl || !droiteEl) continue;
-
-        var gRect = gaucheEl.getBoundingClientRect();
-        var dRect = droiteEl.getBoundingClientRect();
-
-        var x1 = gRect.left + gRect.width / 2 - zoneRect.left;
-        var y1 = gRect.top + gRect.height / 2 - zoneRect.top;
-        var x2 = dRect.left + dRect.width / 2 - zoneRect.left;
-        var y2 = dRect.top + dRect.height / 2 - zoneRect.top;
-
-        var ligne = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        ligne.setAttribute('x1', x1);
-        ligne.setAttribute('y1', y1);
-        ligne.setAttribute('x2', x2);
-        ligne.setAttribute('y2', y2);
-        ligne.setAttribute('data-gauche', gaucheIdx);
-        ligne.setAttribute('data-droite', droiteIdx);
-
-        svg.appendChild(ligne);
-      }
-    }
-
-    window.addEventListener('resize', function() {
-      for (var i = 0; i < etat.slides.length; i++) {
-        if (etat.slides[i] && etat.slides[i].type === 'relier' && etat.relierAssociations[i]) {
-          dessinerTraits(i);
-        }
-      }
-    });
 
     function validerRelier(slideIndex) {
       var slide = etat.slides[slideIndex];
@@ -1041,28 +953,23 @@ svg.setAttribute('height', zoneRect.height);
       var bonnes = 0;
       var total = slide.paires.length;
 
-      var svg = document.getElementById('relierSvg-' + slideIndex);
-      if (svg) {
-        svg.querySelectorAll('line').forEach(function(l) { l.classList.remove('erreur'); });
-      }
-
+      // Pour chaque association gauche -> droite
+      // On retrouve la paire gauche d'origine, puis l'élément droite original
       for (var gaucheIdx in associations) {
         var droiteIdx = associations[gaucheIdx];
         var gaucheOrigine = slide.paires[parseInt(gaucheIdx)].gauche;
-        var droiteMelangee = slide.droiteMelangee[parseInt(droiteIdx)];
 
+        // L'élément droite mélangé à l'index droiteIdx correspond à quelle paire originale ?
+        var droiteMelangee = slide.droiteMelangee[parseInt(droiteIdx)];
+        // Si la paire originale (gaucheOrigine, droiteMelangee.gauche) existe, c'est correct
         if (droiteMelangee.gauche === gaucheOrigine) {
           bonnes++;
         } else {
-          var elG = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
+          // Marquer en erreur
+          var el = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
           var elD = slideEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
-          if (elG) elG.classList.add('erreur');
+          if (el) el.classList.add('erreur');
           if (elD) elD.classList.add('erreur');
-
-          if (svg) {
-            var ligne = svg.querySelector('line[data-gauche="' + gaucheIdx + '"][data-droite="' + droiteIdx + '"]');
-            if (ligne) ligne.classList.add('erreur');
-          }
         }
       }
 
@@ -1085,16 +992,17 @@ svg.setAttribute('height', zoneRect.height);
         etat.relierValide[slideIndex] = false;
         sauvegarderRelier(slideIndex, bonnes, total);
 
+        // Réinitialiser après 2 secondes
         setTimeout(function() {
           slideEl.querySelectorAll('.relier-item.erreur').forEach(function(el) {
             el.classList.remove('erreur');
           });
+          // Réinitialiser les associations et les classes
           etat.relierAssociations[slideIndex] = {};
           etat.relierSelection = null;
           slideEl.querySelectorAll('.relier-item.associe, .relier-item.selectionne').forEach(function(el) {
             el.classList.remove('associe', 'selectionne');
           });
-          if (svg) svg.innerHTML = '';
           if (btnValider) btnValider.disabled = true;
           if (resultat) {
             resultat.textContent = '';
