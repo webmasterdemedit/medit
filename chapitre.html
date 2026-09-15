@@ -286,61 +286,48 @@
     /* ============================================================
        SLIDE MEMO (aRetenir + vocabulaire + tags)
        ============================================================ */
-    .memo-section {
-      margin-bottom: 22px;
+    .slide-content.memo-content {
+      text-align: center;
     }
-    .memo-section:last-child {
-      margin-bottom: 0;
+    .slide-content .memo-section {
+      margin-bottom: 32px;
     }
-    .memo-titre {
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      font-weight: 500;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: var(--text-secondary, #444);
-      margin-bottom: 10px;
+    .slide-content .memo-section:last-of-type {
+      margin-bottom: 16px;
     }
-    .memo-liste {
+    .slide-content .memo-liste {
       list-style: none;
       padding: 0;
       margin: 0;
+      font-family: var(--font-serif);
+      font-size: inherit;
+      line-height: 1.8;
+      text-align: center;
     }
-    .memo-liste li {
-      font-family: 'Merriweather', serif;
-      font-size: 16px;
-      line-height: 1.6;
-      padding-left: 16px;
-      position: relative;
+    .slide-content .memo-liste li {
       margin-bottom: 6px;
-      color: var(--text, #111);
     }
-    .memo-liste li::before {
-      content: '—';
-      position: absolute;
-      left: 0;
+    .slide-content .memo-tags {
+      font-family: var(--font-serif);
+      font-size: calc(var(--slide-font-size, 18px) * 1.2);
+      font-style: italic;
       color: var(--text-secondary, #444);
+      line-height: 1.8;
+      text-align: center;
     }
-    .memo-blocs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
+    .slide-content .memo-tags .memo-tag {
+      margin: 0 4px;
     }
-    .memo-mot {
-      font-family: 'Inter', sans-serif;
-      font-size: 14px;
-      padding: 4px 10px;
-      border: 1px solid var(--border, #ccc);
-      color: var(--text, #111);
-      background: transparent;
+
+    @media (max-width: 768px) {
+      .slide-content .memo-tags {
+        font-size: calc(var(--slide-font-size, 18px) * 1.1);
+      }
     }
-    .memo-tag {
-      font-family: 'Inter', sans-serif;
-      font-size: 13px;
-      padding: 3px 9px;
-      border: 1px solid var(--border, #ccc);
-      color: var(--text-secondary, #444);
-      background: transparent;
+    @media (max-width: 550px) {
+      .slide-content .memo-tags {
+        font-size: calc(var(--slide-font-size, 18px) * 1.05);
+      }
     }
   </style>
 </head>
@@ -398,8 +385,7 @@
       carteCourante: null,
       relierAssociations: {},
       relierSelection: null,
-      relierValide: {},
-      memo: null
+      relierValide: {}
     };
 
     // ============================================================
@@ -466,7 +452,6 @@
 
           console.log('📄 Contenu brut:', contenu);
 
-          // Champs séparés renvoyés par le serveur (tableaux)
           var vocabulaire = chapitre.vocabulaire || [];
           var tags = chapitre.tags || [];
           var aRetenir = chapitre.aRetenir || [];
@@ -594,9 +579,21 @@
       }
 
       // Slide MEMO final (aRetenir + vocabulaire + tags)
-      var aRetenirClean = (aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      var vocabClean = (vocabulaire || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      var tagsClean = (tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
+      var aRetenirClean = (aRetenir || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
+
+      var vocabClean = [];
+      (vocabulaire || []).forEach(function(item) {
+        String(item).split(',').forEach(function(mot) {
+          var m = mot.trim();
+          if (m !== '') vocabClean.push(m);
+        });
+      });
+
+      var tagsClean = (tags || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
 
       if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
         slidesFinal.push({
@@ -958,7 +955,7 @@
 
       if (slide.aRetenir && slide.aRetenir.length > 0) {
         html += '<div class="memo-section">';
-        html += '<div class="memo-titre">À retenir</div>';
+        html += '<div class="retenir-label">À retenir</div>';
         html += '<ul class="memo-liste">';
         slide.aRetenir.forEach(function(phrase) {
           html += '<li>' + formaterTexte(phrase) + '</li>';
@@ -969,10 +966,10 @@
 
       if (slide.vocabulaire && slide.vocabulaire.length > 0) {
         html += '<div class="memo-section">';
-        html += '<div class="memo-titre">Vocabulaire</div>';
-        html += '<div class="memo-blocs">';
+        html += '<div class="retenir-label">Vocabulaire</div>';
+        html += '<div class="retenir-mots">';
         slide.vocabulaire.forEach(function(mot) {
-          html += '<span class="memo-mot">' + formaterTexte(mot) + '</span>';
+          html += '<span class="retenir-mot">' + formaterTexte(mot) + '</span>';
         });
         html += '</div>';
         html += '</div>';
@@ -980,9 +977,10 @@
 
       if (slide.tags && slide.tags.length > 0) {
         html += '<div class="memo-section">';
-        html += '<div class="memo-titre">Tags</div>';
-        html += '<div class="memo-blocs">';
-        slide.tags.forEach(function(tag) {
+        html += '<div class="retenir-label">Tags</div>';
+        html += '<div class="memo-tags">';
+        slide.tags.forEach(function(tag, i) {
+          if (i > 0) html += ' ';
           html += '<span class="memo-tag">#' + formaterTexte(tag) + '</span>';
         });
         html += '</div>';
