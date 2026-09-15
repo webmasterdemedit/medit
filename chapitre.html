@@ -82,7 +82,7 @@
       width: 18px !important;
       height: 12px !important;
     }
-    .progress-dot.type-retenir {
+    .progress-dot.type-memo {
       border-radius: 0 !important;
       clip-path: polygon(50% 0%, 61% 35%, 98% 35%, 68% 57%, 79% 91%, 50% 70%, 21% 91%, 32% 57%, 2% 35%, 39% 35%) !important;
       width: 16px !important;
@@ -90,11 +90,11 @@
       background: transparent !important;
       border: 2px solid var(--border, #ccc) !important;
     }
-    .progress-dot.type-retenir.active {
+    .progress-dot.type-memo.active {
       border-color: var(--text, #111) !important;
       background: var(--text, #111) !important;
     }
-    .progress-dot.type-retenir.done {
+    .progress-dot.type-memo.done {
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
@@ -279,9 +279,69 @@
       border-color: var(--border, #ccc);
     }
     .slides-container {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    /* ============================================================
+       SLIDE MEMO (aRetenir + vocabulaire + tags)
+       ============================================================ */
+    .memo-section {
+      margin-bottom: 22px;
+    }
+    .memo-section:last-child {
+      margin-bottom: 0;
+    }
+    .memo-titre {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-secondary, #444);
+      margin-bottom: 10px;
+    }
+    .memo-liste {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+    .memo-liste li {
+      font-family: 'Merriweather', serif;
+      font-size: 16px;
+      line-height: 1.6;
+      padding-left: 16px;
+      position: relative;
+      margin-bottom: 6px;
+      color: var(--text, #111);
+    }
+    .memo-liste li::before {
+      content: '—';
+      position: absolute;
+      left: 0;
+      color: var(--text-secondary, #444);
+    }
+    .memo-blocs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+    .memo-mot {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 4px 10px;
+      border: 1px solid var(--border, #ccc);
+      color: var(--text, #111);
+      background: transparent;
+    }
+    .memo-tag {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      padding: 3px 9px;
+      border: 1px solid var(--border, #ccc);
+      color: var(--text-secondary, #444);
+      background: transparent;
+    }
   </style>
 </head>
 <body>
@@ -338,7 +398,8 @@
       carteCourante: null,
       relierAssociations: {},
       relierSelection: null,
-      relierValide: {}
+      relierValide: {},
+      memo: null
     };
 
     // ============================================================
@@ -405,6 +466,11 @@
 
           console.log('📄 Contenu brut:', contenu);
 
+          // Champs séparés renvoyés par le serveur (tableaux)
+          var vocabulaire = chapitre.vocabulaire || [];
+          var tags = chapitre.tags || [];
+          var aRetenir = chapitre.aRetenir || [];
+
           var parts = contenu.split(' | ');
 
           var slidesArray = [];
@@ -412,7 +478,6 @@
           var openQuestion = '';
           var ordre = '';
           var carte = '';
-          var retenir = '';
           var relier = '';
 
           parts.forEach(function(part) {
@@ -428,8 +493,6 @@
               carte = part;
             } else if (part.startsWith('l:')) {
               relier = part;
-            } else if (part.startsWith('#')) {
-              retenir = part;
             } else {
               var cleanText = part.replace(/\r\n/g, '\n').trim();
               if (cleanText) {
@@ -446,12 +509,14 @@
           console.log('📊 OpenQ:', openQuestion);
           console.log('📊 Ordre:', ordre);
           console.log('📊 Carte:', carte);
-          console.log('📊 Retenir:', retenir);
           console.log('📊 Relier:', relier);
+          console.log('📊 Vocabulaire:', vocabulaire);
+          console.log('📊 Tags:', tags);
+          console.log('📊 À retenir:', aRetenir);
 
           etat.chapitre = chapitre;
 
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier);
+          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir);
 
           console.log('📊 Slides générés:', etat.slides);
 
@@ -473,7 +538,7 @@
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier) {
+    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir) {
       var slidesFinal = [];
 
       slidesArray.forEach(function(texteSlide) {
@@ -528,11 +593,19 @@
         }
       }
 
-      if (retenir.trim() !== '') {
-        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-        if (mots.length > 0) {
-          slidesFinal.push({ type: 'retenir', mots: mots });
-        }
+      // Slide MEMO final (aRetenir + vocabulaire + tags)
+      var aRetenirClean = (aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
+      var vocabClean = (vocabulaire || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
+      var tagsClean = (tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
+
+      if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
+        slidesFinal.push({
+          type: 'memo',
+          aRetenir: aRetenirClean,
+          vocabulaire: vocabClean,
+          tags: tagsClean,
+          index: slidesFinal.length
+        });
       }
 
       console.log('✅ Slides construits :', slidesFinal);
@@ -721,7 +794,7 @@
         html += '<div class="slide-content';
         if (slide.type === 'quiz') html += ' quiz-content';
         else if (slide.type === 'open') html += ' open-content';
-        else if (slide.type === 'retenir') html += ' retenir-content';
+        else if (slide.type === 'memo') html += ' memo-content';
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
         else if (slide.type === 'relier') html += ' relier-content';
@@ -775,7 +848,7 @@
         if (slide.type === 'ordre') html += afficherOrdre(slide, index);
         if (slide.type === 'carte') html += afficherCarte(slide, index);
         if (slide.type === 'relier') html += afficherRelier(slide, index);
-        if (slide.type === 'retenir') html += afficherRetenir(slide);
+        if (slide.type === 'memo') html += afficherMemo(slide);
 
         if (slide.type === 'slide') {
           html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
@@ -875,6 +948,49 @@
       document.querySelectorAll('.slide-content').forEach(function(el) {
         el.style.fontSize = currentSize + 'px';
       });
+    }
+
+    // ============================================================
+    // AFFICHAGE MEMO
+    // ============================================================
+    function afficherMemo(slide) {
+      var html = '';
+
+      if (slide.aRetenir && slide.aRetenir.length > 0) {
+        html += '<div class="memo-section">';
+        html += '<div class="memo-titre">À retenir</div>';
+        html += '<ul class="memo-liste">';
+        slide.aRetenir.forEach(function(phrase) {
+          html += '<li>' + formaterTexte(phrase) + '</li>';
+        });
+        html += '</ul>';
+        html += '</div>';
+      }
+
+      if (slide.vocabulaire && slide.vocabulaire.length > 0) {
+        html += '<div class="memo-section">';
+        html += '<div class="memo-titre">Vocabulaire</div>';
+        html += '<div class="memo-blocs">';
+        slide.vocabulaire.forEach(function(mot) {
+          html += '<span class="memo-mot">' + formaterTexte(mot) + '</span>';
+        });
+        html += '</div>';
+        html += '</div>';
+      }
+
+      if (slide.tags && slide.tags.length > 0) {
+        html += '<div class="memo-section">';
+        html += '<div class="memo-titre">Tags</div>';
+        html += '<div class="memo-blocs">';
+        slide.tags.forEach(function(tag) {
+          html += '<span class="memo-tag">#' + formaterTexte(tag) + '</span>';
+        });
+        html += '</div>';
+        html += '</div>';
+      }
+
+      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
+      return html;
     }
 
     // ============================================================
@@ -1161,19 +1277,6 @@
       html += '<button class="btn-envoyer-reponse" onclick="envoyerReponseOuverte(event, ' + slide.index + ')">Envoyer la réponse</button>';
       html += '<div class="reponse-confirmation" id="openConfirmation-' + slide.index + '">♡ ⎙ ⌲ Réponse enregistrée</div>';
       html += '<button class="btn-continuer" id="btnContinuerOpen-' + slide.index + '" onclick="slideSuivante()">Continuer →</button>';
-      return html;
-    }
-
-    function afficherRetenir(slide) {
-      var html = '';
-      html += '<div class="retenir-label">Vocabulaire à connaître</div>';
-      html += '<div class="retenir-mots">';
-      slide.mots.forEach(function(mot) {
-        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-      });
-      html += '</div>';
-      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
-      html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
       return html;
     }
 
@@ -1804,7 +1907,7 @@
     }
 
     function detecterArabe() {
-      var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, td, th, label, button, a, div.quiz-question, div.open-question-text, span.retenir-mot, div.carte-face, div.slide-content p');
+      var elements = document.querySelectorAll('p, h1, h2, h3, h4, h5, h6, span, li, td, th, label, button, a, div.quiz-question, div.open-question-text, div.carte-face, div.slide-content p');
       elements.forEach(function(el) {
         var texte = el.textContent || '';
         if (texte.trim() === '') return;
