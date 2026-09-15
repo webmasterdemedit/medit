@@ -279,9 +279,50 @@
       border-color: var(--border, #ccc);
     }
     .slides-container {
-  overflow-y: auto !important;
-  overflow-x: hidden !important;
-}
+      overflow-y: auto !important;
+      overflow-x: hidden !important;
+    }
+
+    /* ============================================================
+       TAGS (style réseaux sociaux)
+       ============================================================ */
+    .tags-reseaux {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 8px 10px;
+      margin: 22px 0 26px;
+      padding: 0 10px;
+    }
+    .tag-reseau {
+      font-family: 'Inter', sans-serif;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--text-secondary, #777);
+      letter-spacing: 0.2px;
+      transition: color 0.2s;
+    }
+    .tag-reseau:hover {
+      color: var(--text, #111);
+    }
+
+    /* ============================================================
+       À RETENIR (italique, gris foncé, tout en bas)
+       ============================================================ */
+    .a-retenir-bloc {
+      margin-top: 28px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border, #e0e0e0);
+      text-align: center;
+    }
+    .a-retenir-ligne {
+      font-family: 'Merriweather', serif;
+      font-style: italic;
+      font-size: 15px;
+      color: #555;
+      margin: 6px 0;
+      line-height: 1.6;
+    }
   </style>
 </head>
 <body>
@@ -412,7 +453,9 @@
           var openQuestion = '';
           var ordre = '';
           var carte = '';
-          var retenir = '';
+          var vocabulaire = '';
+          var tags = '';
+          var aRetenir = '';
           var relier = '';
 
           parts.forEach(function(part) {
@@ -428,8 +471,12 @@
               carte = part;
             } else if (part.startsWith('l:')) {
               relier = part;
+            } else if (part.startsWith('!')) {
+              vocabulaire = part;
             } else if (part.startsWith('#')) {
-              retenir = part;
+              tags = part;
+            } else if (part.startsWith('>')) {
+              aRetenir = part;
             } else {
               var cleanText = part.replace(/\r\n/g, '\n').trim();
               if (cleanText) {
@@ -446,12 +493,14 @@
           console.log('📊 OpenQ:', openQuestion);
           console.log('📊 Ordre:', ordre);
           console.log('📊 Carte:', carte);
-          console.log('📊 Retenir:', retenir);
+          console.log('📊 Vocabulaire:', vocabulaire);
+          console.log('📊 Tags:', tags);
+          console.log('📊 À retenir:', aRetenir);
           console.log('📊 Relier:', relier);
 
           etat.chapitre = chapitre;
 
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier);
+          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, vocabulaire, tags, aRetenir, relier);
 
           console.log('📊 Slides générés:', etat.slides);
 
@@ -473,7 +522,7 @@
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, retenir, relier) {
+    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, vocabulaire, tags, aRetenir, relier) {
       var slidesFinal = [];
 
       slidesArray.forEach(function(texteSlide) {
@@ -528,11 +577,47 @@
         }
       }
 
-      if (retenir.trim() !== '') {
-        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-        if (mots.length > 0) {
-          slidesFinal.push({ type: 'retenir', mots: mots });
+      // ============================================================
+      // SLIDE COMBINÉ : VOCABULAIRE (!) + TAGS (#) + À RETENIR (>)
+      // ============================================================
+      var hasVocab = vocabulaire.trim() !== '';
+      var hasTags = tags.trim() !== '';
+      var hasARetenir = aRetenir.trim() !== '';
+
+      if (hasVocab || hasTags || hasARetenir) {
+        var slideRetenir = { type: 'retenir' };
+
+        if (hasVocab) {
+          slideRetenir.mots = vocabulaire
+            .replace(/^!\s*/, '')
+            .split(',')
+            .map(function(m) { return m.trim(); })
+            .filter(function(m) { return m.length > 0; });
+        } else {
+          slideRetenir.mots = [];
         }
+
+        if (hasTags) {
+          slideRetenir.tags = tags
+            .replace(/^#\s*/, '')
+            .split(',')
+            .map(function(t) { return t.trim(); })
+            .filter(function(t) { return t.length > 0; });
+        } else {
+          slideRetenir.tags = [];
+        }
+
+        if (hasARetenir) {
+          slideRetenir.aRetenir = aRetenir
+            .replace(/^>\s*/, '')
+            .split('\n')
+            .map(function(l) { return l.replace(/^>\s*/, '').trim(); })
+            .filter(function(l) { return l.length > 0; });
+        } else {
+          slideRetenir.aRetenir = [];
+        }
+
+        slidesFinal.push(slideRetenir);
       }
 
       console.log('✅ Slides construits :', slidesFinal);
@@ -1164,15 +1249,41 @@
       return html;
     }
 
+    // ============================================================
+    // AFFICHAGE RETENIR (vocabulaire + tags + à retenir)
+    // ============================================================
     function afficherRetenir(slide) {
       var html = '';
-      html += '<div class="retenir-label">Vocabulaire à connaître</div>';
-      html += '<div class="retenir-mots">';
-      slide.mots.forEach(function(mot) {
-        if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
-      });
-      html += '</div>';
-      html += '<p style="font-family:Inter,sans-serif;font-size:14px;color:var(--text-secondary);margin-top:8px;text-align:center;">Ces mots-clés vous aideront à mémoriser l\'essentiel.</p>';
+
+      // 1. VOCABULAIRE (encadré comme avant)
+      if (slide.mots && slide.mots.length > 0) {
+        html += '<div class="retenir-label">Vocabulaire à connaître</div>';
+        html += '<div class="retenir-mots">';
+        slide.mots.forEach(function(mot) {
+          if (mot.trim()) html += '<span class="retenir-mot">' + mot.trim() + '</span>';
+        });
+        html += '</div>';
+      }
+
+      // 2. TAGS (style réseaux sociaux)
+      if (slide.tags && slide.tags.length > 0) {
+        html += '<div class="tags-reseaux">';
+        slide.tags.forEach(function(tag) {
+          var t = tag.trim().replace(/^#/, '');
+          if (t) html += '<span class="tag-reseau">#' + t + '</span>';
+        });
+        html += '</div>';
+      }
+
+      // 3. À RETENIR (italique, gris foncé, tout en bas)
+      if (slide.aRetenir && slide.aRetenir.length > 0) {
+        html += '<div class="a-retenir-bloc">';
+        slide.aRetenir.forEach(function(ligne) {
+          html += '<p class="a-retenir-ligne">' + ligne + '</p>';
+        });
+        html += '</div>';
+      }
+
       html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
       return html;
     }
