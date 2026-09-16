@@ -772,27 +772,30 @@
       var relier = '';
       
       parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) {
-          quiz = part;
-        } else if (part.startsWith('qs:')) {
-          openQuestion = part;
-        } else if (part.startsWith('o:')) {
-          ordre = part;
-        } else if (part.startsWith('r:')) {
-          carte = part;
-        } else if (part.startsWith('l:')) {
-          relier = part;
-        } else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subSlides.forEach(function(sub) {
-              slidesArray.push(sub.trim());
-            });
-          }
-        }
+  part = part.trim();
+  if (part.startsWith('q:')) {
+    quiz = part;
+  } else if (part.startsWith('qs:')) {
+    openQuestion = part;
+  } else if (part.startsWith('o:')) {
+    ordre = part;
+  } else if (part.startsWith('r:')) {
+    carte = part;
+  } else if (part.startsWith('l:')) {
+    relier = part;
+  } else if (part.startsWith('!')) {
+    // 👇 NOUVEAU : on ignore les lignes de vocabulaire (déjà affichées dans le cadre en bas)
+    return;
+  } else {
+    var cleanText = part.replace(/\r\n/g, '\n').trim();
+    if (cleanText) {
+      var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+      subSlides.forEach(function(sub) {
+        slidesArray.push(sub.trim());
       });
+    }
+  }
+});
 
       // 👇 NOUVEAU : récupérer À retenir / Vocabulaire / Tags
       var aRetenir = (chapitre.aRetenir || [])
