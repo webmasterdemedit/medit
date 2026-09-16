@@ -1024,45 +1024,41 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
       }
 
       // 5) RELIER
+            // 5) RELIER (style manuel : points à relier)
       if (relier.trim() !== '') {
         exoNum++;
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
 
         if (relierData) {
-          var lettresG = ['A','B','C','D','E','F','G','H'];
-
           printHtml += '<div class="exo">';
           printHtml += '<span class="exo-num">' + exoNum + '. ' + relierData.consigne + '</span>';
-          printHtml += '<div class="relier-grid">';
+          printHtml += '<div class="relier-zone-lignes">';
+          printHtml += '<div class="relier-lignes-grid">';
 
-          printHtml += '<div class="relier-col gauche">';
+          // Colonne gauche : texte + point à droite
+          printHtml += '<div class="relier-col-lignes gauche">';
           for (var rg = 0; rg < relierData.paires.length; rg++) {
-            printHtml += '<div class="relier-item">';
-            printHtml += '<span class="relier-lettre">' + lettresG[rg] + '.</span>';
+            printHtml += '<div class="relier-ligne-item">';
             printHtml += '<span>' + relierData.paires[rg].gauche + '</span>';
+            printHtml += '<span class="relier-point"></span>';
             printHtml += '</div>';
           }
           printHtml += '</div>';
 
-          printHtml += '<div class="relier-col droite">';
+          // Colonne droite : point à gauche + texte
+          printHtml += '<div class="relier-col-lignes droite">';
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
-            printHtml += '<div class="relier-item">';
-            printHtml += '<span class="relier-num">' + (rd + 1) + '.</span>';
+            printHtml += '<div class="relier-ligne-item">';
+            printHtml += '<span class="relier-point"></span>';
             printHtml += '<span>' + relierData.droitesMelangees[rd] + '</span>';
             printHtml += '</div>';
           }
           printHtml += '</div>';
 
-          printHtml += '</div>';
-
-          printHtml += '<div class="relier-zone"><strong>Votre réponse :</strong> ';
-          for (var rz = 0; rz < relierData.paires.length; rz++) {
-            printHtml += '<span class="assoc">' + lettresG[rz] + '<span class="tiret">→</span><span class="pointille"></span></span>';
-          }
-          printHtml += '</div>';
-
-          printHtml += '</div>';
+          printHtml += '</div>'; // relier-lignes-grid
+          printHtml += '</div>'; // relier-zone-lignes
+          printHtml += '</div>'; // exo
         }
       }
 
