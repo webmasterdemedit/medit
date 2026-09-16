@@ -778,7 +778,7 @@
       return { consigne: consigne, paires: paires, droitesMelangees: droitesMelangees };
     }
 
-    function genererImpression(chapitre, contenu) {
+        function genererImpression(chapitre, contenu) {
       var parts = contenu.split(' | ');
       
       var slidesArray = [];
@@ -812,13 +812,13 @@
       });
 
       // ============================================================
-      // VOCABULAIRE / À RETENIR / TAGS (depuis le chapitre)
+      // VOCABULAIRE / À RETENIR / TAGS
       // ============================================================
       var vocabulaire = chapitre.vocabulaire || [];
       var aRetenir = chapitre.aRetenir || [];
       var tags = chapitre.tags || [];
 
-      // Nettoyage vocabulaire
+      // Nettoyage vocabulaire (même logique que chapitre.html)
       var motsVocab = [];
       vocabulaire.forEach(function(item) {
         String(item).split(',').forEach(function(mot) {
@@ -926,6 +926,7 @@
               text-indent: 2em;
             }
            
+            /* ===== EXERCICES ===== */
             .zone-exercices {
               margin-top: 16px;
               padding-top: 14px;
@@ -943,7 +944,6 @@
               margin-bottom: 4px;
             }
             
-            /* ===== QUIZ EN 2 COLONNES ===== */
             .zone-exercices .quiz-grid {
               display: grid;
               grid-template-columns: 1fr 1fr;
@@ -1033,75 +1033,83 @@
               box-sizing: border-box;
             }
 
-            /* ===== VOCABULAIRE ===== */
-            .zone-vocab {
-              margin-top: 14px;
-              padding-top: 10px;
-              border-top: 1px solid #d4c9b8;
+            /* ============================================================
+               VOCABULAIRE — STYLE IDENTIQUE AUX SLIDES
+               ============================================================ */
+            .memo-section {
+              margin-bottom: 16px;
+              text-align: center;
             }
-            .zone-vocab .titre-vocab {
-              font-weight: 600;
+            .retenir-label {
+              font-family: 'Times New Roman', Times, serif;
               font-size: 9.5pt;
+              font-weight: 600;
               text-transform: uppercase;
               letter-spacing: 1.5px;
               color: #5a4a3a;
-              margin-bottom: 4px;
+              margin-bottom: 6px;
+              text-align: center;
             }
-            .zone-vocab .vocab-mot {
+            .retenir-mots {
+              display: flex;
+              flex-wrap: wrap;
+              justify-content: center;
+              gap: 6px;
+              margin-top: 4px;
+            }
+            .retenir-mot {
               display: inline-block;
-              padding: 2px 10px;
-              margin: 2px 6px 2px 0;
-              border: 1px solid #999;
-              font-size: 10pt;
+              padding: 3px 14px;
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 11pt;
+              color: #111;
+              border: 1px solid #333;
+              background: white;
             }
 
-            /* ===== À RETENIR ===== */
-            .zone-retenir {
-              margin-top: 14px;
-              padding-top: 10px;
-              border-top: 1px solid #d4c9b8;
-            }
-            .zone-retenir .titre-retenir {
-              font-weight: 600;
-              font-size: 9.5pt;
-              text-transform: uppercase;
-              letter-spacing: 1.5px;
-              color: #5a4a3a;
-              margin-bottom: 4px;
-            }
-            .zone-retenir ul {
+            /* ============================================================
+               À RETENIR — STYLE IDENTIQUE AUX SLIDES (liste centrée)
+               ============================================================ */
+            .memo-liste {
               list-style: none;
               padding: 0;
               margin: 0;
-            }
-            .zone-retenir ul li {
-              font-size: 11pt;
-              line-height: 1.6;
-              padding-left: 16px;
-              position: relative;
-              margin-bottom: 3px;
-            }
-            .zone-retenir ul li::before {
-              content: "—";
-              position: absolute;
-              left: 0;
-              color: #666;
-            }
-
-            /* ===== TAGS ===== */
-            .zone-tags {
-              margin-top: 14px;
-              padding-top: 10px;
-              border-top: 1px solid #d4c9b8;
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 12pt;
+              line-height: 1.8;
               text-align: center;
             }
-            .zone-tags .tag {
-              display: inline-block;
-              padding: 1px 8px;
-              margin: 2px 4px;
-              font-size: 9.5pt;
+            .memo-liste li {
+              margin-bottom: 6px;
+            }
+            .memo-liste li::before {
+              content: '—';
+              color: #666;
+              margin-right: 8px;
+            }
+
+            /* ============================================================
+               TAGS — STYLE IDENTIQUE AUX SLIDES (italique serif)
+               ============================================================ */
+            .memo-tags {
+              font-family: 'Times New Roman', Times, serif;
+              font-size: 13pt;
               font-style: italic;
-              color: #555;
+              color: #444;
+              line-height: 1.8;
+              text-align: center;
+            }
+            .memo-tags .memo-tag {
+              margin: 0 4px;
+            }
+
+            /* ============================================================
+               SÉPARATEURS ENTRE SECTIONS
+               ============================================================ */
+            .zone-separateur {
+              margin-top: 18px;
+              padding-top: 14px;
+              border-top: 1px solid #d4c9b8;
             }
 
             .pied-page {
@@ -1150,14 +1158,18 @@
       printHtml += `</div>`;
 
       // ============================================================
-      // VOCABULAIRE (AVANT les exercices)
+      // VOCABULAIRE (AVANT les exercices) — STYLE SLIDE
       // ============================================================
       if (motsVocab.length > 0) {
-        printHtml += `<div class="zone-vocab">`;
-        printHtml += `<div class="titre-vocab">Vocabulaire</div>`;
+        printHtml += `<div class="zone-separateur">`;
+        printHtml += `<div class="memo-section">`;
+        printHtml += `<div class="retenir-label">Vocabulaire</div>`;
+        printHtml += `<div class="retenir-mots">`;
         motsVocab.forEach(function(mot) {
-          printHtml += `<span class="vocab-mot">${mot}</span>`;
+          printHtml += `<span class="retenir-mot">${mot}</span>`;
         });
+        printHtml += `</div>`;
+        printHtml += `</div>`;
         printHtml += `</div>`;
       }
 
@@ -1240,7 +1252,6 @@
           printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
           printHtml += `<div class="relier-grid">`;
 
-          // Colonne gauche
           printHtml += `<div class="relier-col gauche">`;
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             printHtml += `<div class="relier-item">`;
@@ -1250,7 +1261,6 @@
           }
           printHtml += `</div>`;
 
-          // Colonne droite (mélangée)
           printHtml += `<div class="relier-col droite">`;
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
             printHtml += `<div class="relier-item">`;
@@ -1260,8 +1270,8 @@
           }
           printHtml += `</div>`;
 
-          printHtml += `</div>`; // relier-grid
-          printHtml += `</div>`; // exo-relier
+          printHtml += `</div>`;
+          printHtml += `</div>`;
         }
       }
 
@@ -1269,30 +1279,38 @@
         printHtml += `<div style="height:2px;"></div>`;
       }
 
-      printHtml += `</div>`; // zone-exercices
+      printHtml += `</div>`;
 
       // ============================================================
-      // À RETENIR (APRÈS les exercices)
+      // À RETENIR (APRÈS les exercices) — STYLE SLIDE
       // ============================================================
       if (phrasesRetenir.length > 0) {
-        printHtml += `<div class="zone-retenir">`;
-        printHtml += `<div class="titre-retenir">À retenir</div>`;
-        printHtml += `<ul>`;
+        printHtml += `<div class="zone-separateur">`;
+        printHtml += `<div class="memo-section">`;
+        printHtml += `<div class="retenir-label">À retenir</div>`;
+        printHtml += `<ul class="memo-liste">`;
         phrasesRetenir.forEach(function(phrase) {
           printHtml += `<li>${phrase}</li>`;
         });
         printHtml += `</ul>`;
         printHtml += `</div>`;
+        printHtml += `</div>`;
       }
 
       // ============================================================
-      // TAGS (APRÈS les exercices)
+      // TAGS (APRÈS les exercices) — STYLE SLIDE
       // ============================================================
       if (tagsClean.length > 0) {
-        printHtml += `<div class="zone-tags">`;
-        tagsClean.forEach(function(tag) {
-          printHtml += `<span class="tag">#${tag}</span>`;
+        printHtml += `<div class="zone-separateur">`;
+        printHtml += `<div class="memo-section">`;
+        printHtml += `<div class="retenir-label">Tags</div>`;
+        printHtml += `<div class="memo-tags">`;
+        tagsClean.forEach(function(tag, i) {
+          if (i > 0) printHtml += ' ';
+          printHtml += `<span class="memo-tag">#${tag}</span>`;
         });
+        printHtml += `</div>`;
+        printHtml += `</div>`;
         printHtml += `</div>`;
       }
 
@@ -1316,12 +1334,10 @@
       iframe.style.border = 'none';
       document.body.appendChild(iframe);
       
-      // Écrire le contenu dans l'iframe
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.write(printHtml);
       iframeDoc.close();
       
-      // Lancer l'impression
       setTimeout(function() {
         iframe.contentWindow.print();
         setTimeout(function() {
