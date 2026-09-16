@@ -725,7 +725,6 @@
 
       if (paires.length === 0) return null;
 
-      // Mélanger la colonne de droite
       var droitesMelangees = paires.map(function(p) { return p.droite; });
       for (var j = droitesMelangees.length - 1; j > 0; j--) {
         var k = Math.floor(Math.random() * (j + 1));
@@ -790,8 +789,6 @@
         .map(function(x) { return String(x).trim(); })
         .filter(function(x) { return x !== ''; });
 
-      var hasMemo = (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0);
-
       // DATES
       var dateCreation = chapitre.date || '';
       var dateCreationStr = '';
@@ -837,6 +834,41 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .exo { margin-bottom:12px; page-break-inside:avoid; }
 .exo-num { font-weight:bold; font-size:11pt; color:#1a1a1a; margin-bottom:3px; display:block; }
 
+/* TAGS + VOCAB en haut */
+.tags-haut {
+  margin-top: 10px;
+  margin-bottom: 8px;
+  font-size: 10pt;
+  font-style: italic;
+  color: #444;
+  text-align: center;
+}
+.tags-haut .memo-tag {
+  display: inline-block;
+  margin: 0 6px;
+  font-style: italic;
+}
+.vocab-haut {
+  margin-top: 6px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.vocab-haut .titre-memo {
+  font-weight: 600;
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #5a4a3a;
+  margin-bottom: 4px;
+}
+.vocab-haut .memo-mot {
+  display: inline-block;
+  padding: 1px 8px;
+  margin: 2px 4px;
+  border: 1px solid #999;
+  font-size: 10pt;
+}
+
 /* QUIZ */
 .quiz-reponses { margin-left:16px; margin-top:3px; }
 .quiz-rep { display:inline-block; margin-right:20px; font-size:10.5pt; }
@@ -854,9 +886,14 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .ordre-zone .tiret { margin:0 6px; font-weight:bold; }
 .ordre-zone .pointille { display:inline-block; width:40px; border-bottom:1px solid #000; height:14px; vertical-align:middle; }
 
-/* CARTE */
-.carte-lignes { margin-top:4px; }
-.carte-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
+/* CARTE (demi-ligne) */
+.carte-ligne-courte {
+  margin-top: 6px;
+  margin-left: 16px;
+  width: 50%;
+  border-bottom: 1px dotted #666;
+  height: 18px;
+}
 
 /* RELIER (style manuel : points à relier) */
 .relier-zone-lignes {
@@ -901,7 +938,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   box-sizing: border-box;
 }
 
-/* MÉMO */
+/* MÉMO (uniquement À retenir) */
 .zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #b8a888; page-break-inside:avoid; }
 .zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
 .zone-memo .memo-bloc { margin-bottom:12px; }
@@ -909,8 +946,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
 .zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
-.zone-memo .memo-mot { display:inline-block; padding:1px 8px; margin:1px 4px 1px 0; border:1px solid #999; font-size:10pt; }
-.zone-memo .memo-tag { display:inline-block; margin-right:8px; font-size:10pt; font-style:italic; color:#444; }
 
 .pied-page { text-align:center; font-size:9pt; color:#666; margin-top:16px; padding-top:8px; border-top:1px solid #ddd; }
 .pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
@@ -925,6 +960,13 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   <span class="sep">|</span>
   <span>Niveau ${chapitre.niveau || 0}</span>
 </div>
+
+<!-- TAGS en haut (sans titre) -->
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
+
+<!-- VOCABULAIRE en haut (avec titre) -->
+${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+
 <div class="zone-lecture">
 `;
 
@@ -1008,7 +1050,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
         printHtml += '</div></div>';
       }
 
-      // 4) CARTE (transformée en question simple)
+      // 4) CARTE (question simple + demi-ligne)
       if (carte.trim() !== '') {
         var cartes = parserCartesPourImpression(carte);
         cartes.forEach(function(c) {
@@ -1016,15 +1058,12 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
           hasExercice = true;
           printHtml += '<div class="exo">';
           printHtml += '<span class="exo-num">' + exoNum + '. ' + c.recto + '</span>';
-          printHtml += '<div class="carte-lignes">';
-          printHtml += '<div class="carte-ligne"></div>';
-          printHtml += '<div class="carte-ligne"></div>';
-          printHtml += '</div></div>';
+          printHtml += '<div class="carte-ligne-courte"></div>';
+          printHtml += '</div>';
         });
       }
 
-      // 5) RELIER
-            // 5) RELIER (style manuel : points à relier)
+      // 5) RELIER (points à relier)
       if (relier.trim() !== '') {
         exoNum++;
         hasExercice = true;
@@ -1036,7 +1075,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
           printHtml += '<div class="relier-zone-lignes">';
           printHtml += '<div class="relier-lignes-grid">';
 
-          // Colonne gauche : texte + point à droite
           printHtml += '<div class="relier-col-lignes gauche">';
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             printHtml += '<div class="relier-ligne-item">';
@@ -1046,7 +1084,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
           }
           printHtml += '</div>';
 
-          // Colonne droite : point à gauche + texte
           printHtml += '<div class="relier-col-lignes droite">';
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
             printHtml += '<div class="relier-ligne-item">';
@@ -1056,9 +1093,9 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
           }
           printHtml += '</div>';
 
-          printHtml += '</div>'; // relier-lignes-grid
-          printHtml += '</div>'; // relier-zone-lignes
-          printHtml += '</div>'; // exo
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
         }
       }
 
@@ -1068,40 +1105,16 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 
       printHtml += '</div>';
 
-      // ZONE MÉMO
-      if (hasMemo) {
+      // ZONE MÉMO (uniquement À retenir)
+      if (aRetenirClean.length > 0) {
         printHtml += '<div class="zone-memo">';
-
-        if (aRetenirClean.length > 0) {
-          printHtml += '<div class="memo-bloc">';
-          printHtml += '<div class="titre-memo">À retenir</div>';
-          printHtml += '<ul class="memo-liste">';
-          aRetenirClean.forEach(function(phrase) {
-            printHtml += '<li>' + phrase + '</li>';
-          });
-          printHtml += '</ul></div>';
-        }
-
-        if (vocabClean.length > 0) {
-          printHtml += '<div class="memo-bloc">';
-          printHtml += '<div class="titre-memo">Vocabulaire</div>';
-          printHtml += '<div>';
-          vocabClean.forEach(function(mot) {
-            printHtml += '<span class="memo-mot">' + mot + '</span>';
-          });
-          printHtml += '</div></div>';
-        }
-
-        if (tagsClean.length > 0) {
-          printHtml += '<div class="memo-bloc">';
-          printHtml += '<div class="titre-memo">Tags</div>';
-          printHtml += '<div>';
-          tagsClean.forEach(function(tag) {
-            printHtml += '<span class="memo-tag">#' + tag + '</span>';
-          });
-          printHtml += '</div></div>';
-        }
-
+        printHtml += '<div class="memo-bloc">';
+        printHtml += '<div class="titre-memo">À retenir</div>';
+        printHtml += '<ul class="memo-liste">';
+        aRetenirClean.forEach(function(phrase) {
+          printHtml += '<li>' + phrase + '</li>';
+        });
+        printHtml += '</ul></div>';
         printHtml += '</div>';
       }
 
