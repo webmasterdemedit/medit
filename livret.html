@@ -788,6 +788,7 @@
   var carte = '';
   var relier = '';
 
+  // ⚠️ Plus de 'retenir' parsé depuis contenu — il vient de chapitre.aRetenir
   parts.forEach(function(part) {
     part = part.trim();
     if (part.startsWith('q:')) {
@@ -811,7 +812,9 @@
     }
   });
 
-  // === MÉMO ===
+  // ============================================================
+  // RÉCUPÉRER VOCABULAIRE / TAGS / À RETENIR (champs séparés)
+  // ============================================================
   var aRetenirClean = (chapitre.aRetenir || [])
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
@@ -830,7 +833,6 @@
 
   var hasMemo = (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0);
 
-  // === DATES ===
   var dateCreation = chapitre.date || '';
   var dateCreationStr = '';
   if (dateCreation) {
@@ -850,7 +852,6 @@
     hour: '2-digit', minute: '2-digit'
   });
 
-  // === CONSTRUCTION HTML ===
   var printHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -858,74 +859,54 @@
 <title>${chapitre.titre || 'Lecture'}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-@page { margin: 1.5cm 2cm 1.5cm 2cm; size: A4; }
-body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.6; }
+@page { margin: 2cm 2cm 1.5cm 2cm; size: A4; }
+body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.7; }
 .page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
-h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:4px; }
+h1 { font-size:20pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px; }
 .sous-titre { text-align:center; font-size:11pt; font-style:italic; margin-bottom:4px; color:#444; }
-.meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:8px; }
+.meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:18px; border-bottom:1px solid #ccc; padding-bottom:10px; }
 .meta-ligne span { margin:0 8px; }
 .meta-ligne .sep { color:#ccc; }
+.zone-lecture { flex:1; padding:6px 0; }
+.slide { margin-bottom:14px; }
+.slide p { font-size:13pt; margin-bottom:8px; text-align:justify; text-indent:2em; }
+.zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #d4c9b8; font-size:10pt; line-height:1.6; color:#2a2a2a; }
+.zone-exercices .titre-exo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:4px; }
 
-.zone-lecture { flex:1; padding:4px 0; }
-.slide { margin-bottom:12px; }
-.slide p { font-size:12.5pt; margin-bottom:6px; text-align:justify; text-indent:2em; }
+.zone-exercices .quiz-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin-top:2px; }
+.exo-quiz { margin-bottom:5px; padding-left:2px; break-inside:avoid; }
+.exo-quiz .q { font-weight:bold; }
+.exo-quiz .reponses { padding-left:16px; }
+.exo-quiz .reponses .r { display:inline-block; margin-right:14px; }
+.exo-quiz .case { display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:3px; background:white; }
+.exo-ordre { margin-bottom:6px; }
+.exo-ordre .item { display:inline-block; margin-right:10px; font-style:italic; }
+.exo-ordre .item::before { content:"— "; }
+.exo-carte { margin-bottom:6px; border:1px solid #ccc; padding:4px 10px; background:#f9f9f9; }
+.exo-carte .recto { font-weight:bold; }
+.exo-carte .verso-vide { color:#999; font-style:italic; font-size:9pt; }
+.exo-relier .consigne-relier { font-weight:bold; margin-bottom:4px; }
+.exo-relier .relier-grid { display:flex; justify-content:space-between; gap:40px; }
+.exo-relier .relier-col { flex:1; }
+.exo-relier .relier-item { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px dotted #999; }
+.exo-relier .relier-col.gauche .relier-item { justify-content:flex-end; }
+.exo-relier .relier-col.droite .relier-item { justify-content:flex-start; }
+.exo-relier .point { width:10px; height:10px; border:1.5px solid #000; border-radius:50%; background:white; flex-shrink:0; box-sizing:border-box; }
 
-.zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #b8a888; font-size:10.5pt; line-height:1.6; color:#1a1a1a; }
-.titre-exo { font-weight:600; font-size:10pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-top:14px; margin-bottom:6px; }
-.titre-exo:first-child { margin-top:0; }
-
-/* === EXERCICES NUMÉROTÉS === */
-.exo { margin-bottom:12px; page-break-inside:avoid; }
-.exo-num { font-weight:bold; font-size:11pt; color:#1a1a1a; margin-bottom:3px; display:block; }
-.exo-label { font-weight:bold; text-transform:uppercase; font-size:9.5pt; letter-spacing:1px; color:#5a4a3a; margin-bottom:4px; }
-
-/* === QUIZ === */
-.quiz-reponses { margin-left:16px; margin-top:3px; }
-.quiz-rep { display:inline-block; margin-right:20px; font-size:10.5pt; }
-.quiz-case { display:inline-block; width:11px; height:11px; border:1px solid #000; margin-right:4px; vertical-align:middle; background:white; }
-
-/* === QUESTION OUVERTE === */
-.open-lignes { margin-top:4px; }
-.open-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
-
-/* === ORDRE === */
-.ordre-liste { list-style:none; padding:0; margin:4px 0 6px 16px; }
-.ordre-liste li { margin-bottom:2px; }
-.ordre-lettre { font-weight:bold; margin-right:6px; display:inline-block; width:18px; }
-.ordre-zone { margin-top:6px; margin-left:16px; font-size:11pt; }
-.ordre-zone .tiret { margin:0 6px; font-weight:bold; }
-.ordre-zone .pointille { display:inline-block; width:40px; border-bottom:1px solid #000; height:14px; vertical-align:middle; }
-
-/* === CARTE === */
-.carte-question { margin-bottom:4px; }
-.carte-lignes { margin-top:4px; }
-.carte-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
-
-/* === RELIER === */
-.relier-grid { display:flex; justify-content:space-between; gap:40px; margin-top:4px; margin-left:16px; }
-.relier-col { flex:1; }
-.relier-item { display:flex; align-items:center; gap:8px; padding:3px 0; font-size:10.5pt; }
-.relier-col.gauche .relier-item { justify-content:flex-end; }
-.relier-col.droite .relier-item { justify-content:flex-start; }
-.relier-lettre { font-weight:bold; margin-right:4px; }
-.relier-num { font-weight:bold; margin-right:4px; }
-.relier-zone { margin-top:8px; margin-left:16px; font-size:11pt; }
-.relier-zone .assoc { display:inline-block; margin-right:20px; }
-.relier-zone .tiret { margin:0 4px; }
-
-/* === MÉMO === */
-.zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #b8a888; page-break-inside:avoid; }
+/* ===== MÉMO (à retenir / vocabulaire / tags) ===== */
+.zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #d4c9b8; }
 .zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
-.zone-memo .memo-bloc { margin-bottom:12px; }
+.zone-memo .memo-bloc { margin-bottom:14px; }
 .zone-memo .memo-bloc:last-child { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
-.zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
+.zone-memo .memo-liste li { font-size:11pt; margin-bottom:4px; padding-left:14px; position:relative; }
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
-.zone-memo .memo-mot { display:inline-block; padding:1px 8px; margin:1px 4px 1px 0; border:1px solid #999; font-size:10pt; }
-.zone-memo .memo-tag { display:inline-block; margin-right:8px; font-size:10pt; font-style:italic; color:#444; }
+.zone-memo .memo-mots { margin-top:2px; }
+.zone-memo .memo-mot { display:inline-block; padding:1px 8px; margin:1px 4px 1px 0; border:1px solid #999; font-size:9.5pt; }
+.zone-memo .memo-tags { font-size:10pt; font-style:italic; color:#444; }
+.zone-memo .memo-tag { margin-right:6px; }
 
-.pied-page { text-align:center; font-size:9pt; color:#666; margin-top:16px; padding-top:8px; border-top:1px solid #ddd; }
+.pied-page { text-align:center; font-size:9pt; color:#666; margin-top:6px; padding-top:6px; border-top:1px solid #ddd; }
 .pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
 </style>
 </head>
@@ -954,132 +935,86 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 
   printHtml += '</div>';
 
-  // === ZONE EXERCICES ===
+  // ============================================================
+  // ZONE EXERCICES
+  // ============================================================
   printHtml += '<div class="zone-exercices">';
-
-  var exoNum = 0;
   var hasExercice = false;
+  var questionNum = 1;
 
-  // 1) QUIZ (plusieurs possibles)
   if (quiz.trim() !== '') {
+    hasExercice = true;
     var quizs = parserQuizsPourImpression(quiz);
+    printHtml += '<div class="titre-exo">Questions de compréhension</div>';
+    printHtml += '<div class="quiz-grid">';
     quizs.forEach(function(q) {
-      exoNum++;
-      hasExercice = true;
-      printHtml += '<div class="exo">';
-      printHtml += '<span class="exo-num">' + exoNum + '. ' + q.question + '</span>';
-      printHtml += '<div class="quiz-reponses">';
+      printHtml += '<div class="exo-quiz">';
+      printHtml += '<span class="q">' + questionNum + '.</span> ' + q.question;
+      printHtml += '<div class="reponses">';
       q.reponses.forEach(function(rep) {
-        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
+        printHtml += '<span class="r"><span class="case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
       });
       printHtml += '</div></div>';
+      questionNum++;
     });
+    printHtml += '</div>';
   }
 
-  // 2) QUESTION OUVERTE
   if (openQuestion.trim() !== '') {
-    exoNum++;
     hasExercice = true;
     var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
-    printHtml += '<div class="exo">';
-    printHtml += '<span class="exo-num">' + exoNum + '. ' + qsTexte + '</span>';
-    printHtml += '<div class="open-lignes">';
-    printHtml += '<div class="open-ligne"></div>';
-    printHtml += '<div class="open-ligne"></div>';
-    printHtml += '<div class="open-ligne"></div>';
-    printHtml += '</div></div>';
+    if (quiz.trim() === '') printHtml += '<div class="titre-exo">Questions de compréhension</div>';
+    printHtml += '<div class="exo-quiz">';
+    printHtml += '<span class="q">' + questionNum + '.</span> ' + qsTexte;
+    printHtml += '<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>';
+    printHtml += '</div>';
+    questionNum++;
   }
 
-  // 3) ORDRE (A, B, C + zone de réponse)
   if (ordre.trim() !== '') {
-    exoNum++;
     hasExercice = true;
-    var ordreData = parserOrdrePourImpression(ordre);
-    var items = ordreData.elements || [];
-    var consigne = ordreData.consigne || 'Remettre dans l\'ordre';
-
-    // Mélanger les items
-    var itemsMelanges = items.slice();
-    for (var m = itemsMelanges.length - 1; m > 0; m--) {
-      var k = Math.floor(Math.random() * (m + 1));
-      var tmp = itemsMelanges[m]; itemsMelanges[m] = itemsMelanges[k]; itemsMelanges[k] = tmp;
-    }
-
-    var lettres = ['A','B','C','D','E','F','G','H'];
-
-    printHtml += '<div class="exo">';
-    printHtml += '<span class="exo-num">' + exoNum + '. ' + consigne + '</span>';
-    printHtml += '<ul class="ordre-liste">';
-    itemsMelanges.forEach(function(item, i) {
-      printHtml += '<li><span class="ordre-lettre">' + lettres[i] + '.</span>' + item + '</li>';
+    var ordreItems = parserOrdrePourImpression(ordre);
+    if (quiz.trim() === '' && openQuestion.trim() === '') printHtml += '<div class="titre-exo">Exercices</div>';
+    printHtml += '<div class="exo-ordre" style="margin-top:6px;">';
+    printHtml += '<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l\'ordre :</div>';
+    ordreItems.forEach(function(item) {
+      printHtml += '<span class="item">' + item + '</span>';
     });
-    printHtml += '</ul>';
-    printHtml += '<div class="ordre-zone"><strong>Votre réponse :</strong>';
-    for (var oi = 0; oi < itemsMelanges.length; oi++) {
-      if (oi > 0) printHtml += '<span class="tiret">-</span>';
-      printHtml += '<span class="pointille"></span>';
-    }
-    printHtml += '</div></div>';
+    printHtml += '</div>';
   }
 
-  // 4) CARTE (transformée en question simple)
   if (carte.trim() !== '') {
-    var cartes = parserCartesPourImpression(carte);
-    cartes.forEach(function(c) {
-      exoNum++;
-      hasExercice = true;
-      printHtml += '<div class="exo">';
-      printHtml += '<span class="exo-num">' + exoNum + '. ' + c.recto + '</span>';
-      printHtml += '<div class="carte-lignes">';
-      printHtml += '<div class="carte-ligne"></div>';
-      printHtml += '<div class="carte-ligne"></div>';
-      printHtml += '</div></div>';
-    });
+    hasExercice = true;
+    var carteData = parserCartePourImpression(carte);
+    if (carteData) {
+      if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') printHtml += '<div class="titre-exo">Exercices</div>';
+      printHtml += '<div class="exo-carte" style="margin-top:6px;">';
+      printHtml += '<div class="recto">' + carteData.recto + '</div>';
+      printHtml += '<div class="verso-vide">(Espace pour écrire la réponse)</div>';
+      printHtml += '</div>';
+    }
   }
 
-  // 5) RELIER (A/B/C gauche, 1/2/3 droite + zone A→__, B→__)
   if (relier.trim() !== '') {
-    exoNum++;
     hasExercice = true;
     var relierData = parserRelierPourImpression(relier);
-
     if (relierData) {
-      var lettresG = ['A','B','C','D','E','F','G','H'];
-
-      printHtml += '<div class="exo">';
-      printHtml += '<span class="exo-num">' + exoNum + '. ' + relierData.consigne + '</span>';
+      if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
+        printHtml += '<div class="titre-exo">Exercices</div>';
+      }
+      printHtml += '<div class="exo-relier">';
+      printHtml += '<div class="consigne-relier">' + relierData.consigne + '</div>';
       printHtml += '<div class="relier-grid">';
-
-      // Colonne gauche : A, B, C + texte gauche
       printHtml += '<div class="relier-col gauche">';
       for (var rg = 0; rg < relierData.paires.length; rg++) {
-        printHtml += '<div class="relier-item">';
-        printHtml += '<span class="relier-lettre">' + lettresG[rg] + '.</span>';
-        printHtml += '<span>' + relierData.paires[rg].gauche + '</span>';
-        printHtml += '</div>';
+        printHtml += '<div class="relier-item"><span>' + relierData.paires[rg].gauche + '</span><span class="point"></span></div>';
       }
       printHtml += '</div>';
-
-      // Colonne droite : 1, 2, 3 + texte droite mélangé
       printHtml += '<div class="relier-col droite">';
       for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
-        printHtml += '<div class="relier-item">';
-        printHtml += '<span class="relier-num">' + (rd + 1) + '.</span>';
-        printHtml += '<span>' + relierData.droitesMelangees[rd] + '</span>';
-        printHtml += '</div>';
+        printHtml += '<div class="relier-item"><span class="point"></span><span>' + relierData.droitesMelangees[rd] + '</span></div>';
       }
-      printHtml += '</div>';
-
-      printHtml += '</div>'; // relier-grid
-
-      // Zone de réponse A→__, B→__, C→__
-      printHtml += '<div class="relier-zone"><strong>Votre réponse :</strong> ';
-      for (var rz = 0; rz < relierData.paires.length; rz++) {
-        printHtml += '<span class="assoc">' + lettresG[rz] + '<span class="tiret">→</span><span class="pointille"></span></span>';
-      }
-      printHtml += '</div>';
-
-      printHtml += '</div>'; // exo
+      printHtml += '</div></div></div>';
     }
   }
 
@@ -1089,7 +1024,9 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 
   printHtml += '</div>'; // zone-exercices
 
-  // === ZONE MÉMO ===
+  // ============================================================
+  // ZONE MÉMO (à retenir / vocabulaire / tags)
+  // ============================================================
   if (hasMemo) {
     printHtml += '<div class="zone-memo">';
 
@@ -1106,7 +1043,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
     if (vocabClean.length > 0) {
       printHtml += '<div class="memo-bloc">';
       printHtml += '<div class="titre-memo">Vocabulaire</div>';
-      printHtml += '<div>';
+      printHtml += '<div class="memo-mots">';
       vocabClean.forEach(function(mot) {
         printHtml += '<span class="memo-mot">' + mot + '</span>';
       });
@@ -1116,14 +1053,14 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
     if (tagsClean.length > 0) {
       printHtml += '<div class="memo-bloc">';
       printHtml += '<div class="titre-memo">Tags</div>';
-      printHtml += '<div>';
+      printHtml += '<div class="memo-tags">';
       tagsClean.forEach(function(tag) {
         printHtml += '<span class="memo-tag">#' + tag + '</span>';
       });
       printHtml += '</div></div>';
     }
 
-    printHtml += '</div>';
+    printHtml += '</div>'; // zone-memo
   }
 
   printHtml += `
@@ -1135,7 +1072,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 </body>
 </html>`;
 
-  // Iframe invisible pour impression
+  // Créer un iframe invisible
   var iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -1156,6 +1093,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
     }, 1000);
   }, 500);
 }
+
     // ============================================================
     // MODAL ANNOTATIONS
     // ============================================================
