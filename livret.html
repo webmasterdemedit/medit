@@ -783,15 +783,20 @@
     carte = part;
   } else if (part.startsWith('l:')) {
     relier = part;
-  } else if (part.startsWith('!')) {
-    // 👇 NOUVEAU : on ignore les lignes de vocabulaire (déjà affichées dans le cadre en bas)
-    return;
   } else {
     var cleanText = part.replace(/\r\n/g, '\n').trim();
     if (cleanText) {
       var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
       subSlides.forEach(function(sub) {
-        slidesArray.push(sub.trim());
+        // 👇 Filtrer les lignes "!" (vocabulaire) et "#" (tags)
+        var lignesFiltrees = sub.split('\n').filter(function(ligne) {
+          var l = ligne.trim();
+          return l !== '' && !l.startsWith('!') && !l.startsWith('#');
+        });
+        var textePropre = lignesFiltrees.join('\n').trim();
+        if (textePropre) {
+          slidesArray.push(textePropre);
+        }
       });
     }
   }
