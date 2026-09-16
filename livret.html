@@ -643,41 +643,41 @@
     // IMPRESSION
     // ============================================================
     function imprimerChapitre(chapitreId, titre) {
-  // Chercher le chapitre dans chapitresData (déjà chargé)
-  var chapitre = null;
-  if (typeof chapitresData !== 'undefined' && chapitresData.length > 0) {
-    for (var i = 0; i < chapitresData.length; i++) {
-      if (chapitresData[i].id === chapitreId) {
-        chapitre = chapitresData[i];
-        break;
+      // Chercher le chapitre dans chapitresData (déjà chargé)
+      var chapitre = null;
+      if (typeof chapitresData !== 'undefined' && chapitresData.length > 0) {
+        for (var i = 0; i < chapitresData.length; i++) {
+          if (chapitresData[i].id === chapitreId) {
+            chapitre = chapitresData[i];
+            break;
+          }
+        }
       }
-    }
-  }
-  
-  // Fallback: chercher dans DataManager
-  if (!chapitre) {
-    var tousLesChapitres = DataManager.getTousLesChapitres();
-    for (var i = 0; i < tousLesChapitres.length; i++) {
-      if (tousLesChapitres[i].id === chapitreId) {
-        chapitre = tousLesChapitres[i];
-        break;
+      
+      // Fallback: chercher dans DataManager
+      if (!chapitre) {
+        var tousLesChapitres = DataManager.getTousLesChapitres();
+        for (var i = 0; i < tousLesChapitres.length; i++) {
+          if (tousLesChapitres[i].id === chapitreId) {
+            chapitre = tousLesChapitres[i];
+            break;
+          }
+        }
       }
+      
+      if (!chapitre) {
+        alert('Chapitre "' + titre + '" non trouvé.');
+        return;
+      }
+      
+      var contenu = chapitre.contenu || '';
+      if (!contenu) {
+        alert('Ce chapitre ne contient pas de texte à imprimer.');
+        return;
+      }
+      
+      genererImpression(chapitre, contenu);
     }
-  }
-  
-  if (!chapitre) {
-    alert('Chapitre "' + titre + '" non trouvé.');
-    return;
-  }
-  
-  var contenu = chapitre.contenu || '';
-  if (!contenu) {
-    alert('Ce chapitre ne contient pas de texte à imprimer.');
-    return;
-  }
-  
-  genererImpression(chapitre, contenu);
-}
 
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -779,41 +779,111 @@
     }
 
     function genererImpression(chapitre, contenu) {
-      var parts = contenu.split(' | ');
+      // ============================================================
+      // PARSING LIGNE PAR LIGNE — retire TOUS les préfixes spéciaux
+      // ============================================================
+      var lignes = contenu.replace(/\r\n/g, '\n').split('\n');
       
       var slidesArray = [];
-      var quiz = '';
-      var openQuestion = '';
-      var ordre = '';
-      var carte = '';
-      var retenir = '';
-      var relier = '';
+      var quizLignes = [];
+      var openQuestionLignes = [];
+      var ordreLignes = [];
+      var carteLignes = [];
+      var relierLignes = [];
+      var retenirMots = [];
+      var noteLignes = [];
+      var slideEnCours = [];
       
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) {
-          quiz = part;
-        } else if (part.startsWith('qs:')) {
-          openQuestion = part;
-        } else if (part.startsWith('o:')) {
-          ordre = part;
-        } else if (part.startsWith('r:')) {
-          carte = part;
-        } else if (part.startsWith('l:')) {
-          relier = part;
-        } else if (part.startsWith('#')) {
-          retenir = part;
-        } else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+      function viderSlide() {
+        if (slideEnCours.length > 0) {
+          var texte = slideEnCours.join('\n').trim();
+          if (texte) {
+            var subSlides = texte.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
             subSlides.forEach(function(sub) {
               slidesArray.push(sub.trim());
             });
           }
+          slideEnCours = [];
         }
-      });
-
+      }
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i].trim();
+        
+        if (ligne === '') {
+          if (slideEnCours.length > 0) {
+            slideEnCours.push('');
+          }
+          continue;
+        }
+        
+        // Titre de slide (citation)
+        if (ligne.match(/^>\s*/)) {
+          viderSlide();
+          slideEnCours.push(ligne.replace(/^>\s*/, ''));
+        }
+        // Quiz
+        else if (ligne.match(/^q:/i)) {
+          viderSlide();
+          quizLignes.push(ligne);
+        }
+        // Question ouverte
+        else if (ligne.match(/^qs:/i)) {
+          viderSlide();
+          openQuestionLignes.push(ligne);
+        }
+        // Ordre
+        else if (ligne.match(/^o:/i)) {
+          viderSlide();
+          ordreLignes.push(ligne);
+        }
+        // Carte (recto)
+        else if (ligne.match(/^r:/i)) {
+          viderSlide();
+          carteLignes.push(ligne);
+        }
+        // Carte (verso) — si on est dans une carte
+        else if (ligne.match(/^v:/i) && carteLignes.length > 0) {
+          carteLignes.push(ligne);
+        }
+        // Relier
+        else if (ligne.match(/^l:/i)) {
+          viderSlide();
+          relierLignes.push(ligne);
+        }
+        // À retenir
+        else if (ligne.match(/^#/)) {
+          viderSlide();
+          var mots = ligne.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+          retenirMots = retenirMots.concat(mots);
+        }
+        // Note (Aliment = nourriture)
+        else if (ligne.match(/^!/)) {
+          viderSlide();
+          noteLignes.push(ligne.replace(/^!\s*/, ''));
+        }
+        // Réponses de quiz (f ... ou v ...)
+        else if (ligne.match(/^[fv]\s/i) && quizLignes.length > 0) {
+          quizLignes.push(ligne);
+        }
+        // Ligne normale
+        else {
+          slideEnCours.push(ligne);
+        }
+      }
+      
+      viderSlide();
+      
+      var quiz = quizLignes.join('\n');
+      var openQuestion = openQuestionLignes.join('\n');
+      var ordre = ordreLignes.join('\n');
+      var carte = carteLignes.join('\n');
+      var relier = relierLignes.join('\n');
+      var retenir = retenirMots.length > 0 ? '#' + retenirMots.join(', ') : '';
+      var notes = noteLignes.join(' | ');
+      
+      // ⚠️ L'ANCIEN BLOC parts.forEach A ÉTÉ SUPPRIMÉ ICI
+      
       var dateCreation = chapitre.date || '';
       var dateCreationStr = '';
       if (dateCreation) {
@@ -990,6 +1060,13 @@
               font-weight: bold;
               font-size: 9pt;
             }
+            .exo-notes {
+              margin-top: 6px;
+              padding: 4px 10px;
+              border-left: 3px solid #999;
+              font-style: italic;
+              color: #444;
+            }
             .exo-relier .relier-grid {
               display: flex;
               justify-content: space-between;
@@ -1130,7 +1207,7 @@
         }
       }
 
-            if (relier.trim() !== '') {
+      if (relier.trim() !== '') {
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
         if (relierData) {
@@ -1179,6 +1256,13 @@
         }
       }
 
+      // Notes (préfixe !)
+      if (notes.trim() !== '') {
+        hasExercice = true;
+        printHtml += `<div class="titre-exo" style="margin-top:8px;">Notes</div>`;
+        printHtml += `<div class="exo-notes">${notes}</div>`;
+      }
+
       if (!hasExercice) {
         printHtml += `<div style="height:2px;"></div>`;
       }
@@ -1195,7 +1279,7 @@
         </html>
       `;
 
-           // Créer un iframe invisible
+      // Créer un iframe invisible
       var iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
       iframe.style.right = '0';
@@ -1306,7 +1390,7 @@
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
-                  pages: l.pages || '',  // ← remplace preRequis
+                  pages: l.pages || '',
                   description: l.description || '',
                   auteur: l.auteur || ''
                 };
@@ -1340,10 +1424,9 @@
                     couleur: l.couleur || '#2d6a4f',
                     sousTitre: l.sousTitre || '',
                     date: l.date || '',
-                    pages: l.pages || '',  // ← remplace preRequis
+                    pages: l.pages || '',
                     description: l.description || '',
                     auteur: l.auteur || ''
-                    
                   };
                 });
               }
@@ -1407,7 +1490,7 @@
       var sousTitre = livretInfo.sousTitre || '';
       var dateLivret = livretInfo.date || '';
       var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
-      var pages = livretInfo.pages || '';  // ← remplace preRequis
+      var pages = livretInfo.pages || '';
       var auteur = livretInfo.auteur || '';
 
       var dateFormatee = formatDate(dateLivret);
@@ -1584,7 +1667,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-                var imprimerHtml = `
+        var imprimerHtml = `
           <div class="btn-wrap">
             <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}')">
               🖨 Imprimer
