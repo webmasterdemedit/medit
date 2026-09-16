@@ -778,7 +778,11 @@
       return { consigne: consigne, paires: paires, droitesMelangees: droitesMelangees };
     }
 
-    function genererImpression(chapitre, contenu) {
+        function genererImpression(chapitre, contenu) {
+      // ============================================================
+      // PARSING : on garde ta logique "parts" mais on filtre les
+      // lignes spéciales (#, !, q:, qs:, o:, r:, l:) DANS les slides
+      // ============================================================
       var parts = contenu.split(' | ');
       
       var slidesArray = [];
@@ -788,6 +792,7 @@
       var carte = '';
       var retenir = '';
       var relier = '';
+      var notes = '';
       
       parts.forEach(function(part) {
         part = part.trim();
@@ -803,12 +808,77 @@
           relier = part;
         } else if (part.startsWith('#')) {
           retenir = part;
+        } else if (part.startsWith('!')) {
+          notes = part;
         } else {
+          // Nettoyer le texte : retirer les lignes spéciales qui
+          // seraient mélangées dans le texte du slide
           var cleanText = part.replace(/\r\n/g, '\n').trim();
           if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subSlides.forEach(function(sub) {
-              slidesArray.push(sub.trim());
+            // Découper en lignes pour filtrer
+            var lignesTexte = cleanText.split('\n');
+            var lignesGardees = [];
+            var slideEnCours = [];
+            
+            for (var li = 0; li < lignesTexte.length; li++) {
+              var l = lignesTexte[li];
+              var lTrim = l.trim();
+              
+              // Si la ligne commence par un préfixe spécial, on la sort du slide
+              if (lTrim.match(/^#/) ||
+                  lTrim.match(/^!/) ||
+                  lTrim.match(/^q:/i) ||
+                  lTrim.match(/^qs:/i) ||
+                  lTrim.match(/^o:/i) ||
+                  lTrim.match(/^r:/i) ||
+                  lTrim.match(/^l:/i) ||
+                  (lTrim.match(/^[fv]\s/i) && quiz !== '')) {
+                // Sauvegarder le slide en cours
+                if (slideEnCours.length > 0) {
+                  lignesGardees.push(slideEnCours.join('\n').trim());
+                  slideEnCours = [];
+                }
+                // Ajouter la ligne aux bonnes variables
+                if (lTrim.match(/^#/)) {
+                  var mots = lTrim.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
+                  if (mots.length > 0) {
+                    retenir = (retenir ? retenir + ', ' : '#') + mots.join(', ');
+                  }
+                } else if (lTrim.match(/^!/)) {
+                  notes = (notes ? notes + ' | ' : '') + lTrim.replace(/^!\s*/, '');
+                } else if (lTrim.match(/^q:/i)) {
+                  quiz = (quiz ? quiz + '\n' : '') + lTrim;
+                } else if (lTrim.match(/^qs:/i)) {
+                  openQuestion = (openQuestion ? openQuestion + '\n' : '') + lTrim;
+                } else if (lTrim.match(/^o:/i)) {
+                  ordre = (ordre ? ordre + '\n' : '') + lTrim;
+                } else if (lTrim.match(/^r:/i)) {
+                  carte = (carte ? carte + '\n' : '') + lTrim;
+                } else if (lTrim.match(/^l:/i)) {
+                  relier = (relier ? relier + '\n' : '') + lTrim;
+                } else if (lTrim.match(/^[fv]\s/i) && quiz !== '') {
+                  quiz = quiz + '\n' + lTrim;
+                }
+              } else {
+                // Ligne normale : on la garde dans le slide
+                slideEnCours.push(l);
+              }
+            }
+            
+            // Ne pas oublier le dernier slide
+            if (slideEnCours.length > 0) {
+              var texteSlide = slideEnCours.join('\n').trim();
+              if (texteSlide) {
+                lignesGardees.push(texteSlide);
+              }
+            }
+            
+            // Découper par doubles sauts de ligne pour les slides
+            lignesGardees.forEach(function(bloc) {
+              var subSlides = bloc.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+              subSlides.forEach(function(sub) {
+                slidesArray.push(sub.trim());
+              });
             });
           }
         }
@@ -1130,7 +1200,7 @@
         }
       }
 
-            if (relier.trim() !== '') {
+      if (relier.trim() !== '') {
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
         if (relierData) {
@@ -1141,7 +1211,6 @@
           printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
           printHtml += `<div class="relier-grid">`;
 
-          // Colonne gauche
           printHtml += `<div class="relier-col gauche">`;
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             printHtml += `<div class="relier-item">`;
@@ -1151,7 +1220,6 @@
           }
           printHtml += `</div>`;
 
-          // Colonne droite (mélangée)
           printHtml += `<div class="relier-col droite">`;
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
             printHtml += `<div class="relier-item">`;
@@ -1161,8 +1229,8 @@
           }
           printHtml += `</div>`;
 
-          printHtml += `</div>`; // relier-grid
-          printHtml += `</div>`; // exo-relier
+          printHtml += `</div>`;
+          printHtml += `</div>`;
         }
       }
 
@@ -1195,7 +1263,6 @@
         </html>
       `;
 
-           // Créer un iframe invisible
       var iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
       iframe.style.right = '0';
@@ -1205,12 +1272,10 @@
       iframe.style.border = 'none';
       document.body.appendChild(iframe);
       
-      // Écrire le contenu dans l'iframe
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.write(printHtml);
       iframeDoc.close();
       
-      // Lancer l'impression
       setTimeout(function() {
         iframe.contentWindow.print();
         setTimeout(function() {
@@ -1218,7 +1283,6 @@
         }, 1000);
       }, 500);
     }
-
     // ============================================================
     // MODAL ANNOTATIONS
     // ============================================================
