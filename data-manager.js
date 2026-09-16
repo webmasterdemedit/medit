@@ -36,6 +36,9 @@ var DataManager = {
                     data.disciplines = data.disciplines || '';
                     data.historique = data.historique || [];
                     
+                    // 🔥 IMPORTANT : garder le cache en mémoire
+                    DataManager._dernierChargement = data;
+                    
                     console.log('✅ Données chargées en 1 requête');
                     console.log('📚 ' + data.livrets.length + ' livrets');
                     console.log('📖 ' + data.tousLesChapitres.length + ' chapitres (tous)');
@@ -57,7 +60,17 @@ var DataManager = {
     // RÉCUPÉRER LES DONNÉES (depuis le cache)
     // ============================================================
     getChapitre: function(chapitreId) {
-        // Récupère depuis le cache du dernier chargement
+        var cache = this._dernierChargement;
+        if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
+            return cache.chapitresComplets[chapitreId];
+        }
+        return null;
+    },
+
+    // ============================================================
+    // NOUVEAU : chapitre complet (avec contenu + voc + tags + aRetenir)
+    // ============================================================
+    getChapitreComplet: function(chapitreId) {
         var cache = this._dernierChargement;
         if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
             return cache.chapitresComplets[chapitreId];
@@ -180,11 +193,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -204,11 +214,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -225,11 +232,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -245,11 +249,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -269,11 +270,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -289,11 +287,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -309,11 +304,8 @@ var DataManager = {
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    return data;
-                } else {
-                    throw new Error(data.message || 'Erreur');
-                }
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
             });
     },
 
@@ -366,7 +358,6 @@ var DataManager = {
     },
 
     getCacheForce: function(id) {
-        // Pour compatibilité avec l'ancien code
         return this._dernierChargement;
     }
 };
