@@ -779,445 +779,320 @@
     }
 
     function genererImpression(chapitre, contenu) {
-      var parts = contenu.split(' | ');
-      
-      var slidesArray = [];
-      var quiz = '';
-      var openQuestion = '';
-      var ordre = '';
-      var carte = '';
-      var retenir = '';
-      var relier = '';
-      
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) {
-          quiz = part;
-        } else if (part.startsWith('qs:')) {
-          openQuestion = part;
-        } else if (part.startsWith('o:')) {
-          ordre = part;
-        } else if (part.startsWith('r:')) {
-          carte = part;
-        } else if (part.startsWith('l:')) {
-          relier = part;
-        } else if (part.startsWith('#')) {
-          retenir = part;
-        } else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subSlides.forEach(function(sub) {
-              slidesArray.push(sub.trim());
-            });
-          }
-        }
-      });
+  var parts = contenu.split(' | ');
 
-      var dateCreation = chapitre.date || '';
-      var dateCreationStr = '';
-      if (dateCreation) {
-        var d = new Date(dateCreation);
-        if (!isNaN(d.getTime())) {
-          dateCreationStr = d.toLocaleDateString('fr-FR', {
-            day: '2-digit', month: 'long', year: 'numeric'
-          });
-        }
+  var slidesArray = [];
+  var quiz = '';
+  var openQuestion = '';
+  var ordre = '';
+  var carte = '';
+  var relier = '';
+
+  // ⚠️ Plus de 'retenir' parsé depuis contenu — il vient de chapitre.aRetenir
+  parts.forEach(function(part) {
+    part = part.trim();
+    if (part.startsWith('q:')) {
+      quiz = part;
+    } else if (part.startsWith('qs:')) {
+      openQuestion = part;
+    } else if (part.startsWith('o:')) {
+      ordre = part;
+    } else if (part.startsWith('r:')) {
+      carte = part;
+    } else if (part.startsWith('l:')) {
+      relier = part;
+    } else {
+      var cleanText = part.replace(/\r\n/g, '\n').trim();
+      if (cleanText) {
+        var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+        subSlides.forEach(function(sub) {
+          slidesArray.push(sub.trim());
+        });
       }
+    }
+  });
 
-      var dateImpression = new Date();
-      var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
+  // ============================================================
+  // RÉCUPÉRER VOCABULAIRE / TAGS / À RETENIR (champs séparés)
+  // ============================================================
+  var aRetenirClean = (chapitre.aRetenir || [])
+    .map(function(x) { return String(x).trim(); })
+    .filter(function(x) { return x !== ''; });
+
+  var vocabClean = [];
+  (chapitre.vocabulaire || []).forEach(function(item) {
+    String(item).split(',').forEach(function(mot) {
+      var m = mot.trim();
+      if (m !== '') vocabClean.push(m);
+    });
+  });
+
+  var tagsClean = (chapitre.tags || [])
+    .map(function(x) { return String(x).trim(); })
+    .filter(function(x) { return x !== ''; });
+
+  var hasMemo = (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0);
+
+  var dateCreation = chapitre.date || '';
+  var dateCreationStr = '';
+  if (dateCreation) {
+    var d = new Date(dateCreation);
+    if (!isNaN(d.getTime())) {
+      dateCreationStr = d.toLocaleDateString('fr-FR', {
         day: '2-digit', month: 'long', year: 'numeric'
       });
-      var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
-        hour: '2-digit', minute: '2-digit'
-      });
-
-      var printHtml = `
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>${chapitre.titre || 'Lecture'}</title>
-          <style>
-            * { margin: 0; padding: 0; box-sizing: border-box; }
-            @page {
-              margin: 2cm 2cm 1.5cm 2cm;
-              size: A4;
-            }
-            body {
-              font-family: 'Times New Roman', Times, serif;
-              background: white;
-              color: black;
-              font-size: 12pt;
-              line-height: 1.7;
-            }
-            .page {
-              max-width: 100%;
-              min-height: 100vh;
-              display: flex;
-              flex-direction: column;
-            }
-            
-            h1 {
-              font-size: 20pt;
-              font-weight: bold;
-              text-align: center;
-              text-transform: uppercase;
-              letter-spacing: 1.5px;
-              margin-bottom: 4px;
-            }
-            .sous-titre {
-              text-align: center;
-              font-size: 11pt;
-              font-style: italic;
-              margin-bottom: 4px;
-              color: #444;
-            }
-            .meta-ligne {
-              text-align: center;
-              font-size: 10pt;
-              color: #555;
-              margin-bottom: 18px;
-              border-bottom: 1px solid #ccc;
-              padding-bottom: 10px;
-            }
-            .meta-ligne span {
-              margin: 0 8px;
-            }
-            .meta-ligne .sep {
-              color: #ccc;
-            }
-            
-            .zone-lecture {
-              flex: 1;
-              padding: 6px 0;
-            }
-            .slide {
-              margin-bottom: 14px;
-            }
-            .slide p {
-              font-size: 13pt;
-              margin-bottom: 8px;
-              text-align: justify;
-              text-indent: 2em;
-            }
-           
-            .zone-exercices {
-              margin-top: 16px;
-              padding-top: 14px;
-              border-top: 1px solid #d4c9b8;
-              font-size: 10pt;
-              line-height: 1.6;
-              color: #2a2a2a;
-            }
-            .zone-exercices .titre-exo {
-              font-weight: 600;
-              font-size: 9.5pt;
-              text-transform: uppercase;
-              letter-spacing: 1.5px;
-              color: #5a4a3a;
-              margin-bottom: 4px;
-            }
-            
-            /* ===== QUIZ EN 2 COLONNES ===== */
-            .zone-exercices .quiz-grid {
-              display: grid;
-              grid-template-columns: 1fr 1fr;
-              gap: 6px 20px;
-              margin-top: 2px;
-            }
-            .zone-exercices .quiz-grid .exo-quiz {
-              margin-bottom: 2px;
-              padding-left: 2px;
-              break-inside: avoid;
-            }
-            .exo-quiz {
-              margin-bottom: 5px;
-              padding-left: 2px;
-            }
-            .exo-quiz .q {
-              font-weight: bold;
-            }
-            .exo-quiz .reponses {
-              padding-left: 16px;
-            }
-            .exo-quiz .reponses .r {
-              display: inline-block;
-              margin-right: 14px;
-            }
-            .exo-quiz .case {
-              display: inline-block;
-              width: 12px;
-              height: 12px;
-              border: 1px solid #000;
-              margin-right: 3px;
-              background: white;
-            }
-            .exo-ordre {
-              margin-bottom: 6px;
-            }
-            .exo-ordre .item {
-              display: inline-block;
-              margin-right: 10px;
-              font-style: italic;
-            }
-            .exo-ordre .item::before {
-              content: "— ";
-            }
-            .exo-carte {
-              margin-bottom: 6px;
-              border: 1px solid #ccc;
-              padding: 4px 10px;
-              background: #f9f9f9;
-            }
-            .exo-carte .recto {
-              font-weight: bold;
-            }
-            .exo-carte .verso-vide {
-              color: #999;
-              font-style: italic;
-              font-size: 9pt;
-            }
-            .exo-retenir {
-              margin-top: 4px;
-            }
-            .exo-retenir .mot {
-              display: inline-block;
-              padding: 1px 8px;
-              margin: 1px 4px 1px 0;
-              border: 1px solid #999;
-              font-weight: bold;
-              font-size: 9pt;
-            }
-            .exo-relier .relier-grid {
-              display: flex;
-              justify-content: space-between;
-              gap: 40px;
-            }
-            .exo-relier .relier-col {
-              flex: 1;
-            }
-            .exo-relier .relier-item {
-              display: flex;
-              align-items: center;
-              gap: 8px;
-              padding: 4px 0;
-              border-bottom: 1px dotted #999;
-            }
-            .exo-relier .relier-col.gauche .relier-item {
-              justify-content: flex-end;
-            }
-            .exo-relier .relier-col.droite .relier-item {
-              justify-content: flex-start;
-            }
-            .exo-relier .point {
-              width: 10px;
-              height: 10px;
-              border: 1.5px solid #000;
-              border-radius: 50%;
-              background: white;
-              flex-shrink: 0;
-              box-sizing: border-box;
-            }
-            .pied-page {
-              text-align: center;
-              font-size: 9pt;
-              color: #666;
-              margin-top: 6px;
-              padding-top: 6px;
-              border-top: 1px solid #ddd;
-            }
-            .pied-page .imprime-le {
-              font-style: italic;
-              font-size: 8pt;
-              color: #999;
-              margin-top: 2px;
-            }
-          </style>
-        </head>
-        <body>
-          <div class="page">
-      `;
-
-      printHtml += `
-        <h1>${chapitre.titre || 'Lecture'}</h1>
-        <div class="sous-titre">${chapitre.categorie || 'Sans catégorie'}</div>
-        <div class="meta-ligne">
-          <span>Créé le : ${dateCreationStr || '—'}</span>
-          <span class="sep">|</span>
-          <span>Niveau ${chapitre.niveau || 0}</span>
-        </div>
-      `;
-
-      printHtml += `<div class="zone-lecture">`;
-
-      if (slidesArray.length > 0) {
-        slidesArray.forEach(function(slide, idx) {
-          printHtml += `<div class="slide">`;
-          var paragraphs = slide.split('\n').filter(function(p) { return p.trim() !== ''; });
-          paragraphs.forEach(function(p) {
-            printHtml += `<p>${p.trim()}</p>`;
-          });
-          printHtml += `</div>`;
-        });
-      }
-
-      printHtml += `</div>`;
-
-      printHtml += `<div class="zone-exercices">`;
-
-      var hasExercice = false;
-      var questionNum = 1;
-
-      if (quiz.trim() !== '') {
-        hasExercice = true;
-        var quizs = parserQuizsPourImpression(quiz);
-        printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
-        printHtml += `<div class="quiz-grid">`;
-        quizs.forEach(function(q, qi) {
-          printHtml += `<div class="exo-quiz">`;
-          printHtml += `<span class="q">${questionNum}.</span> ${q.question}`;
-          printHtml += `<div class="reponses">`;
-          q.reponses.forEach(function(rep) {
-            printHtml += `<span class="r"><span class="case"></span> ${rep.lettre}. ${rep.texte}</span>`;
-          });
-          printHtml += `</div>`;
-          printHtml += `</div>`;
-          questionNum++;
-        });
-        printHtml += `</div>`;
-      }
-
-      if (openQuestion.trim() !== '') {
-        hasExercice = true;
-        var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
-        if (quiz.trim() === '') {
-          printHtml += `<div class="titre-exo">Questions de compréhension</div>`;
-        }
-        printHtml += `<div class="exo-quiz">`;
-        printHtml += `<span class="q">${questionNum}.</span> ${qsTexte}`;
-        printHtml += `<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>`;
-        printHtml += `</div>`;
-        questionNum++;
-      }
-
-      if (ordre.trim() !== '') {
-        hasExercice = true;
-        var ordreItems = parserOrdrePourImpression(ordre);
-        if (quiz.trim() === '' && openQuestion.trim() === '') {
-          printHtml += `<div class="titre-exo">Exercices</div>`;
-        }
-        printHtml += `<div class="exo-ordre" style="margin-top:6px;">`;
-        printHtml += `<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l'ordre :</div>`;
-        ordreItems.forEach(function(item, idx) {
-          printHtml += `<span class="item">${item}</span>`;
-        });
-        printHtml += `</div>`;
-      }
-
-      if (carte.trim() !== '') {
-        hasExercice = true;
-        var carteData = parserCartePourImpression(carte);
-        if (carteData) {
-          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') {
-            printHtml += `<div class="titre-exo">Exercices</div>`;
-          }
-          printHtml += `<div class="exo-carte" style="margin-top:6px;">`;
-          printHtml += `<div class="recto">${carteData.recto}</div>`;
-          printHtml += `<div class="verso-vide">(Espace pour écrire la réponse)</div>`;
-          printHtml += `</div>`;
-        }
-      }
-
-            if (relier.trim() !== '') {
-        hasExercice = true;
-        var relierData = parserRelierPourImpression(relier);
-        if (relierData) {
-          if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
-            printHtml += `<div class="titre-exo">Exercices</div>`;
-          }
-          printHtml += `<div class="exo-relier">`;
-          printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
-          printHtml += `<div class="relier-grid">`;
-
-          // Colonne gauche
-          printHtml += `<div class="relier-col gauche">`;
-          for (var rg = 0; rg < relierData.paires.length; rg++) {
-            printHtml += `<div class="relier-item">`;
-            printHtml += `<span>${relierData.paires[rg].gauche}</span>`;
-            printHtml += `<span class="point"></span>`;
-            printHtml += `</div>`;
-          }
-          printHtml += `</div>`;
-
-          // Colonne droite (mélangée)
-          printHtml += `<div class="relier-col droite">`;
-          for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
-            printHtml += `<div class="relier-item">`;
-            printHtml += `<span class="point"></span>`;
-            printHtml += `<span>${relierData.droitesMelangees[rd]}</span>`;
-            printHtml += `</div>`;
-          }
-          printHtml += `</div>`;
-
-          printHtml += `</div>`; // relier-grid
-          printHtml += `</div>`; // exo-relier
-        }
-      }
-
-      if (retenir.trim() !== '') {
-        hasExercice = true;
-        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-        if (mots.length > 0) {
-          printHtml += `<div class="titre-exo" style="margin-top:8px;">Vocabulaire</div>`;
-          printHtml += `<div class="exo-retenir">`;
-          mots.forEach(function(mot) {
-            printHtml += `<span class="mot">${mot}</span>`;
-          });
-          printHtml += `</div>`;
-        }
-      }
-
-      if (!hasExercice) {
-        printHtml += `<div style="height:2px;"></div>`;
-      }
-
-      printHtml += `</div>`;
-
-      printHtml += `
-            <div class="pied-page">
-              <div>Qiraat</div>
-              <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
-            </div>
-          </div>
-        </body>
-        </html>
-      `;
-
-           // Créer un iframe invisible
-      var iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '0';
-      iframe.style.bottom = '0';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = 'none';
-      document.body.appendChild(iframe);
-      
-      // Écrire le contenu dans l'iframe
-      var iframeDoc = iframe.contentWindow.document;
-      iframeDoc.write(printHtml);
-      iframeDoc.close();
-      
-      // Lancer l'impression
-      setTimeout(function() {
-        iframe.contentWindow.print();
-        setTimeout(function() {
-          document.body.removeChild(iframe);
-        }, 1000);
-      }, 500);
     }
+  }
+
+  var dateImpression = new Date();
+  var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
+    day: '2-digit', month: 'long', year: 'numeric'
+  });
+  var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+    hour: '2-digit', minute: '2-digit'
+  });
+
+  var printHtml = `<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>${chapitre.titre || 'Lecture'}</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+@page { margin: 2cm 2cm 1.5cm 2cm; size: A4; }
+body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.7; }
+.page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
+h1 { font-size:20pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.5px; margin-bottom:4px; }
+.sous-titre { text-align:center; font-size:11pt; font-style:italic; margin-bottom:4px; color:#444; }
+.meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:18px; border-bottom:1px solid #ccc; padding-bottom:10px; }
+.meta-ligne span { margin:0 8px; }
+.meta-ligne .sep { color:#ccc; }
+.zone-lecture { flex:1; padding:6px 0; }
+.slide { margin-bottom:14px; }
+.slide p { font-size:13pt; margin-bottom:8px; text-align:justify; text-indent:2em; }
+.zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #d4c9b8; font-size:10pt; line-height:1.6; color:#2a2a2a; }
+.zone-exercices .titre-exo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:4px; }
+
+.zone-exercices .quiz-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px 20px; margin-top:2px; }
+.exo-quiz { margin-bottom:5px; padding-left:2px; break-inside:avoid; }
+.exo-quiz .q { font-weight:bold; }
+.exo-quiz .reponses { padding-left:16px; }
+.exo-quiz .reponses .r { display:inline-block; margin-right:14px; }
+.exo-quiz .case { display:inline-block; width:12px; height:12px; border:1px solid #000; margin-right:3px; background:white; }
+.exo-ordre { margin-bottom:6px; }
+.exo-ordre .item { display:inline-block; margin-right:10px; font-style:italic; }
+.exo-ordre .item::before { content:"— "; }
+.exo-carte { margin-bottom:6px; border:1px solid #ccc; padding:4px 10px; background:#f9f9f9; }
+.exo-carte .recto { font-weight:bold; }
+.exo-carte .verso-vide { color:#999; font-style:italic; font-size:9pt; }
+.exo-relier .consigne-relier { font-weight:bold; margin-bottom:4px; }
+.exo-relier .relier-grid { display:flex; justify-content:space-between; gap:40px; }
+.exo-relier .relier-col { flex:1; }
+.exo-relier .relier-item { display:flex; align-items:center; gap:8px; padding:4px 0; border-bottom:1px dotted #999; }
+.exo-relier .relier-col.gauche .relier-item { justify-content:flex-end; }
+.exo-relier .relier-col.droite .relier-item { justify-content:flex-start; }
+.exo-relier .point { width:10px; height:10px; border:1.5px solid #000; border-radius:50%; background:white; flex-shrink:0; box-sizing:border-box; }
+
+/* ===== MÉMO (à retenir / vocabulaire / tags) ===== */
+.zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #d4c9b8; }
+.zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
+.zone-memo .memo-bloc { margin-bottom:14px; }
+.zone-memo .memo-bloc:last-child { margin-bottom:0; }
+.zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
+.zone-memo .memo-liste li { font-size:11pt; margin-bottom:4px; padding-left:14px; position:relative; }
+.zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
+.zone-memo .memo-mots { margin-top:2px; }
+.zone-memo .memo-mot { display:inline-block; padding:1px 8px; margin:1px 4px 1px 0; border:1px solid #999; font-size:9.5pt; }
+.zone-memo .memo-tags { font-size:10pt; font-style:italic; color:#444; }
+.zone-memo .memo-tag { margin-right:6px; }
+
+.pied-page { text-align:center; font-size:9pt; color:#666; margin-top:6px; padding-top:6px; border-top:1px solid #ddd; }
+.pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="page">
+<h1>${chapitre.titre || 'Lecture'}</h1>
+<div class="sous-titre">${chapitre.categorie || 'Sans catégorie'}</div>
+<div class="meta-ligne">
+  <span>Créé le : ${dateCreationStr || '—'}</span>
+  <span class="sep">|</span>
+  <span>Niveau ${chapitre.niveau || 0}</span>
+</div>
+<div class="zone-lecture">
+`;
+
+  if (slidesArray.length > 0) {
+    slidesArray.forEach(function(slide) {
+      printHtml += '<div class="slide">';
+      var paragraphs = slide.split('\n').filter(function(p) { return p.trim() !== ''; });
+      paragraphs.forEach(function(p) {
+        printHtml += '<p>' + p.trim() + '</p>';
+      });
+      printHtml += '</div>';
+    });
+  }
+
+  printHtml += '</div>';
+
+  // ============================================================
+  // ZONE EXERCICES
+  // ============================================================
+  printHtml += '<div class="zone-exercices">';
+  var hasExercice = false;
+  var questionNum = 1;
+
+  if (quiz.trim() !== '') {
+    hasExercice = true;
+    var quizs = parserQuizsPourImpression(quiz);
+    printHtml += '<div class="titre-exo">Questions de compréhension</div>';
+    printHtml += '<div class="quiz-grid">';
+    quizs.forEach(function(q) {
+      printHtml += '<div class="exo-quiz">';
+      printHtml += '<span class="q">' + questionNum + '.</span> ' + q.question;
+      printHtml += '<div class="reponses">';
+      q.reponses.forEach(function(rep) {
+        printHtml += '<span class="r"><span class="case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
+      });
+      printHtml += '</div></div>';
+      questionNum++;
+    });
+    printHtml += '</div>';
+  }
+
+  if (openQuestion.trim() !== '') {
+    hasExercice = true;
+    var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
+    if (quiz.trim() === '') printHtml += '<div class="titre-exo">Questions de compréhension</div>';
+    printHtml += '<div class="exo-quiz">';
+    printHtml += '<span class="q">' + questionNum + '.</span> ' + qsTexte;
+    printHtml += '<div style="border:1px solid #ddd;height:30px;margin:3px 0 4px 16px;"></div>';
+    printHtml += '</div>';
+    questionNum++;
+  }
+
+  if (ordre.trim() !== '') {
+    hasExercice = true;
+    var ordreItems = parserOrdrePourImpression(ordre);
+    if (quiz.trim() === '' && openQuestion.trim() === '') printHtml += '<div class="titre-exo">Exercices</div>';
+    printHtml += '<div class="exo-ordre" style="margin-top:6px;">';
+    printHtml += '<div style="font-weight:bold;margin-bottom:2px;">Remettre dans l\'ordre :</div>';
+    ordreItems.forEach(function(item) {
+      printHtml += '<span class="item">' + item + '</span>';
+    });
+    printHtml += '</div>';
+  }
+
+  if (carte.trim() !== '') {
+    hasExercice = true;
+    var carteData = parserCartePourImpression(carte);
+    if (carteData) {
+      if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '') printHtml += '<div class="titre-exo">Exercices</div>';
+      printHtml += '<div class="exo-carte" style="margin-top:6px;">';
+      printHtml += '<div class="recto">' + carteData.recto + '</div>';
+      printHtml += '<div class="verso-vide">(Espace pour écrire la réponse)</div>';
+      printHtml += '</div>';
+    }
+  }
+
+  if (relier.trim() !== '') {
+    hasExercice = true;
+    var relierData = parserRelierPourImpression(relier);
+    if (relierData) {
+      if (quiz.trim() === '' && openQuestion.trim() === '' && ordre.trim() === '' && carte.trim() === '') {
+        printHtml += '<div class="titre-exo">Exercices</div>';
+      }
+      printHtml += '<div class="exo-relier">';
+      printHtml += '<div class="consigne-relier">' + relierData.consigne + '</div>';
+      printHtml += '<div class="relier-grid">';
+      printHtml += '<div class="relier-col gauche">';
+      for (var rg = 0; rg < relierData.paires.length; rg++) {
+        printHtml += '<div class="relier-item"><span>' + relierData.paires[rg].gauche + '</span><span class="point"></span></div>';
+      }
+      printHtml += '</div>';
+      printHtml += '<div class="relier-col droite">';
+      for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
+        printHtml += '<div class="relier-item"><span class="point"></span><span>' + relierData.droitesMelangees[rd] + '</span></div>';
+      }
+      printHtml += '</div></div></div>';
+    }
+  }
+
+  if (!hasExercice) {
+    printHtml += '<div style="height:2px;"></div>';
+  }
+
+  printHtml += '</div>'; // zone-exercices
+
+  // ============================================================
+  // ZONE MÉMO (à retenir / vocabulaire / tags)
+  // ============================================================
+  if (hasMemo) {
+    printHtml += '<div class="zone-memo">';
+
+    if (aRetenirClean.length > 0) {
+      printHtml += '<div class="memo-bloc">';
+      printHtml += '<div class="titre-memo">À retenir</div>';
+      printHtml += '<ul class="memo-liste">';
+      aRetenirClean.forEach(function(phrase) {
+        printHtml += '<li>' + phrase + '</li>';
+      });
+      printHtml += '</ul></div>';
+    }
+
+    if (vocabClean.length > 0) {
+      printHtml += '<div class="memo-bloc">';
+      printHtml += '<div class="titre-memo">Vocabulaire</div>';
+      printHtml += '<div class="memo-mots">';
+      vocabClean.forEach(function(mot) {
+        printHtml += '<span class="memo-mot">' + mot + '</span>';
+      });
+      printHtml += '</div></div>';
+    }
+
+    if (tagsClean.length > 0) {
+      printHtml += '<div class="memo-bloc">';
+      printHtml += '<div class="titre-memo">Tags</div>';
+      printHtml += '<div class="memo-tags">';
+      tagsClean.forEach(function(tag) {
+        printHtml += '<span class="memo-tag">#' + tag + '</span>';
+      });
+      printHtml += '</div></div>';
+    }
+
+    printHtml += '</div>'; // zone-memo
+  }
+
+  printHtml += `
+    <div class="pied-page">
+      <div>Qiraat</div>
+      <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
+    </div>
+  </div>
+</body>
+</html>`;
+
+  // Créer un iframe invisible
+  var iframe = document.createElement('iframe');
+  iframe.style.position = 'fixed';
+  iframe.style.right = '0';
+  iframe.style.bottom = '0';
+  iframe.style.width = '0';
+  iframe.style.height = '0';
+  iframe.style.border = 'none';
+  document.body.appendChild(iframe);
+
+  var iframeDoc = iframe.contentWindow.document;
+  iframeDoc.write(printHtml);
+  iframeDoc.close();
+
+  setTimeout(function() {
+    iframe.contentWindow.print();
+    setTimeout(function() {
+      document.body.removeChild(iframe);
+    }, 1000);
+  }, 500);
+}
 
     // ============================================================
     // MODAL ANNOTATIONS
