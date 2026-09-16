@@ -773,6 +773,10 @@
       
       parts.forEach(function(part) {
   part = part.trim();
+  
+  // Normaliser les retours à la ligne (Windows/Mac/Linux)
+  part = part.replace(/\r\n/g, '\n').replace(/\r/g, '\n');
+  
   if (part.startsWith('q:')) {
     quiz = part;
   } else if (part.startsWith('qs:')) {
@@ -784,21 +788,32 @@
   } else if (part.startsWith('l:')) {
     relier = part;
   } else {
-    var cleanText = part.replace(/\r\n/g, '\n').trim();
-    if (cleanText) {
-      var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-      subSlides.forEach(function(sub) {
-        // 👇 Filtrer les lignes "!" (vocabulaire) et "#" (tags)
-        var lignesFiltrees = sub.split('\n').filter(function(ligne) {
-          var l = ligne.trim();
-          return l !== '' && !l.startsWith('!') && !l.startsWith('#');
-        });
-        var textePropre = lignesFiltrees.join('\n').trim();
-        if (textePropre) {
-          slidesArray.push(textePropre);
-        }
-      });
-    }
+    // Découper en slides (paragraphes)
+    var subSlides = part.split(/\n\s*\n/);
+    
+    subSlides.forEach(function(sub) {
+      // Découper en lignes et filtrer
+      var lignes = sub.split('\n');
+      var lignesGardees = [];
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        var ligneTrim = ligne.trim();
+        
+        // Ignorer lignes vides
+        if (ligneTrim === '') continue;
+        
+        // Ignorer vocabulaire (!) et tags (#) — avec test insensible aux espaces
+        if (/^\s*!/.test(ligne)) continue;
+        if (/^\s*#/.test(ligne)) continue;
+        
+        lignesGardees.push(ligneTrim);
+      }
+      
+      if (lignesGardees.length > 0) {
+        slidesArray.push(lignesGardees.join('\n'));
+      }
+    });
   }
 });
 
