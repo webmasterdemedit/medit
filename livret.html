@@ -643,41 +643,25 @@
     // IMPRESSION
     // ============================================================
     function imprimerChapitre(chapitreId, titre) {
-  // Chercher le chapitre dans chapitresData (déjà chargé)
-  var chapitre = null;
-  if (typeof chapitresData !== 'undefined' && chapitresData.length > 0) {
-    for (var i = 0; i < chapitresData.length; i++) {
-      if (chapitresData[i].id === chapitreId) {
-        chapitre = chapitresData[i];
-        break;
+      var chapitre = null;
+      var tousLesChapitres = DataManager.getTousLesChapitres();
+      for (var i = 0; i < tousLesChapitres.length; i++) {
+        if (tousLesChapitres[i].id === chapitreId) { chapitre = tousLesChapitres[i]; break; }
       }
-    }
-  }
-  
-  // Fallback: chercher dans DataManager
-  if (!chapitre) {
-    var tousLesChapitres = DataManager.getTousLesChapitres();
-    for (var i = 0; i < tousLesChapitres.length; i++) {
-      if (tousLesChapitres[i].id === chapitreId) {
-        chapitre = tousLesChapitres[i];
-        break;
+      if (!chapitre) {
+        chapitre = DataManager.getChapitreComplet(chapitreId);
       }
+      if (!chapitre) {
+        alert('Chapitre "' + titre + '" non trouvé.');
+        return;
+      }
+      var contenu = chapitre.contenu || '';
+      if (!contenu) {
+        alert('Ce chapitre ne contient pas de texte à imprimer.');
+        return;
+      }
+      genererImpression(chapitre, contenu);
     }
-  }
-  
-  if (!chapitre) {
-    alert('Chapitre "' + titre + '" non trouvé.');
-    return;
-  }
-  
-  var contenu = chapitre.contenu || '';
-  if (!contenu) {
-    alert('Ce chapitre ne contient pas de texte à imprimer.');
-    return;
-  }
-  
-  genererImpression(chapitre, contenu);
-}
 
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -766,7 +750,6 @@
 
       if (paires.length === 0) return null;
 
-      // Mélanger la colonne de droite (indépendamment de la gauche)
       var droitesMelangees = paires.map(function(p) { return p.droite; });
       for (var j = droitesMelangees.length - 1; j > 0; j--) {
         var k = Math.floor(Math.random() * (j + 1));
@@ -786,7 +769,6 @@
       var openQuestion = '';
       var ordre = '';
       var carte = '';
-      var retenir = '';
       var relier = '';
       
       parts.forEach(function(part) {
@@ -801,8 +783,6 @@
           carte = part;
         } else if (part.startsWith('l:')) {
           relier = part;
-        } else if (part.startsWith('#')) {
-          retenir = part;
         } else {
           var cleanText = part.replace(/\r\n/g, '\n').trim();
           if (cleanText) {
@@ -813,6 +793,23 @@
           }
         }
       });
+
+      // 👇 NOUVEAU : récupérer À retenir / Vocabulaire / Tags
+      var aRetenir = (chapitre.aRetenir || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
+
+      var vocabulaire = [];
+      (chapitre.vocabulaire || []).forEach(function(item) {
+        String(item).split(',').forEach(function(mot) {
+          var m = mot.trim();
+          if (m) vocabulaire.push(m);
+        });
+      });
+
+      var tags = (chapitre.tags || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
 
       var dateCreation = chapitre.date || '';
       var dateCreationStr = '';
@@ -990,6 +987,32 @@
               font-weight: bold;
               font-size: 9pt;
             }
+            /* 👇 NOUVEAU : liste À retenir + tags */
+            .exo-retenir-liste {
+              list-style: none;
+              padding: 0 0 0 16px;
+              margin: 2px 0 6px;
+              font-size: 10pt;
+            }
+            .exo-retenir-liste li {
+              margin-bottom: 2px;
+            }
+            .exo-retenir-liste li::before {
+              content: '—';
+              color: #666;
+              margin-right: 6px;
+            }
+            .exo-tags {
+              margin-top: 2px;
+            }
+            .exo-tags .tag {
+              display: inline-block;
+              padding: 1px 8px;
+              margin: 1px 4px 1px 0;
+              border: 1px solid #999;
+              font-style: italic;
+              font-size: 9pt;
+            }
             .exo-relier .relier-grid {
               display: flex;
               justify-content: space-between;
@@ -1130,7 +1153,7 @@
         }
       }
 
-            if (relier.trim() !== '') {
+      if (relier.trim() !== '') {
         hasExercice = true;
         var relierData = parserRelierPourImpression(relier);
         if (relierData) {
@@ -1141,7 +1164,6 @@
           printHtml += `<div class="consigne-relier">${relierData.consigne}</div>`;
           printHtml += `<div class="relier-grid">`;
 
-          // Colonne gauche
           printHtml += `<div class="relier-col gauche">`;
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             printHtml += `<div class="relier-item">`;
@@ -1151,7 +1173,6 @@
           }
           printHtml += `</div>`;
 
-          // Colonne droite (mélangée)
           printHtml += `<div class="relier-col droite">`;
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
             printHtml += `<div class="relier-item">`;
@@ -1161,22 +1182,42 @@
           }
           printHtml += `</div>`;
 
-          printHtml += `</div>`; // relier-grid
-          printHtml += `</div>`; // exo-relier
+          printHtml += `</div>`;
+          printHtml += `</div>`;
         }
       }
 
-      if (retenir.trim() !== '') {
+      // ===== À RETENIR =====
+      if (aRetenir.length > 0) {
         hasExercice = true;
-        var mots = retenir.replace(/^#\s*/, '').split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m.length > 0; });
-        if (mots.length > 0) {
-          printHtml += `<div class="titre-exo" style="margin-top:8px;">Vocabulaire</div>`;
-          printHtml += `<div class="exo-retenir">`;
-          mots.forEach(function(mot) {
-            printHtml += `<span class="mot">${mot}</span>`;
-          });
-          printHtml += `</div>`;
-        }
+        printHtml += `<div class="titre-exo" style="margin-top:8px;">À retenir</div>`;
+        printHtml += `<ul class="exo-retenir-liste">`;
+        aRetenir.forEach(function(phrase) {
+          printHtml += `<li>${phrase}</li>`;
+        });
+        printHtml += `</ul>`;
+      }
+
+      // ===== VOCABULAIRE =====
+      if (vocabulaire.length > 0) {
+        hasExercice = true;
+        printHtml += `<div class="titre-exo" style="margin-top:8px;">Vocabulaire</div>`;
+        printHtml += `<div class="exo-retenir">`;
+        vocabulaire.forEach(function(mot) {
+          printHtml += `<span class="mot">${mot}</span>`;
+        });
+        printHtml += `</div>`;
+      }
+
+      // ===== TAGS =====
+      if (tags.length > 0) {
+        hasExercice = true;
+        printHtml += `<div class="titre-exo" style="margin-top:8px;">Tags</div>`;
+        printHtml += `<div class="exo-tags">`;
+        tags.forEach(function(tag) {
+          printHtml += `<span class="tag">#${tag}</span>`;
+        });
+        printHtml += `</div>`;
       }
 
       if (!hasExercice) {
@@ -1195,7 +1236,6 @@
         </html>
       `;
 
-           // Créer un iframe invisible
       var iframe = document.createElement('iframe');
       iframe.style.position = 'fixed';
       iframe.style.right = '0';
@@ -1205,12 +1245,10 @@
       iframe.style.border = 'none';
       document.body.appendChild(iframe);
       
-      // Écrire le contenu dans l'iframe
       var iframeDoc = iframe.contentWindow.document;
       iframeDoc.write(printHtml);
       iframeDoc.close();
       
-      // Lancer l'impression
       setTimeout(function() {
         iframe.contentWindow.print();
         setTimeout(function() {
@@ -1306,7 +1344,7 @@
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
-                  pages: l.pages || '',  // ← remplace preRequis
+                  pages: l.pages || '',
                   description: l.description || '',
                   auteur: l.auteur || ''
                 };
@@ -1340,10 +1378,9 @@
                     couleur: l.couleur || '#2d6a4f',
                     sousTitre: l.sousTitre || '',
                     date: l.date || '',
-                    pages: l.pages || '',  // ← remplace preRequis
+                    pages: l.pages || '',
                     description: l.description || '',
                     auteur: l.auteur || ''
-                    
                   };
                 });
               }
@@ -1407,7 +1444,7 @@
       var sousTitre = livretInfo.sousTitre || '';
       var dateLivret = livretInfo.date || '';
       var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
-      var pages = livretInfo.pages || '';  // ← remplace preRequis
+      var pages = livretInfo.pages || '';
       var auteur = livretInfo.auteur || '';
 
       var dateFormatee = formatDate(dateLivret);
@@ -1584,7 +1621,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
 
-                var imprimerHtml = `
+        var imprimerHtml = `
           <div class="btn-wrap">
             <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}')">
               🖨 Imprimer
@@ -1592,7 +1629,6 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
           </div>
         `;
         
-        // 🔓 TOUS LES CHAPITRES SONT ACCESSIBLES - PLUS DE VERROUILLAGE
         var onClickAttr = 'onclick="window.location.href=\'/medit/chapitre.html?id=' + chapitre.id + '\'"';
 
         html += `
