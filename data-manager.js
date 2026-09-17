@@ -1,589 +1,407 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2d6a4f" />
-  <title>Mes livrets - Qiraat</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/medit/structure.css" />
-  <link rel="stylesheet" href="/medit/theme.css" />
-  <style>
-    .page-livrets {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 30px 40px;
-    }
+// ============================================================
+// data-manager.js - OPTIMISÉ (1 REQUÊTE)
+// ============================================================
 
-    .page-livrets h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
+var DataManager = {
 
-    .page-livrets .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
-    }
+    // ============================================================
+    // CHARGER - Une seule requête getTout
+    // ============================================================
+    charger: function() {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) {
+            return Promise.reject('Non connecté');
+        }
 
-    .stats-ligne {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 12px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
+        console.log('🌐 Chargement depuis le serveur (1 requête)...');
+        var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
 
-    .stat-item {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-
-    .stat-item .nombre {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text);
-      margin-left: 6px;
-    }
-
-    .grille-livrets {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 28px;
-      margin-top: 10px;
-    }
-
-    .carte-livret {
-      position: relative;
-      border-radius: 0;
-      padding: 0;
-      height: 380px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      text-decoration: none;
-      color: #1a1a1a;
-      background: var(--bg);
-    }
-
-    .carte-livret:hover {
-      transform: translateY(-4px);
-      border-color: var(--text);
-    }
-
-    .carte-livret:active {
-      transform: scale(0.97);
-    }
-
-    .carte-livret .contenu-livret {
-      position: relative;
-      z-index: 2;
-      padding: 24px 20px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-    }
-
-    .carte-livret .titre-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-top: 30px;
-    }
-
-    .carte-livret .auteur-livret {
-      font-size: 10px;
-      font-weight: 300;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      margin-bottom: 2px;
-      color: rgba(26, 26, 26, 0.5);
-    }
-
-    .carte-livret .titre-livret {
-      font-family: 'Georgia', serif;
-      font-size: 22px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-bottom: 0;
-      line-height: 1.2;
-      max-width: 90%;
-      color: #1a1a1a;
-      text-align: center;
-    }
-
-    .carte-livret .sous-titre-livret {
-      font-size: 13px;
-      font-weight: 500;
-      opacity: 0.8;
-      margin-top: 4px;
-      color: rgba(26, 26, 26, 0.8);
-      line-height: 1.3;
-      text-align: center;
-    }
-
-    .carte-livret .edition-info {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding-bottom: 10px;
-    }
-
-    .carte-livret .edition-nom {
-      font-weight: 700;
-      font-style: italic;
-      font-size: 11px;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
-    }
-
-    .carte-livret .edition-date {
-      font-size: 10px;
-      opacity: 1;
-      color: rgba(26, 26, 26, 0.7);
-      font-weight: 500;
-    }
-
-    .carte-livret .badge-niveau {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 3;
-      padding: 3px 12px;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      color: rgba(26, 26, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70);
-    }
-
-    .carte-livret .progression-livret {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 3;
-      height: 4px;
-      background: rgba(255, 255, 255, 0.15);
-      overflow: hidden;
-    }
-
-    .carte-livret .progression-livret .barre {
-      height: 100%;
-      background: rgba(255, 255, 255, 0.60);
-      transition: width 0.6s ease;
-      width: 0%;
-    }
-
-    /* === UNIQUEMENT AJOUT POUR VERROUILLÉ === */
-    .carte-livret.verrouille {
-      filter: grayscale(1) opacity(0.4);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .carte-livret.verrouille:hover {
-      transform: none;
-      border-color: var(--border);
-    }
-
-    .section-verrouillee {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
-    }
-
-    .section-verrouillee .titre-section {
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--text-secondary);
-      margin-bottom: 14px;
-    }
-
-    .vide-livrets {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-
-    .vide-livrets .icone {
-      font-size: 48px;
-      display: block;
-      margin-bottom: 12px;
-      color: var(--text-secondary);
-    }
-
-    .vide-livrets h2 {
-      font-size: 20px;
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .vide-livrets p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .loader {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    @media (max-width: 640px) {
-      .page-livrets { padding: 12px 16px 30px; }
-      .page-livrets h1 { font-size: 22px; }
-      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-      .carte-livret { height: 280px; }
-      .carte-livret .titre-livret { font-size: 17px; }
-      .carte-livret .sous-titre-livret { font-size: 11px; }
-      .carte-livret .auteur-livret { font-size: 9px; }
-      .carte-livret .badge-niveau { font-size: 10px; top: 10px; right: 10px; padding: 2px 10px; }
-      .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
-      .stat-item { font-size: 13px; }
-    }
-
-    @media (max-width: 400px) {
-      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-      .carte-livret { height: 240px; }
-      .carte-livret .titre-livret { font-size: 15px; }
-    }
-  </style>
-
-  <script>
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/medit/header.html', false);
-    xhr.send();
-    if (xhr.status === 200) {
-      document.write(xhr.responseText);
-    }
-  </script>
-</head>
-<body>
-
-  <div class="page page-livrets">
-
-    <h1>Mes livrets</h1>
-    <p class="sous-titre-page">Chaque livret regroupe des chapitres sur un même thème. Cliquez sur un livret pour commencer l'apprentissage.</p>
-
-    <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Livrets disponibles :</span>
-        <span class="nombre" id="totalLivrets">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Chapitres total :</span>
-        <span class="nombre" id="totalChapitres">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Votre niveau :</span>
-        <span class="nombre" id="niveauEtudiant">0</span>
-      </div>
-    </div>
-
-    <div id="contenu">
-      <div class="loader" id="loader">
-        <div class="spinner"></div>
-        <p>Chargement de vos livrets...</p>
-      </div>
-    </div>
-
-    <div class="devise">
-      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
-    </div>
-
-  </div>
-
-  <div id="footer-container"></div>
-
-  <script>
-    fetch('/medit/footer.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('footer-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = `
-          <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-          </footer>
-        `;
-      });
-  </script>
-
-  <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
-  <script src="/medit/data-manager.js"></script>
-
-  <script>
-    var toutesLesReponses = {};
-    var chapitresData = [];
-    var livretsData = {};
-    var niveauEtudiant = 0;
-    var nomEtudiant = '';
-
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
-                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return mois[date.getMonth()] + ' ' + date.getFullYear();
-      } catch(e) {
-        return dateStr;
-      }
-    }
-
-    function chargerLivrets() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
-
-      nomEtudiant = id;
-
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          chapitresData = data.tousLesChapitres || data.chapitres || [];
-
-          livretsData = {};
-          if (data.livrets) {
-            if (Array.isArray(data.livrets)) {
-              data.livrets.forEach(function(l) {
-                livretsData[l.titre] = {
-                  couleur: l.couleur || '#2d6a4f',
-                  sousTitre: l.sousTitre || '',
-                  date: l.date || '',
-                  preRequis: l.preRequis || '',
-                  auteur: l.auteur || ''
-                };
-              });
-              console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
-            }
-          }
-
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.chapitreId] = r;
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) {
+                    // S'assurer que toutes les propriétés existent
+                    data.livrets = data.livrets || [];
+                    data.chapitres = data.chapitres || [];
+                    data.tousLesChapitres = data.tousLesChapitres || [];
+                    data.chapitresComplets = data.chapitresComplets || {};
+                    data.reponses = data.reponses || [];
+                    data.niveau = data.niveau || 0;
+                    data.description = data.description || '';
+                    data.mdp = data.mdp || '';
+                    data.contact = data.contact || '';
+                    data.auteur = data.auteur || '';
+                    data.dateInscription = data.dateInscription || '';
+                    data.messagePerso = data.messagePerso || '';
+                    data.disciplines = data.disciplines || '';
+                    data.historique = data.historique || [];
+                    
+                    // 🔥 IMPORTANT : garder le cache en mémoire
+                    DataManager._dernierChargement = data;
+                    
+                    console.log('✅ Données chargées en 1 requête');
+                    console.log('📚 ' + data.livrets.length + ' livrets');
+                    console.log('📖 ' + data.tousLesChapitres.length + ' chapitres (tous)');
+                    console.log('📖 ' + data.chapitres.length + ' chapitres (niveau ' + data.niveau + ')');
+                    console.log('✏️ ' + data.reponses.length + ' réponses');
+                    
+                    return data;
+                } else {
+                    throw new Error(data.message || 'Erreur de chargement');
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur:', error);
+                throw error;
             });
-          }
+    },
 
-          document.getElementById('totalLivrets').textContent = '0';
-          document.getElementById('totalChapitres').textContent = '0';
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+    // ============================================================
+    // RÉCUPÉRER LES DONNÉES (depuis le cache)
+    // ============================================================
+    getChapitre: function(chapitreId) {
+        var cache = this._dernierChargement;
+        if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
+            return cache.chapitresComplets[chapitreId];
+        }
+        return null;
+    },
 
-          afficherLivrets();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            chapitresData = cache.chapitres || [];
-            if (cache.livrets) {
-              if (Array.isArray(cache.livrets)) {
-                livretsData = {};
-                cache.livrets.forEach(function(l) {
-                  livretsData[l.titre] = {
-                    couleur: l.couleur || '#2d6a4f',
-                    sousTitre: l.sousTitre || '',
-                    date: l.date || '',
-                    preRequis: l.preRequis || '',
-                    auteur: l.auteur || ''
-                  };
-                });
-              }
+    // ============================================================
+    // NOUVEAU : chapitre complet (avec contenu + voc + tags + aRetenir)
+    // ============================================================
+    getChapitreComplet: function(chapitreId) {
+        var cache = this._dernierChargement;
+        if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
+            return cache.chapitresComplets[chapitreId];
+        }
+        return null;
+    },
+
+    getChapitres: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.chapitres) {
+            return cache.chapitres;
+        }
+        return [];
+    },
+
+    getTousLesChapitres: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.tousLesChapitres) {
+            return cache.tousLesChapitres;
+        }
+        return [];
+    },
+
+    getLivrets: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.livrets) {
+            return cache.livrets;
+        }
+        return [];
+    },
+
+    getReponses: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.reponses) {
+            return cache.reponses;
+        }
+        return [];
+    },
+
+    getNiveau: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.niveau !== undefined) {
+            return cache.niveau;
+        }
+        return 0;
+    },
+
+    getDescriptionNiveau: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.description) {
+            return cache.description;
+        }
+        return '';
+    },
+
+    getDateInscription: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.dateInscription) {
+            return cache.dateInscription;
+        }
+        return null;
+    },
+
+    getContact: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.contact) {
+            return cache.contact;
+        }
+        return '';
+    },
+
+    getMessagePerso: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.messagePerso) {
+            return cache.messagePerso;
+        }
+        return '';
+    },
+
+    getDisciplines: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.disciplines) {
+            return cache.disciplines;
+        }
+        return '';
+    },
+
+    getMdp: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.mdp) {
+            return cache.mdp;
+        }
+        return '';
+    },
+
+    getHistorique: function() {
+        var cache = this._dernierChargement;
+        if (cache && cache.historique) {
+            return cache.historique;
+        }
+        return [];
+    },
+
+    // ============================================================
+    // SAUVEGARDES
+    // ============================================================
+    sauvegarderOrdre: function(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&ordreDonne=' + encodeURIComponent(ordreDonne) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    sauvegarderCarte: function(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&cartes=' + encodeURIComponent(cartes) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    sauvegarderAnnotation: function(chapitreId, slide, annotation) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&slide=' + encodeURIComponent(slide) +
+            '&annotation=' + encodeURIComponent(annotation);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    sauvegarderReponseOuverte: function(chapitreId, reponse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&reponseOuverte=' + encodeURIComponent(reponse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    sauvegarderQuiz: function(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre) +
+            '&choixQcm=' + encodeURIComponent(choixQcm) +
+            '&bonnes=' + encodeURIComponent(bonnes) +
+            '&total=' + encodeURIComponent(total) +
+            '&tempsPasse=' + encodeURIComponent(tempsPasse);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    sauvegarderLecture: function(chapitreId, titre) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&titre=' + encodeURIComponent(titre);
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    marquerRevise: function(chapitreId, revise) {
+        var id = localStorage.getItem('etudiant_id');
+        if (!id) return Promise.reject('Non connecté');
+
+        var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
+            '&nom=' + encodeURIComponent(id) +
+            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&revise=' + encodeURIComponent(revise ? '1' : '0');
+
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) { return data; }
+                else { throw new Error(data.message || 'Erreur'); }
+            });
+    },
+
+    // ============================================================
+    // GET ANNOTATIONS
+    // ============================================================
+    getAnnotations: function(chapitreId) {
+        var reponses = this.getReponses();
+        for (var i = 0; i < reponses.length; i++) {
+            if (reponses[i].chapitreId === chapitreId) {
+                return reponses[i].annotations || '';
             }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-            afficherLivrets();
-          } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-livrets">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-                <button onclick="DataManager.rafraichir(); location.reload();" 
-                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);border-radius:0;cursor:pointer;color:var(--text);">
-                  Réessayer
-                </button>
-              </div>
-            `;
-          }
-        });
-    }
-
-    function afficherLivrets() {
-      var container = document.getElementById('contenu');
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
-
-      var categories = {};
-      var totalChapitres = 0;
-
-      chapitresData.forEach(function(chapitre) {
-        var cat = chapitre.categorie || 'Sans catégorie';
-        var niv = parseInt(chapitre.niveau) || 1;
-
-        if (!categories[cat]) {
-          categories[cat] = {
-            nom: cat,
-            niveauMin: niv,
-            niveauMax: niv,
-            chapitres: 0,
-            chapitresListe: []
-          };
         }
+        return '';
+    },
 
-        categories[cat].niveauMin = Math.min(categories[cat].niveauMin, niv);
-        categories[cat].niveauMax = Math.max(categories[cat].niveauMax, niv);
-        categories[cat].chapitres++;
-        categories[cat].chapitresListe.push(chapitre);
-        totalChapitres++;
-      });
-
-      var livrets = Object.values(categories);
-
-      livrets.sort(function(a, b) {
-        return a.niveauMin - b.niveauMin || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-      });
-
-      document.getElementById('totalLivrets').textContent = livrets.length;
-      document.getElementById('totalChapitres').textContent = totalChapitres;
-
-      if (livrets.length === 0) {
-        container.innerHTML = `
-          <div class="vide-livrets">
-            <span class="icone">◈</span>
-            <h2>Aucun livret disponible</h2>
-            <p>Aucune catégorie de chapitres n'est disponible pour votre niveau (${niveauEtudiant}).</p>
-          </div>
-        `;
-        return;
-      }
-
-      var html = '<div class="grille-livrets">';
-
-      livrets.forEach(function(livret) {
-        var data = livretsData[livret.nom] || {};
-        var sousTitre = data.sousTitre || '';
-        var date = data.date || '';
-        var auteur = data.auteur || '';
-        var nbChapitres = livret.chapitres || 0;
-
-        // ✅ DÉVERROUILLAGE : déverrouillé si AU MOINS UN chapitre a un niveau <= niveau étudiant
-        var disponible = false;
-        livret.chapitresListe.forEach(function(ch) {
-          if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) {
-            disponible = true;
-          }
-        });
-
-        var couleur = disponible ? (data.couleur || '#2d6a4f') : '#666666';
-
-        // ✅ BADGE DYNAMIQUE : "Niveau X" si un seul niveau, sinon "Livret X à Y"
-        var badgeTexte;
-        if (livret.niveauMin === livret.niveauMax) {
-          badgeTexte = 'Niveau ' + livret.niveauMin;
-        } else {
-          badgeTexte = 'Livret ' + livret.niveauMin + ' à ' + livret.niveauMax;
+    // ============================================================
+    // GET REVISE STATUS
+    // ============================================================
+    getReviseStatus: function(chapitreId) {
+        var reponses = this.getReponses();
+        for (var i = 0; i < reponses.length; i++) {
+            if (reponses[i].chapitreId === chapitreId) {
+                return reponses[i].revise || '0';
+            }
         }
+        return '0';
+    },
 
-        // Progression : on garde la logique existante (valide)
-        var validees = 0;
-        livret.chapitresListe.forEach(function(chapitre) {
-          var reponse = toutesLesReponses[chapitre.id];
-          if (reponse && reponse.valide === 'valide') {
-            validees++;
-          }
-        });
+    // ============================================================
+    // CACHE
+    // ============================================================
+    _dernierChargement: null,
 
-        var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
-        var dateFormatee = formatDate(date);
-        var classeVerrou = disponible ? '' : 'verrouille';
+    // ============================================================
+    // UTILITAIRES
+    // ============================================================
+    rafraichir: function() {
+        this._dernierChargement = null;
+        return this.charger();
+    },
 
-        html += `
-          <div class="carte-livret ${classeVerrou}" 
-               style="background: ${couleur}; border-color: ${couleur};"
-               onclick="${disponible ? 'window.location.href=\'/medit/livret.html?cat=' + encodeURIComponent(livret.nom) + '\'' : ''}">
-            ${!disponible ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:36px;opacity:0.6;pointer-events:none;">🔒︎︎︎</div>' : ''}
-            <span class="badge-niveau">${badgeTexte}</span>
-            <div class="contenu-livret">
-              <div class="titre-wrapper">
-                ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
-                <span class="titre-livret">${livret.nom}</span>
-                ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
-              </div>
-              <div class="edition-info">
-                <span class="edition-nom">Qiraat Édition</span>
-                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
-              </div>
-            </div>
-            <div class="progression-livret">
-              <div class="barre" style="width: ${pourcentage}%;"></div>
-            </div>
-          </div>
-        `;
-      });
+    invalider: function() {
+        this._dernierChargement = null;
+        console.log('🗑️ Cache vidé');
+    },
 
-      html += '</div>';
-      container.innerHTML = html;
+    aUnCache: function() {
+        return this._dernierChargement !== null;
+    },
+
+    getCacheForce: function(id) {
+        return this._dernierChargement;
     }
+};
 
-    function demarrer() {
-      chargerLivrets();
-    }
+// ============================================================
+// FONCTIONS GLOBALES (compatibilité)
+// ============================================================
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
-  </script>
+function chargerDonnees() { return DataManager.charger(); }
+function getChapitresDuNiveau() { return DataManager.getChapitres(); }
+function getReponsesEtudiant() { return DataManager.getReponses(); }
+function getNiveauEtudiant() { return DataManager.getNiveau(); }
+function getDescriptionNiveau() { return DataManager.getDescriptionNiveau(); }
+function getDateInscription() { return DataManager.getDateInscription(); }
+function getContact() { return DataManager.getContact(); }
+function getMessagePerso() { return DataManager.getMessagePerso(); }
+function getDisciplines() { return DataManager.getDisciplines(); }
+function getMdp() { return DataManager.getMdp(); }
+function getLivrets() { return DataManager.getLivrets(); }
 
-</body>
-</html>
+function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
+}
+function sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse);
+}
+function sauvegarderAnnotation(chapitreId, slide, annotation) {
+    return DataManager.sauvegarderAnnotation(chapitreId, slide, annotation);
+}
+function sauvegarderReponseOuverte(chapitreId, reponse) {
+    return DataManager.sauvegarderReponseOuverte(chapitreId, reponse);
+}
+function sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse);
+}
+function sauvegarderLecture(chapitreId, titre) {
+    return DataManager.sauvegarderLecture(chapitreId, titre);
+}
+function marquerRevise(chapitreId, revise) {
+    return DataManager.marquerRevise(chapitreId, revise);
+}
+function getAnnotations(chapitreId) {
+    return DataManager.getAnnotations(chapitreId);
+}
+function getReviseStatus(chapitreId) {
+    return DataManager.getReviseStatus(chapitreId);
+}
