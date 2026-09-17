@@ -11,9 +11,6 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ============================================================
-       PROGRESSION - ÉCRASE body * (NOIR & BLANC)
-       ============================================================ */
     .progress-dots {
       display: flex !important;
       justify-content: center !important;
@@ -97,7 +94,7 @@
       border-color: var(--text-secondary, #444) !important;
       background: var(--text-secondary, #444) !important;
     }
-        .progress-dot.type-memo::before {
+    .progress-dot.type-memo::before {
       content: '♡';
       display: block;
       font-size: 16px;
@@ -111,8 +108,32 @@
       color: var(--text-secondary, #444);
     }
 
+    /* Type tt: texte à trous (carré plein) */
+    .progress-dot.type-tt {
+      border-radius: 0 !important;
+      width: 14px !important;
+      height: 14px !important;
+    }
 
-    
+    /* Type vf: vrai/faux (2 barres) */
+    .progress-dot.type-vf {
+      border-radius: 0 !important;
+      width: 16px !important;
+      height: 10px !important;
+      border: none !important;
+      border-top: 2px solid var(--border, #ccc) !important;
+      border-bottom: 2px solid var(--border, #ccc) !important;
+      margin: 3px 2px !important;
+    }
+    .progress-dot.type-vf.active {
+      border-top-color: var(--text, #111) !important;
+      border-bottom-color: var(--text, #111) !important;
+    }
+    .progress-dot.type-vf.done {
+      border-top-color: var(--text-secondary, #444) !important;
+      border-bottom-color: var(--text-secondary, #444) !important;
+    }
+
     /* Relier = deux points reliés (petit trait) */
     .progress-dot.type-relier {
       border-radius: 0 !important;
@@ -140,7 +161,6 @@
       padding-bottom: 70px !important;
     }
 
-    /* Bouton annotation en bas */
     .note-toggle {
       position: absolute !important;
       bottom: 12px !important;
@@ -154,9 +174,9 @@
       margin-bottom: 12px !important;
     }
 
-    /* ============================================================
-       RELIER - EXERCICE (points + traits)
-       ============================================================ */
+    /* ============================================================ */
+    /* RELIER */
+    /* ============================================================ */
     .relier-consigne {
       font-family: 'Inter', sans-serif;
       font-size: 16px;
@@ -229,10 +249,8 @@
       transition: all 0.2s;
       box-sizing: border-box;
     }
-    /* Point à droite de l'item gauche */
     .relier-colonne.gauche .relier-item .point { order: 2; }
     .relier-colonne.gauche .relier-item .texte { order: 1; }
-    /* Point à gauche de l'item droite */
     .relier-colonne.droite .relier-item .point { order: 1; }
     .relier-colonne.droite .relier-item .texte { order: 2; }
 
@@ -298,9 +316,9 @@
       overflow-x: hidden !important;
     }
 
-    /* ============================================================
-       SLIDE MEMO (aRetenir + vocabulaire + tags)
-       ============================================================ */
+    /* ============================================================ */
+    /* MEMO */
+    /* ============================================================ */
     .slide-content.memo-content {
       text-align: center;
     }
@@ -322,7 +340,7 @@
     .slide-content .memo-liste li {
       margin-bottom: 6px;
     }
-        .slide-content .memo-liste li::before {
+    .slide-content .memo-liste li::before {
       content: '—';
       color: var(--text-secondary, #444);
       margin-right: 8px;
@@ -338,7 +356,7 @@
     .slide-content .memo-tags .memo-tag {
       margin: 0 4px;
     }
-        .pagination-text {
+    .pagination-text {
       margin-top: 16px !important;
       margin-bottom: 22px !important;
       padding-bottom: 8px !important;
@@ -354,11 +372,182 @@
         font-size: calc(var(--slide-font-size, 18px) * 1.05);
       }
     }
-    .slide-content .memo-liste li::before {
-  content: '—';
-  color: var(--text-secondary, #444);
-  margin-right: 8px;
-}
+
+    /* ============================================================ */
+    /* TEXTE À TROUS */
+    /* ============================================================ */
+    .tt-conteneur {
+      max-width: 640px;
+      margin: 30px auto;
+      text-align: center;
+    }
+    .tt-phrase {
+      font-family: var(--font-serif);
+      font-size: inherit;
+      line-height: 2.2;
+      margin-bottom: 28px;
+      color: var(--text, #111);
+    }
+    .tt-input {
+      display: inline-block;
+      min-width: 120px;
+      max-width: 200px;
+      padding: 2px 8px;
+      font-family: var(--font-serif);
+      font-size: inherit;
+      border: none;
+      border-bottom: 2px solid var(--text, #111);
+      background: transparent;
+      color: var(--text, #111);
+      text-align: center;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .tt-input:focus {
+      border-bottom-color: var(--text-secondary, #444);
+    }
+    .tt-input.tt-ok {
+      border-bottom-color: #2d6a4f;
+      color: #2d6a4f;
+      font-weight: 500;
+    }
+    .tt-input.tt-ko {
+      border-bottom-color: #c0392b;
+      color: #c0392b;
+      text-decoration: line-through;
+    }
+    .tt-input:disabled {
+      opacity: 0.9;
+    }
+    .tt-feedback {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      min-height: 24px;
+      margin-bottom: 16px;
+      font-weight: 500;
+    }
+    .tt-feedback.ok { color: #2d6a4f; }
+    .tt-feedback.ko { color: #c0392b; }
+    .tt-feedback.solution { color: var(--text-secondary, #444); font-style: italic; font-weight: 400; }
+
+    .btn-valider-tt {
+      display: block;
+      margin: 0 auto;
+      padding: 10px 32px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      background: transparent;
+      border: 1px solid var(--border, #ccc);
+      color: var(--text, #111);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .btn-valider-tt:hover:not(:disabled) {
+      background: var(--text, #111);
+      color: var(--bg, #fff);
+      border-color: var(--text, #111);
+    }
+    .btn-valider-tt:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+    .tt-tentatives {
+      font-family: 'Inter', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary, #444);
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    /* ============================================================ */
+    /* VRAI / FAUX */
+    /* ============================================================ */
+    .vf-conteneur {
+      max-width: 640px;
+      margin: 20px auto;
+    }
+    .vf-intro {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      color: var(--text-secondary, #444);
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    .vf-item {
+      padding: 14px 0;
+      border-bottom: 1px solid var(--border, #ccc);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+    .vf-item:last-child {
+      border-bottom: none;
+    }
+    .vf-question {
+      font-family: var(--font-serif);
+      font-size: inherit;
+      flex: 1;
+      color: var(--text, #111);
+    }
+    .vf-boutons {
+      display: flex;
+      gap: 8px;
+      flex-shrink: 0;
+    }
+    .vf-btn {
+      padding: 6px 16px;
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      background: transparent;
+      border: 1px solid var(--border, #ccc);
+      color: var(--text, #111);
+      cursor: pointer;
+      transition: all 0.2s;
+      min-width: 70px;
+    }
+    .vf-btn:hover:not(:disabled) {
+      background: var(--text, #111);
+      color: var(--bg, #fff);
+      border-color: var(--text, #111);
+    }
+    .vf-btn:disabled {
+      cursor: default;
+    }
+    .vf-btn.vf-selectionne {
+      background: var(--text, #111);
+      color: var(--bg, #fff);
+      border-color: var(--text, #111);
+    }
+    .vf-btn.vf-ok {
+      background: #2d6a4f;
+      color: white;
+      border-color: #2d6a4f;
+    }
+    .vf-btn.vf-ko {
+      background: #c0392b;
+      color: white;
+      border-color: #c0392b;
+    }
+    .vf-feedback {
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      min-height: 20px;
+      margin-top: 6px;
+      text-align: right;
+      font-weight: 500;
+    }
+    .vf-feedback.ok { color: #2d6a4f; }
+    .vf-feedback.ko { color: #c0392b; }
+    .vf-score {
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      text-align: center;
+      margin-top: 20px;
+      font-weight: 500;
+      color: var(--text, #111);
+    }
   </style>
 </head>
 <body>
@@ -415,7 +604,14 @@
       carteCourante: null,
       relierAssociations: {},
       relierSelection: null,
-      relierValide: {}
+      relierValide: {},
+      // Nouveau : tt et vf
+      ttReponses: {},    // { slideIndex: { essai: 1|2, correct: bool, mot: string } }
+      ttValide: {},      // { slideIndex: true|false }
+      vfReponses: {},    // { slideIndex: { [questionIdx]: { choix: 'v'|'f', correct: bool } } }
+      vfValide: {},      // { slideIndex: true quand toutes répondues }
+      vfTotal: 0,
+      vfBonnes: 0
     };
 
     // ============================================================
@@ -473,14 +669,10 @@
           return r.json();
         })
         .then(function(data) {
-          console.log('📦 Données reçues:', data);
-
           if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
 
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
-
-          console.log('📄 Contenu brut:', contenu);
 
           var vocabulaire = chapitre.vocabulaire || [];
           var tags = chapitre.tags || [];
@@ -494,6 +686,8 @@
           var ordre = '';
           var carte = '';
           var relier = '';
+          var texteTrous = '';
+          var vraiFaux = '';
 
           parts.forEach(function(part) {
             part = part.trim();
@@ -508,6 +702,10 @@
               carte = part;
             } else if (part.startsWith('l:')) {
               relier = part;
+            } else if (part.startsWith('tt:')) {
+              texteTrous = part;
+            } else if (part.startsWith('vf:')) {
+              vraiFaux = part;
             } else {
               var cleanText = part.replace(/\r\n/g, '\n').trim();
               if (cleanText) {
@@ -519,21 +717,9 @@
             }
           });
 
-          console.log('📊 Slides:', slidesArray);
-          console.log('📊 Quiz:', quiz);
-          console.log('📊 OpenQ:', openQuestion);
-          console.log('📊 Ordre:', ordre);
-          console.log('📊 Carte:', carte);
-          console.log('📊 Relier:', relier);
-          console.log('📊 Vocabulaire:', vocabulaire);
-          console.log('📊 Tags:', tags);
-          console.log('📊 À retenir:', aRetenir);
-
           etat.chapitre = chapitre;
 
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir);
-
-          console.log('📊 Slides générés:', etat.slides);
+          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux);
 
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
@@ -553,7 +739,7 @@
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir) {
+    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux) {
       var slidesFinal = [];
 
       slidesArray.forEach(function(texteSlide) {
@@ -573,6 +759,30 @@
 
       if (openQuestion.trim() !== '') {
         slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
+      }
+
+      if (texteTrous.trim() !== '') {
+        var tts = parserTextesTrous(texteTrous);
+        tts.forEach(function(tt) {
+          slidesFinal.push({
+            type: 'tt',
+            avant: tt.avant,
+            mot: tt.mot,
+            apres: tt.apres,
+            index: slidesFinal.length
+          });
+        });
+      }
+
+      if (vraiFaux.trim() !== '') {
+        var vfs = parserVraiFaux(vraiFaux);
+        if (vfs.length > 0) {
+          slidesFinal.push({
+            type: 'vf',
+            questions: vfs,
+            index: slidesFinal.length
+          });
+        }
       }
 
       if (ordre.trim() !== '') {
@@ -608,7 +818,7 @@
         }
       }
 
-      // Slide MEMO final (aRetenir + vocabulaire + tags)
+      // Slide MEMO final
       var aRetenirClean = (aRetenir || [])
         .map(function(x) { return String(x).trim(); })
         .filter(function(x) { return x !== ''; });
@@ -635,8 +845,57 @@
         });
       }
 
-      console.log('✅ Slides construits :', slidesFinal);
       etat.slides = slidesFinal;
+    }
+
+    // ============================================================
+    // PARSEUR TEXTE À TROUS
+    // ============================================================
+    function parserTextesTrous(texte) {
+      var lignes = texte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var resultats = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^tt:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^tt:\s*/i, '').trim();
+        var match = contenu.match(/\/([^\/]+)\//);
+        if (!match) return;
+
+        var mot = match[1].trim();
+        var idx = contenu.indexOf('/' + mot + '/');
+        var avant = contenu.substring(0, idx).trim();
+        var apres = contenu.substring(idx + mot.length + 2).trim();
+
+        resultats.push({ avant: avant, mot: mot, apres: apres });
+      });
+
+      return resultats;
+    }
+
+    // ============================================================
+    // PARSEUR VRAI/FAUX
+    // ============================================================
+    function parserVraiFaux(texte) {
+      var lignes = texte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var questions = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^vf:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^vf:\s*/i, '').trim();
+        var match = contenu.match(/\(([vf])\)\s*$/i);
+        if (!match) return;
+
+        var reponse = match[1].toLowerCase();
+        var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
+        if (question === '') return;
+
+        questions.push({
+          question: question,
+          reponse: reponse
+        });
+      });
+
+      return questions;
     }
 
     // ============================================================
@@ -714,7 +973,7 @@
     }
 
     // ============================================================
-    // MÉLANGER (Fisher-Yates)
+    // MÉLANGER
     // ============================================================
     function melanger(array) {
       var copie = array.slice();
@@ -825,6 +1084,8 @@
         else if (slide.type === 'ordre') html += ' ordre-content';
         else if (slide.type === 'carte') html += ' carte-content';
         else if (slide.type === 'relier') html += ' relier-content';
+        else if (slide.type === 'tt') html += ' tt-content';
+        else if (slide.type === 'vf') html += ' vf-content';
         html += '" id="slideContent-' + index + '">';
 
         if (slide.type === 'slide') {
@@ -876,6 +1137,8 @@
         if (slide.type === 'carte') html += afficherCarte(slide, index);
         if (slide.type === 'relier') html += afficherRelier(slide, index);
         if (slide.type === 'memo') html += afficherMemo(slide);
+        if (slide.type === 'tt') html += afficherTexteTrous(slide, index);
+        if (slide.type === 'vf') html += afficherVraiFaux(slide, index);
 
         if (slide.type === 'slide') {
           html += '<div class="note-toggle" id="noteToggle-' + index + '" onclick="toggleNote(' + index + ')" title="Ajouter une note">✎</div>';
@@ -908,7 +1171,6 @@
       setTimeout(function() {
         if (typeof detecterArabe === 'function') {
           detecterArabe();
-          console.log('🔄 Détection arabe relancée');
         }
       }, 50);
 
@@ -940,7 +1202,10 @@
             target.closest('.font-control-bottom') ||
             target.closest('.progress-dots') ||
             target.closest('.relier-item') ||
-            target.closest('.btn-valider-relier')) {
+            target.closest('.btn-valider-relier') ||
+            target.closest('.tt-input') ||
+            target.closest('.btn-valider-tt') ||
+            target.closest('.vf-btn')) {
           return;
         }
         var rect = container.getBoundingClientRect();
@@ -1019,6 +1284,204 @@
 
       html += '<button class="btn-fermer-slide" onclick="fermerLiseuse()">Fermer</button>';
       return html;
+    }
+
+    // ============================================================
+    // AFFICHAGE TEXTE À TROUS
+    // ============================================================
+    function afficherTexteTrous(slide, index) {
+      etat.ttReponses[index] = { essai: 0, correct: false };
+      etat.ttValide[index] = false;
+
+      var html = '';
+      html += '<div class="tt-conteneur">';
+      html += '<div class="tt-phrase">';
+      if (slide.avant) html += formaterTexte(slide.avant) + ' ';
+      html += '<input type="text" class="tt-input" id="ttInput-' + index + '" autocomplete="off" spellcheck="false" onkeydown="if(event.key===\'Enter\'){validerTexteTrous(' + index + ');return false;}">';
+      if (slide.apres) html += ' ' + formaterTexte(slide.apres);
+      html += '</div>';
+      html += '<div class="tt-feedback" id="ttFeedback-' + index + '"></div>';
+      html += '<button class="btn-valider-tt" id="btnValiderTT-' + index + '" onclick="validerTexteTrous(' + index + ')">Valider</button>';
+      html += '<div class="tt-tentatives" id="ttTentatives-' + index + '">2 essais possibles</div>';
+      html += '</div>';
+      return html;
+    }
+
+    function validerTexteTrous(index) {
+      var slide = etat.slides[index];
+      if (!slide || slide.type !== 'tt') return;
+      if (etat.ttValide[index]) return;
+
+      var input = document.getElementById('ttInput-' + index);
+      var feedback = document.getElementById('ttFeedback-' + index);
+      var btnValider = document.getElementById('btnValiderTT-' + index);
+      var tentatives = document.getElementById('ttTentatives-' + index);
+      if (!input || !feedback) return;
+
+      var valeur = (input.value || '').trim();
+      if (valeur === '') {
+        input.focus();
+        return;
+      }
+
+      var data = etat.ttReponses[index];
+      data.essai++;
+      var motAttendu = slide.mot;
+      var correct = normaliserComparaison(valeur) === normaliserComparaison(motAttendu);
+
+      if (correct) {
+        input.classList.add('tt-ok');
+        input.disabled = true;
+        feedback.textContent = '✓ Bonne réponse !';
+        feedback.className = 'tt-feedback ok';
+        etat.ttValide[index] = true;
+        if (btnValider) btnValider.style.display = 'none';
+        if (tentatives) tentatives.textContent = '';
+        sauvegarderTexteTrous(index, true, 1);
+        afficherBoutonContinuerTT(index);
+      } else {
+        input.classList.add('tt-ko');
+        feedback.textContent = '✗ Mauvaise réponse.';
+        feedback.className = 'tt-feedback ko';
+
+        if (data.essai >= 2) {
+          input.disabled = true;
+          feedback.textContent = '✗ La bonne réponse était : « ' + motAttendu + ' »';
+          feedback.className = 'tt-feedback solution';
+          etat.ttValide[index] = true;
+          if (btnValider) btnValider.style.display = 'none';
+          if (tentatives) tentatives.textContent = '';
+          sauvegarderTexteTrous(index, false, 2);
+          afficherBoutonContinuerTT(index);
+        } else {
+          if (tentatives) tentatives.textContent = '1 essai restant';
+          setTimeout(function() {
+            input.classList.remove('tt-ko');
+            input.value = '';
+            input.focus();
+          }, 800);
+        }
+      }
+    }
+
+    function afficherBoutonContinuerTT(index) {
+      var conteneur = document.getElementById('slideContent-' + index);
+      if (!conteneur) return;
+      if (conteneur.querySelector('.btn-continuer-tt')) return;
+      var btn = document.createElement('button');
+      btn.className = 'btn-continuer btn-continuer-tt visible';
+      btn.textContent = 'Continuer →';
+      btn.setAttribute('onclick', 'slideSuivante()');
+      conteneur.appendChild(btn);
+    }
+
+    function normaliserComparaison(str) {
+      return String(str)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+    }
+
+    function sauvegarderTexteTrous(index, correct, essai) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveTexteTrous' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&bonnes=' + encodeURIComponent(correct ? 1 : 0) +
+        '&total=' + encodeURIComponent(1);
+      fetch(url).then(function(r) { return r.json(); }).catch(function() {});
+    }
+
+    // ============================================================
+    // AFFICHAGE VRAI/FAUX
+    // ============================================================
+    function afficherVraiFaux(slide, index) {
+      etat.vfReponses[index] = {};
+      etat.vfValide[index] = false;
+      etat.vfTotal = slide.questions.length;
+      etat.vfBonnes = 0;
+
+      var html = '';
+      html += '<div class="vf-conteneur">';
+      html += '<div class="vf-intro">Répondez Vrai ou Faux à chaque affirmation</div>';
+
+      slide.questions.forEach(function(q, qi) {
+        html += '<div class="vf-item" id="vfItem-' + index + '-' + qi + '">';
+        html += '<div class="vf-question">' + formaterTexte(q.question) + '</div>';
+        html += '<div class="vf-boutons">';
+        html += '<button class="vf-btn" id="vfBtnV-' + index + '-' + qi + '" onclick="repondreVF(' + index + ', ' + qi + ', \'v\')">VRAI</button>';
+        html += '<button class="vf-btn" id="vfBtnF-' + index + '-' + qi + '" onclick="repondreVF(' + index + ', ' + qi + ', \'f\')">FAUX</button>';
+        html += '</div>';
+        html += '</div>';
+        html += '<div class="vf-feedback" id="vfFeedback-' + index + '-' + qi + '"></div>';
+      });
+
+      html += '<div class="vf-score" id="vfScore-' + index + '"></div>';
+      html += '<button class="btn-continuer" id="btnContinuerVF-' + index + '" onclick="slideSuivante()" style="display:none;">Continuer →</button>';
+      html += '</div>';
+      return html;
+    }
+
+    function repondreVF(index, qi, choix) {
+      var slide = etat.slides[index];
+      if (!slide || slide.type !== 'vf') return;
+      if (etat.vfReponses[index][qi]) return;
+
+      var q = slide.questions[qi];
+      var correct = (choix === q.reponse);
+      etat.vfReponses[index][qi] = { choix: choix, correct: correct };
+      if (correct) etat.vfBonnes++;
+
+      var btnV = document.getElementById('vfBtnV-' + index + '-' + qi);
+      var btnF = document.getElementById('vfBtnF-' + index + '-' + qi);
+      var feedback = document.getElementById('vfFeedback-' + index + '-' + qi);
+
+      if (btnV) btnV.disabled = true;
+      if (btnF) btnF.disabled = true;
+
+      var btnChoisi = choix === 'v' ? btnV : btnF;
+      var btnAutre = choix === 'v' ? btnF : btnV;
+
+      if (correct) {
+        if (btnChoisi) btnChoisi.classList.add('vf-ok');
+        if (feedback) {
+          feedback.textContent = '✓ Correct';
+          feedback.className = 'vf-feedback ok';
+        }
+      } else {
+        if (btnChoisi) btnChoisi.classList.add('vf-ko');
+        if (btnAutre) btnAutre.classList.add('vf-ok');
+        if (feedback) {
+          feedback.textContent = '✗ Faux — la réponse était ' + (q.reponse === 'v' ? 'VRAI' : 'FAUX');
+          feedback.className = 'vf-feedback ko';
+        }
+      }
+
+      var toutesRepondues = slide.questions.every(function(_, i) {
+        return etat.vfReponses[index][i] !== undefined;
+      });
+
+      if (toutesRepondues) {
+        etat.vfValide[index] = true;
+        var score = document.getElementById('vfScore-' + index);
+        if (score) {
+          score.textContent = 'Score : ' + etat.vfBonnes + ' / ' + etat.vfTotal;
+        }
+        var btnContinuer = document.getElementById('btnContinuerVF-' + index);
+        if (btnContinuer) btnContinuer.style.display = 'inline-block';
+        sauvegarderVraiFaux(etat.vfBonnes, etat.vfTotal);
+      }
+    }
+
+    function sauvegarderVraiFaux(bonnes, total) {
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var url = SCRIPT_URL + '?action=saveVraiFaux' +
+        '&nom=' + encodeURIComponent(nom) +
+        '&chapitreId=' + encodeURIComponent(etat.chapitreId) +
+        '&bonnes=' + encodeURIComponent(bonnes) +
+        '&total=' + encodeURIComponent(total);
+      fetch(url).then(function(r) { return r.json(); }).catch(function() {});
     }
 
     // ============================================================
@@ -1133,9 +1596,6 @@
       }
     }
 
-    // ============================================================
-    // DESSIN DES TRAITS SVG
-    // ============================================================
     function dessinerTraits(slideIndex) {
       var slideEl = document.getElementById('slide-' + slideIndex);
       if (!slideEl) return;
@@ -1276,7 +1736,7 @@
     }
 
     // ============================================================
-    // FONCTIONS D'AFFICHAGE
+    // FONCTIONS D'AFFICHAGE QUIZ / OPEN / ORDRE / CARTE
     // ============================================================
     function afficherQuiz(slide) {
       var html = '';
@@ -1371,7 +1831,7 @@
     }
 
     // ============================================================
-    // NAVIGATION ET INTERACTION
+    // NAVIGATION ET INTERACTION QUIZ
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -1575,6 +2035,14 @@
         if (!etat.relierValide[slide.index]) return;
         var btnRelier = document.getElementById('btnContinuerRelier-' + slide.index);
         if (!btnRelier || !btnRelier.classList.contains('visible')) return;
+      }
+
+      if (slide.type === 'tt') {
+        if (!etat.ttValide[slide.index]) return;
+      }
+
+      if (slide.type === 'vf') {
+        if (!etat.vfValide[slide.index]) return;
       }
 
       etat.enTransition = true;
@@ -1909,6 +2377,8 @@
     window.cartePasTrouve = cartePasTrouve;
     window.selectionnerRelier = selectionnerRelier;
     window.validerRelier = validerRelier;
+    window.validerTexteTrous = validerTexteTrous;
+    window.repondreVF = repondreVF;
 
     function verifierValidationGlobale() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
@@ -1944,7 +2414,6 @@
           el.setAttribute('dir', 'rtl');
           el.style.fontFamily = "'Janna LT Bold', 'Traditional Arabic', serif";
           el.style.direction = 'rtl';
-          console.log('✅ Arabe détecté sur:', el.tagName, '| Texte:', texte.substring(0, 30) + '...');
         }
       });
     }
