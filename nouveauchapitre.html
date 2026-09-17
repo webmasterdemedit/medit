@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
   <title>Nouveau chapitre</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✎</text></svg>" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>+</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
@@ -305,25 +305,25 @@
       transition: all 0.2s;
     }
 
-    .vf-btn-petit.active-v {
-      background: #2d6a4f;
-      border-color: #2d6a4f;
-      color: white;
-    }
-
+    .vf-btn-petit.active-v,
     .vf-btn-petit.active-f {
-      background: #c0392b;
-      border-color: #c0392b;
-      color: white;
+      background: var(--text);
+      border-color: var(--text);
+      color: var(--bg);
     }
 
     .btn-supprimer-ligne {
       background: transparent;
       border: none;
-      color: #c0392b;
+      color: var(--text-secondary);
       cursor: pointer;
       font-size: 14px;
       padding: 0 6px;
+      transition: color 0.2s;
+    }
+
+    .btn-supprimer-ligne:hover {
+      color: #c0392b;
     }
 
     .btn-ajout-petit {
@@ -394,8 +394,8 @@
     .btn-trouer {
       padding: 6px 14px;
       font-size: 13px;
-      background: #2d6a4f;
-      color: white;
+      background: var(--text);
+      color: var(--bg);
       border: none;
       cursor: pointer;
       font-weight: 500;
@@ -428,7 +428,7 @@
       margin-top: 14px;
       padding: 10px 14px;
       background: var(--bg-hover);
-      border-left: 3px solid #2d6a4f;
+      border-left: 3px solid var(--text);
       font-family: 'Merriweather', serif;
       font-size: 14px;
       line-height: 1.7;
@@ -443,12 +443,36 @@
       padding: 0 8px;
     }
 
-    /* ===== Liste ordre ===== */
+    /* ===== Liste ordre (drag & drop) ===== */
     .ordre-ligne {
       display: flex;
       align-items: center;
       gap: 8px;
       margin-bottom: 6px;
+      padding: 4px 6px;
+      border: 1px solid transparent;
+      transition: all 0.15s;
+    }
+
+    .ordre-ligne.dragging {
+      opacity: 0.4;
+      border-color: var(--text);
+    }
+
+    .ordre-ligne.drag-over {
+      border-top: 2px solid var(--text);
+    }
+
+    .ordre-handle {
+      cursor: grab;
+      color: var(--text-secondary);
+      font-size: 16px;
+      padding: 0 4px;
+      user-select: none;
+    }
+
+    .ordre-handle:active {
+      cursor: grabbing;
     }
 
     .ordre-ligne .num {
@@ -513,7 +537,7 @@
 
   <div class="page-nouveau">
 
-    <h1 class="titre-page">✎ Nouveau chapitre</h1>
+    <h1 class="titre-page">Nouveau chapitre</h1>
     <p class="sous-titre-page">Écris ton chapitre, ajoute des exercices, exporte le fichier .txt</p>
 
     <!-- MÉTADONNÉES -->
@@ -522,18 +546,6 @@
       <div class="champ-ligne">
         <label>Titre</label>
         <input type="text" id="inputTitre" placeholder="Ex: 1. Le dépôt de Dieu" />
-      </div>
-      <div class="champ-ligne">
-        <label>Catégorie</label>
-        <input type="text" id="inputCategorie" placeholder="Ex: Rappels de politesse" />
-      </div>
-      <div class="champ-ligne">
-        <label>Niveau</label>
-        <div class="niveau-btns">
-          <button type="button" class="niveau-btn active" data-niveau="1" onclick="setNiveau(1)">1</button>
-          <button type="button" class="niveau-btn" data-niveau="2" onclick="setNiveau(2)">2</button>
-          <button type="button" class="niveau-btn" data-niveau="3" onclick="setNiveau(3)">3</button>
-        </div>
       </div>
       <div class="champ-ligne">
         <label>Date</label>
@@ -563,19 +575,16 @@
         <button class="btn-ajout" onclick="ouvrirModalRetenir()">+ À retenir</button>
       </div>
 
-      <!-- LISTE DES EXOS AJOUTÉS -->
       <div class="exos-liste" id="exosListe"></div>
     </div>
 
     <!-- EXPORT -->
-    <button class="btn-principal" onclick="exporterFichier()">📥 Exporter le fichier .txt</button>
+    <button class="btn-principal" onclick="exporterFichier()">Exporter le fichier .txt</button>
     <div class="msg-export" id="msgExport"></div>
 
   </div>
 
-  <!-- ============================================================ -->
   <!-- MODAL UNIVERSEL -->
-  <!-- ============================================================ -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal-contenu">
       <div class="modal-header">
@@ -594,20 +603,9 @@
     // ============================================================
     // ÉTAT
     // ============================================================
-    var niveauActuel = 1;
-    var exos = [];  // liste des exercices : { type, data, id }
+    var exos = [];
     var exoIdCounter = 0;
-    var modalActuel = null;  // { type, data, index } (index = édition si >= 0)
-
-    // ============================================================
-    // NIVEAU
-    // ============================================================
-    function setNiveau(n) {
-      niveauActuel = n;
-      document.querySelectorAll('.niveau-btn').forEach(function(btn) {
-        btn.classList.toggle('active', parseInt(btn.dataset.niveau) === n);
-      });
-    }
+    var modalActuel = null;
 
     // ============================================================
     // MODAL OUVERTURE
@@ -743,11 +741,11 @@
       var phrase = edit ? edit.phrase : '';
 
       var html = '<div class="champ-modal">';
-      html += '<label>Phrase (sélectionne un mot puis clique sur <strong>🔘 Trouer</strong>)</label>';
+      html += '<label>Phrase (sélectionne un mot puis clique sur Trouer)</label>';
       html += '<textarea id="mTTPhrase" class="tt-textarea" placeholder="Écris ta phrase complète ici...">' + escapeHtml(phrase) + '</textarea>';
       html += '<div class="tt-boutons">';
-      html += '<button type="button" class="btn-trouer" id="mTTBtnTrouer" onclick="trouerMot()">🔘 Trouer</button>';
-      html += '<button type="button" class="btn-annuler-trou" onclick="annulerTrou()">↶ Annuler</button>';
+      html += '<button type="button" class="btn-trouer" id="mTTBtnTrouer" onclick="trouerMot()">Trouer</button>';
+      html += '<button type="button" class="btn-annuler-trou" onclick="annulerTrou()">Annuler</button>';
       html += '</div>';
       html += '</div>';
       html += '<div class="champ-modal"><label>Aperçu</label><div class="tt-apercu" id="mTTApercu"></div></div>';
@@ -783,9 +781,8 @@
       var mot = ta.value.substring(start, end);
       var apres = ta.value.substring(end);
 
-      // Vérifier qu'il n'y a pas déjà un /mot/ dans la phrase
       if (/\/[^\/]+\//.test(ta.value)) {
-        alert('Il y a déjà un mot troué dans cette phrase. Clique sur ↶ Annuler d\'abord.');
+        alert('Il y a déjà un mot troué dans cette phrase. Clique sur Annuler d\'abord.');
         return;
       }
 
@@ -817,12 +814,12 @@
         var apres = texte.substring(idx + mot.length + 2);
         apercu.innerHTML = escapeHtml(avant) + '<span class="trou"></span>' + escapeHtml(apres);
       } else {
-        apercu.innerHTML = '<span style="color:var(--text-secondary);font-style:italic;">Sélectionne un mot puis clique sur 🔘 Trouer</span>';
+        apercu.innerHTML = '<span style="color:var(--text-secondary);font-style:italic;">Sélectionne un mot puis clique sur Trouer</span>';
       }
     }
 
     // ============================================================
-    // ORDRE
+    // ORDRE (avec drag & drop)
     // ============================================================
     function ouvrirModalOrdre(indexEdit) {
       var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
@@ -830,7 +827,7 @@
       var elements = edit ? edit.elements.slice() : ['', '', ''];
 
       var html = '<div class="champ-modal"><label>Consigne</label><input type="text" id="mOrdreConsigne" value="' + escapeHtml(consigne) + '" placeholder="Ex: Ordonnez les étapes." /></div>';
-      html += '<div class="champ-modal"><label>Éléments dans l\'ordre correct</label>';
+      html += '<div class="champ-modal"><label>Éléments (glisse-dépose pour réordonner, le 1er en haut = étape 1)</label>';
       html += '<div id="mOrdreElements">';
       elements.forEach(function(el, i) { html += ligneOrdre(i, el); });
       html += '</div>';
@@ -843,19 +840,59 @@
     }
 
     function ligneOrdre(i, texte) {
-      return '<div class="ordre-ligne" data-ord="' + i + '">' +
+      return '<div class="ordre-ligne" data-ord="' + i + '" draggable="true">' +
+        '<span class="ordre-handle">⠿</span>' +
         '<span class="num">' + (i + 1) + '.</span>' +
         '<input type="text" class="m-ordre-texte" value="' + escapeHtml(texte) + '" placeholder="Élément" />' +
         '<button type="button" class="btn-supprimer-ligne" onclick="supprimerOrdreElement(' + i + ')">✕</button>' +
         '</div>';
     }
 
+    var dragOrdreIndex = null;
+
     function bindOrdre() {
       var container = document.getElementById('mOrdreElements');
       if (!container) return;
+
+      // Input events
       container.querySelectorAll('.m-ordre-texte').forEach(function(input, i) {
         input.addEventListener('input', function() {
           if (window.mOrdreElems[i] !== undefined) window.mOrdreElems[i] = this.value;
+        });
+      });
+
+      // Drag events
+      container.querySelectorAll('.ordre-ligne').forEach(function(ligne) {
+        ligne.addEventListener('dragstart', function(e) {
+          dragOrdreIndex = parseInt(this.dataset.ord);
+          this.classList.add('dragging');
+        });
+        ligne.addEventListener('dragend', function(e) {
+          this.classList.remove('dragging');
+          container.querySelectorAll('.ordre-ligne').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+          dragOrdreIndex = null;
+        });
+        ligne.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          container.querySelectorAll('.ordre-ligne').forEach(function(el) {
+            el.classList.remove('drag-over');
+          });
+          this.classList.add('drag-over');
+        });
+        ligne.addEventListener('dragleave', function(e) {
+          this.classList.remove('drag-over');
+        });
+        ligne.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.classList.remove('drag-over');
+          var targetIndex = parseInt(this.dataset.ord);
+          if (dragOrdreIndex !== null && dragOrdreIndex !== targetIndex) {
+            var moved = window.mOrdreElems.splice(dragOrdreIndex, 1)[0];
+            window.mOrdreElems.splice(targetIndex, 0, moved);
+            rafraichirOrdre();
+          }
         });
       });
     }
@@ -1072,7 +1109,7 @@
       else if (type === 'tt') {
         var phrase = document.getElementById('mTTPhrase').value.trim();
         if (!phrase) { alert('Phrase vide.'); return; }
-        if (!/\/[^\/]+\//.test(phrase)) { alert('Il faut un mot troué (/mot/). Sélectionne un mot et clique sur 🔘 Trouer.'); return; }
+        if (!/\/[^\/]+\//.test(phrase)) { alert('Il faut un mot troué (/mot/). Sélectionne un mot et clique sur Trouer.'); return; }
         data = { phrase: phrase };
       }
       else if (type === 'ordre') {
@@ -1115,10 +1152,8 @@
       }
 
       if (modalActuel.index >= 0) {
-        // Modification
         exos[modalActuel.index].data = data;
       } else {
-        // Ajout
         exoIdCounter++;
         exos.push({ id: exoIdCounter, type: type, data: data });
       }
@@ -1207,30 +1242,23 @@
     // ============================================================
     function exporterFichier() {
       var titre = document.getElementById('inputTitre').value.trim();
-      var categorie = document.getElementById('inputCategorie').value.trim();
       var dateStr = document.getElementById('inputDate').value.trim();
       var slides = document.getElementById('inputSlides').value;
 
-      if (!titre) { afficherMsg('❌ Renseigne un titre.', 'erreur'); return; }
+      if (!titre) { afficherMsg('Renseigne un titre.', 'erreur'); return; }
 
       var lignes = [];
 
-      // DATE
       if (dateStr) {
         lignes.push('date:' + dateStr);
       }
 
-      // SLIDES
       var slidesTrim = slides.trim();
       if (slidesTrim) {
         lignes.push('');
         lignes.push(slidesTrim);
       }
 
-      // Exos par type dans l'ordre fixe : quiz, tt, vf, ordre, carte, relier, vocab, tags, retenir, ouverte
-      // (on met ouverte à la fin pour coller à l'ordre du parser GS)
-      
-      // Quiz
       exos.filter(function(e) { return e.type === 'quiz'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('q: ' + exo.data.question);
@@ -1239,19 +1267,16 @@
         });
       });
 
-      // Texte à trous
       exos.filter(function(e) { return e.type === 'tt'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('tt: ' + exo.data.phrase);
       });
 
-      // Vrai/Faux
       exos.filter(function(e) { return e.type === 'vf'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('vf: ' + exo.data.question + ' (' + exo.data.reponse + ')');
       });
 
-      // Ordre
       exos.filter(function(e) { return e.type === 'ordre'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('o: ' + exo.data.consigne);
@@ -1260,14 +1285,12 @@
         });
       });
 
-      // Carte
       exos.filter(function(e) { return e.type === 'carte'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('r: ' + exo.data.recto);
         if (exo.data.verso) lignes.push('v: ' + exo.data.verso);
       });
 
-      // Relier
       exos.filter(function(e) { return e.type === 'relier'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('l: ' + exo.data.consigne);
@@ -1276,19 +1299,16 @@
         });
       });
 
-      // Vocabulaire
       exos.filter(function(e) { return e.type === 'vocab'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('! ' + exo.data.mots);
       });
 
-      // Tags
       exos.filter(function(e) { return e.type === 'tags'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('# ' + exo.data.tags);
       });
 
-      // À retenir
       exos.filter(function(e) { return e.type === 'retenir'; }).forEach(function(exo) {
         lignes.push('');
         exo.data.phrases.forEach(function(p) {
@@ -1296,7 +1316,6 @@
         });
       });
 
-      // Question ouverte
       exos.filter(function(e) { return e.type === 'ouverte'; }).forEach(function(exo) {
         lignes.push('');
         lignes.push('qs: ' + exo.data.question);
@@ -1314,7 +1333,7 @@
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      afficherMsg('✅ Fichier exporté : ' + titre + '.txt', 'ok');
+      afficherMsg('Fichier exporté : ' + titre + '.txt', 'ok');
     }
 
     function afficherMsg(texte, type) {
@@ -1344,7 +1363,6 @@
     // INIT
     // ============================================================
     document.addEventListener('DOMContentLoaded', function() {
-      // Date du jour par défaut
       var today = new Date();
       var y = today.getFullYear();
       var m = String(today.getMonth() + 1).padStart(2, '0');
