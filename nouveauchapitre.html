@@ -1,0 +1,1359 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Nouveau chapitre</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>✎</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .page-nouveau {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 30px 24px 60px;
+    }
+
+    .titre-page {
+      font-family: 'Merriweather', serif;
+      font-size: 26px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .sous-titre-page {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 26px;
+    }
+
+    .bloc {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+    }
+
+    .bloc-titre {
+      font-family: 'Inter', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+    }
+
+    .champ-ligne {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap;
+    }
+
+    .champ-ligne label {
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 80px;
+    }
+
+    input[type="text"], textarea, select {
+      font-family: 'Inter', sans-serif;
+      font-size: 14px;
+      padding: 8px 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+      width: 100%;
+      box-sizing: border-box;
+    }
+
+    input[type="text"]:focus, textarea:focus, select:focus {
+      border-color: var(--text);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 240px;
+      font-family: 'Merriweather', serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .niveau-btns {
+      display: flex;
+      gap: 6px;
+    }
+
+    .niveau-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 50%;
+      border: 2px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .niveau-btn.active {
+      border-color: var(--text);
+      background: var(--text);
+      color: var(--bg);
+    }
+
+    .boutons-ajout {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .btn-ajout {
+      padding: 8px 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-ajout:hover {
+      border-color: var(--text);
+      color: var(--text);
+      border-style: solid;
+    }
+
+    .exos-liste {
+      margin-top: 16px;
+    }
+
+    .exo-carte-item {
+      border: 1px solid var(--border);
+      background: var(--bg-hover);
+      padding: 12px 16px;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .exo-carte-item .label {
+      flex: 1;
+      font-size: 14px;
+      color: var(--text);
+    }
+
+    .exo-carte-item .type-badge {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      margin-right: 10px;
+    }
+
+    .exo-carte-item .actions {
+      display: flex;
+      gap: 6px;
+    }
+
+    .exo-carte-item button {
+      padding: 4px 10px;
+      font-size: 11px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .exo-carte-item button:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .btn-principal {
+      display: block;
+      width: 100%;
+      padding: 14px;
+      font-family: 'Inter', sans-serif;
+      font-size: 15px;
+      font-weight: 600;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+      margin-top: 24px;
+      transition: opacity 0.2s;
+    }
+
+    .btn-principal:hover {
+      opacity: 0.85;
+    }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-overlay.visible {
+      display: flex;
+    }
+
+    .modal-contenu {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      max-width: 600px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      padding: 24px 28px;
+    }
+
+    .modal-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-header h3 {
+      font-family: 'Merriweather', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 20px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      padding: 0 6px;
+    }
+
+    .modal-close:hover {
+      color: var(--text);
+    }
+
+    .champ-modal {
+      margin-bottom: 14px;
+    }
+
+    .champ-modal label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 4px;
+    }
+
+    .reponse-ligne {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .reponse-ligne .lettre {
+      font-weight: 600;
+      font-size: 13px;
+      color: var(--text-secondary);
+      min-width: 18px;
+    }
+
+    .reponse-ligne input[type="text"] {
+      flex: 1;
+    }
+
+    .vf-btn-petit {
+      width: 30px;
+      height: 30px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-size: 12px;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .vf-btn-petit.active-v {
+      background: #2d6a4f;
+      border-color: #2d6a4f;
+      color: white;
+    }
+
+    .vf-btn-petit.active-f {
+      background: #c0392b;
+      border-color: #c0392b;
+      color: white;
+    }
+
+    .btn-supprimer-ligne {
+      background: transparent;
+      border: none;
+      color: #c0392b;
+      cursor: pointer;
+      font-size: 14px;
+      padding: 0 6px;
+    }
+
+    .btn-ajout-petit {
+      padding: 4px 12px;
+      font-size: 12px;
+      background: transparent;
+      border: 1px dashed var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      margin-top: 4px;
+    }
+
+    .btn-ajout-petit:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 20px;
+      padding-top: 14px;
+      border-top: 1px solid var(--border);
+    }
+
+    .btn-secondaire {
+      padding: 10px 18px;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .btn-secondaire:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .btn-valider {
+      padding: 10px 22px;
+      font-size: 13px;
+      background: var(--text);
+      color: var(--bg);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-valider:hover {
+      opacity: 0.85;
+    }
+
+    /* ===== Texte à trous ===== */
+    .tt-textarea {
+      min-height: 100px;
+      font-family: 'Merriweather', serif;
+      font-size: 15px;
+      line-height: 1.7;
+    }
+
+    .tt-boutons {
+      display: flex;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .btn-trouer {
+      padding: 6px 14px;
+      font-size: 13px;
+      background: #2d6a4f;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-trouer:hover {
+      opacity: 0.85;
+    }
+
+    .btn-trouer:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
+
+    .btn-annuler-trou {
+      padding: 6px 14px;
+      font-size: 13px;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+    }
+
+    .btn-annuler-trou:hover {
+      border-color: var(--text);
+      color: var(--text);
+    }
+
+    .tt-apercu {
+      margin-top: 14px;
+      padding: 10px 14px;
+      background: var(--bg-hover);
+      border-left: 3px solid #2d6a4f;
+      font-family: 'Merriweather', serif;
+      font-size: 14px;
+      line-height: 1.7;
+      color: var(--text);
+    }
+
+    .tt-apercu .trou {
+      display: inline-block;
+      min-width: 100px;
+      border-bottom: 1px solid var(--text);
+      text-align: center;
+      padding: 0 8px;
+    }
+
+    /* ===== Liste ordre ===== */
+    .ordre-ligne {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .ordre-ligne .num {
+      font-weight: 600;
+      color: var(--text-secondary);
+      min-width: 18px;
+      font-size: 13px;
+    }
+
+    /* ===== Relier paires ===== */
+    .paire-ligne {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 6px;
+    }
+
+    .paire-ligne input {
+      flex: 1;
+    }
+
+    .paire-ligne .tiret {
+      color: var(--text-secondary);
+      font-weight: 600;
+    }
+
+    /* Liste à retenir */
+    .retenir-ligne {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+    }
+
+    .retenir-ligne input {
+      flex: 1;
+    }
+
+    /* Feedback export */
+    .msg-export {
+      margin-top: 14px;
+      padding: 10px 14px;
+      font-size: 13px;
+      border: 1px solid var(--border);
+      display: none;
+    }
+
+    .msg-export.ok {
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+      background: rgba(45, 106, 79, 0.05);
+    }
+
+    .msg-export.erreur {
+      border-color: #c0392b;
+      color: #c0392b;
+      background: rgba(192, 57, 43, 0.05);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-nouveau">
+
+    <h1 class="titre-page">✎ Nouveau chapitre</h1>
+    <p class="sous-titre-page">Écris ton chapitre, ajoute des exercices, exporte le fichier .txt</p>
+
+    <!-- MÉTADONNÉES -->
+    <div class="bloc">
+      <div class="bloc-titre">Informations</div>
+      <div class="champ-ligne">
+        <label>Titre</label>
+        <input type="text" id="inputTitre" placeholder="Ex: 1. Le dépôt de Dieu" />
+      </div>
+      <div class="champ-ligne">
+        <label>Catégorie</label>
+        <input type="text" id="inputCategorie" placeholder="Ex: Rappels de politesse" />
+      </div>
+      <div class="champ-ligne">
+        <label>Niveau</label>
+        <div class="niveau-btns">
+          <button type="button" class="niveau-btn active" data-niveau="1" onclick="setNiveau(1)">1</button>
+          <button type="button" class="niveau-btn" data-niveau="2" onclick="setNiveau(2)">2</button>
+          <button type="button" class="niveau-btn" data-niveau="3" onclick="setNiveau(3)">3</button>
+        </div>
+      </div>
+      <div class="champ-ligne">
+        <label>Date</label>
+        <input type="text" id="inputDate" placeholder="jj/mm/aaaa" style="max-width:180px;" />
+      </div>
+    </div>
+
+    <!-- SLIDES -->
+    <div class="bloc">
+      <div class="bloc-titre">Slides (texte de lecture)</div>
+      <textarea id="inputSlides" placeholder="Écris ton texte ici...&#10;&#10;Sépare les slides par une ligne vide."></textarea>
+    </div>
+
+    <!-- BOUTONS AJOUT -->
+    <div class="bloc">
+      <div class="bloc-titre">Ajouter un exercice</div>
+      <div class="boutons-ajout">
+        <button class="btn-ajout" onclick="ouvrirModalQuiz()">+ Quiz</button>
+        <button class="btn-ajout" onclick="ouvrirModalTexteTrous()">+ Texte à trous</button>
+        <button class="btn-ajout" onclick="ouvrirModalVF()">+ Vrai/Faux</button>
+        <button class="btn-ajout" onclick="ouvrirModalOrdre()">+ Ordre</button>
+        <button class="btn-ajout" onclick="ouvrirModalCarte()">+ Carte</button>
+        <button class="btn-ajout" onclick="ouvrirModalRelier()">+ Relier</button>
+        <button class="btn-ajout" onclick="ouvrirModalOuverte()">+ Question ouverte</button>
+        <button class="btn-ajout" onclick="ouvrirModalVocab()">+ Vocabulaire</button>
+        <button class="btn-ajout" onclick="ouvrirModalTags()">+ Tags</button>
+        <button class="btn-ajout" onclick="ouvrirModalRetenir()">+ À retenir</button>
+      </div>
+
+      <!-- LISTE DES EXOS AJOUTÉS -->
+      <div class="exos-liste" id="exosListe"></div>
+    </div>
+
+    <!-- EXPORT -->
+    <button class="btn-principal" onclick="exporterFichier()">📥 Exporter le fichier .txt</button>
+    <div class="msg-export" id="msgExport"></div>
+
+  </div>
+
+  <!-- ============================================================ -->
+  <!-- MODAL UNIVERSEL -->
+  <!-- ============================================================ -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal-contenu">
+      <div class="modal-header">
+        <h3 id="modalTitre">Ajouter</h3>
+        <button class="modal-close" onclick="fermerModal()">✕</button>
+      </div>
+      <div id="modalCorps"></div>
+      <div class="modal-footer">
+        <button class="btn-secondaire" onclick="fermerModal()">Annuler</button>
+        <button class="btn-valider" id="btnValiderModal" onclick="validerModal()">Ajouter</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // ============================================================
+    // ÉTAT
+    // ============================================================
+    var niveauActuel = 1;
+    var exos = [];  // liste des exercices : { type, data, id }
+    var exoIdCounter = 0;
+    var modalActuel = null;  // { type, data, index } (index = édition si >= 0)
+
+    // ============================================================
+    // NIVEAU
+    // ============================================================
+    function setNiveau(n) {
+      niveauActuel = n;
+      document.querySelectorAll('.niveau-btn').forEach(function(btn) {
+        btn.classList.toggle('active', parseInt(btn.dataset.niveau) === n);
+      });
+    }
+
+    // ============================================================
+    // MODAL OUVERTURE
+    // ============================================================
+    function ouvrirModal(type, titre, corpsHtml, dataInit, indexEdit) {
+      modalActuel = { type: type, data: dataInit || null, index: (indexEdit !== undefined ? indexEdit : -1) };
+      document.getElementById('modalTitre').textContent = titre;
+      document.getElementById('modalCorps').innerHTML = corpsHtml;
+      document.getElementById('btnValiderModal').textContent = (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier' : 'Ajouter';
+      document.getElementById('modalOverlay').classList.add('visible');
+
+      if (typeof window.apresOuvertureModal === 'function') {
+        window.apresOuvertureModal();
+      }
+    }
+
+    function fermerModal() {
+      document.getElementById('modalOverlay').classList.remove('visible');
+      modalActuel = null;
+    }
+
+    // ============================================================
+    // QUIZ
+    // ============================================================
+    function ouvrirModalQuiz(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var q = edit ? edit.question : '';
+      var reps = edit ? edit.reponses : [{ texte: '', correct: true }, { texte: '', correct: false }];
+      
+      var html = '<div class="champ-modal"><label>Question</label><input type="text" id="mQuizQuestion" value="' + escapeHtml(q) + '" placeholder="Ex: Quelle est la meilleure posture ?" /></div>';
+      html += '<div class="champ-modal"><label>Réponses (V = bonne, F = fausse)</label>';
+      html += '<div id="mQuizReponses">';
+      reps.forEach(function(r, i) {
+        html += ligneReponseQuiz(i, r.texte, r.correct);
+      });
+      html += '</div>';
+      html += '<button type="button" class="btn-ajout-petit" onclick="ajouterReponseQuiz()">+ réponse</button>';
+      html += '</div>';
+
+      window.mQuizReps = reps.slice();
+      window.apresOuvertureModal = function() { bindQuizReponses(); };
+      ouvrirModal('quiz', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le quiz' : 'Ajouter un quiz', html, edit, indexEdit);
+    }
+
+    function ligneReponseQuiz(i, texte, correct) {
+      var lettres = ['A','B','C','D','E','F'];
+      return '<div class="reponse-ligne" data-rep="' + i + '">' +
+        '<span class="lettre">' + (lettres[i] || '?') + '</span>' +
+        '<input type="text" class="m-rep-texte" value="' + escapeHtml(texte) + '" placeholder="Réponse" />' +
+        '<button type="button" class="vf-btn-petit ' + (correct ? 'active-v' : '') + '" onclick="setRepV(' + i + ')">V</button>' +
+        '<button type="button" class="vf-btn-petit ' + (!correct ? 'active-f' : '') + '" onclick="setRepF(' + i + ')">F</button>' +
+        '<button type="button" class="btn-supprimer-ligne" onclick="supprimerReponseQuiz(' + i + ')">✕</button>' +
+        '</div>';
+    }
+
+    function bindQuizReponses() {
+      var container = document.getElementById('mQuizReponses');
+      if (!container) return;
+      var textes = container.querySelectorAll('.m-rep-texte');
+      textes.forEach(function(input, i) {
+        input.addEventListener('input', function() {
+          if (window.mQuizReps[i]) window.mQuizReps[i].texte = this.value;
+        });
+      });
+    }
+
+    function setRepV(i) {
+      window.mQuizReps.forEach(function(r, j) { r.correct = (i === j); });
+      rafraichirQuiz();
+    }
+
+    function setRepF(i) {
+      if (window.mQuizReps[i]) window.mQuizReps[i].correct = false;
+      var aVrai = window.mQuizReps.some(function(r) { return r.correct; });
+      if (!aVrai && window.mQuizReps.length > 0) {
+        window.mQuizReps[0].correct = true;
+      }
+      rafraichirQuiz();
+    }
+
+    function supprimerReponseQuiz(i) {
+      if (window.mQuizReps.length <= 2) { alert('Il faut au moins 2 réponses.'); return; }
+      window.mQuizReps.splice(i, 1);
+      rafraichirQuiz();
+    }
+
+    function ajouterReponseQuiz() {
+      window.mQuizReps.push({ texte: '', correct: false });
+      rafraichirQuiz();
+    }
+
+    function rafraichirQuiz() {
+      var container = document.getElementById('mQuizReponses');
+      var html = '';
+      window.mQuizReps.forEach(function(r, i) {
+        html += ligneReponseQuiz(i, r.texte, r.correct);
+      });
+      container.innerHTML = html;
+      bindQuizReponses();
+    }
+
+    // ============================================================
+    // VRAI / FAUX
+    // ============================================================
+    function ouvrirModalVF(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var q = edit ? edit.question : '';
+      var rep = edit ? edit.reponse : 'v';
+
+      var html = '<div class="champ-modal"><label>Question</label><input type="text" id="mVFQuestion" value="' + escapeHtml(q) + '" placeholder="Ex: Le Coran a 114 sourates." /></div>';
+      html += '<div class="champ-modal"><label>Réponse correcte</label>';
+      html += '<div style="display:flex;gap:8px;">';
+      html += '<button type="button" class="vf-btn-petit ' + (rep === 'v' ? 'active-v' : '') + '" id="mVFBtnV" onclick="setVFModal(\'v\')" style="width:auto;padding:0 16px;">VRAI</button>';
+      html += '<button type="button" class="vf-btn-petit ' + (rep === 'f' ? 'active-f' : '') + '" id="mVFBtnF" onclick="setVFModal(\'f\')" style="width:auto;padding:0 16px;">FAUX</button>';
+      html += '</div></div>';
+
+      window.mVFRep = rep;
+      window.apresOuvertureModal = null;
+      ouvrirModal('vf', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le vrai/faux' : 'Ajouter un vrai/faux', html, edit, indexEdit);
+    }
+
+    function setVFModal(val) {
+      window.mVFRep = val;
+      document.getElementById('mVFBtnV').classList.toggle('active-v', val === 'v');
+      document.getElementById('mVFBtnF').classList.toggle('active-f', val === 'f');
+    }
+
+    // ============================================================
+    // TEXTE À TROUS
+    // ============================================================
+    function ouvrirModalTexteTrous(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var phrase = edit ? edit.phrase : '';
+
+      var html = '<div class="champ-modal">';
+      html += '<label>Phrase (sélectionne un mot puis clique sur <strong>🔘 Trouer</strong>)</label>';
+      html += '<textarea id="mTTPhrase" class="tt-textarea" placeholder="Écris ta phrase complète ici...">' + escapeHtml(phrase) + '</textarea>';
+      html += '<div class="tt-boutons">';
+      html += '<button type="button" class="btn-trouer" id="mTTBtnTrouer" onclick="trouerMot()">🔘 Trouer</button>';
+      html += '<button type="button" class="btn-annuler-trou" onclick="annulerTrou()">↶ Annuler</button>';
+      html += '</div>';
+      html += '</div>';
+      html += '<div class="champ-modal"><label>Aperçu</label><div class="tt-apercu" id="mTTApercu"></div></div>';
+
+      window.apresOuvertureModal = function() {
+        var ta = document.getElementById('mTTPhrase');
+        ta.addEventListener('input', mettreAJourApercuTT);
+        ta.addEventListener('select', majEtatBtnTrouer);
+        ta.addEventListener('keyup', majEtatBtnTrouer);
+        ta.addEventListener('mouseup', majEtatBtnTrouer);
+        mettreAJourApercuTT();
+        majEtatBtnTrouer();
+      };
+      ouvrirModal('tt', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le texte à trous' : 'Ajouter un texte à trous', html, edit, indexEdit);
+    }
+
+    function majEtatBtnTrouer() {
+      var ta = document.getElementById('mTTPhrase');
+      var btn = document.getElementById('mTTBtnTrouer');
+      if (!ta || !btn) return;
+      var sel = ta.value.substring(ta.selectionStart, ta.selectionEnd).trim();
+      btn.disabled = sel.length === 0;
+    }
+
+    function trouerMot() {
+      var ta = document.getElementById('mTTPhrase');
+      if (!ta) return;
+      var start = ta.selectionStart;
+      var end = ta.selectionEnd;
+      if (start === end) return;
+
+      var avant = ta.value.substring(0, start);
+      var mot = ta.value.substring(start, end);
+      var apres = ta.value.substring(end);
+
+      // Vérifier qu'il n'y a pas déjà un /mot/ dans la phrase
+      if (/\/[^\/]+\//.test(ta.value)) {
+        alert('Il y a déjà un mot troué dans cette phrase. Clique sur ↶ Annuler d\'abord.');
+        return;
+      }
+
+      ta.value = avant + '/' + mot + '/' + apres;
+      ta.selectionStart = ta.selectionEnd = start + mot.length + 2;
+      ta.focus();
+      mettreAJourApercuTT();
+      majEtatBtnTrouer();
+    }
+
+    function annulerTrou() {
+      var ta = document.getElementById('mTTPhrase');
+      if (!ta) return;
+      ta.value = ta.value.replace(/\/([^\/]+)\//, '$1');
+      ta.focus();
+      mettreAJourApercuTT();
+    }
+
+    function mettreAJourApercuTT() {
+      var ta = document.getElementById('mTTPhrase');
+      var apercu = document.getElementById('mTTApercu');
+      if (!ta || !apercu) return;
+      var texte = ta.value || '';
+      var match = texte.match(/\/([^\/]+)\//);
+      if (match) {
+        var mot = match[1];
+        var idx = texte.indexOf('/' + mot + '/');
+        var avant = texte.substring(0, idx);
+        var apres = texte.substring(idx + mot.length + 2);
+        apercu.innerHTML = escapeHtml(avant) + '<span class="trou"></span>' + escapeHtml(apres);
+      } else {
+        apercu.innerHTML = '<span style="color:var(--text-secondary);font-style:italic;">Sélectionne un mot puis clique sur 🔘 Trouer</span>';
+      }
+    }
+
+    // ============================================================
+    // ORDRE
+    // ============================================================
+    function ouvrirModalOrdre(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var consigne = edit ? edit.consigne : '';
+      var elements = edit ? edit.elements.slice() : ['', '', ''];
+
+      var html = '<div class="champ-modal"><label>Consigne</label><input type="text" id="mOrdreConsigne" value="' + escapeHtml(consigne) + '" placeholder="Ex: Ordonnez les étapes." /></div>';
+      html += '<div class="champ-modal"><label>Éléments dans l\'ordre correct</label>';
+      html += '<div id="mOrdreElements">';
+      elements.forEach(function(el, i) { html += ligneOrdre(i, el); });
+      html += '</div>';
+      html += '<button type="button" class="btn-ajout-petit" onclick="ajouterOrdreElement()">+ élément</button>';
+      html += '</div>';
+
+      window.mOrdreElems = elements.slice();
+      window.apresOuvertureModal = function() { bindOrdre(); };
+      ouvrirModal('ordre', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier l\'ordre' : 'Ajouter un ordre', html, edit, indexEdit);
+    }
+
+    function ligneOrdre(i, texte) {
+      return '<div class="ordre-ligne" data-ord="' + i + '">' +
+        '<span class="num">' + (i + 1) + '.</span>' +
+        '<input type="text" class="m-ordre-texte" value="' + escapeHtml(texte) + '" placeholder="Élément" />' +
+        '<button type="button" class="btn-supprimer-ligne" onclick="supprimerOrdreElement(' + i + ')">✕</button>' +
+        '</div>';
+    }
+
+    function bindOrdre() {
+      var container = document.getElementById('mOrdreElements');
+      if (!container) return;
+      container.querySelectorAll('.m-ordre-texte').forEach(function(input, i) {
+        input.addEventListener('input', function() {
+          if (window.mOrdreElems[i] !== undefined) window.mOrdreElems[i] = this.value;
+        });
+      });
+    }
+
+    function ajouterOrdreElement() {
+      window.mOrdreElems.push('');
+      rafraichirOrdre();
+    }
+
+    function supprimerOrdreElement(i) {
+      if (window.mOrdreElems.length <= 2) { alert('Il faut au moins 2 éléments.'); return; }
+      window.mOrdreElems.splice(i, 1);
+      rafraichirOrdre();
+    }
+
+    function rafraichirOrdre() {
+      var container = document.getElementById('mOrdreElements');
+      var html = '';
+      window.mOrdreElems.forEach(function(el, i) { html += ligneOrdre(i, el); });
+      container.innerHTML = html;
+      bindOrdre();
+    }
+
+    // ============================================================
+    // CARTE
+    // ============================================================
+    function ouvrirModalCarte(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var recto = edit ? edit.recto : '';
+      var verso = edit ? edit.verso : '';
+
+      var html = '<div class="champ-modal"><label>Recto (question)</label><input type="text" id="mCarteRecto" value="' + escapeHtml(recto) + '" placeholder="Ex: Qu\'est-ce que la pleine conscience ?" /></div>';
+      html += '<div class="champ-modal"><label>Verso (réponse)</label><input type="text" id="mCarteVerso" value="' + escapeHtml(verso) + '" placeholder="Ex: Être présent à l\'instant." /></div>';
+
+      window.apresOuvertureModal = null;
+      ouvrirModal('carte', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier la carte' : 'Ajouter une carte', html, edit, indexEdit);
+    }
+
+    // ============================================================
+    // RELIER
+    // ============================================================
+    function ouvrirModalRelier(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var consigne = edit ? edit.consigne : '';
+      var paires = edit ? edit.paires.slice() : [{ gauche: '', droite: '' }, { gauche: '', droite: '' }];
+
+      var html = '<div class="champ-modal"><label>Consigne</label><input type="text" id="mRelierConsigne" value="' + escapeHtml(consigne) + '" placeholder="Ex: Relie chaque animal à son cri." /></div>';
+      html += '<div class="champ-modal"><label>Paires (gauche - droite)</label>';
+      html += '<div id="mRelierPaires">';
+      paires.forEach(function(p, i) { html += lignePaire(i, p.gauche, p.droite); });
+      html += '</div>';
+      html += '<button type="button" class="btn-ajout-petit" onclick="ajouterPaire()">+ paire</button>';
+      html += '</div>';
+
+      window.mRelierPaires = paires.slice();
+      window.apresOuvertureModal = function() { bindRelier(); };
+      ouvrirModal('relier', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le relier' : 'Ajouter un relier', html, edit, indexEdit);
+    }
+
+    function lignePaire(i, gauche, droite) {
+      return '<div class="paire-ligne" data-paire="' + i + '">' +
+        '<input type="text" class="m-paire-gauche" value="' + escapeHtml(gauche) + '" placeholder="Gauche" />' +
+        '<span class="tiret">–</span>' +
+        '<input type="text" class="m-paire-droite" value="' + escapeHtml(droite) + '" placeholder="Droite" />' +
+        '<button type="button" class="btn-supprimer-ligne" onclick="supprimerPaire(' + i + ')">✕</button>' +
+        '</div>';
+    }
+
+    function bindRelier() {
+      var container = document.getElementById('mRelierPaires');
+      if (!container) return;
+      container.querySelectorAll('.paire-ligne').forEach(function(ligne, i) {
+        var inputG = ligne.querySelector('.m-paire-gauche');
+        var inputD = ligne.querySelector('.m-paire-droite');
+        if (inputG) inputG.addEventListener('input', function() { if (window.mRelierPaires[i]) window.mRelierPaires[i].gauche = this.value; });
+        if (inputD) inputD.addEventListener('input', function() { if (window.mRelierPaires[i]) window.mRelierPaires[i].droite = this.value; });
+      });
+    }
+
+    function ajouterPaire() {
+      window.mRelierPaires.push({ gauche: '', droite: '' });
+      rafraichirRelier();
+    }
+
+    function supprimerPaire(i) {
+      if (window.mRelierPaires.length <= 2) { alert('Il faut au moins 2 paires.'); return; }
+      window.mRelierPaires.splice(i, 1);
+      rafraichirRelier();
+    }
+
+    function rafraichirRelier() {
+      var container = document.getElementById('mRelierPaires');
+      var html = '';
+      window.mRelierPaires.forEach(function(p, i) { html += lignePaire(i, p.gauche, p.droite); });
+      container.innerHTML = html;
+      bindRelier();
+    }
+
+    // ============================================================
+    // QUESTION OUVERTE
+    // ============================================================
+    function ouvrirModalOuverte(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var q = edit ? edit.question : '';
+
+      var html = '<div class="champ-modal"><label>Question</label><input type="text" id="mOuverteQuestion" value="' + escapeHtml(q) + '" placeholder="Ex: Pourquoi méditez-vous ?" /></div>';
+
+      window.apresOuvertureModal = null;
+      ouvrirModal('ouverte', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier la question' : 'Ajouter une question ouverte', html, edit, indexEdit);
+    }
+
+    // ============================================================
+    // VOCABULAIRE
+    // ============================================================
+    function ouvrirModalVocab(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var mots = edit ? edit.mots : '';
+
+      var html = '<div class="champ-modal"><label>Mots (séparés par des virgules)</label><input type="text" id="mVocabMots" value="' + escapeHtml(mots) + '" placeholder="Ex: Aliment = nourriture, Mot = sens" /></div>';
+
+      window.apresOuvertureModal = null;
+      ouvrirModal('vocab', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le vocabulaire' : 'Ajouter du vocabulaire', html, edit, indexEdit);
+    }
+
+    // ============================================================
+    // TAGS
+    // ============================================================
+    function ouvrirModalTags(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var tags = edit ? edit.tags : '';
+
+      var html = '<div class="champ-modal"><label>Tags (séparés par des virgules)</label><input type="text" id="mTagsListe" value="' + escapeHtml(tags) + '" placeholder="Ex: Bienfaits, Reconnaissance" /></div>';
+
+      window.apresOuvertureModal = null;
+      ouvrirModal('tags', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier les tags' : 'Ajouter des tags', html, edit, indexEdit);
+    }
+
+    // ============================================================
+    // À RETENIR
+    // ============================================================
+    function ouvrirModalRetenir(indexEdit) {
+      var edit = (indexEdit !== undefined && indexEdit >= 0) ? exos[indexEdit].data : null;
+      var phrases = edit ? edit.phrases.slice() : [''];
+
+      var html = '<div class="champ-modal"><label>Phrases à retenir</label>';
+      html += '<div id="mRetenirPhrases">';
+      phrases.forEach(function(p, i) { html += ligneRetenir(i, p); });
+      html += '</div>';
+      html += '<button type="button" class="btn-ajout-petit" onclick="ajouterRetenir()">+ phrase</button>';
+      html += '</div>';
+
+      window.mRetenirPhrases = phrases.slice();
+      window.apresOuvertureModal = function() { bindRetenir(); };
+      ouvrirModal('retenir', (indexEdit !== undefined && indexEdit >= 0) ? 'Modifier le à retenir' : 'Ajouter un à retenir', html, edit, indexEdit);
+    }
+
+    function ligneRetenir(i, texte) {
+      return '<div class="retenir-ligne" data-ret="' + i + '">' +
+        '<input type="text" class="m-retenir-texte" value="' + escapeHtml(texte) + '" placeholder="Phrase" />' +
+        '<button type="button" class="btn-supprimer-ligne" onclick="supprimerRetenir(' + i + ')">✕</button>' +
+        '</div>';
+    }
+
+    function bindRetenir() {
+      var container = document.getElementById('mRetenirPhrases');
+      if (!container) return;
+      container.querySelectorAll('.m-retenir-texte').forEach(function(input, i) {
+        input.addEventListener('input', function() {
+          if (window.mRetenirPhrases[i] !== undefined) window.mRetenirPhrases[i] = this.value;
+        });
+      });
+    }
+
+    function ajouterRetenir() {
+      window.mRetenirPhrases.push('');
+      rafraichirRetenir();
+    }
+
+    function supprimerRetenir(i) {
+      if (window.mRetenirPhrases.length <= 1) return;
+      window.mRetenirPhrases.splice(i, 1);
+      rafraichirRetenir();
+    }
+
+    function rafraichirRetenir() {
+      var container = document.getElementById('mRetenirPhrases');
+      var html = '';
+      window.mRetenirPhrases.forEach(function(p, i) { html += ligneRetenir(i, p); });
+      container.innerHTML = html;
+      bindRetenir();
+    }
+
+    // ============================================================
+    // VALIDATION MODAL
+    // ============================================================
+    function validerModal() {
+      if (!modalActuel) return;
+      var type = modalActuel.type;
+      var data = null;
+
+      if (type === 'quiz') {
+        var q = document.getElementById('mQuizQuestion').value.trim();
+        if (!q) { alert('Question vide.'); return; }
+        var reps = window.mQuizReps.map(function(r) { return { texte: r.texte.trim(), correct: r.correct }; }).filter(function(r) { return r.texte !== ''; });
+        if (reps.length < 2) { alert('Il faut au moins 2 réponses.'); return; }
+        if (!reps.some(function(r) { return r.correct; })) { alert('Marque au moins une bonne réponse (V).'); return; }
+        data = { question: q, reponses: reps };
+      }
+      else if (type === 'vf') {
+        var q = document.getElementById('mVFQuestion').value.trim();
+        if (!q) { alert('Question vide.'); return; }
+        data = { question: q, reponse: window.mVFRep };
+      }
+      else if (type === 'tt') {
+        var phrase = document.getElementById('mTTPhrase').value.trim();
+        if (!phrase) { alert('Phrase vide.'); return; }
+        if (!/\/[^\/]+\//.test(phrase)) { alert('Il faut un mot troué (/mot/). Sélectionne un mot et clique sur 🔘 Trouer.'); return; }
+        data = { phrase: phrase };
+      }
+      else if (type === 'ordre') {
+        var consigne = document.getElementById('mOrdreConsigne').value.trim();
+        var elems = window.mOrdreElems.map(function(e) { return e.trim(); }).filter(function(e) { return e !== ''; });
+        if (elems.length < 2) { alert('Il faut au moins 2 éléments.'); return; }
+        data = { consigne: consigne || 'Remettre dans l\'ordre', elements: elems };
+      }
+      else if (type === 'carte') {
+        var recto = document.getElementById('mCarteRecto').value.trim();
+        var verso = document.getElementById('mCarteVerso').value.trim();
+        if (!recto) { alert('Recto vide.'); return; }
+        data = { recto: recto, verso: verso };
+      }
+      else if (type === 'relier') {
+        var consigne = document.getElementById('mRelierConsigne').value.trim();
+        var paires = window.mRelierPaires.map(function(p) { return { gauche: p.gauche.trim(), droite: p.droite.trim() }; }).filter(function(p) { return p.gauche && p.droite; });
+        if (paires.length < 2) { alert('Il faut au moins 2 paires complètes.'); return; }
+        data = { consigne: consigne || 'Relie les éléments', paires: paires };
+      }
+      else if (type === 'ouverte') {
+        var q = document.getElementById('mOuverteQuestion').value.trim();
+        if (!q) { alert('Question vide.'); return; }
+        data = { question: q };
+      }
+      else if (type === 'vocab') {
+        var mots = document.getElementById('mVocabMots').value.trim();
+        if (!mots) { alert('Mots vides.'); return; }
+        data = { mots: mots };
+      }
+      else if (type === 'tags') {
+        var tags = document.getElementById('mTagsListe').value.trim();
+        if (!tags) { alert('Tags vides.'); return; }
+        data = { tags: tags };
+      }
+      else if (type === 'retenir') {
+        var phrases = window.mRetenirPhrases.map(function(p) { return p.trim(); }).filter(function(p) { return p !== ''; });
+        if (phrases.length === 0) { alert('Aucune phrase.'); return; }
+        data = { phrases: phrases };
+      }
+
+      if (modalActuel.index >= 0) {
+        // Modification
+        exos[modalActuel.index].data = data;
+      } else {
+        // Ajout
+        exoIdCounter++;
+        exos.push({ id: exoIdCounter, type: type, data: data });
+      }
+
+      afficherExos();
+      fermerModal();
+    }
+
+    // ============================================================
+    // LISTE DES EXOS
+    // ============================================================
+    function afficherExos() {
+      var container = document.getElementById('exosListe');
+      if (!container) return;
+
+      if (exos.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:var(--text-secondary);font-size:13px;padding:20px;">Aucun exercice ajouté pour l\'instant.</p>';
+        return;
+      }
+
+      var labels = {
+        quiz: 'Quiz',
+        tt: 'Texte à trous',
+        vf: 'Vrai/Faux',
+        ordre: 'Ordre',
+        carte: 'Carte',
+        relier: 'Relier',
+        ouverte: 'Question ouverte',
+        vocab: 'Vocabulaire',
+        tags: 'Tags',
+        retenir: 'À retenir'
+      };
+
+      var html = '';
+      exos.forEach(function(exo, i) {
+        var resume = resumeExo(exo);
+        html += '<div class="exo-carte-item">';
+        html += '<span class="type-badge">' + labels[exo.type] + '</span>';
+        html += '<span class="label">' + escapeHtml(resume) + '</span>';
+        html += '<div class="actions">';
+        html += '<button onclick="editerExo(' + i + ')">Modifier</button>';
+        html += '<button onclick="supprimerExo(' + i + ')">✕</button>';
+        html += '</div>';
+        html += '</div>';
+      });
+      container.innerHTML = html;
+    }
+
+    function resumeExo(exo) {
+      var d = exo.data;
+      if (exo.type === 'quiz') return d.question + ' (' + d.reponses.length + ' réponses)';
+      if (exo.type === 'vf') return d.question + ' (' + (d.reponse === 'v' ? 'VRAI' : 'FAUX') + ')';
+      if (exo.type === 'tt') return d.phrase;
+      if (exo.type === 'ordre') return d.consigne + ' (' + d.elements.length + ' éléments)';
+      if (exo.type === 'carte') return d.recto + ' → ' + d.verso;
+      if (exo.type === 'relier') return d.consigne + ' (' + d.paires.length + ' paires)';
+      if (exo.type === 'ouverte') return d.question;
+      if (exo.type === 'vocab') return d.mots;
+      if (exo.type === 'tags') return d.tags;
+      if (exo.type === 'retenir') return d.phrases.length + ' phrase(s)';
+      return '';
+    }
+
+    function editerExo(i) {
+      var exo = exos[i];
+      if (exo.type === 'quiz') ouvrirModalQuiz(i);
+      else if (exo.type === 'tt') ouvrirModalTexteTrous(i);
+      else if (exo.type === 'vf') ouvrirModalVF(i);
+      else if (exo.type === 'ordre') ouvrirModalOrdre(i);
+      else if (exo.type === 'carte') ouvrirModalCarte(i);
+      else if (exo.type === 'relier') ouvrirModalRelier(i);
+      else if (exo.type === 'ouverte') ouvrirModalOuverte(i);
+      else if (exo.type === 'vocab') ouvrirModalVocab(i);
+      else if (exo.type === 'tags') ouvrirModalTags(i);
+      else if (exo.type === 'retenir') ouvrirModalRetenir(i);
+    }
+
+    function supprimerExo(i) {
+      if (!confirm('Supprimer cet exercice ?')) return;
+      exos.splice(i, 1);
+      afficherExos();
+    }
+
+    // ============================================================
+    // EXPORT
+    // ============================================================
+    function exporterFichier() {
+      var titre = document.getElementById('inputTitre').value.trim();
+      var categorie = document.getElementById('inputCategorie').value.trim();
+      var dateStr = document.getElementById('inputDate').value.trim();
+      var slides = document.getElementById('inputSlides').value;
+
+      if (!titre) { afficherMsg('❌ Renseigne un titre.', 'erreur'); return; }
+
+      var lignes = [];
+
+      // DATE
+      if (dateStr) {
+        lignes.push('date:' + dateStr);
+      }
+
+      // SLIDES
+      var slidesTrim = slides.trim();
+      if (slidesTrim) {
+        lignes.push('');
+        lignes.push(slidesTrim);
+      }
+
+      // Exos par type dans l'ordre fixe : quiz, tt, vf, ordre, carte, relier, vocab, tags, retenir, ouverte
+      // (on met ouverte à la fin pour coller à l'ordre du parser GS)
+      
+      // Quiz
+      exos.filter(function(e) { return e.type === 'quiz'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('q: ' + exo.data.question);
+        exo.data.reponses.forEach(function(r) {
+          lignes.push((r.correct ? 'v ' : 'f ') + r.texte);
+        });
+      });
+
+      // Texte à trous
+      exos.filter(function(e) { return e.type === 'tt'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('tt: ' + exo.data.phrase);
+      });
+
+      // Vrai/Faux
+      exos.filter(function(e) { return e.type === 'vf'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('vf: ' + exo.data.question + ' (' + exo.data.reponse + ')');
+      });
+
+      // Ordre
+      exos.filter(function(e) { return e.type === 'ordre'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('o: ' + exo.data.consigne);
+        exo.data.elements.forEach(function(el, i) {
+          lignes.push((i + 1) + ' ' + el);
+        });
+      });
+
+      // Carte
+      exos.filter(function(e) { return e.type === 'carte'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('r: ' + exo.data.recto);
+        if (exo.data.verso) lignes.push('v: ' + exo.data.verso);
+      });
+
+      // Relier
+      exos.filter(function(e) { return e.type === 'relier'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('l: ' + exo.data.consigne);
+        exo.data.paires.forEach(function(p) {
+          lignes.push(p.gauche + '-' + p.droite);
+        });
+      });
+
+      // Vocabulaire
+      exos.filter(function(e) { return e.type === 'vocab'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('! ' + exo.data.mots);
+      });
+
+      // Tags
+      exos.filter(function(e) { return e.type === 'tags'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('# ' + exo.data.tags);
+      });
+
+      // À retenir
+      exos.filter(function(e) { return e.type === 'retenir'; }).forEach(function(exo) {
+        lignes.push('');
+        exo.data.phrases.forEach(function(p) {
+          lignes.push('> ' + p);
+        });
+      });
+
+      // Question ouverte
+      exos.filter(function(e) { return e.type === 'ouverte'; }).forEach(function(exo) {
+        lignes.push('');
+        lignes.push('qs: ' + exo.data.question);
+      });
+
+      var contenu = lignes.join('\n').replace(/\n{3,}/g, '\n\n') + '\n';
+
+      var blob = new Blob([contenu], { type: 'text/plain;charset=utf-8' });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = url;
+      a.download = titre + '.txt';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      afficherMsg('✅ Fichier exporté : ' + titre + '.txt', 'ok');
+    }
+
+    function afficherMsg(texte, type) {
+      var el = document.getElementById('msgExport');
+      el.textContent = texte;
+      el.className = 'msg-export ' + type;
+      el.style.display = 'block';
+      setTimeout(function() {
+        el.style.display = 'none';
+      }, 4000);
+    }
+
+    // ============================================================
+    // UTILITAIRES
+    // ============================================================
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // INIT
+    // ============================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      // Date du jour par défaut
+      var today = new Date();
+      var y = today.getFullYear();
+      var m = String(today.getMonth() + 1).padStart(2, '0');
+      var d = String(today.getDate()).padStart(2, '0');
+      document.getElementById('inputDate').value = d + '/' + m + '/' + y;
+
+      afficherExos();
+    });
+  </script>
+
+</body>
+</html>
