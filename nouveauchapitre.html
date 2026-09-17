@@ -575,8 +575,12 @@
     <div class="bloc">
       <div class="bloc-titre">Informations</div>
       <div class="champ-ligne">
+        <label>Numéro</label>
+        <input type="text" id="inputNumero" placeholder="Ex: 1" style="max-width:80px;" />
+      </div>
+      <div class="champ-ligne">
         <label>Titre</label>
-        <input type="text" id="inputTitre" placeholder="Ex: 1. Le dépôt de Dieu" />
+        <input type="text" id="inputTitre" placeholder="Ex: Le dépôt de Dieu" />
       </div>
       <div class="champ-ligne">
         <label>Date</label>
@@ -1342,11 +1346,14 @@
     // EXPORT
     // ============================================================
     function exporterFichier() {
-      var titre = document.getElementById('inputTitre').value.trim();
+      var numero = document.getElementById('inputNumero').value.trim();
+      var titreBrut = document.getElementById('inputTitre').value.trim();
       var dateStr = document.getElementById('inputDate').value.trim();
       var slides = document.getElementById('inputSlides').value;
 
-      if (!titre) { afficherMsg('Renseigne un titre.', 'erreur'); return; }
+      if (!titreBrut) { afficherMsg('Renseigne un titre.', 'erreur'); return; }
+
+      var titre = numero ? (numero + '. ' + titreBrut) : titreBrut;
 
       var lignes = [];
 
