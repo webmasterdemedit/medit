@@ -873,8 +873,36 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 
 .zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #b8a888; font-size:10.5pt; line-height:1.6; color:#1a1a1a; }
 
-.exo { margin-bottom:12px; page-break-inside:avoid; }
-.exo-num { font-weight:bold; font-size:11pt; color:#1a1a1a; margin-bottom:3px; display:block; }
+.exo { margin-bottom:14px; page-break-inside:avoid; }
+
+/* CONSIGNE (au-dessus du numéro) */
+.consigne-exo {
+  font-size: 10pt;
+  font-weight: 600;
+  color: #5a4a3a;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  margin-bottom: 3px;
+}
+
+/* LIGNE avec numéro + question */
+.exo-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-top: 2px;
+}
+.exo-num-inline {
+  font-weight: bold;
+  font-size: 11pt;
+  min-width: 22px;
+  flex-shrink: 0;
+}
+.exo-texte {
+  flex: 1;
+  font-size: 10.5pt;
+  line-height: 1.6;
+}
 
 /* TAGS + VOCAB en haut */
 .tags-haut {
@@ -911,78 +939,33 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   font-size: 10pt;
 }
 
-/* QUIZ */
-.quiz-reponses { margin-left:16px; margin-top:3px; }
+/* QUIZ réponses */
+.quiz-reponses { margin-left: 30px; margin-top: 3px; }
 .quiz-rep { display:inline-block; margin-right:20px; font-size:10.5pt; }
 .quiz-case { display:inline-block; width:11px; height:11px; border:1px solid #000; margin-right:4px; vertical-align:middle; background:white; }
 
 /* QUESTION OUVERTE */
-.open-lignes { margin-top:4px; }
+.open-lignes { margin-top:4px; margin-left: 30px; }
 .open-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
 
 /* ORDRE */
-.ordre-liste { list-style:none; padding:0; margin:4px 0 6px 16px; }
+.ordre-liste { list-style:none; padding:0; margin:4px 0 6px 30px; }
 .ordre-liste li { margin-bottom:2px; }
 .ordre-lettre { font-weight:bold; margin-right:6px; display:inline-block; width:18px; }
-.ordre-zone { margin-top:6px; margin-left:16px; font-size:11pt; }
+.ordre-zone { margin-top:6px; margin-left:30px; font-size:11pt; }
 .ordre-zone .tiret { margin:0 6px; font-weight:bold; }
 .ordre-zone .pointille { display:inline-block; width:40px; border-bottom:1px solid #000; height:14px; vertical-align:middle; }
 
 /* CARTE (demi-ligne) */
 .carte-ligne-courte {
   margin-top: 6px;
-  margin-left: 16px;
+  margin-left: 30px;
   width: 50%;
   border-bottom: 1px dotted #666;
   height: 18px;
 }
 
-/* CONSIGNE EXO */
-.consigne-exo {
-  font-size: 10pt;
-  font-weight: 600;
-  color: #5a4a3a;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  margin-bottom: 4px;
-  margin-top: 2px;
-}
-
 /* TEXTE À TROUS */
-/* TEXTE À TROUS */
-/* TEXTE À TROUS */
-.tt-ligne {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 4px;
-}
-.tt-ligne .exo-num-inline {
-  font-weight: bold;
-  font-size: 11pt;
-  min-width: 22px;
-}
-./* TEXTE À TROUS */
-.tt-ligne {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
-  margin-top: 4px;
-  flex-wrap: wrap;
-}
-.tt-ligne .exo-num-inline {
-  font-weight: bold;
-  font-size: 11pt;
-  min-width: 22px;
-}
-.tt-consigne {
-  font-size: 10pt;
-  font-weight: 600;
-  color: #5a4a3a;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-right: 4px;
-}
 .tt-phrase-print {
   flex: 1;
   font-size: 11pt;
@@ -996,32 +979,17 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   padding: 0 6px;
 }
 
-/* VRAI / FAUX (chaque question numérotée) */
-.vf-ligne {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin-top: 4px;
-}
-.vf-ligne .exo-num-inline {
-  font-weight: bold;
-  font-size: 11pt;
-  min-width: 22px;
-}
-.vf-ligne .vf-question-print {
-  flex: 1;
-  font-size: 10.5pt;
-}
+/* VRAI / FAUX */
 .vf-ligne .vf-cases {
   font-size: 10.5pt;
   white-space: nowrap;
   margin-left: 12px;
 }
 
-/* RELIER (style manuel : points à relier) */
+/* RELIER */
 .relier-zone-lignes {
   position: relative;
-  margin: 8px 0 6px 16px;
+  margin: 8px 0 6px 30px;
   max-width: 500px;
 }
 .relier-lignes-grid {
@@ -1119,7 +1087,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
           exoNum++;
           hasExercice = true;
           printHtml += '<div class="exo">';
-          printHtml += '<span class="exo-num">' + exoNum + '. ' + q.question + '</span>';
+          printHtml += '<div class="consigne-exo">Cochez la bonne réponse :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + q.question + '</span>';
+          printHtml += '</div>';
           printHtml += '<div class="quiz-reponses">';
           q.reponses.forEach(function(rep) {
             printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
@@ -1134,7 +1106,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         hasExercice = true;
         var qsTexte = openQuestion.replace(/^qs:\s*/i, '').trim();
         printHtml += '<div class="exo">';
-        printHtml += '<span class="exo-num">' + exoNum + '. ' + qsTexte + '</span>';
+        printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
+        printHtml += '<div class="exo-ligne">';
+        printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+        printHtml += '<span class="exo-texte">' + qsTexte + '</span>';
+        printHtml += '</div>';
         printHtml += '<div class="open-lignes">';
         printHtml += '<div class="open-ligne"></div>';
         printHtml += '<div class="open-ligne"></div>';
@@ -1142,16 +1118,16 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</div></div>';
       }
 
-                  // 3) TEXTE À TROUS
+      // 3) TEXTE À TROUS
       if (texteTrous.trim() !== '') {
         var tts = parserTextesTrousPourImpression(texteTrous);
         tts.forEach(function(tt) {
           exoNum++;
           hasExercice = true;
           printHtml += '<div class="exo">';
-          printHtml += '<div class="tt-ligne">';
+          printHtml += '<div class="consigne-exo">Complétez la phrase :</div>';
+          printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="tt-consigne">Remplissez l\'espace vide :</span>';
           printHtml += '<span class="tt-phrase-print">';
           if (tt.avant) printHtml += tt.avant + ' ';
           printHtml += '<span class="tt-trou"></span>';
@@ -1162,16 +1138,17 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         });
       }
 
-      // 4) VRAI / FAUX (chaque question a son propre numéro)
+      // 4) VRAI / FAUX
       if (vraiFaux.trim() !== '') {
         var vfs = parserVraiFauxPourImpression(vraiFaux);
         vfs.forEach(function(question) {
           exoNum++;
           hasExercice = true;
-          printHtml += '<div class="exo vf-exo">';
-          printHtml += '<div class="vf-ligne">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Cochez Vrai ou Faux :</div>';
+          printHtml += '<div class="exo-ligne vf-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="vf-question-print">' + question + '</span>';
+          printHtml += '<span class="exo-texte">' + question + '</span>';
           printHtml += '<span class="vf-cases">☐ Vrai   ☐ Faux</span>';
           printHtml += '</div>';
           printHtml += '</div>';
@@ -1184,7 +1161,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         hasExercice = true;
         var ordreData = parserOrdrePourImpression(ordre);
         var items = ordreData.elements || [];
-        var consigne = ordreData.consigne || 'Remettre dans l\'ordre';
+        var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
 
         var itemsMelanges = items.slice();
         for (var m = itemsMelanges.length - 1; m > 0; m--) {
@@ -1195,7 +1172,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         var lettres = ['A','B','C','D','E','F','G','H'];
 
         printHtml += '<div class="exo">';
-        printHtml += '<span class="exo-num">' + exoNum + '. ' + consigne + '</span>';
+        printHtml += '<div class="consigne-exo">Remettez dans l\'ordre :</div>';
+        printHtml += '<div class="exo-ligne">';
+        printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+        printHtml += '<span class="exo-texte">' + consigne + '</span>';
+        printHtml += '</div>';
         printHtml += '<ul class="ordre-liste">';
         itemsMelanges.forEach(function(item, i) {
           printHtml += '<li><span class="ordre-lettre">' + lettres[i] + '.</span>' + item + '</li>';
@@ -1209,20 +1190,24 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</div></div>';
       }
 
-      // 6) CARTE (question simple + demi-ligne)
+      // 6) CARTE
       if (carte.trim() !== '') {
         var cartes = parserCartesPourImpression(carte);
         cartes.forEach(function(c) {
           exoNum++;
           hasExercice = true;
           printHtml += '<div class="exo">';
-          printHtml += '<span class="exo-num">' + exoNum + '. ' + c.recto + '</span>';
+          printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + c.recto + '</span>';
+          printHtml += '</div>';
           printHtml += '<div class="carte-ligne-courte"></div>';
           printHtml += '</div>';
         });
       }
 
-      // 7) RELIER (points à relier)
+      // 7) RELIER
       if (relier.trim() !== '') {
         exoNum++;
         hasExercice = true;
@@ -1230,7 +1215,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
         if (relierData) {
           printHtml += '<div class="exo">';
-          printHtml += '<span class="exo-num">' + exoNum + '. ' + relierData.consigne + '</span>';
+          printHtml += '<div class="consigne-exo">Reliez les éléments :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
+          printHtml += '</div>';
           printHtml += '<div class="relier-zone-lignes">';
           printHtml += '<div class="relier-lignes-grid">';
 
