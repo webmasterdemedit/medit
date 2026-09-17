@@ -736,6 +736,42 @@
       return { consigne: consigne, paires: paires, droitesMelangees: droitesMelangees };
     }
 
+    function parserTextesTrousPourImpression(ttTexte) {
+      var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var resultats = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^tt:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^tt:\s*/i, '').trim();
+        var match = contenu.match(/\/([^\/]+)\//);
+        if (!match) return;
+        var mot = match[1].trim();
+        var idx = contenu.indexOf('/' + mot + '/');
+        var avant = contenu.substring(0, idx).trim();
+        var apres = contenu.substring(idx + mot.length + 2).trim();
+        resultats.push({ avant: avant, mot: mot, apres: apres });
+      });
+
+      return resultats;
+    }
+
+    function parserVraiFauxPourImpression(vfTexte) {
+      var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var questions = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^vf:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^vf:\s*/i, '').trim();
+        var match = contenu.match(/\(([vf])\)\s*$/i);
+        if (!match) return;
+        var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
+        if (question === '') return;
+        questions.push(question);
+      });
+
+      return questions;
+    }
+
     // ============================================================
     // GÉNÉRATION IMPRESSION
     // ============================================================
@@ -748,6 +784,8 @@
       var ordre = '';
       var carte = '';
       var relier = '';
+      var texteTrous = '';
+      var vraiFaux = '';
 
       parts.forEach(function(part) {
         part = part.trim();
@@ -761,6 +799,10 @@
           carte = part;
         } else if (part.startsWith('l:')) {
           relier = part;
+        } else if (part.startsWith('tt:')) {
+          texteTrous = part;
+        } else if (part.startsWith('vf:')) {
+          vraiFaux = part;
         } else {
           var cleanText = part.replace(/\r\n/g, '\n').trim();
           if (cleanText) {
@@ -895,6 +937,44 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   height: 18px;
 }
 
+/* TEXTE À TROUS */
+.tt-phrase-print {
+  margin-left: 16px;
+  margin-top: 4px;
+  font-size: 11pt;
+  line-height: 1.8;
+}
+.tt-phrase-print .tt-trou {
+  display: inline-block;
+  min-width: 140px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+  padding: 0 6px;
+}
+
+/* VRAI / FAUX (chaque question numérotée) */
+.vf-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-left: 16px;
+  margin-top: 4px;
+}
+.vf-ligne .exo-num-inline {
+  font-weight: bold;
+  font-size: 11pt;
+  min-width: 22px;
+}
+.vf-ligne .vf-question-print {
+  flex: 1;
+  font-size: 10.5pt;
+}
+.vf-ligne .vf-cases {
+  font-size: 10.5pt;
+  white-space: nowrap;
+  margin-left: 12px;
+}
+
 /* RELIER (style manuel : points à relier) */
 .relier-zone-lignes {
   position: relative;
@@ -1019,7 +1099,40 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</div></div>';
       }
 
-      // 3) ORDRE
+      // 3) TEXTE À TROUS
+      if (texteTrous.trim() !== '') {
+        var tts = parserTextesTrousPourImpression(texteTrous);
+        tts.forEach(function(tt) {
+          exoNum++;
+          hasExercice = true;
+          printHtml += '<div class="exo">';
+          printHtml += '<span class="exo-num">' + exoNum + '.</span>';
+          printHtml += '<div class="tt-phrase-print">';
+          if (tt.avant) printHtml += tt.avant + ' ';
+          printHtml += '<span class="tt-trou"></span>';
+          if (tt.apres) printHtml += ' ' + tt.apres;
+          printHtml += '</div>';
+          printHtml += '</div>';
+        });
+      }
+
+      // 4) VRAI / FAUX (chaque question a son propre numéro)
+      if (vraiFaux.trim() !== '') {
+        var vfs = parserVraiFauxPourImpression(vraiFaux);
+        vfs.forEach(function(question) {
+          exoNum++;
+          hasExercice = true;
+          printHtml += '<div class="exo vf-exo">';
+          printHtml += '<div class="vf-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="vf-question-print">' + question + '</span>';
+          printHtml += '<span class="vf-cases">☐ Vrai   ☐ Faux</span>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        });
+      }
+
+      // 5) ORDRE
       if (ordre.trim() !== '') {
         exoNum++;
         hasExercice = true;
@@ -1050,7 +1163,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</div></div>';
       }
 
-      // 4) CARTE (question simple + demi-ligne)
+      // 6) CARTE (question simple + demi-ligne)
       if (carte.trim() !== '') {
         var cartes = parserCartesPourImpression(carte);
         cartes.forEach(function(c) {
@@ -1063,7 +1176,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         });
       }
 
-      // 5) RELIER (points à relier)
+      // 7) RELIER (points à relier)
       if (relier.trim() !== '') {
         exoNum++;
         hasExercice = true;
