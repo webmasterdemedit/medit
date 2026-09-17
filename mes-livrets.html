@@ -467,14 +467,20 @@
 
       chapitresData.forEach(function(chapitre) {
         var cat = chapitre.categorie || 'Sans catégorie';
+        var niv = parseInt(chapitre.niveau) || 1;
+
         if (!categories[cat]) {
           categories[cat] = {
             nom: cat,
-            niveau: chapitre.niveau || 1,
+            niveauMin: niv,
+            niveauMax: niv,
             chapitres: 0,
             chapitresListe: []
           };
         }
+
+        categories[cat].niveauMin = Math.min(categories[cat].niveauMin, niv);
+        categories[cat].niveauMax = Math.max(categories[cat].niveauMax, niv);
         categories[cat].chapitres++;
         categories[cat].chapitresListe.push(chapitre);
         totalChapitres++;
@@ -483,7 +489,7 @@
       var livrets = Object.values(categories);
 
       livrets.sort(function(a, b) {
-        return a.niveau - b.niveau || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+        return a.niveauMin - b.niveauMin || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
       document.getElementById('totalLivrets').textContent = livrets.length;
@@ -503,25 +509,38 @@
       var html = '<div class="grille-livrets">';
 
       livrets.forEach(function(livret) {
-        var disponible = livret.niveau <= niveauEtudiant;
         var data = livretsData[livret.nom] || {};
-        var couleur = disponible ? (data.couleur || '#2d6a4f') : '#666666';
         var sousTitre = data.sousTitre || '';
         var date = data.date || '';
         var auteur = data.auteur || '';
-
         var nbChapitres = livret.chapitres || 0;
 
+        // ✅ DÉVERROUILLAGE : déverrouillé si AU MOINS UN chapitre a un niveau <= niveau étudiant
+        var disponible = false;
+        livret.chapitresListe.forEach(function(ch) {
+          if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) {
+            disponible = true;
+          }
+        });
+
+        var couleur = disponible ? (data.couleur || '#2d6a4f') : '#666666';
+
+        // ✅ BADGE DYNAMIQUE : "Niveau X" si un seul niveau, sinon "Livret X à Y"
+        var badgeTexte;
+        if (livret.niveauMin === livret.niveauMax) {
+          badgeTexte = 'Niveau ' + livret.niveauMin;
+        } else {
+          badgeTexte = 'Livret ' + livret.niveauMin + ' à ' + livret.niveauMax;
+        }
+
+        // Progression : on garde la logique existante (valide)
         var validees = 0;
-livret.chapitresListe.forEach(function(chapitre) {
-  var reponse = toutesLesReponses[chapitre.id];
-  if (reponse) {
-    // ✅ Utiliser directement la colonne valide
-    if (reponse.valide === 'valide') {
-      validees++;
-    }
-  }
-});
+        livret.chapitresListe.forEach(function(chapitre) {
+          var reponse = toutesLesReponses[chapitre.id];
+          if (reponse && reponse.valide === 'valide') {
+            validees++;
+          }
+        });
 
         var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
         var dateFormatee = formatDate(date);
@@ -532,7 +551,7 @@ livret.chapitresListe.forEach(function(chapitre) {
                style="background: ${couleur}; border-color: ${couleur};"
                onclick="${disponible ? 'window.location.href=\'/medit/livret.html?cat=' + encodeURIComponent(livret.nom) + '\'' : ''}">
             ${!disponible ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:36px;opacity:0.6;pointer-events:none;">🔒︎︎︎</div>' : ''}
-            <span class="badge-niveau">Niveau ${livret.niveau || 1}</span>
+            <span class="badge-niveau">${badgeTexte}</span>
             <div class="contenu-livret">
               <div class="titre-wrapper">
                 ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
