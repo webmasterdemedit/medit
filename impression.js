@@ -762,9 +762,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <div class="bandeau-titre">
   <div class="ligne-titre">
     <h1>${chapitre.titre || 'Lecture'}</h1>
-    <div class="meta-droite">
-      Niveau ${chapitre.niveau || 0}<br>
-      ${dateCreationStr || '—'}
+       <div class="meta-droite">
+      Niveau ${chapitre.niveau || 0}
     </div>
   </div>
   ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
@@ -1035,9 +1034,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
   printHtml += '</div>';
 
-  printHtml += `
+    printHtml += `
     <div class="pied-page">
       <span class="pied-centre">Qiraat &mdash; W. Khan</span>
+      <span class="pied-ecrit">Écrit le ${dateCreationStr || '—'}</span>
       <span class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</span>
     </div>
   </div>
