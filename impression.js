@@ -303,9 +303,8 @@ function genererImpression(chapitre, contenu) {
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed[idx] !== undefined) {
-        // VF : un bloc = une question (comme les autres types)
-        blocsOrdonnes.push({ type: 'vf', data: vfsParsed[idx] });
+      } else if (type === 'vf' && vfsParsed.length > 0) {
+        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
       }
     });
   } else {
@@ -313,7 +312,7 @@ function genererImpression(chapitre, contenu) {
     quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
     opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
     ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
-    vfsParsed.forEach(function(question) { blocsOrdonnes.push({ type: 'vf', data: question }); });
+    if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
     ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
@@ -328,7 +327,7 @@ function genererImpression(chapitre, contenu) {
     else if (bloc.type === 'carte') nbTotalQuestions++;
     else if (bloc.type === 'ordre') nbTotalQuestions++;
     else if (bloc.type === 'relier') nbTotalQuestions++;
-    else if (bloc.type === 'vf') nbTotalQuestions++;
+    else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
   });
 
   // --- MÉMO ---
@@ -832,6 +831,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       jGroupe++;
     }
 
+    if (typeCourant === 'vf') {
+      nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
+    }
+
     var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
@@ -907,15 +910,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     } else if (bloc.type === 'vf') {
       ouvrirZoneExercices();
       hasExercice = true;
-      exoNum++;
-      printHtml += '<div class="exo">';
-      afficherConsigne(bloc);
-      printHtml += '<div class="exo-ligne vf-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte-vf">' + bloc.data + '</span>';
-      printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
-      printHtml += '</div>';
-      printHtml += '</div>';
+      bloc.data.forEach(function(question, idxVf) {
+        exoNum++;
+        printHtml += '<div class="exo">';
+        // Consigne affichée UNIQUEMENT sur la première question VF du bloc
+        if (idxVf === 0) {
+          afficherConsigne(bloc);
+        }
+        printHtml += '<div class="exo-ligne vf-ligne">';
+        printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
+        printHtml += '<span class="exo-texte-vf">' + question + '</span>';
+        printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
+        printHtml += '</div>';
+        printHtml += '</div>';
+      });
     } else if (bloc.type === 'ordre') {
       ouvrirZoneExercices();
       hasExercice = true;
