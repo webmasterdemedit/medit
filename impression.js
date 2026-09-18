@@ -303,8 +303,9 @@ function genererImpression(chapitre, contenu) {
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed.length > 0) {
-        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+      } else if (type === 'vf' && vfsParsed[idx] !== undefined) {
+        // VF : un bloc = une question (comme les autres types)
+        blocsOrdonnes.push({ type: 'vf', data: vfsParsed[idx] });
       }
     });
   } else {
@@ -312,7 +313,7 @@ function genererImpression(chapitre, contenu) {
     quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
     opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
     ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
-    if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+    vfsParsed.forEach(function(question) { blocsOrdonnes.push({ type: 'vf', data: question }); });
     ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
@@ -327,7 +328,7 @@ function genererImpression(chapitre, contenu) {
     else if (bloc.type === 'carte') nbTotalQuestions++;
     else if (bloc.type === 'ordre') nbTotalQuestions++;
     else if (bloc.type === 'relier') nbTotalQuestions++;
-    else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
+    else if (bloc.type === 'vf') nbTotalQuestions++;
   });
 
   // --- MÉMO ---
@@ -584,6 +585,15 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .open-lignes { margin-top:3px; margin-left: 24px; }
 .open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:4px; }
 
+/* Carte : demi-ligne pointillée */
+.carte-ligne-courte {
+  margin-top: 3px;
+  margin-left: 24px;
+  width: 50%;
+  border-bottom: 0.5px dotted #999;
+  height: 14px;
+}
+
 /* Ordre */
 .ordre-grille {
   margin: 3px 0 3px 24px;
@@ -596,15 +606,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .ordre-cell-texte { white-space: nowrap; }
 .ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
 .ordre-lettre { font-weight: bold; color: #5a4a3a; }
-
-/* Carte (héritée, plus utilisée mais conservée pour compat) */
-.carte-ligne-courte {
-  margin-top: 3px;
-  margin-left: 24px;
-  width: 70%;
-  border-bottom: 0.5px dotted #999;
-  height: 14px;
-}
 
 /* Textes à trous */
 .tt-phrase-print { flex: 1; font-size: 10pt; line-height: 1.5; }
@@ -831,10 +832,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       jGroupe++;
     }
 
-    if (typeCourant === 'vf') {
-      nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
-    }
-
     var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
@@ -910,17 +907,15 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     } else if (bloc.type === 'vf') {
       ouvrirZoneExercices();
       hasExercice = true;
-      bloc.data.forEach(function(question) {
-        exoNum++;
-        printHtml += '<div class="exo">';
-        afficherConsigne(bloc);
-        printHtml += '<div class="exo-ligne vf-ligne">';
-        printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-        printHtml += '<span class="exo-texte-vf">' + question + '</span>';
-        printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
-        printHtml += '</div>';
-        printHtml += '</div>';
-      });
+      exoNum++;
+      printHtml += '<div class="exo">';
+      afficherConsigne(bloc);
+      printHtml += '<div class="exo-ligne vf-ligne">';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
+      printHtml += '<span class="exo-texte-vf">' + bloc.data + '</span>';
+      printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
+      printHtml += '</div>';
+      printHtml += '</div>';
     } else if (bloc.type === 'ordre') {
       ouvrirZoneExercices();
       hasExercice = true;
@@ -953,7 +948,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
       printHtml += '</div>';
     } else if (bloc.type === 'carte') {
-      // Fusion : affiché comme une question ouverte
+      // Carte : même groupe que open pour la consigne, mais garde sa demi-ligne
       ouvrirZoneExercices();
       hasExercice = true;
       var c = bloc.data;
@@ -964,10 +959,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + c.recto + '</span>';
       printHtml += '</div>';
-      printHtml += '<div class="open-lignes">';
-      printHtml += '<div class="open-ligne"></div>';
-      printHtml += '<div class="open-ligne"></div>';
-      printHtml += '</div></div>';
+      printHtml += '<div class="carte-ligne-courte"></div>';
+      printHtml += '</div>';
     } else if (bloc.type === 'relier') {
       ouvrirZoneExercices();
       hasExercice = true;
