@@ -889,7 +889,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   // ENCADRÉ NOTE FINAL (pleine largeur, hors colonnes)
   printHtml += '<div class="zone-note-finale">';
   printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
-  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> ................................................................</div>';
+  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
   printHtml += '</div>';
 
   printHtml += `
