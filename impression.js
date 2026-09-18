@@ -387,7 +387,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .page { max-width:100%; }
 
 /* ============================================================ */
-/* BANDEAU TITRE (nouveau)                                       */
+/* BANDEAU TITRE                                                 */
 /* ============================================================ */
 .bandeau-titre {
   background: #f5f3ee;
@@ -427,7 +427,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* ENCART ÉLÈVE (raffiné)                                        */
+/* ENCART ÉLÈVE                                                  */
 /* ============================================================ */
 .entete-eleve {
   margin-bottom: 8px;
@@ -447,7 +447,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
 /* ============================================================ */
-/* CHIPS TAGS + VOCABULAIRE (pilules arrondies)                  */
+/* CHIPS TAGS + VOCABULAIRE                                      */
 /* ============================================================ */
 .tags-haut {
   margin-top: 4px;
@@ -502,11 +502,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   line-height: 1.3;
 }
 
-/* Slides */
 .slide { margin-bottom:6px; break-inside: avoid; page-break-inside: avoid; }
 .slide p { font-size:10.5pt; margin-bottom:3px; text-align:justify; text-indent:1.2em; }
 
-/* Zone exercices */
 .zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
 
 .exo {
@@ -522,7 +520,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   padding-bottom: 0;
 }
 
-/* Consigne avec fond teinté + liseré + symbole */
 .consigne-exo {
   font-size: 8.5pt;
   font-weight: 600;
@@ -550,7 +547,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   margin-top: 2px;
 }
 
-/* Numéros en pastilles rondes */
 .exo-num-inline {
   display: inline-block;
   width: 16px;
@@ -601,7 +597,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
 .ordre-lettre { font-weight: bold; color: #5a4a3a; }
 
-/* Carte */
+/* Carte (héritée, plus utilisée mais conservée pour compat) */
 .carte-ligne-courte {
   margin-top: 3px;
   margin-left: 24px;
@@ -650,7 +646,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .relier-point.relier-point-partage { border-radius: 0; }
 
 /* ============================================================ */
-/* ZONE MÉMO "À RETENIR" (encadré teinté)                        */
+/* ZONE MÉMO "À RETENIR"                                         */
 /* ============================================================ */
 .zone-memo {
   margin-top:10px;
@@ -695,7 +691,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* BLOC FINAL (compact, tout sur une ligne)                      */
+/* BLOC FINAL                                                    */
 /* ============================================================ */
 .zone-note-finale {
   margin-top: 14px;
@@ -806,38 +802,43 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   // ============================================================
   // PRÉ-CALCUL DES CONSIGNES (gestion singulier / pluriel)
+  // + Fusion open / carte : les deux partagent le même groupe
   // ============================================================
+  function typeLogique(t) {
+    if (t === 'carte') return 'open';
+    return t;
+  }
+
   var consignesBase = {
     quiz:   { sing: 'Cochez la bonne réponse :',  plur: 'Cochez la bonne réponse :' },
     open:   { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
     tt:     { sing: 'Complétez la phrase :',      plur: 'Complétez les phrases :' },
     vf:     { sing: 'Cochez Vrai ou Faux :',      plur: 'Cochez Vrai ou Faux :' },
     ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
-    carte:  { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
     relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' }
   };
 
-  // Parcours pour marquer le PREMIER bloc de chaque groupe consécutif
   var iGroupe = 0;
   while (iGroupe < blocsOrdonnes.length) {
     var blocCourant = blocsOrdonnes[iGroupe];
-    if (blocCourant.type === 'slide') {
+    var typeCourant = typeLogique(blocCourant.type);
+    if (typeCourant === 'slide') {
       iGroupe++;
       continue;
     }
 
     var nbConsecutifs = 1;
     var jGroupe = iGroupe + 1;
-    while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === blocCourant.type) {
+    while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) {
       nbConsecutifs++;
       jGroupe++;
     }
 
-    if (blocCourant.type === 'vf') {
+    if (typeCourant === 'vf') {
       nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
     }
 
-    var base = consignesBase[blocCourant.type];
+    var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
       blocCourant._consigne = consigneFinale;
@@ -955,6 +956,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
       printHtml += '</div>';
     } else if (bloc.type === 'carte') {
+      // 🔥 Fusion : affiché comme une question ouverte
       ouvrirZoneExercices();
       hasExercice = true;
       var c = bloc.data;
@@ -965,8 +967,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + c.recto + '</span>';
       printHtml += '</div>';
-      printHtml += '<div class="carte-ligne-courte"></div>';
-      printHtml += '</div>';
+      printHtml += '<div class="open-lignes">';
+      printHtml += '<div class="open-ligne"></div>';
+      printHtml += '<div class="open-ligne"></div>';
+      printHtml += '</div></div>';
     } else if (bloc.type === 'relier') {
       ouvrirZoneExercices();
       hasExercice = true;
