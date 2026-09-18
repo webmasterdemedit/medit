@@ -725,7 +725,7 @@
 
       if (paires.length === 0) return null;
 
-      // ✅ Dédupliquer les droites + marquer celles partagées
+      // Dédupliquer les droites + marquer celles partagées
       var compteParDroite = {};
       paires.forEach(function(p) {
         compteParDroite[p.droite] = (compteParDroite[p.droite] || 0) + 1;
@@ -792,7 +792,6 @@
 
     // ============================================================
     // GÉNÉRATION IMPRESSION
-    // ✅ Utilise ordreBlocs (colonne T) + police arabe + en-tête élève + encadré note
     // ============================================================
     function genererImpression(chapitre, contenu) {
       var ordreBlocs = chapitre.ordreBlocs || [];
@@ -902,7 +901,7 @@
         reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
       }
 
-      // ✅ Calculer le nombre total de questions
+      // Calculer le nombre total de questions
       var nbTotalQuestions = 0;
       blocsOrdonnes.forEach(function(bloc) {
         if (bloc.type === 'quiz') nbTotalQuestions++;
@@ -962,10 +961,14 @@
 body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.6; }
 
 /* ✅ Police arabe à l'impression (identique à chapitre.html) */
-/* ✅ Police arabe à l'impression (identique à chapitre.html) */
-[lang="ar"], .texte-arabe, .arabe {
+.arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
   direction: rtl;
+  unicode-bidi: embed;
+  font-size: 1.25em;
+  line-height: 1.2;
+  display: inline-block;
+  vertical-align: middle;
 }
 
 .page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
@@ -975,7 +978,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .meta-ligne span { margin:0 8px; }
 .meta-ligne .sep { color:#ccc; }
 
-/* ✅ EN-TÊTE ÉLÈVE */
 .entete-eleve {
   margin-bottom: 14px;
   padding-bottom: 10px;
@@ -1145,7 +1147,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   flex-shrink: 0;
   box-sizing: border-box;
 }
-/* ✅ Carré si la droite est partagée par plusieurs gauches */
 .relier-point.relier-point-partage {
   border-radius: 0;
 }
@@ -1158,7 +1159,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
 
-/* ✅ ENCADRÉ NOTE FINAL */
 .zone-note-finale {
   margin-top: 24px;
   padding: 12px 14px;
@@ -1203,7 +1203,6 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 <body>
 <div class="page">
 
-<!-- ✅ EN-TÊTE ÉLÈVE (avant le titre) -->
 <div class="entete-eleve">
   <div class="ligne-eleve">
     <span><strong>Nom et prénom :</strong> ....................................................</span>
@@ -1412,7 +1411,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</div>';
       }
 
-      // ✅ ENCADRÉ NOTE FINAL
+      // ENCADRÉ NOTE FINAL
       printHtml += '<div class="zone-note-finale">';
       printHtml += '<div class="note-titre">Évaluation de l\'exercice</div>';
       printHtml += '<div class="note-ligne">';
@@ -1451,16 +1450,52 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       iframeDoc.write(printHtml);
       iframeDoc.close();
 
-            setTimeout(function() {
-        var iframeDoc = iframe.contentWindow.document;
-        var elements = iframeDoc.querySelectorAll('p, span, li, td, th, div, h1, h2, h3');
-        elements.forEach(function(el) {
-          var t = el.textContent || '';
-          if (/[\u0600-\u06FF]/.test(t) && el.children.length === 0) {
-            el.setAttribute('lang', 'ar');
-            el.setAttribute('dir', 'rtl');
+      // ✅ Détection arabe : entoure UNIQUEMENT les caractères arabes d'un <span class="arabe">
+      setTimeout(function() {
+        var iframeDoc2 = iframe.contentWindow.document;
+
+        var walker = iframeDoc2.createTreeWalker(
+          iframeDoc2.body,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+
+        var noeuds = [];
+        var n;
+        while ((n = walker.nextNode())) {
+          if (/[\u0600-\u06FF]/.test(n.nodeValue || '')) {
+            noeuds.push(n);
           }
+        }
+
+        noeuds.forEach(function(texteNode) {
+          var parent = texteNode.parentNode;
+          if (!parent) return;
+          if (parent.classList && parent.classList.contains('arabe')) return;
+
+          var txt = texteNode.nodeValue;
+          var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
+          var parts = txt.split(regex);
+
+          var frag = iframeDoc2.createDocumentFragment();
+          parts.forEach(function(part) {
+            if (part === '') return;
+            if (/[\u0600-\u06FF]/.test(part)) {
+              var span = iframeDoc2.createElement('span');
+              span.className = 'arabe';
+              span.setAttribute('lang', 'ar');
+              span.setAttribute('dir', 'rtl');
+              span.textContent = part;
+              frag.appendChild(span);
+            } else {
+              frag.appendChild(iframeDoc2.createTextNode(part));
+            }
+          });
+
+          parent.replaceChild(frag, texteNode);
         });
+
         iframe.contentWindow.print();
         setTimeout(function() {
           document.body.removeChild(iframe);
