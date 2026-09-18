@@ -547,16 +547,16 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .vf-ligne .vf-cases { font-size: 9pt; white-space: nowrap; margin-left: 4px; flex-shrink: 0; }
 
 /* Relier */
-.relier-zone-lignes { position: relative; margin: 6px 0 6px 22px; max-width: 100%; }
-.relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
-.relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 8px; }
+.relier-zone-lignes { position: relative; margin: 4px 0 4px 22px; max-width: 100%; }
+.relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 60px; }
+.relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .relier-ligne-item {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   font-size: 9.5pt;
-  padding: 3px 0;
-  min-height: 16px;
+  padding: 1px 0;
+  min-height: 14px;
 }
 .relier-col-lignes.gauche .relier-ligne-item { justify-content: flex-end; text-align: right; }
 .relier-col-lignes.droite .relier-ligne-item { justify-content: flex-start; text-align: left; }
@@ -600,24 +600,22 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
   border: 0.5px solid #000;
   page-break-inside: avoid;
   break-inside: avoid;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 .zone-note-finale .note-ligne {
   font-size: 10pt;
-  margin-bottom: 6px;
+  white-space: nowrap;
 }
 .zone-note-finale .note-ligne strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation {
   font-size: 10pt;
-  margin-bottom: 4px;
+  flex: 1;
 }
 .zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
-.zone-note-finale .note-appreciation-lignes {
-  margin-top: 4px;
-}
-.zone-note-finale .note-appreciation-ligne {
-  border-bottom: 0.5px dotted #666;
-  height: 14px;
-}
 
 .pied-page { text-align:center; font-size:8pt; color:#666; margin-top:8px; padding-top:4px; border-top:1px solid #ddd; }
 .pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:1px; }
@@ -652,7 +650,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   var exoNum = 0;
   var hasExercice = false;
   var zoneExercicesOuverte = false;
-  var derniereConsigne = '';
 
   function ouvrirZoneExercices() {
     if (!zoneExercicesOuverte) {
@@ -661,11 +658,59 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
   }
 
-  // Affiche la consigne seulement si elle change par rapport à la précédente
-  function afficherConsigne(consigne) {
-    if (consigne !== derniereConsigne) {
-      printHtml += '<div class="consigne-exo">' + consigne + '</div>';
-      derniereConsigne = consigne;
+  // ============================================================
+  // PRÉ-CALCUL DES CONSIGNES (gestion singulier / pluriel)
+  // ============================================================
+  var consignesBase = {
+    quiz:   { sing: 'Cochez la bonne réponse :',  plur: 'Cochez la bonne réponse :' },
+    open:   { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
+    tt:     { sing: 'Complétez la phrase :',      plur: 'Complétez les phrases :' },
+    vf:     { sing: 'Cochez Vrai ou Faux :',      plur: 'Cochez Vrai ou Faux :' },
+    ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
+    carte:  { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
+    relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' }
+  };
+
+  // Parcours pour marquer le PREMIER bloc de chaque groupe consécutif
+  var iGroupe = 0;
+  while (iGroupe < blocsOrdonnes.length) {
+    var blocCourant = blocsOrdonnes[iGroupe];
+    if (blocCourant.type === 'slide') {
+      iGroupe++;
+      continue;
+    }
+
+    // Compter combien de blocs consécutifs ont le même type
+    var nbConsecutifs = 1;
+    var jGroupe = iGroupe + 1;
+    while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === blocCourant.type) {
+      nbConsecutifs++;
+      jGroupe++;
+    }
+
+    // Pour 'vf', chaque bloc contient plusieurs questions
+    if (blocCourant.type === 'vf') {
+      nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
+    }
+
+    var base = consignesBase[blocCourant.type];
+    if (base) {
+      var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
+      // Seul le PREMIER bloc du groupe porte la consigne
+      blocCourant._consigne = consigneFinale;
+      // Les suivants du même groupe n'ont rien
+      for (var kGroupe = iGroupe + 1; kGroupe < jGroupe; kGroupe++) {
+        blocsOrdonnes[kGroupe]._consigne = '';
+      }
+    }
+
+    iGroupe = jGroupe;
+  }
+
+  // Affiche la consigne si elle est définie sur ce bloc
+  function afficherConsigne(bloc) {
+    if (bloc._consigne) {
+      printHtml += '<div class="consigne-exo">' + bloc._consigne + '</div>';
     }
   }
 
@@ -683,7 +728,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var q = bloc.data;
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Cochez la bonne réponse :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="exo-texte">' + q.question + '</span>';
@@ -698,7 +743,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       hasExercice = true;
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Répondez à la question :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
@@ -713,7 +758,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var tt = bloc.data;
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Complétez la phrase :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="tt-phrase-print">';
@@ -729,7 +774,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       bloc.data.forEach(function(question) {
         exoNum++;
         printHtml += '<div class="exo">';
-        afficherConsigne('Cochez Vrai ou Faux :');
+        afficherConsigne(bloc);
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
         printHtml += '<span class="exo-texte-vf">' + question + '</span>';
@@ -753,7 +798,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var lettres = ['A','B','C','D','E','F','G','H'];
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Remettez dans l\'ordre :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="exo-texte">' + consigne + '</span>';
@@ -774,7 +819,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var c = bloc.data;
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Répondez à la question :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="exo-texte">' + c.recto + '</span>';
@@ -787,7 +832,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var relierData = bloc.data;
       exoNum++;
       printHtml += '<div class="exo">';
-      afficherConsigne('Reliez les éléments :');
+      afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
       printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
@@ -844,10 +889,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   // ENCADRÉ NOTE FINAL (pleine largeur, hors colonnes)
   printHtml += '<div class="zone-note-finale">';
   printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
-  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> ......................................................</div>';
-  printHtml += '<div class="note-appreciation-lignes">';
-  printHtml += '<div class="note-appreciation-ligne"></div>';
-  printHtml += '</div>';
+  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> ................................................................</div>';
   printHtml += '</div>';
 
   printHtml += `
