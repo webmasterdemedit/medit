@@ -1451,12 +1451,21 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       iframeDoc.write(printHtml);
       iframeDoc.close();
 
-      setTimeout(function() {
+            setTimeout(function() {
+        var iframeDoc = iframe.contentWindow.document;
+        var elements = iframeDoc.querySelectorAll('p, span, li, td, th, div, h1, h2, h3');
+        elements.forEach(function(el) {
+          var t = el.textContent || '';
+          if (/[\u0600-\u06FF]/.test(t) && el.children.length === 0) {
+            el.setAttribute('lang', 'ar');
+            el.setAttribute('dir', 'rtl');
+          }
+        });
         iframe.contentWindow.print();
         setTimeout(function() {
           document.body.removeChild(iframe);
         }, 1000);
-      }, 1500);   // ✅ 1500ms pour laisser le temps à la police arabe de charger
+      }, 1500);
     }
 
     // ============================================================
