@@ -108,14 +108,12 @@
       color: var(--text-secondary, #444);
     }
 
-    /* Type tt: texte à trous (carré plein) */
     .progress-dot.type-tt {
       border-radius: 0 !important;
       width: 14px !important;
       height: 14px !important;
     }
 
-    /* Type vf: vrai/faux (2 barres) */
     .progress-dot.type-vf {
       border-radius: 0 !important;
       width: 16px !important;
@@ -134,7 +132,6 @@
       border-bottom-color: var(--text-secondary, #444) !important;
     }
 
-    /* Relier = deux points reliés (petit trait) */
     .progress-dot.type-relier {
       border-radius: 0 !important;
       width: 18px !important;
@@ -605,11 +602,10 @@
       relierAssociations: {},
       relierSelection: null,
       relierValide: {},
-      // Nouveau : tt et vf
-      ttReponses: {},    // { slideIndex: { essai: 1|2, correct: bool, mot: string } }
-      ttValide: {},      // { slideIndex: true|false }
-      vfReponses: {},    // { slideIndex: { [questionIdx]: { choix: 'v'|'f', correct: bool } } }
-      vfValide: {},      // { slideIndex: true quand toutes répondues }
+      ttReponses: {},
+      ttValide: {},
+      vfReponses: {},
+      vfValide: {},
       vfTotal: 0,
       vfBonnes: 0
     };
@@ -661,6 +657,7 @@
 
     // ============================================================
     // CHARGER LE CHAPITRE
+    // ⚠️ MODIFIÉ : parsing dans l'ordre du .txt
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
@@ -678,48 +675,180 @@
           var tags = chapitre.tags || [];
           var aRetenir = chapitre.aRetenir || [];
 
-          var parts = contenu.split(' | ');
+          // ✅ PARSING DANS L'ORDRE DU .txt
+          var slidesFinal = [];
+          var lignes = contenu.split('\n');
 
-          var slidesArray = [];
-          var quiz = '';
-          var openQuestion = '';
-          var ordre = '';
-          var carte = '';
-          var relier = '';
-          var texteTrous = '';
-          var vraiFaux = '';
+          var slideCourant = '';
+          var bufferExo = '';
+          var modeExo = null;   // 'quiz' | 'tt' | 'vf' | 'ordre' | 'carte' | 'relier' | 'open'
 
-          parts.forEach(function(part) {
-            part = part.trim();
+          function flushSlide() {
+            var t = slideCourant.trim();
+            if (t) {
+              slidesFinal.push({ type: 'slide', contenu: t });
+            }
+            slideCourant = '';
+          }
 
-            if (part.startsWith('q:')) {
-              quiz = part;
-            } else if (part.startsWith('qs:')) {
-              openQuestion = part;
-            } else if (part.startsWith('o:')) {
-              ordre = part;
-            } else if (part.startsWith('r:')) {
-              carte = part;
-            } else if (part.startsWith('l:')) {
-              relier = part;
-            } else if (part.startsWith('tt:')) {
-              texteTrous = part;
-            } else if (part.startsWith('vf:')) {
-              vraiFaux = part;
-            } else {
-              var cleanText = part.replace(/\r\n/g, '\n').trim();
-              if (cleanText) {
-                var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-                subSlides.forEach(function(sub) {
-                  slidesArray.push(sub.trim());
+          function flushExo() {
+            var b = bufferExo.trim();
+            bufferExo = '';
+            if (!b || !modeExo) { modeExo = null; return; }
+
+            if (modeExo === 'quiz') {
+              var quizsParsed = parserQuizs(b);
+              quizsParsed.forEach(function(qp) {
+                if (qp && qp.reponses.length > 0) {
+                  slidesFinal.push({ type: 'quiz', question: qp.question, reponses: qp.reponses, index: slidesFinal.length });
+                }
+              });
+            } else if (modeExo === 'open') {
+              slidesFinal.push({ type: 'open', question: b.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
+            } else if (modeExo === 'tt') {
+              var tts = parserTextesTrous(b);
+              tts.forEach(function(tt) {
+                slidesFinal.push({ type: 'tt', avant: tt.avant, mot: tt.mot, apres: tt.apres, index: slidesFinal.length });
+              });
+            } else if (modeExo === 'vf') {
+              var vfs = parserVraiFaux(b);
+              if (vfs.length > 0) {
+                slidesFinal.push({ type: 'vf', questions: vfs, index: slidesFinal.length });
+              }
+            } else if (modeExo === 'ordre') {
+              var ordreParsed = parserOrdre(b);
+              if (ordreParsed && ordreParsed.elements.length > 0) {
+                slidesFinal.push({ type: 'ordre', elements: ordreParsed.elements, consigne: ordreParsed.consigne, index: slidesFinal.length });
+              }
+            } else if (modeExo === 'carte') {
+              var carteParsed = parserCarte(b);
+              if (carteParsed) {
+                slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
+              }
+            } else if (modeExo === 'relier') {
+              var relierParsed = parserRelier(b);
+              if (relierParsed && relierParsed.paires.length > 0) {
+                var droiteMelangee = melanger(relierParsed.paires.slice());
+                slidesFinal.push({
+                  type: 'relier',
+                  consigne: relierParsed.consigne,
+                  paires: relierParsed.paires,
+                  droiteMelangee: droiteMelangee,
+                  index: slidesFinal.length
                 });
               }
             }
+
+            modeExo = null;
+          }
+
+          for (var i = 0; i < lignes.length; i++) {
+            var ligne = lignes[i];
+            var trimmed = ligne.trim();
+
+            // Ligne vide → flush slide
+            if (trimmed === '') {
+              if (!modeExo && slideCourant) flushSlide();
+              continue;
+            }
+
+            // Détection des blocs d'exos
+            if (/^q:/i.test(trimmed)) {
+              flushSlide(); flushExo();
+              modeExo = 'quiz'; bufferExo = trimmed;
+              continue;
+            }
+            if (/^qs:/i.test(trimmed)) {
+              flushSlide(); flushExo();
+              modeExo = 'open'; bufferExo = trimmed;
+              continue;
+            }
+            if (/^tt:/i.test(trimmed)) {
+              if (modeExo === 'tt') {
+                bufferExo += '\n' + trimmed;
+              } else {
+                flushSlide(); flushExo();
+                modeExo = 'tt'; bufferExo = trimmed;
+              }
+              continue;
+            }
+            if (/^vf:/i.test(trimmed)) {
+              if (modeExo === 'vf') {
+                bufferExo += '\n' + trimmed;
+              } else {
+                flushSlide(); flushExo();
+                modeExo = 'vf'; bufferExo = trimmed;
+              }
+              continue;
+            }
+            if (/^o:/i.test(trimmed)) {
+              if (modeExo === 'ordre') {
+                bufferExo += '\n' + trimmed;
+              } else {
+                flushSlide(); flushExo();
+                modeExo = 'ordre'; bufferExo = trimmed;
+              }
+              continue;
+            }
+            if (/^r:/i.test(trimmed)) {
+              if (modeExo === 'carte') {
+                bufferExo += '\n' + trimmed;
+              } else {
+                flushSlide(); flushExo();
+                modeExo = 'carte'; bufferExo = trimmed;
+              }
+              continue;
+            }
+            if (/^l:/i.test(trimmed)) {
+              if (modeExo === 'relier') {
+                bufferExo += '\n' + trimmed;
+              } else {
+                flushSlide(); flushExo();
+                modeExo = 'relier'; bufferExo = trimmed;
+              }
+              continue;
+            }
+
+            // Suite d'un bloc en cours
+            if (modeExo) {
+              bufferExo += '\n' + trimmed;
+            } else {
+              slideCourant = slideCourant ? slideCourant + '\n' + trimmed : trimmed;
+            }
+          }
+
+          flushExo();
+          flushSlide();
+
+          // Slide MEMO final (toujours à la fin)
+          var aRetenirClean = (aRetenir || [])
+            .map(function(x) { return String(x).trim(); })
+            .filter(function(x) { return x !== ''; });
+
+          var vocabClean = [];
+          (vocabulaire || []).forEach(function(item) {
+            String(item).split(',').forEach(function(mot) {
+              var m = mot.trim();
+              if (m !== '') vocabClean.push(m);
+            });
           });
 
-          etat.chapitre = chapitre;
+          var tagsClean = (tags || [])
+            .map(function(x) { return String(x).trim(); })
+            .filter(function(x) { return x !== ''; });
 
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux);
+          if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
+            slidesFinal.push({
+              type: 'memo',
+              aRetenir: aRetenirClean,
+              vocabulaire: vocabClean,
+              tags: tagsClean,
+              index: slidesFinal.length
+            });
+          }
+
+          etat.chapitre = chapitre;
+          etat.slides = slidesFinal;
 
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
@@ -734,118 +863,6 @@
           console.error('❌ Erreur:', error);
           afficherErreur(error.message);
         });
-    }
-
-    // ============================================================
-    // PRÉPARER LES SLIDES
-    // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux) {
-      var slidesFinal = [];
-
-      slidesArray.forEach(function(texteSlide) {
-        if (texteSlide.trim() !== '') {
-          slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
-        }
-      });
-
-      if (quiz.trim() !== '') {
-        var quizsParsed = parserQuizs(quiz);
-        quizsParsed.forEach(function(qp) {
-          if (qp && qp.reponses.length > 0) {
-            slidesFinal.push({ type: 'quiz', question: qp.question, reponses: qp.reponses, index: slidesFinal.length });
-          }
-        });
-      }
-
-      if (openQuestion.trim() !== '') {
-        slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
-      }
-
-      if (texteTrous.trim() !== '') {
-        var tts = parserTextesTrous(texteTrous);
-        tts.forEach(function(tt) {
-          slidesFinal.push({
-            type: 'tt',
-            avant: tt.avant,
-            mot: tt.mot,
-            apres: tt.apres,
-            index: slidesFinal.length
-          });
-        });
-      }
-
-      if (vraiFaux.trim() !== '') {
-        var vfs = parserVraiFaux(vraiFaux);
-        if (vfs.length > 0) {
-          slidesFinal.push({
-            type: 'vf',
-            questions: vfs,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      if (ordre.trim() !== '') {
-        var ordreParsed = parserOrdre(ordre);
-        if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({
-            type: 'ordre',
-            elements: ordreParsed.elements,
-            consigne: ordreParsed.consigne,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      if (carte.trim() !== '') {
-        var carteParsed = parserCarte(carte);
-        if (carteParsed) {
-          slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
-        }
-      }
-
-      if (relier.trim() !== '') {
-        var relierParsed = parserRelier(relier);
-        if (relierParsed && relierParsed.paires.length > 0) {
-          var droiteMelangee = melanger(relierParsed.paires.slice());
-          slidesFinal.push({
-            type: 'relier',
-            consigne: relierParsed.consigne,
-            paires: relierParsed.paires,
-            droiteMelangee: droiteMelangee,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      // Slide MEMO final
-      var aRetenirClean = (aRetenir || [])
-        .map(function(x) { return String(x).trim(); })
-        .filter(function(x) { return x !== ''; });
-
-      var vocabClean = [];
-      (vocabulaire || []).forEach(function(item) {
-        String(item).split(',').forEach(function(mot) {
-          var m = mot.trim();
-          if (m !== '') vocabClean.push(m);
-        });
-      });
-
-      var tagsClean = (tags || [])
-        .map(function(x) { return String(x).trim(); })
-        .filter(function(x) { return x !== ''; });
-
-      if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
-        slidesFinal.push({
-          type: 'memo',
-          aRetenir: aRetenirClean,
-          vocabulaire: vocabClean,
-          tags: tagsClean,
-          index: slidesFinal.length
-        });
-      }
-
-      etat.slides = slidesFinal;
     }
 
     // ============================================================
