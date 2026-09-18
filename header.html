@@ -1,30 +1,1953 @@
-<!-- header.html -->
-<header class="site-header">
-  <div class="header-inner">
-    <div class="header-left">
-      <div class="header-logo">
-        <a href="/medit/index.html">
-          <span style="font-size:28px;vertical-align:middle;margin-right:8px;">❏✎</span>
-          <strong>Qiraat</strong> <i>lecture</i>
-        </a>
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Livret - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+  <style>
+    .page-livret {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 30px 40px;
+    }
+
+    .entete-livret {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .couverture-mini {
+      flex-shrink: 0;
+      width: 200px;
+      height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0;
+      color: #1a1a1a;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      cursor: default;
+    }
+
+    .couverture-mini .contenu-couv {
+      position: relative;
+      z-index: 2;
+      padding: 24px 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .couverture-mini .titre-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: 30px;
+    }
+
+    .couverture-mini .titre-couv {
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-bottom: 0;
+      line-height: 1.2;
+      max-width: 90%;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .couverture-mini .sous-titre-couv {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.8;
+      margin-top: 8px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .couverture-mini .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding-bottom: 10px;
+    }
+
+    .couverture-mini .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+
+    .couverture-mini .edition-date {
+      font-size: 10px;
+      opacity: 1;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
+    }
+
+    .couverture-mini .badge-niveau-couv {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 3;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: rgba(26, 26, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.70);
+    }
+
+    .couverture-mini .progression-couv {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .couverture-mini .progression-couv .barre {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    .description-livret {
+      flex: 1;
+      padding-top: 4px;
+    }
+
+    .description-livret h2 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .description-livret .pre-requis {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      font-weight: 300;
+    }
+
+    .description-livret .pre-requis strong {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .description-livret .texte-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .description-livret .texte-desc p {
+      margin-bottom: 8px;
+    }
+
+    .stats-livret {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding: 10px 16px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .stats-livret .stat-item {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stats-livret .stat-item .nombre {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      margin-left: 4px;
+    }
+
+    .btn-retour {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-retour:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .section-chapitres {
+      margin-top: 8px;
+    }
+
+    .section-chapitres h3 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    .carte-chapitre {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .carte-chapitre:hover {
+      border-color: var(--border-hover);
+    }
+
+    .carte-chapitre .infos {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .carte-chapitre .titre {
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .carte-chapitre .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-chapitre .meta .badge-icone {
+      display: inline-block;
+      padding: 1px 10px;
+      background: var(--bg-hover);
+      font-size: 11px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .carte-chapitre .meta .badge-icone.clickable {
+      cursor: pointer;
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .carte-chapitre .meta .badge-icone.clickable:hover {
+      background: var(--bg-active);
+    }
+
+    .carte-chapitre .statut {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .carte-chapitre .statut .date-label {
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .carte-chapitre .statut .date-validation {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .carte-chapitre .btn-wrap {
+      width: 100%;
+      padding-top: 6px;
+      margin-top: 6px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .carte-chapitre .btn-imprimer {
+      display: inline-block;
+      padding: 3px 14px;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .carte-chapitre .btn-imprimer:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .carte-chapitre .retenir-cadre {
+      margin-top: 4px;
+      padding: 4px 12px;
+      background: var(--bg-hover);
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--border-hover);
+    }
+
+    .carte-chapitre .retenir-cadre strong {
+      font-weight: 600;
+      margin-right: 6px;
+      color: var(--text);
+    }
+
+    .carte-chapitre .niveau-badge {
+      font-size: 11px;
+      padding: 1px 10px;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .carte-chapitre .mots {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .vide-chapitres {
+      text-align: center;
+      padding: 40px 20px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .vide-chapitres .icone {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .vide-chapitres h4 {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .vide-chapitres p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .page-livret { padding: 12px 16px 30px; }
+      .entete-livret { flex-direction: column; align-items: center; gap: 20px; padding-bottom: 18px; }
+      .couverture-mini { width: 160px; height: 220px; }
+      .couverture-mini .titre-couv { font-size: 20px; }
+      .description-livret { width: 100%; text-align: center; }
+      .description-livret h2 { font-size: 20px; }
+      .stats-livret { justify-content: center; gap: 16px; }
+      .carte-chapitre { flex-direction: column; align-items: stretch; gap: 6px; }
+      .carte-chapitre .statut { text-align: left; min-width: unset; }
+      .carte-chapitre .btn-wrap { justify-content: flex-start; }
+    }
+
+    @media (max-width: 400px) {
+      .couverture-mini { width: 140px; height: 190px; }
+      .couverture-mini .titre-couv { font-size: 17px; }
+      .description-livret .texte-desc { font-size: 14px; }
+      .stats-livret .stat-item { font-size: 12px; }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-contenu {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      max-width: 540px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 28px 32px 24px;
+      position: relative;
+    }
+
+    .modal-contenu h3 {
+      font-family: 'Georgia', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .modal-sous-titre {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .modal-contenu .modal-annotation {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-contenu .modal-annotation:last-child {
+      border-bottom: none;
+    }
+
+    .modal-contenu .modal-annotation strong {
+      display: block;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .aucune-annotation {
+      color: var(--text-secondary);
+      font-style: italic;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    .modal-contenu .modal-close {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .modal-contenu .modal-close:hover {
+      background: var(--bg-active);
+      color: var(--text);
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      document.write(xhr.responseText);
+    }
+  </script>
+</head>
+<body>
+
+  <div class="page page-livret">
+
+    <a href="/medit/mes-livrets.html" class="btn-retour">← Retourner à mes livrets</a>
+
+    <div id="enteteLivret">
+      <div class="loader">
+        <div class="spinner"></div>
+        <p>Chargement du livret...</p>
       </div>
     </div>
-    <nav class="header-nav" id="headerNav">
-      <a href="/medit/mes-livrets.html" class="header-link">Mes livrets</a>
-      <a href="/medit/mon-compte.html" class="header-btn-compte">Mon compte</a>
-      <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
-    </nav>
-  </div>
-</header>
 
-<script>
-// Définir la fonction globalement
-window.deconnecter = function() {
-  if (confirm('Se déconnecter ?')) {
-    localStorage.removeItem('etudiant_id');
-    localStorage.removeItem('etudiant_nom');
-    localStorage.removeItem('etudiant_niveau');
-    window.location.href = '/medit/index.html';
-  }
-};
-</script>
+    <div id="contenuChapitres"></div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ============================================================
+    // DONNÉES
+    // ============================================================
+    var toutesLesReponses = {};
+    var chapitresData = [];
+    var niveauEtudiant = 0;
+    var nomEtudiant = '';
+    var categorieActuelle = '';
+    var livretsData = {};
+
+    // ============================================================
+    // FORMATER LA DATE
+    // ============================================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var date = new Date(dateStr);
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        return mois[date.getMonth()] + ' ' + date.getFullYear();
+      } catch(e) {
+        return dateStr;
+      }
+    }
+
+    // ============================================================
+    // IMPRESSION
+    // ============================================================
+    function imprimerChapitre(chapitreId, titre) {
+      var chapitre = null;
+      if (typeof chapitresData !== 'undefined' && chapitresData.length > 0) {
+        for (var i = 0; i < chapitresData.length; i++) {
+          if (chapitresData[i].id === chapitreId) {
+            chapitre = chapitresData[i];
+            break;
+          }
+        }
+      }
+      
+      if (!chapitre) {
+        var tousLesChapitres = DataManager.getTousLesChapitres();
+        for (var i = 0; i < tousLesChapitres.length; i++) {
+          if (tousLesChapitres[i].id === chapitreId) {
+            chapitre = tousLesChapitres[i];
+            break;
+          }
+        }
+      }
+      
+      if (!chapitre) {
+        alert('Chapitre "' + titre + '" non trouvé.');
+        return;
+      }
+      
+      var contenu = chapitre.contenu || '';
+      if (!contenu) {
+        alert('Ce chapitre ne contient pas de texte à imprimer.');
+        return;
+      }
+      
+      genererImpression(chapitre, contenu);
+    }
+
+    // ============================================================
+    // PARSEURS POUR IMPRESSION
+    // ============================================================
+    function parserQuizsPourImpression(quizTexte) {
+      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var quizs = [];
+      var currentQuiz = null;
+      var lettres = ['A', 'B', 'C', 'D', 'E', 'F'];
+      
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        if (ligne.match(/^q:/i)) {
+          if (currentQuiz && currentQuiz.reponses.length > 0) {
+            quizs.push(currentQuiz);
+          }
+          currentQuiz = {
+            question: ligne.replace(/^q:\s*/i, '').trim() || 'Question',
+            reponses: []
+          };
+        } else if (currentQuiz) {
+          var texteRep = ligne;
+          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
+          } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
+            texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
+          }
+          if (texteRep) {
+            currentQuiz.reponses.push({ 
+              texte: texteRep || 'Réponse', 
+              lettre: lettres[currentQuiz.reponses.length] || '?'
+            });
+          }
+        }
+      }
+      
+      if (currentQuiz && currentQuiz.reponses.length > 0) {
+        quizs.push(currentQuiz);
+      }
+      return quizs;
+    }
+
+    function parserOrdrePourImpression(ordreTexte) {
+      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var elements = [];
+      var consigne = 'Remettre dans l\'ordre';
+
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        var match = ligne.match(/^(\d+)\s+(.+)/);
+        if (match) {
+          elements.push(match[2]);
+        } else if (elements.length === 0 && ligne.length > 0) {
+          consigne = ligne.replace(/^o:\s*/i, '').trim() || consigne;
+        }
+      }
+      return { elements: elements, consigne: consigne };
+    }
+
+    function parserCartesPourImpression(carteTexte) {
+      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var cartes = [];
+      var current = null;
+
+      for (var i = 0; i < lignes.length; i++) {
+        var l = lignes[i];
+        if (l.toLowerCase().startsWith('r:')) {
+          if (current) cartes.push(current);
+          current = { recto: l.replace(/^r:\s*/i, '').trim(), verso: '' };
+        } else if (l.toLowerCase().startsWith('v:') && current) {
+          current.verso = l.replace(/^v:\s*/i, '').trim();
+        }
+      }
+      if (current) cartes.push(current);
+      return cartes;
+    }
+
+    function parserRelierPourImpression(relierTexte) {
+      var lignes = relierTexte.split('\n')
+        .map(function(l) { return l.trim(); })
+        .filter(function(l) { return l !== ''; });
+
+      if (lignes.length === 0) return null;
+
+      var consigne = lignes[0].replace(/^l:\s*/i, '').trim() || 'Relie les éléments';
+      var paires = [];
+
+      for (var i = 1; i < lignes.length; i++) {
+        var idx = lignes[i].indexOf('-');
+        if (idx === -1) continue;
+        var gauche = lignes[i].substring(0, idx).trim();
+        var droite = lignes[i].substring(idx + 1).trim();
+        if (gauche && droite) {
+          paires.push({ gauche: gauche, droite: droite });
+        }
+      }
+
+      if (paires.length === 0) return null;
+
+      // Dédupliquer les droites + marquer celles partagées
+      var compteParDroite = {};
+      paires.forEach(function(paire) {
+        compteParDroite[paire.droite] = (compteParDroite[paire.droite] || 0) + 1;
+      });
+
+      var droitesUniques = [];
+      var dejaVues = {};
+      paires.forEach(function(paire) {
+        if (!dejaVues[paire.droite]) {
+          dejaVues[paire.droite] = true;
+          droitesUniques.push({
+            droite: paire.droite,
+            partagee: compteParDroite[paire.droite] > 1
+          });
+        }
+      });
+
+      // Mélanger
+      for (var j = droitesUniques.length - 1; j > 0; j--) {
+        var k = Math.floor(Math.random() * (j + 1));
+        var tmp = droitesUniques[j];
+        droitesUniques[j] = droitesUniques[k];
+        droitesUniques[k] = tmp;
+      }
+
+      return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
+    }
+
+    function parserTextesTrousPourImpression(ttTexte) {
+      var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var resultats = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^tt:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^tt:\s*/i, '').trim();
+        var match = contenu.match(/\/([^\/]+)\//);
+        if (!match) return;
+        var mot = match[1].trim();
+        var idx = contenu.indexOf('/' + mot + '/');
+        var avant = contenu.substring(0, idx).trim();
+        var apres = contenu.substring(idx + mot.length + 2).trim();
+        resultats.push({ avant: avant, mot: mot, apres: apres });
+      });
+
+      return resultats;
+    }
+
+    function parserVraiFauxPourImpression(vfTexte) {
+      var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var questions = [];
+
+      lignes.forEach(function(ligne) {
+        if (!/^vf:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^vf:\s*/i, '').trim();
+        var match = contenu.match(/\(([vf])\)\s*$/i);
+        if (!match) return;
+        var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
+        if (question === '') return;
+        questions.push(question);
+      });
+
+      return questions;
+    }
+
+    // ============================================================
+    // DÉTECTION ARABE + ÉCHAPPEMENT
+    // ============================================================
+    function contientArabe(texte) {
+      return /[\u0600-\u06FF]/.test(texte || '');
+    }
+
+    function escapeHtml(texte) {
+      return String(texte)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // Enveloppe un texte arabe dans un span class="arabe" + échappe le HTML
+    function rendre(texte) {
+      if (!texte) return '';
+      var safe = escapeHtml(texte);
+      if (contientArabe(texte)) {
+        return '<span class="arabe">' + safe + '</span>';
+      }
+      return safe;
+    }
+
+    // ============================================================
+    // GÉNÉRATION IMPRESSION
+    // ✅ Grille flexbox 2 colonnes, ordre 100% respecté
+    // ============================================================
+    function genererImpression(chapitre, contenu) {
+      var ordreBlocs = chapitre.ordreBlocs || [];
+
+      // --- 1) Parser chaque type séparément ---
+      var parts = contenu.split(' | ');
+
+      var slidesArray = [];
+      var quizTexte = '';
+      var openTexte = '';
+      var ordreTexte = '';
+      var carteTexte = '';
+      var relierTexte = '';
+      var ttTexte = '';
+      var vfTexte = '';
+
+      parts.forEach(function(part) {
+        part = part.trim();
+
+        if (part.startsWith('q:')) {
+          quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
+        } else if (part.startsWith('qs:')) {
+          openTexte = openTexte ? openTexte + '\n\n' + part : part;
+        } else if (part.startsWith('o:')) {
+          ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
+        } else if (part.startsWith('r:')) {
+          carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
+        } else if (part.startsWith('l:')) {
+          relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
+        } else if (part.startsWith('tt:')) {
+          ttTexte = ttTexte ? ttTexte + '\n' + part : part;
+        } else if (part.startsWith('vf:')) {
+          vfTexte = vfTexte ? vfTexte + '\n' + part : part;
+        } else {
+          var cleanText = part.replace(/\r\n/g, '\n').trim();
+          if (cleanText) {
+            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+            subSlides.forEach(function(sub) {
+              slidesArray.push(sub.trim());
+            });
+          }
+        }
+      });
+
+      // --- 2) Parser les exos ---
+      var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
+      var opensParsed = [];
+      if (openTexte) {
+        openTexte.split('\n\n').forEach(function(bloc) {
+          var t = bloc.replace(/^qs:\s*/i, '').trim();
+          if (t) opensParsed.push(t);
+        });
+      }
+      var ordresParsed = [];
+      if (ordreTexte) {
+        ordreTexte.split('\n\n').forEach(function(bloc) {
+          var p = parserOrdrePourImpression(bloc);
+          if (p && p.elements.length > 0) ordresParsed.push(p);
+        });
+      }
+      var cartesParsed = carteTexte ? parserCartesPourImpression(carteTexte) : [];
+      var reliersParsed = [];
+      if (relierTexte) {
+        relierTexte.split('\n\n').forEach(function(bloc) {
+          var p = parserRelierPourImpression(bloc);
+          if (p && p.paires.length > 0) reliersParsed.push(p);
+        });
+      }
+      var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
+      var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
+
+      // --- 3) Construire les blocs ordonnés ---
+      var blocsOrdonnes = [];
+
+      if (ordreBlocs.length > 0) {
+        ordreBlocs.forEach(function(item) {
+          var p = item.split(':');
+          var type = p[0];
+          var idx = p.length > 1 ? parseInt(p[1]) : 0;
+
+          if (type === 'slide' && slidesArray[idx] !== undefined) {
+            blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
+          } else if (type === 'quiz' && quizsParsed[idx]) {
+            blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
+          } else if (type === 'open' && opensParsed[idx] !== undefined) {
+            blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
+          } else if (type === 'ordre' && ordresParsed[idx]) {
+            blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
+          } else if (type === 'carte' && cartesParsed[idx]) {
+            blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
+          } else if (type === 'relier' && reliersParsed[idx]) {
+            blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
+          } else if (type === 'tt' && ttsParsed[idx]) {
+            blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
+          } else if (type === 'vf' && vfsParsed.length > 0) {
+            blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+          }
+        });
+      } else {
+        // Fallback
+        slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
+        quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
+        opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
+        ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
+        if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+        ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
+        cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
+        reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
+      }
+
+      // --- MÉMO ---
+      var aRetenirClean = (chapitre.aRetenir || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
+
+      var vocabClean = [];
+      (chapitre.vocabulaire || []).forEach(function(item) {
+        String(item).split(',').forEach(function(mot) {
+          var m = mot.trim();
+          if (m !== '') vocabClean.push(m);
+        });
+      });
+
+      var tagsClean = (chapitre.tags || [])
+        .map(function(x) { return String(x).trim(); })
+        .filter(function(x) { return x !== ''; });
+
+      // --- Comptage du nombre de questions ---
+      var nbQuestions = 0;
+      blocsOrdonnes.forEach(function(bloc) {
+        if (bloc.type === 'quiz') nbQuestions++;
+        else if (bloc.type === 'open') nbQuestions++;
+        else if (bloc.type === 'tt') nbQuestions++;
+        else if (bloc.type === 'vf') nbQuestions += bloc.data.length;
+        else if (bloc.type === 'ordre') nbQuestions++;
+        else if (bloc.type === 'carte') nbQuestions++;
+        else if (bloc.type === 'relier') nbQuestions++;
+      });
+
+      // --- Dates ---
+      var dateCreation = chapitre.date || '';
+      var dateCreationStr = '';
+      if (dateCreation) {
+        var d = new Date(dateCreation);
+        if (!isNaN(d.getTime())) {
+          dateCreationStr = d.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric'
+          });
+        }
+      }
+
+      var dateImpression = new Date();
+      var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+      var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+        hour: '2-digit', minute: '2-digit'
+      });
+
+      // ============================================
+      // HTML DE L'IMPRESSION
+      // ============================================
+      var printHtml = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(chapitre.titre || 'Lecture')}</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+@page { margin: 1cm 1.2cm 1cm 1.2cm; size: A4; }
+body {
+  font-family:'Times New Roman', Times, serif;
+  background:white;
+  color:black;
+  font-size:10pt;
+  line-height:1.35;
+}
+.page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
+
+h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+.sous-titre { text-align:center; font-size:10pt; font-style:italic; margin-bottom:2px; color:#444; }
+.meta-ligne { text-align:center; font-size:9pt; color:#555; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:6px; }
+.meta-ligne span { margin:0 6px; }
+.meta-ligne .sep { color:#ccc; }
+
+/* En-tête élève */
+.entete-eleve {
+  border:1px solid #999;
+  padding:6px 10px;
+  margin-bottom:10px;
+  font-size:10pt;
+  display:flex;
+  flex-wrap:wrap;
+  gap:6px 20px;
+}
+.entete-eleve .champ { display:inline-block; }
+.entete-eleve .ligne-points { display:inline-block; border-bottom:1px dotted #333; min-width:120px; }
+
+.tags-haut {
+  margin-top: 4px;
+  margin-bottom: 6px;
+  font-size: 9pt;
+  font-style: italic;
+  color: #444;
+  text-align: center;
+}
+.tags-haut .memo-tag { display: inline-block; margin: 0 6px; }
+
+.vocab-haut {
+  margin-top: 4px;
+  margin-bottom: 10px;
+  text-align: center;
+  font-size: 9pt;
+}
+.vocab-haut .titre-memo {
+  font-weight: 600;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #5a4a3a;
+  margin-bottom: 2px;
+}
+.vocab-haut .memo-mot {
+  display: inline-block;
+  padding: 0px 6px;
+  margin: 1px 3px;
+  border: 1px solid #999;
+}
+
+/* ============================================================
+   GRILLE 2 COLONNES
+   ============================================================ */
+.grille-impression {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4cm 0.6cm;
+  align-items: flex-start;
+}
+.bloc { min-width: 0; }
+.bloc.c2 { flex: 0 0 calc(50% - 0.3cm); }
+.bloc.c1 { flex: 0 0 100%; }
+
+/* ============================================================
+   SLIDE
+   ============================================================ */
+.slide p {
+  font-size: 10.5pt;
+  line-height: 1.4;
+  margin-bottom: 4px;
+  text-align: justify;
+}
+
+/* ============================================================
+   EXERCICES
+   ============================================================ */
+.exo { page-break-inside: avoid; }
+
+.consigne-exo {
+  font-size: 8.5pt;
+  font-weight: 600;
+  color: #5a4a3a;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 2px;
+}
+
+.exo-ligne {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  margin-top: 1px;
+}
+.exo-num-inline {
+  font-weight: bold;
+  font-size: 10pt;
+  min-width: 18px;
+  flex-shrink: 0;
+}
+.exo-texte {
+  flex: 1;
+  font-size: 10pt;
+  line-height: 1.4;
+  min-width: 0;
+}
+
+/* QUIZ */
+.quiz-reponses { margin-left: 24px; margin-top: 2px; }
+.quiz-rep { display:inline-block; margin-right:12px; font-size:10pt; }
+.quiz-case { display:inline-block; width:10px; height:10px; border:1px solid #000; margin-right:3px; vertical-align:middle; background:white; }
+
+/* OPEN (question ouverte) */
+.open-lignes { margin-top:2px; margin-left: 24px; }
+.open-ligne {
+  border-bottom:1px dotted #666;
+  height:16px;
+  margin-bottom:4px;
+  width: 100%;
+}
+
+/* ORDRE */
+.ordre-liste { list-style:none; padding:0; margin:2px 0 4px 24px; }
+.ordre-liste li { margin-bottom:1px; font-size: 10pt; }
+.ordre-lettre { font-weight:bold; margin-right:4px; display:inline-block; width:16px; }
+.ordre-zone { margin-top:4px; margin-left:24px; font-size:10pt; }
+.ordre-zone .tiret { margin:0 4px; font-weight:bold; }
+.ordre-zone .pointille { display:inline-block; width:30px; border-bottom:1px solid #000; height:12px; vertical-align:middle; }
+
+/* CARTE */
+.carte-ligne-courte {
+  margin-top: 4px;
+  margin-left: 24px;
+  width: 60%;
+  border-bottom: 1px dotted #666;
+  height: 16px;
+}
+
+/* TEXTE À TROUS */
+.tt-phrase-print {
+  flex: 1;
+  font-size: 10pt;
+  line-height: 1.6;
+  min-width: 0;
+}
+.tt-phrase-print .tt-trou {
+  display: inline-block;
+  min-width: 80px;
+  border-bottom: 1px solid #000;
+  text-align: center;
+  padding: 0 4px;
+}
+
+/* VRAI / FAUX */
+.vf-ligne .vf-cases {
+  font-size: 10pt;
+  white-space: nowrap;
+  margin-left: 8px;
+}
+
+/* RELIER */
+.relier-zone-lignes {
+  position: relative;
+  margin: 4px 0 4px 24px;
+  max-width: 500px;
+}
+.relier-lignes-grid {
+  display: flex;
+  justify-content: space-between;
+  gap: 40px;
+}
+.relier-col-lignes {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.relier-ligne-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10pt;
+  padding: 1px 0;
+  min-height: 16px;
+}
+.relier-col-lignes.gauche .relier-ligne-item {
+  justify-content: flex-end;
+  text-align: right;
+}
+.relier-col-lignes.droite .relier-ligne-item {
+  justify-content: flex-start;
+  text-align: left;
+}
+.relier-point {
+  width: 8px;
+  height: 8px;
+  border: 1.2px solid #000;
+  border-radius: 50%;
+  background: white;
+  flex-shrink: 0;
+  box-sizing: border-box;
+}
+.relier-point.relier-point-partage {
+  border-radius: 0;
+}
+
+/* MÉMO */
+.zone-memo {
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px solid #b8a888;
+  page-break-inside:avoid;
+}
+.zone-memo .titre-memo {
+  font-weight:600;
+  font-size:8.5pt;
+  text-transform:uppercase;
+  letter-spacing:1.2px;
+  color:#5a4a3a;
+  margin-bottom:4px;
+}
+.zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
+.zone-memo .memo-liste li {
+  font-size:10pt;
+  margin-bottom:2px;
+  padding-left:12px;
+  position:relative;
+}
+.zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
+
+/* NOTE FINALE */
+.zone-note-finale {
+  margin-top: 16px;
+  border: 2px solid #333;
+  padding: 12px 16px;
+  page-break-inside: avoid;
+}
+.zone-note-finale .titre-note {
+  font-weight: 700;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #333;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #999;
+  padding-bottom: 4px;
+}
+.zone-note-finale .ligne-note {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  font-size: 11pt;
+  margin-bottom: 12px;
+  gap: 20px;
+}
+.zone-note-finale .note-points {
+  flex: 0 0 auto;
+}
+.zone-note-finale .note-points .points {
+  display: inline-block;
+  border-bottom: 1px solid #000;
+  min-width: 60px;
+  text-align: center;
+  font-weight: 700;
+}
+.zone-note-finale .appreciation {
+  margin-top: 8px;
+}
+.zone-note-finale .appreciation .ligne-appreciation {
+  border-bottom: 1px dotted #666;
+  height: 22px;
+  margin-bottom: 6px;
+}
+
+/* Police arabe identique à chapitre.html */
+.arabe {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', serif;
+  direction: rtl;
+  unicode-bidi: embed;
+  font-size: 1.15em;
+  line-height: 1.8;
+}
+
+/* Pied de page */
+.pied-page {
+  text-align:center;
+  font-size:8.5pt;
+  color:#666;
+  margin-top:14px;
+  padding-top:6px;
+  border-top:1px solid #ddd;
+}
+.pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:2px; }
+</style>
+</head>
+<body>
+<div class="page">
+<h1>${escapeHtml(chapitre.titre || 'Lecture')}</h1>
+<div class="sous-titre">${escapeHtml(chapitre.categorie || 'Sans catégorie')}</div>
+<div class="meta-ligne">
+  <span>Créé le : ${dateCreationStr || '—'}</span>
+  <span class="sep">|</span>
+  <span>Niveau ${chapitre.niveau || 0}</span>
+</div>
+
+<div class="entete-eleve">
+  <span class="champ">Nom et prénom : <span class="ligne-points" style="min-width:200px;"></span></span>
+  <span class="champ">Date : <span class="ligne-points" style="min-width:30px;"></span> / <span class="ligne-points" style="min-width:30px;"></span> / <span class="ligne-points" style="min-width:40px;"></span></span>
+  <span class="champ">Feuille n° <span class="ligne-points" style="min-width:50px;"></span></span>
+</div>
+
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + rendre(t) + '</span>'; }).join('') + '</div>' : ''}
+
+${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + rendre(m) + '</span>'; }).join('') + '</div>' : ''}
+
+<div class="grille-impression">
+`;
+
+      // ============================================
+      // GÉNÉRATION DANS L'ORDRE
+      // ============================================
+      var exoNum = 0;
+
+      blocsOrdonnes.forEach(function(bloc) {
+        if (bloc.type === 'slide') {
+          var texteSlide = bloc.data;
+          var classeCol = texteSlide.length > 400 ? 'c1' : 'c2';
+
+          printHtml += '<div class="bloc ' + classeCol + '">';
+          printHtml += '<div class="slide">';
+          var paragraphs = texteSlide.split('\n').filter(function(p) { return p.trim() !== ''; });
+          paragraphs.forEach(function(p) {
+            printHtml += '<p>' + rendre(p.trim()) + '</p>';
+          });
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'quiz') {
+          var q = bloc.data;
+          exoNum++;
+          printHtml += '<div class="bloc c2">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Cochez la bonne réponse :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + rendre(q.question) + '</span>';
+          printHtml += '</div>';
+          printHtml += '<div class="quiz-reponses">';
+          q.reponses.forEach(function(rep) {
+            printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rendre(rep.texte) + '</span>';
+          });
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'open') {
+          exoNum++;
+          printHtml += '<div class="bloc c1">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + rendre(bloc.data) + '</span>';
+          printHtml += '</div>';
+          printHtml += '<div class="open-lignes">';
+          printHtml += '<div class="open-ligne"></div>';
+          printHtml += '<div class="open-ligne"></div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'tt') {
+          var tt = bloc.data;
+          exoNum++;
+          printHtml += '<div class="bloc c2">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Complétez la phrase :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="tt-phrase-print">';
+          if (tt.avant) printHtml += rendre(tt.avant) + ' ';
+          printHtml += '<span class="tt-trou"></span>';
+          if (tt.apres) printHtml += ' ' + rendre(tt.apres);
+          printHtml += '</span>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'vf') {
+          bloc.data.forEach(function(question) {
+            exoNum++;
+            printHtml += '<div class="bloc c2">';
+            printHtml += '<div class="exo">';
+            printHtml += '<div class="consigne-exo">Vrai ou Faux :</div>';
+            printHtml += '<div class="exo-ligne vf-ligne">';
+            printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+            printHtml += '<span class="exo-texte">' + rendre(question) + '</span>';
+            printHtml += '<span class="vf-cases">☐ V  ☐ F</span>';
+            printHtml += '</div>';
+            printHtml += '</div>';
+            printHtml += '</div>';
+          });
+        } else if (bloc.type === 'ordre') {
+          var ordreData = bloc.data;
+          var items = ordreData.elements || [];
+          var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
+
+          var itemsMelanges = items.slice();
+          for (var m = itemsMelanges.length - 1; m > 0; m--) {
+            var k = Math.floor(Math.random() * (m + 1));
+            var tmp = itemsMelanges[m]; itemsMelanges[m] = itemsMelanges[k]; itemsMelanges[k] = tmp;
+          }
+
+          var lettres = ['A','B','C','D','E','F','G','H'];
+          exoNum++;
+          printHtml += '<div class="bloc c1">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Remettez dans l\'ordre :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + rendre(consigne) + '</span>';
+          printHtml += '</div>';
+          printHtml += '<ul class="ordre-liste">';
+          itemsMelanges.forEach(function(item, i) {
+            printHtml += '<li><span class="ordre-lettre">' + lettres[i] + '.</span>' + rendre(item) + '</li>';
+          });
+          printHtml += '</ul>';
+          printHtml += '<div class="ordre-zone"><strong>Votre réponse :</strong> ';
+          for (var oi = 0; oi < itemsMelanges.length; oi++) {
+            if (oi > 0) printHtml += '<span class="tiret">-</span>';
+            printHtml += '<span class="pointille"></span>';
+          }
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'carte') {
+          var c = bloc.data;
+          exoNum++;
+          printHtml += '<div class="bloc c1">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + rendre(c.recto) + '</span>';
+          printHtml += '</div>';
+          printHtml += '<div class="carte-ligne-courte"></div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        } else if (bloc.type === 'relier') {
+          var relierData = bloc.data;
+          exoNum++;
+          printHtml += '<div class="bloc c1">';
+          printHtml += '<div class="exo">';
+          printHtml += '<div class="consigne-exo">Reliez les éléments :</div>';
+          printHtml += '<div class="exo-ligne">';
+          printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+          printHtml += '<span class="exo-texte">' + rendre(relierData.consigne) + '</span>';
+          printHtml += '</div>';
+          printHtml += '<div class="relier-zone-lignes">';
+          printHtml += '<div class="relier-lignes-grid">';
+
+          printHtml += '<div class="relier-col-lignes gauche">';
+          for (var rg = 0; rg < relierData.paires.length; rg++) {
+            printHtml += '<div class="relier-ligne-item">';
+            printHtml += '<span>' + rendre(relierData.paires[rg].gauche) + '</span>';
+            printHtml += '<span class="relier-point"></span>';
+            printHtml += '</div>';
+          }
+          printHtml += '</div>';
+
+          printHtml += '<div class="relier-col-lignes droite">';
+          for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
+            var dItem = relierData.droitesMelangees[rd];
+            var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
+            printHtml += '<div class="relier-ligne-item">';
+            printHtml += '<span class="' + classePoint + '"></span>';
+            printHtml += '<span>' + rendre(dItem.droite) + '</span>';
+            printHtml += '</div>';
+          }
+          printHtml += '</div>';
+
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+          printHtml += '</div>';
+        }
+      });
+
+      printHtml += '</div>'; // fermeture .grille-impression
+
+      // ZONE MÉMO
+      if (aRetenirClean.length > 0) {
+        printHtml += '<div class="zone-memo">';
+        printHtml += '<div class="titre-memo">À retenir</div>';
+        printHtml += '<ul class="memo-liste">';
+        aRetenirClean.forEach(function(phrase) {
+          printHtml += '<li>' + rendre(phrase) + '</li>';
+        });
+        printHtml += '</ul>';
+        printHtml += '</div>';
+      }
+
+      // ZONE NOTE FINALE
+      printHtml += '<div class="zone-note-finale">';
+      printHtml += '<div class="titre-note">Évaluation</div>';
+      printHtml += '<div class="ligne-note">';
+      printHtml += '<span class="note-points">Note : <span class="points">&nbsp;&nbsp;&nbsp;&nbsp;</span> / ' + nbQuestions + '</span>';
+      printHtml += '<span>Date : <span class="ligne-points" style="display:inline-block;border-bottom:1px dotted #333;min-width:80px;"></span></span>';
+      printHtml += '</div>';
+      printHtml += '<div class="appreciation">';
+      printHtml += '<div style="font-size:10pt;font-weight:600;margin-bottom:4px;">Appréciation :</div>';
+      printHtml += '<div class="ligne-appreciation"></div>';
+      printHtml += '<div class="ligne-appreciation"></div>';
+      printHtml += '</div>';
+      printHtml += '</div>';
+
+      printHtml += `
+        <div class="pied-page">
+          <div>Qiraat - W. Khan</div>
+          <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
+        </div>
+      </div>
+    </body>
+    </html>`;
+
+      var iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '0';
+      iframe.style.bottom = '0';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = 'none';
+      document.body.appendChild(iframe);
+
+      var iframeDoc = iframe.contentWindow.document;
+      iframeDoc.write(printHtml);
+      iframeDoc.close();
+
+      setTimeout(function() {
+        iframe.contentWindow.print();
+        setTimeout(function() {
+          document.body.removeChild(iframe);
+        }, 1000);
+      }, 500);
+    }
+
+    // ============================================================
+    // MODAL ANNOTATIONS
+    // ============================================================
+    function ouvrirAnnotations(chapitreId, titre) {
+      var reponse = toutesLesReponses[chapitreId] || null;
+      var annotations = reponse ? reponse.annotations : '';
+
+      var modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modalAnnotations';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotations();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Annotations</div>';
+
+      if (annotations && annotations.trim() !== '') {
+        var parts = annotations.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split(':');
+          if (kv.length === 2) {
+            var slideNum = kv[0].replace('slide', '');
+            var texte = kv[1];
+            html += '<div class="modal-annotation">';
+            html += '<strong>Slide ' + slideNum + '</strong>';
+            html += texte;
+            html += '</div>';
+          }
+        }
+      } else {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce chapitre.</div>';
+      }
+
+      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+      html += '</div>';
+
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
+    }
+
+    function fermerAnnotations() {
+      var modal = document.getElementById('modalAnnotations');
+      if (modal) modal.remove();
+    }
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerLivret() {
+      var params = new URLSearchParams(window.location.search);
+      categorieActuelle = params.get('cat') || '';
+
+      if (!categorieActuelle) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-chapitres" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucune catégorie spécifiée</h4>
+            <p>Veuillez sélectionner un livret depuis la page d'accueil.</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuChapitres').innerHTML = '';
+        return;
+      }
+
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+      nomEtudiant = id;
+
+      DataManager.charger()
+        .then(function(data) {
+          niveauEtudiant = data.niveau || 0;
+          chapitresData = data.chapitres || [];
+
+          livretsData = {};
+          if (data.livrets) {
+            if (Array.isArray(data.livrets)) {
+              data.livrets.forEach(function(l) {
+                livretsData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  pages: l.pages || '',
+                  description: l.description || '',
+                  auteur: l.auteur || ''
+                };
+              });
+            }
+          }
+
+          toutesLesReponses = {};
+          if (data.reponses) {
+            data.reponses.forEach(function(r) {
+              if (!toutesLesReponses[r.chapitreId]) {
+                toutesLesReponses[r.chapitreId] = [];
+              }
+              toutesLesReponses[r.chapitreId].push(r);
+            });
+          }
+
+          afficherLivret();
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            niveauEtudiant = cache.niveau || 0;
+            chapitresData = cache.chapitres || [];
+            if (cache.livrets) {
+              if (Array.isArray(cache.livrets)) {
+                livretsData = {};
+                cache.livrets.forEach(function(l) {
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    sousTitre: l.sousTitre || '',
+                    date: l.date || '',
+                    pages: l.pages || '',
+                    description: l.description || '',
+                    auteur: l.auteur || ''
+                  };
+                });
+              }
+            }
+            afficherLivret();
+          } else {
+            document.getElementById('enteteLivret').innerHTML = `
+              <div class="vide-chapitres" style="margin-top:20px;">
+                <span class="icone">⚠</span>
+                <h4>Erreur de chargement</h4>
+                <p>Vérifiez votre connexion internet.</p>
+                <button onclick="location.reload();" style="margin-top:10px;padding:8px 20px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);">Réessayer</button>
+              </div>
+            `;
+            document.getElementById('contenuChapitres').innerHTML = '';
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHER LE LIVRET
+    // ============================================================
+    function afficherLivret() {
+      var chapitresFiltres = chapitresData.filter(function(p) {
+        return (p.categorie || 'Sans catégorie') === categorieActuelle;
+      });
+
+      chapitresFiltres.sort(function(a, b) {
+        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+      });
+
+      if (chapitresFiltres.length === 0) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-chapitres" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucun chapitre</h4>
+            <p>Ce livret ne contient pas encore de chapitres accessibles à votre niveau (${niveauEtudiant}).</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuChapitres').innerHTML = '';
+        return;
+      }
+
+      var niveauLivret = chapitresFiltres[0].niveau || 1;
+      var totalChapitres = chapitresFiltres.length;
+
+      var validees = 0;
+      chapitresFiltres.forEach(function(chapitre) {
+        var reponse = toutesLesReponses[chapitre.id];
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          if (total === 1 && bonnes === 1) validees++;
+          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
+        }
+      });
+
+      var livretInfo = livretsData[categorieActuelle] || {};
+      var couleur = livretInfo.couleur || '#2d6a4f';
+      var sousTitre = livretInfo.sousTitre || '';
+      var dateLivret = livretInfo.date || '';
+      var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
+      var pages = livretInfo.pages || '';
+      var auteur = livretInfo.auteur || '';
+
+      var dateFormatee = formatDate(dateLivret);
+      var pourcentage = totalChapitres > 0 ? Math.round((validees / totalChapitres) * 100) : 0;
+
+      var enteteHtml = `
+        <div class="entete-livret">
+          <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
+            <span class="badge-niveau-couv">Niveau ${niveauLivret}</span>
+            <div class="contenu-couv">
+              <div class="titre-wrapper">
+                <span class="titre-couv">${categorieActuelle}</span>
+                ${sousTitre ? `<span class="sous-titre-couv">${sousTitre}</span>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              </div>
+            </div>
+            <div class="progression-couv">
+              <div class="barre" style="width: ${pourcentage}%;"></div>
+            </div>
+          </div>
+          <div class="description-livret">
+            <h2>${categorieActuelle}</h2>
+            ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
+${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
+            <div class="texte-desc">
+              <p>${description}</p>
+            </div>
+            <div class="stats-livret">
+              <span class="stat-item">Chapitres : <span class="nombre">${totalChapitres}</span></span>
+              <span class="stat-item">Validés : <span class="nombre">${validees}</span></span>
+              <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('enteteLivret').innerHTML = enteteHtml;
+
+      afficherChapitres(chapitresFiltres);
+    }
+
+    // ============================================================
+    // AFFICHER LES CHAPITRES
+    // ============================================================
+    function afficherChapitres(chapitres) {
+      var container = document.getElementById('contenuChapitres');
+
+      if (chapitres.length === 0) {
+        container.innerHTML = `
+          <div class="vide-chapitres">
+            <span class="icone">🎬</span>
+            <h4>Aucun chapitre</h4>
+            <p>Ce livret ne contient pas encore de chapitres.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="section-chapitres"><h3>Chapitres</h3>';
+
+      for (var i = 0; i < chapitres.length; i++) {
+        var chapitre = chapitres[i];
+        var reponse = toutesLesReponses[chapitre.id];
+
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === chapitre.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
+
+        var dateValidation = '';
+        var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        var reponses = toutesLesReponses[chapitre.id] || [];
+        if (reponses.length > 0) {
+          var toutesValides = true;
+          for (var j = 0; j < reponses.length; j++) {
+            if (reponses[j].valide !== 'valide') {
+              toutesValides = false;
+              break;
+            }
+            if (reponses[j].date) dateValidation = reponses[j].date;
+            if (reponses[j].retenir) retenir = reponses[j].retenir;
+          }
+          
+          if (toutesValides) {
+            estLu = true;
+            estValide = true;
+          }
+        }
+
+        var hasQuiz = chapitre.hasQuiz || false;
+        var hasQuestion = chapitre.hasQuestion || false;
+        var mots = chapitre.mots || 0;
+
+        var nbQuestions = 0;
+        if (hasQuiz) nbQuestions++;
+        if (hasQuestion) nbQuestions++;
+
+        var metaHtml = '';
+
+        if (estLu) {
+          var resultatHtml = '';
+          var questionHtml = '';
+          var annoteHtml = '';
+
+          if (reponse) {
+            var bonnes = reponse.bonnes || 0;
+            var total = reponse.total || 0;
+            if (total > 0) {
+              resultatHtml = '<span class="badge-icone">Résultat : ' + bonnes + '/' + total + '</span>';
+            }
+
+            var reponseOuverte = reponse.reponseOuverte || '';
+            if (reponseOuverte && reponseOuverte.trim() !== '') {
+              questionHtml = '<span class="badge-icone">Question envoyée ✓</span>';
+            } else if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+
+            var annotations = reponse.annotations || '';
+            if (annotations && annotations.trim() !== '') {
+              annoteHtml = '<span class="badge-icone clickable" onclick="event.stopPropagation(); ouvrirAnnotations(\'' + chapitre.id + '\', \'' + chapitre.titre.replace(/'/g, "\\'") + '\');">Annoté ✓</span>';
+            } else {
+              annoteHtml = '<span class="badge-icone">Non annoté</span>';
+            }
+          } else {
+            resultatHtml = '<span class="badge-icone">Résultat : 0/0</span>';
+            if (hasQuestion) {
+              questionHtml = '<span class="badge-icone">Question non envoyée</span>';
+            }
+            annoteHtml = '<span class="badge-icone">Non annoté</span>';
+          }
+
+          metaHtml = resultatHtml + questionHtml + annoteHtml;
+        } else {
+          metaHtml = '<span class="badge-icone">Nbr questions : ' + nbQuestions + '</span>';
+        }
+
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre">
+              <strong>À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        var imprimerHtml = `
+          <div class="btn-wrap">
+            <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}')">
+              🖨 Imprimer
+            </button>
+          </div>
+        `;
+
+        var onClickAttr = 'onclick="window.location.href=\'/medit/chapitre.html?id=' + chapitre.id + '\'"';
+
+        html += `
+          <div class="carte-chapitre" ${onClickAttr}>
+            <div class="infos">
+              <div class="titre">${chapitre.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${chapitre.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+            ${imprimerHtml}
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      chargerLivret();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
