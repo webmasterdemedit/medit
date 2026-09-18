@@ -616,6 +616,13 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
   flex: 1;
 }
 .zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
+.zone-note-finale .note-ligne-appreciation .ligne-pointillee {
+  display: inline-block;
+  width: calc(100% - 90px);
+  border-bottom: 0.5px dotted #666;
+  vertical-align: bottom;
+  height: 12px;
+}
 
 .pied-page { text-align:center; font-size:8pt; color:#666; margin-top:8px; padding-top:4px; border-top:1px solid #ddd; }
 .pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:1px; }
