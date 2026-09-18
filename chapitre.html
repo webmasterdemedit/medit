@@ -659,8 +659,9 @@
       document.getElementById('fontDecreaseBottom').addEventListener('click', decreaseFont);
     });
 
-    // ============================================================
+        // ============================================================
     // CHARGER LE CHAPITRE
+    // ✅ Utilise ordreBlocs (colonne T) pour reconstruire dans l'ordre
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
@@ -673,39 +674,41 @@
 
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
+          var ordreBlocs = chapitre.ordreBlocs || [];
 
           var vocabulaire = chapitre.vocabulaire || [];
           var tags = chapitre.tags || [];
           var aRetenir = chapitre.aRetenir || [];
 
+          // --- 1) Parser chaque type séparément (comme avant) ---
           var parts = contenu.split(' | ');
 
           var slidesArray = [];
-          var quiz = '';
-          var openQuestion = '';
-          var ordre = '';
-          var carte = '';
-          var relier = '';
-          var texteTrous = '';
-          var vraiFaux = '';
+          var quizTexte = '';
+          var openTexte = '';
+          var ordreTexte = '';
+          var carteTexte = '';
+          var relierTexte = '';
+          var ttTexte = '';
+          var vfTexte = '';
 
           parts.forEach(function(part) {
             part = part.trim();
 
             if (part.startsWith('q:')) {
-              quiz = part;
+              quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
             } else if (part.startsWith('qs:')) {
-              openQuestion = part;
+              openTexte = openTexte ? openTexte + '\n\n' + part : part;
             } else if (part.startsWith('o:')) {
-              ordre = part;
+              ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
             } else if (part.startsWith('r:')) {
-              carte = part;
+              carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
             } else if (part.startsWith('l:')) {
-              relier = part;
+              relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
             } else if (part.startsWith('tt:')) {
-              texteTrous = part;
+              ttTexte = ttTexte ? ttTexte + '\n' + part : part;
             } else if (part.startsWith('vf:')) {
-              vraiFaux = part;
+              vfTexte = vfTexte ? vfTexte + '\n' + part : part;
             } else {
               var cleanText = part.replace(/\r\n/g, '\n').trim();
               if (cleanText) {
@@ -717,9 +720,127 @@
             }
           });
 
-          etat.chapitre = chapitre;
+          // --- 2) Parser les exos en tableaux indexés ---
+          var quizsParsed = quizTexte ? parserQuizs(quizTexte) : [];
+          var opensParsed = [];
+          if (openTexte) {
+            openTexte.split('\n\n').forEach(function(bloc) {
+              var t = bloc.replace(/^qs:\s*/i, '').trim();
+              if (t) opensParsed.push(t);
+            });
+          }
+          var ordresParsed = [];
+          if (ordreTexte) {
+            ordreTexte.split('\n\n').forEach(function(bloc) {
+              var p = parserOrdre(bloc);
+              if (p && p.elements.length > 0) ordresParsed.push(p);
+            });
+          }
+          var cartesParsed = [];
+          if (carteTexte) {
+            carteTexte.split('\n\n').forEach(function(bloc) {
+              var p = parserCarte(bloc);
+              if (p) cartesParsed.push(p);
+            });
+          }
+          var reliersParsed = [];
+          if (relierTexte) {
+            relierTexte.split('\n\n').forEach(function(bloc) {
+              var p = parserRelier(bloc);
+              if (p && p.paires.length > 0) reliersParsed.push(p);
+            });
+          }
+          var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
+          var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
 
-          preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux);
+          // --- 3) Reconstruire dans l'ordre donné par ordreBlocs ---
+          var slidesFinal = [];
+
+          if (ordreBlocs.length > 0) {
+            ordreBlocs.forEach(function(item) {
+              var p = item.split(':');
+              var type = p[0];
+              var idx = p.length > 1 ? parseInt(p[1]) : 0;
+
+              if (type === 'slide' && slidesArray[idx] !== undefined) {
+                slidesFinal.push({ type: 'slide', contenu: slidesArray[idx] });
+              } else if (type === 'quiz' && quizsParsed[idx]) {
+                var qp = quizsParsed[idx];
+                if (qp.reponses.length > 0) {
+                  slidesFinal.push({ type: 'quiz', question: qp.question, reponses: qp.reponses, index: slidesFinal.length });
+                }
+              } else if (type === 'open' && opensParsed[idx] !== undefined) {
+                slidesFinal.push({ type: 'open', question: opensParsed[idx], index: slidesFinal.length });
+              } else if (type === 'ordre' && ordresParsed[idx]) {
+                slidesFinal.push({ type: 'ordre', elements: ordresParsed[idx].elements, consigne: ordresParsed[idx].consigne, index: slidesFinal.length });
+              } else if (type === 'carte' && cartesParsed[idx]) {
+                slidesFinal.push({ type: 'carte', recto: cartesParsed[idx].recto, verso: cartesParsed[idx].verso, index: slidesFinal.length });
+              } else if (type === 'relier' && reliersParsed[idx]) {
+                var rp = reliersParsed[idx];
+                var droiteMelangee = melanger(rp.paires.slice());
+                slidesFinal.push({ type: 'relier', consigne: rp.consigne, paires: rp.paires, droiteMelangee: droiteMelangee, index: slidesFinal.length });
+              } else if (type === 'tt' && ttsParsed[idx]) {
+                slidesFinal.push({ type: 'tt', avant: ttsParsed[idx].avant, mot: ttsParsed[idx].mot, apres: ttsParsed[idx].apres, index: slidesFinal.length });
+              } else if (type === 'vf' && vfsParsed[idx]) {
+                slidesFinal.push({ type: 'vf', questions: vfsParsed, index: slidesFinal.length });
+              } else if (type === 'memo') {
+                // géré à la fin, on skip ici
+              }
+            });
+          } else {
+            // ⚠️ Fallback : si pas d'ordreBlocs, on garde l'ancien comportement
+            slidesArray.forEach(function(texteSlide) {
+              slidesFinal.push({ type: 'slide', contenu: texteSlide });
+            });
+            quizsParsed.forEach(function(qp) {
+              if (qp.reponses.length > 0) slidesFinal.push({ type: 'quiz', question: qp.question, reponses: qp.reponses, index: slidesFinal.length });
+            });
+            if (opensParsed.length > 0) slidesFinal.push({ type: 'open', question: opensParsed.join('\n\n'), index: slidesFinal.length });
+            ttsParsed.forEach(function(tt) {
+              slidesFinal.push({ type: 'tt', avant: tt.avant, mot: tt.mot, apres: tt.apres, index: slidesFinal.length });
+            });
+            if (vfsParsed.length > 0) slidesFinal.push({ type: 'vf', questions: vfsParsed, index: slidesFinal.length });
+            ordresParsed.forEach(function(op) {
+              slidesFinal.push({ type: 'ordre', elements: op.elements, consigne: op.consigne, index: slidesFinal.length });
+            });
+            cartesParsed.forEach(function(cp) {
+              slidesFinal.push({ type: 'carte', recto: cp.recto, verso: cp.verso, index: slidesFinal.length });
+            });
+            reliersParsed.forEach(function(rp) {
+              var dm = melanger(rp.paires.slice());
+              slidesFinal.push({ type: 'relier', consigne: rp.consigne, paires: rp.paires, droiteMelangee: dm, index: slidesFinal.length });
+            });
+          }
+
+          // --- 4) Slide MEMO final (toujours à la fin) ---
+          var aRetenirClean = (aRetenir || [])
+            .map(function(x) { return String(x).trim(); })
+            .filter(function(x) { return x !== ''; });
+
+          var vocabClean = [];
+          (vocabulaire || []).forEach(function(item) {
+            String(item).split(',').forEach(function(mot) {
+              var m = mot.trim();
+              if (m !== '') vocabClean.push(m);
+            });
+          });
+
+          var tagsClean = (tags || [])
+            .map(function(x) { return String(x).trim(); })
+            .filter(function(x) { return x !== ''; });
+
+          if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
+            slidesFinal.push({
+              type: 'memo',
+              aRetenir: aRetenirClean,
+              vocabulaire: vocabClean,
+              tags: tagsClean,
+              index: slidesFinal.length
+            });
+          }
+
+          etat.chapitre = chapitre;
+          etat.slides = slidesFinal;
 
           if (etat.slides.length === 0) {
             afficherErreur('Aucun contenu trouvé dans ce chapitre.');
@@ -735,7 +856,6 @@
           afficherErreur(error.message);
         });
     }
-
     // ============================================================
     // PRÉPARER LES SLIDES
     // ============================================================
