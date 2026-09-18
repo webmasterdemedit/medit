@@ -8,7 +8,6 @@
 // POINT D'ENTRÉE
 // ============================================================
 function imprimerChapitre(chapitreId, titre, chapitresData) {
-  // Si chapitresData n'est pas passé, on tente de le récupérer globalement
   if (typeof chapitresData === 'undefined' || chapitresData === null) {
     chapitresData = (typeof window !== 'undefined' && window.chapitresData) ? window.chapitresData : [];
   }
@@ -375,154 +374,195 @@ function genererImpression(chapitre, contenu) {
 <title>${chapitre.titre || 'Lecture'}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-@page { margin: 1.5cm 2cm 1.5cm 2cm; size: A4; }
-body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.6; }
+@page { margin: 1.2cm 1.5cm 1.2cm 1.5cm; size: A4; }
+body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:11pt; line-height:1.35; }
 
 .arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
-  font-size: 2.25em;
-  line-height: 1.2;
+  font-size: 2em;
+  line-height: 1.15;
   vertical-align: middle;
 }
 
-.page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
-h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:4px; }
-.sous-titre { text-align:center; font-size:11pt; font-style:italic; margin-bottom:4px; color:#444; }
-.meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:8px; }
-.meta-ligne span { margin:0 8px; }
+.page { max-width:100%; }
+
+/* ===== EN-TÊTE (pleine largeur, hors colonnes) ===== */
+h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
+.sous-titre { text-align:center; font-size:10pt; font-style:italic; margin-bottom:2px; color:#444; }
+.meta-ligne { text-align:center; font-size:9pt; color:#555; margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px; }
+.meta-ligne span { margin:0 6px; }
 .meta-ligne .sep { color:#ccc; }
 
 .entete-eleve {
-  margin-bottom: 14px;
-  padding-bottom: 10px;
+  margin-bottom: 8px;
+  padding-bottom: 5px;
   border-bottom: 1px solid #ccc;
-  font-size: 10.5pt;
+  font-size: 9.5pt;
 }
 .entete-eleve .ligne-eleve {
   display: flex;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   flex-wrap: wrap;
 }
 .entete-eleve span { white-space: nowrap; }
 .entete-eleve strong { font-weight: 600; }
 
-.slide { margin-bottom:12px; }
-.slide p { font-size:12.5pt; margin-bottom:6px; text-align:justify; text-indent:2em; }
+/* ===== MÉTA HAUT (tags + vocab, pleine largeur mais compacts) ===== */
+.tags-haut {
+  margin-top: 4px;
+  margin-bottom: 4px;
+  font-size: 9pt;
+  font-style: italic;
+  color: #444;
+  text-align: center;
+}
+.tags-haut .memo-tag { display: inline-block; margin: 0 4px; font-style: italic; }
 
-.zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #b8a888; font-size:10.5pt; line-height:1.6; color:#1a1a1a; }
+.vocab-haut {
+  margin-top: 3px;
+  margin-bottom: 8px;
+  text-align: center;
+  font-size: 9pt;
+}
+.vocab-haut .titre-memo {
+  display: inline;
+  font-weight: 600;
+  font-size: 8.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #5a4a3a;
+  margin-right: 6px;
+}
+.vocab-haut .memo-mot {
+  display: inline-block;
+  padding: 0px 6px;
+  margin: 1px 3px;
+  border: 1px solid #999;
+  font-size: 9pt;
+  line-height: 1.3;
+}
 
-.exo { margin-bottom:14px; page-break-inside:avoid; }
+/* ===== CORPS EN 2 COLONNES ===== */
+.corps-2col {
+  column-count: 2;
+  column-gap: 14px;
+  column-rule: 1px solid #ddd;
+  font-size: 10pt;
+  line-height: 1.3;
+}
+
+/* Slides */
+.slide { margin-bottom:6px; break-inside: avoid; page-break-inside: avoid; }
+.slide p { font-size:10.5pt; margin-bottom:3px; text-align:justify; text-indent:1.2em; }
+
+/* Zone exercices (dans les colonnes) */
+.zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
+
+.exo {
+  margin-bottom:8px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 
 .consigne-exo {
-  font-size: 10pt;
+  font-size: 8.5pt;
   font-weight: 600;
   color: #5a4a3a;
   text-transform: uppercase;
-  letter-spacing: 1.2px;
-  margin-bottom: 3px;
+  letter-spacing: 0.8px;
+  margin-bottom: 1px;
 }
 
 .exo-ligne {
   display: flex;
   align-items: baseline;
-  gap: 8px;
-  margin-top: 2px;
+  gap: 5px;
+  margin-top: 1px;
 }
 .exo-num-inline {
   font-weight: bold;
-  font-size: 11pt;
-  min-width: 22px;
+  font-size: 10pt;
+  min-width: 18px;
   flex-shrink: 0;
 }
 .exo-texte {
   flex: 1;
-  font-size: 10.5pt;
-  line-height: 1.6;
-}
-
-.tags-haut {
-  margin-top: 10px;
-  margin-bottom: 8px;
-  font-size: 10pt;
-  font-style: italic;
-  color: #444;
-  text-align: center;
-}
-.tags-haut .memo-tag { display: inline-block; margin: 0 6px; font-style: italic; }
-.vocab-haut { margin-top: 6px; margin-bottom: 16px; text-align: center; }
-.vocab-haut .titre-memo {
-  font-weight: 600;
   font-size: 9.5pt;
-  text-transform: uppercase;
-  letter-spacing: 1.5px;
-  color: #5a4a3a;
-  margin-bottom: 4px;
-}
-.vocab-haut .memo-mot {
-  display: inline-block;
-  padding: 1px 8px;
-  margin: 2px 4px;
-  border: 1px solid #999;
-  font-size: 10pt;
+  line-height: 1.35;
 }
 
-.quiz-reponses { margin-left: 30px; margin-top: 3px; }
-.quiz-rep { display:inline-block; margin-right:20px; font-size:10.5pt; }
-.quiz-case { display:inline-block; width:11px; height:11px; border:1px solid #000; margin-right:4px; vertical-align:middle; background:white; }
+/* Quiz */
+.quiz-reponses { margin-left: 22px; margin-top: 1px; }
+.quiz-rep { display:block; margin-bottom:1px; font-size:9.5pt; }
+.quiz-case {
+  display:inline-block;
+  width:9px;
+  height:9px;
+  border:1px solid #000;
+  margin-right:3px;
+  vertical-align:middle;
+  background:white;
+}
 
-.open-lignes { margin-top:4px; margin-left: 30px; }
-.open-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
+/* Open */
+.open-lignes { margin-top:2px; margin-left: 22px; }
+.open-ligne { border-bottom:1px dotted #666; height:14px; margin-bottom:3px; }
 
+/* Ordre */
 .ordre-grille {
-  margin: 4px 0 6px 30px;
-  display: inline-grid;
+  margin: 2px 0 3px 22px;
+  display: grid;
   grid-template-columns: auto auto;
-  column-gap: 16px;
-  row-gap: 6px;
-  font-size: 11pt;
+  column-gap: 10px;
+  row-gap: 2px;
+  font-size: 9.5pt;
 }
 .ordre-cell-texte { white-space: nowrap; }
-.ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; }
+.ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
 .ordre-lettre { font-weight: bold; }
 
+/* Carte */
 .carte-ligne-courte {
-  margin-top: 6px;
-  margin-left: 30px;
-  width: 50%;
+  margin-top: 3px;
+  margin-left: 22px;
+  width: 70%;
   border-bottom: 1px dotted #666;
-  height: 18px;
+  height: 14px;
 }
 
-.tt-phrase-print { flex: 1; font-size: 11pt; line-height: 1.8; }
+/* Textes à trous */
+.tt-phrase-print { flex: 1; font-size: 10pt; line-height: 1.5; }
 .tt-phrase-print .tt-trou {
   display: inline-block;
-  min-width: 140px;
+  min-width: 80px;
   border-bottom: 1px solid #000;
   text-align: center;
-  padding: 0 6px;
+  padding: 0 4px;
 }
 
-.exo-texte-vf { font-size: 10.5pt; line-height: 1.6; }
-.vf-ligne .vf-cases { font-size: 10.5pt; white-space: nowrap; margin-left: 8px; flex-shrink: 0; }
+/* Vrai/Faux */
+.exo-texte-vf { font-size: 9.5pt; line-height: 1.35; flex: 1; }
+.vf-ligne .vf-cases { font-size: 9pt; white-space: nowrap; margin-left: 4px; flex-shrink: 0; }
 
-.relier-zone-lignes { position: relative; margin: 8px 0 6px 30px; max-width: 500px; }
-.relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 40px; }
-.relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+/* Relier */
+.relier-zone-lignes { position: relative; margin: 3px 0 3px 22px; max-width: 100%; }
+.relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 15px; }
+.relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 2px; }
 .relier-ligne-item {
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 10.5pt;
-  padding: 2px 0;
-  min-height: 16px;
+  gap: 4px;
+  font-size: 9.5pt;
+  padding: 1px 0;
+  min-height: 13px;
 }
 .relier-col-lignes.gauche .relier-ligne-item { justify-content: flex-end; text-align: right; }
 .relier-col-lignes.droite .relier-ligne-item { justify-content: flex-start; text-align: left; }
 .relier-point {
-  width: 8px;
-  height: 8px;
-  border: 1.2px solid #000;
+  width: 7px;
+  height: 7px;
+  border: 1px solid #000;
   border-radius: 50%;
   background: white;
   flex-shrink: 0;
@@ -530,42 +570,58 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 }
 .relier-point.relier-point-partage { border-radius: 0; }
 
-.zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #b8a888; page-break-inside:avoid; }
-.zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
-.zone-memo .memo-bloc { margin-bottom:12px; }
+/* ===== ZONE MÉMO (dans les colonnes) ===== */
+.zone-memo { margin-top:8px; padding-top:6px; border-top:1px solid #b8a888; break-inside: avoid; page-break-inside: avoid; }
+.zone-memo .titre-memo {
+  font-weight:600;
+  font-size:8.5pt;
+  text-transform:uppercase;
+  letter-spacing:1px;
+  color:#5a4a3a;
+  margin-bottom:3px;
+}
+.zone-memo .memo-bloc { margin-bottom:5px; }
 .zone-memo .memo-bloc:last-child { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
-.zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
+.zone-memo .memo-liste li {
+  font-size:9.5pt;
+  margin-bottom:1px;
+  padding-left:11px;
+  position:relative;
+  line-height: 1.35;
+}
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
 
+/* ===== BLOC FINAL (pleine largeur, hors colonnes) ===== */
 .zone-note-finale {
-  margin-top: 24px;
-  padding: 12px 14px;
+  margin-top: 18px;
+  padding: 8px 12px;
   border: 1.5px solid #000;
   page-break-inside: avoid;
-}
-.zone-note-finale .note-titre {
-  font-weight: 600;
-  font-size: 10pt;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: #5a4a3a;
-  margin-bottom: 8px;
+  break-inside: avoid;
 }
 .zone-note-finale .note-ligne {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-  font-size: 10.5pt;
-  margin-bottom: 10px;
-  flex-wrap: wrap;
+  font-size: 10pt;
+  margin-bottom: 4px;
 }
-.zone-note-finale .note-ligne-appreciation { font-size: 10.5pt; margin-bottom: 6px; }
-.zone-note-finale .note-appreciation-lignes { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
-.zone-note-finale .note-appreciation-ligne { border-bottom: 1px dotted #666; height: 18px; }
+.zone-note-finale .note-ligne strong { font-weight: 600; }
+.zone-note-finale .note-ligne-appreciation {
+  font-size: 10pt;
+  margin-bottom: 4px;
+}
+.zone-note-finale .note-appreciation-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.zone-note-finale .note-appreciation-ligne {
+  border-bottom: 1px dotted #666;
+  height: 14px;
+}
 
-.pied-page { text-align:center; font-size:9pt; color:#666; margin-top:16px; padding-top:8px; border-top:1px solid #ddd; }
-.pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
+.pied-page { text-align:center; font-size:8pt; color:#666; margin-top:8px; padding-top:4px; border-top:1px solid #ddd; }
+.pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:1px; }
 </style>
 </head>
 <body>
@@ -589,9 +645,9 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 
 ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
-${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 
-<div class="zone-lecture">
+<div class="corps-2col">
 `;
 
   var exoNum = 0;
@@ -642,7 +698,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<div class="open-lignes">';
       printHtml += '<div class="open-ligne"></div>';
       printHtml += '<div class="open-ligne"></div>';
-      printHtml += '<div class="open-ligne"></div>';
       printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
@@ -670,7 +725,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
         printHtml += '<span class="exo-texte-vf">' + question + '</span>';
-        printHtml += '<span class="vf-cases">☐ Vrai   ☐ Faux</span>';
+        printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
         printHtml += '</div>';
       });
@@ -701,7 +756,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '<span class="ordre-lettre">' + lettres[i] + '.</span> ';
         printHtml += item;
         printHtml += '</div>';
-        printHtml += '<div class="ordre-cell-pointille">n° ..................</div>';
+        printHtml += '<div class="ordre-cell-pointille">n° ..........</div>';
       });
       printHtml += '</div>';
       printHtml += '</div>';
@@ -762,7 +817,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '</div>';
   }
 
-  // ZONE MÉMO
+  // ZONE MÉMO (dans les colonnes)
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
@@ -775,18 +830,14 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '</div>';
   }
 
-  // ENCADRÉ NOTE FINAL
+  // Fermer la zone 2 colonnes
+  printHtml += '</div>';
+
+  // ENCADRÉ NOTE FINAL (pleine largeur, hors colonnes)
   printHtml += '<div class="zone-note-finale">';
-  printHtml += '<div class="note-titre">Correction</div>';
-  printHtml += '<div class="note-ligne">';
-  printHtml += '<span><strong>Nombre total de questions :</strong> ' + nbTotalQuestions + '</span>';
-  printHtml += '<span><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</span>';
-  printHtml += '</div>';
-  printHtml += '<div class="note-ligne-appreciation">';
-  printHtml += '<strong>Appréciation :</strong>';
-  printHtml += '</div>';
+  printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
+  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong></div>';
   printHtml += '<div class="note-appreciation-lignes">';
-  printHtml += '<div class="note-appreciation-ligne"></div>';
   printHtml += '<div class="note-appreciation-ligne"></div>';
   printHtml += '<div class="note-appreciation-ligne"></div>';
   printHtml += '</div>';
@@ -794,7 +845,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
   printHtml += `
     <div class="pied-page">
-      <div>Qiraat - W. Khan </div>
+      <div>Qiraat - W. Khan</div>
       <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
     </div>
   </div>
@@ -814,7 +865,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   iframeDoc.write(printHtml);
   iframeDoc.close();
 
-  // Détection arabe
   setTimeout(function() {
     var iframeDoc2 = iframe.contentWindow.document;
 
