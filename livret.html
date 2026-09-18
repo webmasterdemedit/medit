@@ -727,23 +727,23 @@
 
       // Dédupliquer les droites + marquer celles partagées
       var compteParDroite = {};
-      paires.forEach(function(paire) {
-        compteParDroite[paire.droite] = (compteParDroite[paire.droite] || 0) + 1;
+      paires.forEach(function(p) {
+        compteParDroite[p.droite] = (compteParDroite[p.droite] || 0) + 1;
       });
 
       var droitesUniques = [];
       var dejaVues = {};
-      paires.forEach(function(paire) {
-        if (!dejaVues[paire.droite]) {
-          dejaVues[paire.droite] = true;
+      paires.forEach(function(p) {
+        if (!dejaVues[p.droite]) {
+          dejaVues[p.droite] = true;
           droitesUniques.push({
-            droite: paire.droite,
-            partagee: compteParDroite[paire.droite] > 1
+            droite: p.droite,
+            partagee: compteParDroite[p.droite] > 1
           });
         }
       });
 
-      // Mélanger
+      // Mélanger les droites uniques
       for (var j = droitesUniques.length - 1; j > 0; j--) {
         var k = Math.floor(Math.random() * (j + 1));
         var tmp = droitesUniques[j];
@@ -791,32 +791,7 @@
     }
 
     // ============================================================
-    // DÉTECTION ARABE + ÉCHAPPEMENT
-    // ============================================================
-    function contientArabe(texte) {
-      return /[\u0600-\u06FF]/.test(texte || '');
-    }
-
-    function escapeHtml(texte) {
-      return String(texte)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
-    }
-
-    // Enveloppe un texte arabe dans un span class="arabe" + échappe le HTML
-    function rendre(texte) {
-      if (!texte) return '';
-      var safe = escapeHtml(texte);
-      if (contientArabe(texte)) {
-        return '<span class="arabe">' + safe + '</span>';
-      }
-      return safe;
-    }
-
-    // ============================================================
     // GÉNÉRATION IMPRESSION
-    // ✅ Grille flexbox 2 colonnes, ordre 100% respecté
     // ============================================================
     function genererImpression(chapitre, contenu) {
       var ordreBlocs = chapitre.ordreBlocs || [];
@@ -861,7 +836,7 @@
         }
       });
 
-      // --- 2) Parser les exos ---
+      // --- 2) Parser les exos en tableaux indexés ---
       var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
       var opensParsed = [];
       if (openTexte) {
@@ -888,7 +863,7 @@
       var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
       var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
 
-      // --- 3) Construire les blocs ordonnés ---
+      // --- 3) Construire la liste ordonnée des blocs ---
       var blocsOrdonnes = [];
 
       if (ordreBlocs.length > 0) {
@@ -916,7 +891,6 @@
           }
         });
       } else {
-        // Fallback
         slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
         quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
         opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
@@ -926,6 +900,18 @@
         cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
         reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
       }
+
+      // Calculer le nombre total de questions
+      var nbTotalQuestions = 0;
+      blocsOrdonnes.forEach(function(bloc) {
+        if (bloc.type === 'quiz') nbTotalQuestions++;
+        else if (bloc.type === 'open') nbTotalQuestions++;
+        else if (bloc.type === 'tt') nbTotalQuestions++;
+        else if (bloc.type === 'carte') nbTotalQuestions++;
+        else if (bloc.type === 'ordre') nbTotalQuestions++;
+        else if (bloc.type === 'relier') nbTotalQuestions++;
+        else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
+      });
 
       // --- MÉMO ---
       var aRetenirClean = (chapitre.aRetenir || [])
@@ -944,19 +930,7 @@
         .map(function(x) { return String(x).trim(); })
         .filter(function(x) { return x !== ''; });
 
-      // --- Comptage du nombre de questions ---
-      var nbQuestions = 0;
-      blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type === 'quiz') nbQuestions++;
-        else if (bloc.type === 'open') nbQuestions++;
-        else if (bloc.type === 'tt') nbQuestions++;
-        else if (bloc.type === 'vf') nbQuestions += bloc.data.length;
-        else if (bloc.type === 'ordre') nbQuestions++;
-        else if (bloc.type === 'carte') nbQuestions++;
-        else if (bloc.type === 'relier') nbQuestions++;
-      });
-
-      // --- Dates ---
+      // DATES
       var dateCreation = chapitre.date || '';
       var dateCreationStr = '';
       if (dateCreation) {
@@ -976,194 +950,188 @@
         hour: '2-digit', minute: '2-digit'
       });
 
-      // ============================================
-      // HTML DE L'IMPRESSION
-      // ============================================
       var printHtml = `<!DOCTYPE html>
-<html lang="fr">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>${escapeHtml(chapitre.titre || 'Lecture')}</title>
+<title>${chapitre.titre || 'Lecture'}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
-@page { margin: 1cm 1.2cm 1cm 1.2cm; size: A4; }
-body {
-  font-family:'Times New Roman', Times, serif;
-  background:white;
-  color:black;
-  font-size:10pt;
-  line-height:1.35;
-}
-.page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
+@page { margin: 1.5cm 2cm 1.5cm 2cm; size: A4; }
+body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.6; }
 
-h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
-.sous-titre { text-align:center; font-size:10pt; font-style:italic; margin-bottom:2px; color:#444; }
-.meta-ligne { text-align:center; font-size:9pt; color:#555; margin-bottom:10px; border-bottom:1px solid #ccc; padding-bottom:6px; }
-.meta-ligne span { margin:0 6px; }
+/* ✅ Police arabe à l'impression (identique à chapitre.html) */
+.arabe, [lang="ar"] {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
+  font-size: 2.25em;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
+h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:4px; }
+.sous-titre { text-align:center; font-size:11pt; font-style:italic; margin-bottom:4px; color:#444; }
+.meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:8px; }
+.meta-ligne span { margin:0 8px; }
 .meta-ligne .sep { color:#ccc; }
 
-/* En-tête élève */
 .entete-eleve {
-  border:1px solid #999;
-  padding:6px 10px;
-  margin-bottom:10px;
-  font-size:10pt;
-  display:flex;
-  flex-wrap:wrap;
-  gap:6px 20px;
-}
-.entete-eleve .champ { display:inline-block; }
-.entete-eleve .ligne-points { display:inline-block; border-bottom:1px dotted #333; min-width:120px; }
-
-.tags-haut {
-  margin-top: 4px;
-  margin-bottom: 6px;
-  font-size: 9pt;
-  font-style: italic;
-  color: #444;
-  text-align: center;
-}
-.tags-haut .memo-tag { display: inline-block; margin: 0 6px; }
-
-.vocab-haut {
-  margin-top: 4px;
-  margin-bottom: 10px;
-  text-align: center;
-  font-size: 9pt;
-}
-.vocab-haut .titre-memo {
-  font-weight: 600;
-  font-size: 8.5pt;
-  text-transform: uppercase;
-  letter-spacing: 1.2px;
-  color: #5a4a3a;
-  margin-bottom: 2px;
-}
-.vocab-haut .memo-mot {
-  display: inline-block;
-  padding: 0px 6px;
-  margin: 1px 3px;
-  border: 1px solid #999;
-}
-
-/* ============================================================
-   GRILLE 2 COLONNES
-   ============================================================ */
-.grille-impression {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.4cm 0.6cm;
-  align-items: flex-start;
-}
-.bloc { min-width: 0; }
-.bloc.c2 { flex: 0 0 calc(50% - 0.3cm); }
-.bloc.c1 { flex: 0 0 100%; }
-
-/* ============================================================
-   SLIDE
-   ============================================================ */
-.slide p {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
   font-size: 10.5pt;
-  line-height: 1.4;
-  margin-bottom: 4px;
-  text-align: justify;
+}
+.entete-eleve .ligne-eleve {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.entete-eleve span {
+  white-space: nowrap;
+}
+.entete-eleve strong {
+  font-weight: 600;
 }
 
-/* ============================================================
-   EXERCICES
-   ============================================================ */
-.exo { page-break-inside: avoid; }
+.slide { margin-bottom:12px; }
+.slide p { font-size:12.5pt; margin-bottom:6px; text-align:justify; text-indent:2em; }
+
+.zone-exercices { margin-top:16px; padding-top:14px; border-top:1px solid #b8a888; font-size:10.5pt; line-height:1.6; color:#1a1a1a; }
+
+.exo { margin-bottom:14px; page-break-inside:avoid; }
 
 .consigne-exo {
-  font-size: 8.5pt;
+  font-size: 10pt;
   font-weight: 600;
   color: #5a4a3a;
   text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 2px;
+  letter-spacing: 1.2px;
+  margin-bottom: 3px;
 }
 
 .exo-ligne {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  margin-top: 1px;
+  gap: 8px;
+  margin-top: 2px;
 }
 .exo-num-inline {
   font-weight: bold;
-  font-size: 10pt;
-  min-width: 18px;
+  font-size: 11pt;
+  min-width: 22px;
   flex-shrink: 0;
 }
 .exo-texte {
   flex: 1;
+  font-size: 10.5pt;
+  line-height: 1.6;
+}
+
+.tags-haut {
+  margin-top: 10px;
+  margin-bottom: 8px;
   font-size: 10pt;
-  line-height: 1.4;
-  min-width: 0;
+  font-style: italic;
+  color: #444;
+  text-align: center;
+}
+.tags-haut .memo-tag {
+  display: inline-block;
+  margin: 0 6px;
+  font-style: italic;
+}
+.vocab-haut {
+  margin-top: 6px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+.vocab-haut .titre-memo {
+  font-weight: 600;
+  font-size: 9.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #5a4a3a;
+  margin-bottom: 4px;
+}
+.vocab-haut .memo-mot {
+  display: inline-block;
+  padding: 1px 8px;
+  margin: 2px 4px;
+  border: 1px solid #999;
+  font-size: 10pt;
 }
 
-/* QUIZ */
-.quiz-reponses { margin-left: 24px; margin-top: 2px; }
-.quiz-rep { display:inline-block; margin-right:12px; font-size:10pt; }
-.quiz-case { display:inline-block; width:10px; height:10px; border:1px solid #000; margin-right:3px; vertical-align:middle; background:white; }
+.quiz-reponses { margin-left: 30px; margin-top: 3px; }
+.quiz-rep { display:inline-block; margin-right:20px; font-size:10.5pt; }
+.quiz-case { display:inline-block; width:11px; height:11px; border:1px solid #000; margin-right:4px; vertical-align:middle; background:white; }
 
-/* OPEN (question ouverte) */
-.open-lignes { margin-top:2px; margin-left: 24px; }
-.open-ligne {
-  border-bottom:1px dotted #666;
-  height:16px;
-  margin-bottom:4px;
-  width: 100%;
+.open-lignes { margin-top:4px; margin-left: 30px; }
+.open-ligne { border-bottom:1px dotted #666; height:20px; margin-bottom:6px; }
+
+.ordre-grille {
+  margin: 4px 0 6px 30px;
+  display: inline-grid;
+  grid-template-columns: auto auto;
+  column-gap: 16px;
+  row-gap: 6px;
+  font-size: 11pt;
+}
+.ordre-cell-texte {
+  white-space: nowrap;
+}
+.ordre-cell-pointille {
+  white-space: nowrap;
+  color: #333;
+  align-self: center;
+}
+.ordre-lettre {
+  font-weight: bold;
 }
 
-/* ORDRE */
-.ordre-liste { list-style:none; padding:0; margin:2px 0 4px 24px; }
-.ordre-liste li { margin-bottom:1px; font-size: 10pt; }
-.ordre-lettre { font-weight:bold; margin-right:4px; display:inline-block; width:16px; }
-.ordre-zone { margin-top:4px; margin-left:24px; font-size:10pt; }
-.ordre-zone .tiret { margin:0 4px; font-weight:bold; }
-.ordre-zone .pointille { display:inline-block; width:30px; border-bottom:1px solid #000; height:12px; vertical-align:middle; }
-
-/* CARTE */
 .carte-ligne-courte {
-  margin-top: 4px;
-  margin-left: 24px;
-  width: 60%;
+  margin-top: 6px;
+  margin-left: 30px;
+  width: 50%;
   border-bottom: 1px dotted #666;
-  height: 16px;
+  height: 18px;
 }
 
-/* TEXTE À TROUS */
 .tt-phrase-print {
   flex: 1;
-  font-size: 10pt;
-  line-height: 1.6;
-  min-width: 0;
+  font-size: 11pt;
+  line-height: 1.8;
 }
 .tt-phrase-print .tt-trou {
   display: inline-block;
-  min-width: 80px;
+  min-width: 140px;
   border-bottom: 1px solid #000;
   text-align: center;
-  padding: 0 4px;
+  padding: 0 6px;
 }
 
-/* VRAI / FAUX */
+.exo-texte-vf {
+  font-size: 10.5pt;
+  line-height: 1.6;
+  /* PAS de flex:1 → ne prend que la largeur nécessaire */
+}
+
 .vf-ligne .vf-cases {
-  font-size: 10pt;
+  font-size: 10.5pt;
   white-space: nowrap;
   margin-left: 8px;
+  flex-shrink: 0;
 }
 
-/* RELIER */
 .relier-zone-lignes {
   position: relative;
-  margin: 4px 0 4px 24px;
+  margin: 8px 0 6px 30px;
   max-width: 500px;
 }
 .relier-lignes-grid {
   display: flex;
   justify-content: space-between;
+  align-items: center;
   gap: 40px;
 }
 .relier-col-lignes {
@@ -1176,8 +1144,8 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
   display: flex;
   align-items: center;
   gap: 6px;
-  font-size: 10pt;
-  padding: 1px 0;
+  font-size: 10.5pt;
+  padding: 2px 0;
   min-height: 16px;
 }
 .relier-col-lignes.gauche .relier-ligne-item {
@@ -1201,199 +1169,167 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
   border-radius: 0;
 }
 
-/* MÉMO */
-.zone-memo {
-  margin-top:12px;
-  padding-top:10px;
-  border-top:1px solid #b8a888;
-  page-break-inside:avoid;
-}
-.zone-memo .titre-memo {
-  font-weight:600;
-  font-size:8.5pt;
-  text-transform:uppercase;
-  letter-spacing:1.2px;
-  color:#5a4a3a;
-  margin-bottom:4px;
-}
+.zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #b8a888; page-break-inside:avoid; }
+.zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
+.zone-memo .memo-bloc { margin-bottom:12px; }
+.zone-memo .memo-bloc:last-child { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
-.zone-memo .memo-liste li {
-  font-size:10pt;
-  margin-bottom:2px;
-  padding-left:12px;
-  position:relative;
-}
+.zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
 
-/* NOTE FINALE */
 .zone-note-finale {
-  margin-top: 16px;
-  border: 2px solid #333;
-  padding: 12px 16px;
+  margin-top: 24px;
+  padding: 12px 14px;
+  border: 1.5px solid #000;
   page-break-inside: avoid;
 }
-.zone-note-finale .titre-note {
-  font-weight: 700;
+.zone-note-finale .note-titre {
+  font-weight: 600;
   font-size: 10pt;
   text-transform: uppercase;
   letter-spacing: 1.2px;
-  color: #333;
-  margin-bottom: 10px;
-  border-bottom: 1px solid #999;
-  padding-bottom: 4px;
+  color: #5a4a3a;
+  margin-bottom: 8px;
 }
-.zone-note-finale .ligne-note {
+.zone-note-finale .note-ligne {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  font-size: 11pt;
-  margin-bottom: 12px;
   gap: 20px;
+  font-size: 10.5pt;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
 }
-.zone-note-finale .note-points {
-  flex: 0 0 auto;
-}
-.zone-note-finale .note-points .points {
-  display: inline-block;
-  border-bottom: 1px solid #000;
-  min-width: 60px;
-  text-align: center;
-  font-weight: 700;
-}
-.zone-note-finale .appreciation {
-  margin-top: 8px;
-}
-.zone-note-finale .appreciation .ligne-appreciation {
-  border-bottom: 1px dotted #666;
-  height: 22px;
+.zone-note-finale .note-ligne-appreciation {
+  font-size: 10.5pt;
   margin-bottom: 6px;
 }
-
-/* Police arabe identique à chapitre.html */
-.arabe {
-  font-family: 'Janna LT Bold', 'Traditional Arabic', serif;
-  direction: rtl;
-  unicode-bidi: embed;
-  font-size: 1.15em;
-  line-height: 1.8;
+.zone-note-finale .note-appreciation-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.zone-note-finale .note-appreciation-ligne {
+  border-bottom: 1px dotted #666;
+  height: 18px;
 }
 
-/* Pied de page */
-.pied-page {
-  text-align:center;
-  font-size:8.5pt;
-  color:#666;
-  margin-top:14px;
-  padding-top:6px;
-  border-top:1px solid #ddd;
-}
-.pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:2px; }
+.pied-page { text-align:center; font-size:9pt; color:#666; margin-top:16px; padding-top:8px; border-top:1px solid #ddd; }
+.pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
 </style>
 </head>
 <body>
 <div class="page">
-<h1>${escapeHtml(chapitre.titre || 'Lecture')}</h1>
-<div class="sous-titre">${escapeHtml(chapitre.categorie || 'Sans catégorie')}</div>
+
+<div class="entete-eleve">
+  <div class="ligne-eleve">
+    <span><strong>Nom et prénom :</strong> ....................................................</span>
+    <span><strong>Date :</strong> ......... / ......... / .........</span>
+    <span><strong>Feuille n° :</strong> .........</span>
+  </div>
+</div>
+
+<h1>${chapitre.titre || 'Lecture'}</h1>
+<div class="sous-titre">${chapitre.categorie || 'Sans catégorie'}</div>
 <div class="meta-ligne">
   <span>Créé le : ${dateCreationStr || '—'}</span>
   <span class="sep">|</span>
   <span>Niveau ${chapitre.niveau || 0}</span>
 </div>
 
-<div class="entete-eleve">
-  <span class="champ">Nom et prénom : <span class="ligne-points" style="min-width:200px;"></span></span>
-  <span class="champ">Date : <span class="ligne-points" style="min-width:30px;"></span> / <span class="ligne-points" style="min-width:30px;"></span> / <span class="ligne-points" style="min-width:40px;"></span></span>
-  <span class="champ">Feuille n° <span class="ligne-points" style="min-width:50px;"></span></span>
-</div>
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
-${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + rendre(t) + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 
-${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + rendre(m) + '</span>'; }).join('') + '</div>' : ''}
-
-<div class="grille-impression">
+<div class="zone-lecture">
 `;
 
       // ============================================
       // GÉNÉRATION DANS L'ORDRE
       // ============================================
       var exoNum = 0;
+      var hasExercice = false;
+      var zoneExercicesOuverte = false;
+
+      function ouvrirZoneExercices() {
+        if (!zoneExercicesOuverte) {
+          printHtml += '<div class="zone-exercices">';
+          zoneExercicesOuverte = true;
+        }
+      }
 
       blocsOrdonnes.forEach(function(bloc) {
         if (bloc.type === 'slide') {
-          var texteSlide = bloc.data;
-          var classeCol = texteSlide.length > 400 ? 'c1' : 'c2';
-
-          printHtml += '<div class="bloc ' + classeCol + '">';
           printHtml += '<div class="slide">';
-          var paragraphs = texteSlide.split('\n').filter(function(p) { return p.trim() !== ''; });
+          var paragraphs = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
           paragraphs.forEach(function(p) {
-            printHtml += '<p>' + rendre(p.trim()) + '</p>';
+            printHtml += '<p>' + p.trim() + '</p>';
           });
           printHtml += '</div>';
-          printHtml += '</div>';
         } else if (bloc.type === 'quiz') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           var q = bloc.data;
           exoNum++;
-          printHtml += '<div class="bloc c2">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Cochez la bonne réponse :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="exo-texte">' + rendre(q.question) + '</span>';
+          printHtml += '<span class="exo-texte">' + q.question + '</span>';
           printHtml += '</div>';
           printHtml += '<div class="quiz-reponses">';
           q.reponses.forEach(function(rep) {
-            printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rendre(rep.texte) + '</span>';
+            printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
           });
-          printHtml += '</div>';
-          printHtml += '</div>';
-          printHtml += '</div>';
+          printHtml += '</div></div>';
         } else if (bloc.type === 'open') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           exoNum++;
-          printHtml += '<div class="bloc c1">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="exo-texte">' + rendre(bloc.data) + '</span>';
+          printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
           printHtml += '</div>';
           printHtml += '<div class="open-lignes">';
           printHtml += '<div class="open-ligne"></div>';
           printHtml += '<div class="open-ligne"></div>';
-          printHtml += '</div>';
-          printHtml += '</div>';
-          printHtml += '</div>';
+          printHtml += '<div class="open-ligne"></div>';
+          printHtml += '</div></div>';
         } else if (bloc.type === 'tt') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           var tt = bloc.data;
           exoNum++;
-          printHtml += '<div class="bloc c2">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Complétez la phrase :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
           printHtml += '<span class="tt-phrase-print">';
-          if (tt.avant) printHtml += rendre(tt.avant) + ' ';
+          if (tt.avant) printHtml += tt.avant + ' ';
           printHtml += '<span class="tt-trou"></span>';
-          if (tt.apres) printHtml += ' ' + rendre(tt.apres);
+          if (tt.apres) printHtml += ' ' + tt.apres;
           printHtml += '</span>';
           printHtml += '</div>';
           printHtml += '</div>';
-          printHtml += '</div>';
         } else if (bloc.type === 'vf') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           bloc.data.forEach(function(question) {
             exoNum++;
-            printHtml += '<div class="bloc c2">';
             printHtml += '<div class="exo">';
-            printHtml += '<div class="consigne-exo">Vrai ou Faux :</div>';
+            printHtml += '<div class="consigne-exo">Cochez Vrai ou Faux :</div>';
             printHtml += '<div class="exo-ligne vf-ligne">';
-            printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-            printHtml += '<span class="exo-texte">' + rendre(question) + '</span>';
-            printHtml += '<span class="vf-cases">☐ V  ☐ F</span>';
-            printHtml += '</div>';
-            printHtml += '</div>';
+printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+printHtml += '<span class="exo-texte-vf">' + question + '</span>';
+printHtml += '<span class="vf-cases">☐ Vrai   ☐ Faux</span>';
+printHtml += '</div>';
             printHtml += '</div>';
           });
         } else if (bloc.type === 'ordre') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           var ordreData = bloc.data;
           var items = ordreData.elements || [];
           var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
@@ -1406,48 +1342,45 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
           var lettres = ['A','B','C','D','E','F','G','H'];
           exoNum++;
-          printHtml += '<div class="bloc c1">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Remettez dans l\'ordre :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="exo-texte">' + rendre(consigne) + '</span>';
+          printHtml += '<span class="exo-texte">' + consigne + '</span>';
           printHtml += '</div>';
-          printHtml += '<ul class="ordre-liste">';
-          itemsMelanges.forEach(function(item, i) {
-            printHtml += '<li><span class="ordre-lettre">' + lettres[i] + '.</span>' + rendre(item) + '</li>';
-          });
-          printHtml += '</ul>';
-          printHtml += '<div class="ordre-zone"><strong>Votre réponse :</strong> ';
-          for (var oi = 0; oi < itemsMelanges.length; oi++) {
-            if (oi > 0) printHtml += '<span class="tiret">-</span>';
-            printHtml += '<span class="pointille"></span>';
-          }
-          printHtml += '</div>';
-          printHtml += '</div>';
-          printHtml += '</div>';
+          printHtml += '<div class="ordre-grille">';
+itemsMelanges.forEach(function(item, i) {
+  printHtml += '<div class="ordre-cell-texte">';
+  printHtml += '<span class="ordre-lettre">' + lettres[i] + '.</span> ';
+  printHtml += item;
+  printHtml += '</div>';
+  printHtml += '<div class="ordre-cell-pointille">n° ..................</div>';
+});
+printHtml += '</div>';
+printHtml += '</div>';
         } else if (bloc.type === 'carte') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           var c = bloc.data;
           exoNum++;
-          printHtml += '<div class="bloc c1">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Répondez à la question :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="exo-texte">' + rendre(c.recto) + '</span>';
+          printHtml += '<span class="exo-texte">' + c.recto + '</span>';
           printHtml += '</div>';
           printHtml += '<div class="carte-ligne-courte"></div>';
           printHtml += '</div>';
-          printHtml += '</div>';
         } else if (bloc.type === 'relier') {
+          ouvrirZoneExercices();
+          hasExercice = true;
           var relierData = bloc.data;
           exoNum++;
-          printHtml += '<div class="bloc c1">';
           printHtml += '<div class="exo">';
           printHtml += '<div class="consigne-exo">Reliez les éléments :</div>';
           printHtml += '<div class="exo-ligne">';
           printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
-          printHtml += '<span class="exo-texte">' + rendre(relierData.consigne) + '</span>';
+          printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
           printHtml += '</div>';
           printHtml += '<div class="relier-zone-lignes">';
           printHtml += '<div class="relier-lignes-grid">';
@@ -1455,7 +1388,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
           printHtml += '<div class="relier-col-lignes gauche">';
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             printHtml += '<div class="relier-ligne-item">';
-            printHtml += '<span>' + rendre(relierData.paires[rg].gauche) + '</span>';
+            printHtml += '<span>' + relierData.paires[rg].gauche + '</span>';
             printHtml += '<span class="relier-point"></span>';
             printHtml += '</div>';
           }
@@ -1467,7 +1400,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
             var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
             printHtml += '<div class="relier-ligne-item">';
             printHtml += '<span class="' + classePoint + '"></span>';
-            printHtml += '<span>' + rendre(dItem.droite) + '</span>';
+            printHtml += '<span>' + dItem.droite + '</span>';
             printHtml += '</div>';
           }
           printHtml += '</div>';
@@ -1475,41 +1408,46 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
           printHtml += '</div>';
           printHtml += '</div>';
           printHtml += '</div>';
-          printHtml += '</div>';
         }
       });
 
-      printHtml += '</div>'; // fermeture .grille-impression
+      if (zoneExercicesOuverte) {
+        printHtml += '</div>';
+      }
 
       // ZONE MÉMO
       if (aRetenirClean.length > 0) {
         printHtml += '<div class="zone-memo">';
+        printHtml += '<div class="memo-bloc">';
         printHtml += '<div class="titre-memo">À retenir</div>';
         printHtml += '<ul class="memo-liste">';
         aRetenirClean.forEach(function(phrase) {
-          printHtml += '<li>' + rendre(phrase) + '</li>';
+          printHtml += '<li>' + phrase + '</li>';
         });
-        printHtml += '</ul>';
+        printHtml += '</ul></div>';
         printHtml += '</div>';
       }
 
-      // ZONE NOTE FINALE
+      // ENCADRÉ NOTE FINAL
       printHtml += '<div class="zone-note-finale">';
-      printHtml += '<div class="titre-note">Évaluation</div>';
-      printHtml += '<div class="ligne-note">';
-      printHtml += '<span class="note-points">Note : <span class="points">&nbsp;&nbsp;&nbsp;&nbsp;</span> / ' + nbQuestions + '</span>';
-      printHtml += '<span>Date : <span class="ligne-points" style="display:inline-block;border-bottom:1px dotted #333;min-width:80px;"></span></span>';
+      printHtml += '<div class="note-titre">Correction</div>';
+      printHtml += '<div class="note-ligne">';
+      printHtml += '<span><strong>Nombre total de questions :</strong> ' + nbTotalQuestions + '</span>';
+      printHtml += '<span><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</span>';
       printHtml += '</div>';
-      printHtml += '<div class="appreciation">';
-      printHtml += '<div style="font-size:10pt;font-weight:600;margin-bottom:4px;">Appréciation :</div>';
-      printHtml += '<div class="ligne-appreciation"></div>';
-      printHtml += '<div class="ligne-appreciation"></div>';
+      printHtml += '<div class="note-ligne-appreciation">';
+      printHtml += '<strong>Appréciation :</strong>';
+      printHtml += '</div>';
+      printHtml += '<div class="note-appreciation-lignes">';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
       printHtml += '</div>';
       printHtml += '</div>';
 
       printHtml += `
         <div class="pied-page">
-          <div>Qiraat - W. Khan</div>
+          <div>Qiraat - W. Khan </div>
           <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
         </div>
       </div>
@@ -1529,12 +1467,56 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       iframeDoc.write(printHtml);
       iframeDoc.close();
 
+      // ✅ Détection arabe : entoure UNIQUEMENT les caractères arabes d'un <span class="arabe">
       setTimeout(function() {
+        var iframeDoc2 = iframe.contentWindow.document;
+
+        var walker = iframeDoc2.createTreeWalker(
+          iframeDoc2.body,
+          NodeFilter.SHOW_TEXT,
+          null,
+          false
+        );
+
+        var noeuds = [];
+        var n;
+        while ((n = walker.nextNode())) {
+          if (/[\u0600-\u06FF]/.test(n.nodeValue || '')) {
+            noeuds.push(n);
+          }
+        }
+
+        noeuds.forEach(function(texteNode) {
+          var parent = texteNode.parentNode;
+          if (!parent) return;
+          if (parent.classList && parent.classList.contains('arabe')) return;
+
+          var txt = texteNode.nodeValue;
+          var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
+          var parts = txt.split(regex);
+
+          var frag = iframeDoc2.createDocumentFragment();
+          parts.forEach(function(part) {
+            if (part === '') return;
+            if (/[\u0600-\u06FF]/.test(part)) {
+              var span = iframeDoc2.createElement('span');
+              span.className = 'arabe';
+              span.setAttribute('lang', 'ar');
+              span.textContent = part;
+              frag.appendChild(span);
+            } else {
+              frag.appendChild(iframeDoc2.createTextNode(part));
+            }
+          });
+
+          parent.replaceChild(frag, texteNode);
+        });
+
         iframe.contentWindow.print();
         setTimeout(function() {
           document.body.removeChild(iframe);
         }, 1000);
-      }, 500);
+      }, 1500);
     }
 
     // ============================================================
