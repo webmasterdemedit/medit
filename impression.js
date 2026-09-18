@@ -740,12 +740,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   padding-top: 5px;
   border-top: 0.5px solid #d8d2c4;
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
-}
-.pied-page .pied-symbole {
-  color: #a89878;
-  font-size: 9pt;
+  gap: 14px;
 }
 .pied-page .pied-centre {
   font-style: italic;
@@ -956,7 +953,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
       printHtml += '</div>';
     } else if (bloc.type === 'carte') {
-      // 🔥 Fusion : affiché comme une question ouverte
+      // Fusion : affiché comme une question ouverte
       ouvrirZoneExercices();
       hasExercice = true;
       var c = bloc.data;
@@ -1039,9 +1036,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   printHtml += `
     <div class="pied-page">
-      <div class="pied-symbole">◆</div>
-      <div class="pied-centre">Qiraat &mdash; W. Khan</div>
-      <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
+      <span class="pied-centre">Qiraat &mdash; W. Khan</span>
+      <span class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</span>
     </div>
   </div>
 </body>
