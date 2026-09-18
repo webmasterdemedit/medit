@@ -375,7 +375,7 @@ function genererImpression(chapitre, contenu) {
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.2cm 1.5cm 1.2cm 1.5cm; size: A4; }
-body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:11pt; line-height:1.35; }
+body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1a1a; font-size:11pt; line-height:1.35; }
 
 .arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
@@ -386,17 +386,55 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:blac
 
 .page { max-width:100%; }
 
-/* ===== EN-TÊTE (pleine largeur, hors colonnes) ===== */
-h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1px; margin-bottom:2px; }
-.sous-titre { text-align:center; font-size:10pt; font-style:italic; margin-bottom:2px; color:#444; }
-.meta-ligne { text-align:center; font-size:9pt; color:#555; margin-bottom:8px; border-bottom:1px solid #ccc; padding-bottom:4px; }
-.meta-ligne span { margin:0 6px; }
-.meta-ligne .sep { color:#ccc; }
+/* ============================================================ */
+/* BANDEAU TITRE (nouveau)                                       */
+/* ============================================================ */
+.bandeau-titre {
+  background: #f5f3ee;
+  border-left: 4px solid #5a4a3a;
+  border-radius: 3px;
+  padding: 10px 14px 9px;
+  margin-bottom: 8px;
+}
+.bandeau-titre .ligne-titre {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.bandeau-titre h1 {
+  font-family: 'Georgia', serif;
+  font-size: 16pt;
+  font-weight: bold;
+  color: #2b1f14;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  line-height: 1.15;
+  margin: 0;
+}
+.bandeau-titre .meta-droite {
+  font-size: 8.5pt;
+  color: #6b5a48;
+  text-align: right;
+  white-space: nowrap;
+}
+.bandeau-titre .sous-titre {
+  font-size: 10pt;
+  font-style: italic;
+  color: #6b5a48;
+  margin-top: 2px;
+}
 
+/* ============================================================ */
+/* ENCART ÉLÈVE (raffiné)                                        */
+/* ============================================================ */
 .entete-eleve {
   margin-bottom: 8px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
+  padding: 6px 10px;
+  background: #fafaf7;
+  border: 0.5px solid #d8d2c4;
+  border-radius: 3px;
   font-size: 9.5pt;
 }
 .entete-eleve .ligne-eleve {
@@ -406,24 +444,31 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
   flex-wrap: wrap;
 }
 .entete-eleve span { white-space: nowrap; }
-.entete-eleve strong { font-weight: 600; }
+.entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
-/* ===== MÉTA HAUT (tags + vocab, pleine largeur mais compacts) ===== */
+/* ============================================================ */
+/* CHIPS TAGS + VOCABULAIRE (pilules arrondies)                  */
+/* ============================================================ */
 .tags-haut {
   margin-top: 4px;
   margin-bottom: 4px;
-  font-size: 9pt;
-  font-style: italic;
-  color: #444;
   text-align: center;
 }
-.tags-haut .memo-tag { display: inline-block; margin: 0 4px; font-style: italic; }
+.tags-haut .memo-tag {
+  display: inline-block;
+  padding: 1px 9px;
+  margin: 1px 3px;
+  background: #f0ede6;
+  border-radius: 10px;
+  font-size: 8.5pt;
+  color: #5a4a3a;
+  font-style: italic;
+}
 
 .vocab-haut {
   margin-top: 3px;
   margin-bottom: 8px;
   text-align: center;
-  font-size: 9pt;
 }
 .vocab-haut .titre-memo {
   display: inline;
@@ -436,18 +481,23 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 }
 .vocab-haut .memo-mot {
   display: inline-block;
-  padding: 0px 6px;
+  padding: 1px 9px;
   margin: 1px 3px;
-  border: 1px solid #999;
+  background: #faf8f4;
+  border: 0.5px solid #c8bfa8;
+  border-radius: 10px;
   font-size: 9pt;
-  line-height: 1.3;
+  color: #3a2e22;
+  line-height: 1.35;
 }
 
-/* ===== CORPS EN 2 COLONNES ===== */
+/* ============================================================ */
+/* CORPS EN 2 COLONNES                                           */
+/* ============================================================ */
 .corps-2col {
   column-count: 2;
   column-gap: 14px;
-  column-rule: 1px solid #ddd;
+  column-rule: 1px solid #e0dccf;
   font-size: 10pt;
   line-height: 1.3;
 }
@@ -456,35 +506,62 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .slide { margin-bottom:6px; break-inside: avoid; page-break-inside: avoid; }
 .slide p { font-size:10.5pt; margin-bottom:3px; text-align:justify; text-indent:1.2em; }
 
-/* Zone exercices (dans les colonnes) */
+/* Zone exercices */
 .zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
 
 .exo {
-  margin-bottom:8px;
+  margin-bottom:9px;
+  padding-bottom:7px;
+  border-bottom: 0.5px dotted #d8d2c4;
   break-inside: avoid;
   page-break-inside: avoid;
 }
+.exo:last-child {
+  border-bottom: none;
+  margin-bottom: 4px;
+  padding-bottom: 0;
+}
 
+/* Consigne avec fond teinté + liseré + symbole */
 .consigne-exo {
   font-size: 8.5pt;
   font-weight: 600;
   color: #5a4a3a;
   text-transform: uppercase;
   letter-spacing: 0.8px;
-  margin-bottom: 1px;
+  margin-bottom: 3px;
   margin-top: 2px;
+  padding: 2px 8px;
+  background: #faf8f4;
+  border-left: 2.5px solid #a89878;
+  border-radius: 2px;
+}
+.consigne-exo::before {
+  content: "◆ ";
+  color: #a89878;
+  font-size: 7pt;
+  margin-right: 2px;
 }
 
 .exo-ligne {
   display: flex;
   align-items: baseline;
-  gap: 5px;
-  margin-top: 1px;
+  gap: 6px;
+  margin-top: 2px;
 }
+
+/* Numéros en pastilles rondes */
 .exo-num-inline {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  line-height: 16px;
+  text-align: center;
+  background: #5a4a3a;
+  color: #ffffff;
+  border-radius: 50%;
   font-weight: bold;
-  font-size: 10pt;
-  min-width: 18px;
+  font-size: 8.5pt;
   flex-shrink: 0;
 }
 .exo-texte {
@@ -494,25 +571,26 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 }
 
 /* Quiz */
-.quiz-reponses { margin-left: 22px; margin-top: 1px; }
+.quiz-reponses { margin-left: 24px; margin-top: 2px; }
 .quiz-rep { display:block; margin-bottom:1px; font-size:9.5pt; }
 .quiz-case {
   display:inline-block;
   width:9px;
   height:9px;
-  border:1px solid #000;
-  margin-right:3px;
+  border:0.8px solid #5a4a3a;
+  margin-right:4px;
   vertical-align:middle;
   background:white;
+  border-radius: 1px;
 }
 
 /* Open */
-.open-lignes { margin-top:2px; margin-left: 22px; }
-.open-ligne { border-bottom:1px dotted #666; height:14px; margin-bottom:3px; }
+.open-lignes { margin-top:3px; margin-left: 24px; }
+.open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:4px; }
 
 /* Ordre */
 .ordre-grille {
-  margin: 2px 0 3px 22px;
+  margin: 3px 0 3px 24px;
   display: grid;
   grid-template-columns: auto auto;
   column-gap: 10px;
@@ -521,14 +599,14 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 }
 .ordre-cell-texte { white-space: nowrap; }
 .ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
-.ordre-lettre { font-weight: bold; }
+.ordre-lettre { font-weight: bold; color: #5a4a3a; }
 
 /* Carte */
 .carte-ligne-courte {
   margin-top: 3px;
-  margin-left: 22px;
+  margin-left: 24px;
   width: 70%;
-  border-bottom: 1px dotted #666;
+  border-bottom: 0.5px dotted #999;
   height: 14px;
 }
 
@@ -537,7 +615,7 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .tt-phrase-print .tt-trou {
   display: inline-block;
   min-width: 80px;
-  border-bottom: 1px solid #000;
+  border-bottom: 0.8px solid #5a4a3a;
   text-align: center;
   padding: 0 4px;
 }
@@ -547,7 +625,7 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .vf-ligne .vf-cases { font-size: 9pt; white-space: nowrap; margin-left: 4px; flex-shrink: 0; }
 
 /* Relier */
-.relier-zone-lignes { position: relative; margin: 4px 0 4px 22px; max-width: 100%; }
+.relier-zone-lignes { position: relative; margin: 4px 0 4px 24px; max-width: 100%; }
 .relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 60px; }
 .relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 3px; }
 .relier-ligne-item {
@@ -563,7 +641,7 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .relier-point {
   width: 7px;
   height: 7px;
-  border: 1px solid #000;
+  border: 1px solid #5a4a3a;
   border-radius: 50%;
   background: white;
   flex-shrink: 0;
@@ -571,33 +649,60 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 }
 .relier-point.relier-point-partage { border-radius: 0; }
 
-/* ===== ZONE MÉMO (dans les colonnes) ===== */
-.zone-memo { margin-top:8px; padding-top:6px; border-top:1px solid #b8a888; break-inside: avoid; page-break-inside: avoid; }
+/* ============================================================ */
+/* ZONE MÉMO "À RETENIR" (encadré teinté)                        */
+/* ============================================================ */
+.zone-memo {
+  margin-top:10px;
+  padding: 7px 10px 8px;
+  background: #fdf9ef;
+  border: 0.5px solid #e0d4b8;
+  border-left: 3px solid #c8a860;
+  border-radius: 3px;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .zone-memo .titre-memo {
   font-weight:600;
   font-size:8.5pt;
   text-transform:uppercase;
   letter-spacing:1px;
-  color:#5a4a3a;
-  margin-bottom:3px;
+  color:#7a5a1e;
+  margin-bottom:4px;
+}
+.zone-memo .titre-memo::before {
+  content: "✦ ";
+  color: #c8a860;
+  margin-right: 2px;
 }
 .zone-memo .memo-bloc { margin-bottom:5px; }
 .zone-memo .memo-bloc:last-child { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
 .zone-memo .memo-liste li {
   font-size:9.5pt;
-  margin-bottom:1px;
-  padding-left:11px;
+  margin-bottom:2px;
+  padding-left:13px;
   position:relative;
   line-height: 1.35;
 }
-.zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
+.zone-memo .memo-liste li::before {
+  content: "●";
+  position: absolute;
+  left: 0;
+  color: #c8a860;
+  font-size: 6pt;
+  top: 4px;
+}
 
-/* ===== BLOC FINAL (pleine largeur, hors colonnes) ===== */
+/* ============================================================ */
+/* BLOC FINAL (compact, tout sur une ligne)                      */
+/* ============================================================ */
 .zone-note-finale {
-  margin-top: 18px;
-  padding: 8px 12px;
-  border: 0.5px solid #000;
+  margin-top: 14px;
+  padding: 7px 12px;
+  background: #fafaf7;
+  border: 0.5px solid #5a4a3a;
+  border-radius: 3px;
   page-break-inside: avoid;
   break-inside: avoid;
   display: flex;
@@ -609,42 +714,76 @@ h1 { font-size:16pt; font-weight:bold; text-align:center; text-transform:upperca
 .zone-note-finale .note-ligne {
   font-size: 10pt;
   white-space: nowrap;
+  color: #2b1f14;
 }
 .zone-note-finale .note-ligne strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation {
   font-size: 10pt;
   flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+  color: #2b1f14;
 }
 .zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation .ligne-pointillee {
   display: inline-block;
-  width: calc(100% - 90px);
+  flex: 1;
   border-bottom: 0.5px dotted #666;
-  vertical-align: bottom;
   height: 12px;
 }
 
-.pied-page { text-align:center; font-size:8pt; color:#666; margin-top:8px; padding-top:4px; border-top:1px solid #ddd; }
-.pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#999; margin-top:1px; }
+/* ============================================================ */
+/* PIED DE PAGE                                                  */
+/* ============================================================ */
+.pied-page {
+  text-align: center;
+  font-size: 8pt;
+  color: #666;
+  margin-top: 10px;
+  padding-top: 5px;
+  border-top: 0.5px solid #d8d2c4;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.pied-page .pied-symbole {
+  color: #a89878;
+  font-size: 9pt;
+}
+.pied-page .pied-centre {
+  font-style: italic;
+  color: #5a4a3a;
+}
+.pied-page .imprime-le {
+  font-style: italic;
+  font-size: 7.5pt;
+  color: #999;
+}
 </style>
 </head>
 <body>
 <div class="page">
 
+<!-- BANDEAU TITRE -->
+<div class="bandeau-titre">
+  <div class="ligne-titre">
+    <h1>${chapitre.titre || 'Lecture'}</h1>
+    <div class="meta-droite">
+      Niveau ${chapitre.niveau || 0}<br>
+      ${dateCreationStr || '—'}
+    </div>
+  </div>
+  ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
+</div>
+
+<!-- ENCART ÉLÈVE -->
 <div class="entete-eleve">
   <div class="ligne-eleve">
     <span><strong>Nom et prénom :</strong> ....................................................</span>
     <span><strong>Date :</strong> ......... / ......... / .........</span>
     <span><strong>Feuille n° :</strong> .........</span>
   </div>
-</div>
-
-<h1>${chapitre.titre || 'Lecture'}</h1>
-<div class="sous-titre">${chapitre.categorie || 'Sans catégorie'}</div>
-<div class="meta-ligne">
-  <span>Créé le : ${dateCreationStr || '—'}</span>
-  <span class="sep">|</span>
-  <span>Niveau ${chapitre.niveau || 0}</span>
 </div>
 
 ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
@@ -687,7 +826,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       continue;
     }
 
-    // Compter combien de blocs consécutifs ont le même type
     var nbConsecutifs = 1;
     var jGroupe = iGroupe + 1;
     while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === blocCourant.type) {
@@ -695,7 +833,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       jGroupe++;
     }
 
-    // Pour 'vf', chaque bloc contient plusieurs questions
     if (blocCourant.type === 'vf') {
       nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
     }
@@ -703,9 +840,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     var base = consignesBase[blocCourant.type];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
-      // Seul le PREMIER bloc du groupe porte la consigne
       blocCourant._consigne = consigneFinale;
-      // Les suivants du même groupe n'ont rien
       for (var kGroupe = iGroupe + 1; kGroupe < jGroupe; kGroupe++) {
         blocsOrdonnes[kGroupe]._consigne = '';
       }
@@ -714,7 +849,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     iGroupe = jGroupe;
   }
 
-  // Affiche la consigne si elle est définie sur ce bloc
   function afficherConsigne(bloc) {
     if (bloc._consigne) {
       printHtml += '<div class="consigne-exo">' + bloc._consigne + '</div>';
@@ -737,7 +871,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + q.question + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="quiz-reponses">';
@@ -752,7 +886,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
@@ -767,7 +901,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
       if (tt.avant) printHtml += tt.avant + ' ';
       printHtml += '<span class="tt-trou"></span>';
@@ -783,7 +917,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         printHtml += '<div class="exo">';
         afficherConsigne(bloc);
         printHtml += '<div class="exo-ligne vf-ligne">';
-        printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+        printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
         printHtml += '<span class="exo-texte-vf">' + question + '</span>';
         printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
@@ -807,7 +941,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + consigne + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="ordre-grille">';
@@ -828,7 +962,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + c.recto + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="carte-ligne-courte"></div>';
@@ -841,7 +975,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
-      printHtml += '<span class="exo-num-inline">' + exoNum + '.</span>';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="relier-zone-lignes">';
@@ -893,7 +1027,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   // Fermer la zone 2 colonnes
   printHtml += '</div>';
 
-  // ENCADRÉ NOTE FINAL (pleine largeur, hors colonnes)
+  // ENCADRÉ NOTE FINAL
   printHtml += '<div class="zone-note-finale">';
   printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
   printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
@@ -901,7 +1035,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   printHtml += `
     <div class="pied-page">
-      <div>Qiraat - W. Khan</div>
+      <div class="pied-symbole">◆</div>
+      <div class="pied-centre">Qiraat &mdash; W. Khan</div>
       <div class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</div>
     </div>
   </div>
