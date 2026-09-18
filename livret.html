@@ -725,15 +725,33 @@
 
       if (paires.length === 0) return null;
 
-      var droitesMelangees = paires.map(function(p) { return p.droite; });
-      for (var j = droitesMelangees.length - 1; j > 0; j--) {
+      // ✅ Dédupliquer les droites + marquer celles partagées
+      var compteParDroite = {};
+      paires.forEach(function(p) {
+        compteParDroite[p.droite] = (compteParDroite[p.droite] || 0) + 1;
+      });
+
+      var droitesUniques = [];
+      var dejaVues = {};
+      paires.forEach(function(p) {
+        if (!dejaVues[p.droite]) {
+          dejaVues[p.droite] = true;
+          droitesUniques.push({
+            droite: p.droite,
+            partagee: compteParDroite[p.droite] > 1
+          });
+        }
+      });
+
+      // Mélanger les droites uniques
+      for (var j = droitesUniques.length - 1; j > 0; j--) {
         var k = Math.floor(Math.random() * (j + 1));
-        var tmp = droitesMelangees[j];
-        droitesMelangees[j] = droitesMelangees[k];
-        droitesMelangees[k] = tmp;
+        var tmp = droitesUniques[j];
+        droitesUniques[j] = droitesUniques[k];
+        droitesUniques[k] = tmp;
       }
 
-      return { consigne: consigne, paires: paires, droitesMelangees: droitesMelangees };
+      return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
     }
 
     function parserTextesTrousPourImpression(ttTexte) {
@@ -774,7 +792,7 @@
 
     // ============================================================
     // GÉNÉRATION IMPRESSION
-    // ✅ Utilise ordreBlocs (colonne T) pour reconstruire dans l'ordre
+    // ✅ Utilise ordreBlocs (colonne T) + police arabe + en-tête élève + encadré note
     // ============================================================
     function genererImpression(chapitre, contenu) {
       var ordreBlocs = chapitre.ordreBlocs || [];
@@ -874,7 +892,6 @@
           }
         });
       } else {
-        // Fallback : ancien comportement
         slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
         quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
         opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
@@ -884,6 +901,18 @@
         cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
         reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
       }
+
+      // ✅ Calculer le nombre total de questions
+      var nbTotalQuestions = 0;
+      blocsOrdonnes.forEach(function(bloc) {
+        if (bloc.type === 'quiz') nbTotalQuestions++;
+        else if (bloc.type === 'open') nbTotalQuestions++;
+        else if (bloc.type === 'tt') nbTotalQuestions++;
+        else if (bloc.type === 'carte') nbTotalQuestions++;
+        else if (bloc.type === 'ordre') nbTotalQuestions++;
+        else if (bloc.type === 'relier') nbTotalQuestions++;
+        else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
+      });
 
       // --- MÉMO ---
       var aRetenirClean = (chapitre.aRetenir || [])
@@ -927,16 +956,44 @@
 <head>
 <meta charset="UTF-8">
 <title>${chapitre.titre || 'Lecture'}</title>
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Noto+Naskh+Arabic:wght@400;700&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.5cm 2cm 1.5cm 2cm; size: A4; }
 body { font-family:'Times New Roman', Times, serif; background:white; color:black; font-size:12pt; line-height:1.6; }
+
+/* ✅ Police arabe à l'impression (identique à chapitre.html) */
+[lang="ar"], .texte-arabe, .arabe {
+  font-family: 'Amiri', 'Noto Naskh Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Geeza Pro', serif !important;
+  direction: rtl;
+}
+
 .page { max-width:100%; min-height:100vh; display:flex; flex-direction:column; }
 h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:uppercase; letter-spacing:1.2px; margin-bottom:4px; }
 .sous-titre { text-align:center; font-size:11pt; font-style:italic; margin-bottom:4px; color:#444; }
 .meta-ligne { text-align:center; font-size:10pt; color:#555; margin-bottom:16px; border-bottom:1px solid #ccc; padding-bottom:8px; }
 .meta-ligne span { margin:0 8px; }
 .meta-ligne .sep { color:#ccc; }
+
+/* ✅ EN-TÊTE ÉLÈVE */
+.entete-eleve {
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+  font-size: 10.5pt;
+}
+.entete-eleve .ligne-eleve {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.entete-eleve span {
+  white-space: nowrap;
+}
+.entete-eleve strong {
+  font-weight: 600;
+}
 
 .slide { margin-bottom:12px; }
 .slide p { font-size:12.5pt; margin-bottom:6px; text-align:justify; text-indent:2em; }
@@ -1069,7 +1126,7 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   gap: 6px;
   font-size: 10.5pt;
   padding: 2px 0;
-  min-height: 11px;
+  min-height: 16px;
 }
 .relier-col-lignes.gauche .relier-ligne-item {
   justify-content: flex-end;
@@ -1088,6 +1145,10 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
   flex-shrink: 0;
   box-sizing: border-box;
 }
+/* ✅ Carré si la droite est partagée par plusieurs gauches */
+.relier-point.relier-point-partage {
+  border-radius: 0;
+}
 
 .zone-memo { margin-top:20px; padding-top:14px; border-top:1px solid #b8a888; page-break-inside:avoid; }
 .zone-memo .titre-memo { font-weight:600; font-size:9.5pt; text-transform:uppercase; letter-spacing:1.5px; color:#5a4a3a; margin-bottom:6px; }
@@ -1097,12 +1158,60 @@ h1 { font-size:19pt; font-weight:bold; text-align:center; text-transform:upperca
 .zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:3px; padding-left:14px; position:relative; }
 .zone-memo .memo-liste li::before { content:"—"; position:absolute; left:0; color:#666; }
 
+/* ✅ ENCADRÉ NOTE FINAL */
+.zone-note-finale {
+  margin-top: 24px;
+  padding: 12px 14px;
+  border: 1.5px solid #000;
+  page-break-inside: avoid;
+}
+.zone-note-finale .note-titre {
+  font-weight: 600;
+  font-size: 10pt;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  color: #5a4a3a;
+  margin-bottom: 8px;
+}
+.zone-note-finale .note-ligne {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  font-size: 10.5pt;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+.zone-note-finale .note-ligne-appreciation {
+  font-size: 10.5pt;
+  margin-bottom: 6px;
+}
+.zone-note-finale .note-appreciation-lignes {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 8px;
+}
+.zone-note-finale .note-appreciation-ligne {
+  border-bottom: 1px dotted #666;
+  height: 18px;
+}
+
 .pied-page { text-align:center; font-size:9pt; color:#666; margin-top:16px; padding-top:8px; border-top:1px solid #ddd; }
 .pied-page .imprime-le { font-style:italic; font-size:8pt; color:#999; margin-top:2px; }
 </style>
 </head>
 <body>
 <div class="page">
+
+<!-- ✅ EN-TÊTE ÉLÈVE (avant le titre) -->
+<div class="entete-eleve">
+  <div class="ligne-eleve">
+    <span><strong>Nom et prénom :</strong> ....................................................</span>
+    <span><strong>Date :</strong> ......... / ......... / .........</span>
+    <span><strong>Feuille n° :</strong> .........</span>
+  </div>
+</div>
+
 <h1>${chapitre.titre || 'Lecture'}</h1>
 <div class="sous-titre">${chapitre.categorie || 'Sans catégorie'}</div>
 <div class="meta-ligne">
@@ -1271,9 +1380,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
           printHtml += '<div class="relier-col-lignes droite">';
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
+            var dItem = relierData.droitesMelangees[rd];
+            var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
             printHtml += '<div class="relier-ligne-item">';
-            printHtml += '<span class="relier-point"></span>';
-            printHtml += '<span>' + relierData.droitesMelangees[rd] + '</span>';
+            printHtml += '<span class="' + classePoint + '"></span>';
+            printHtml += '<span>' + dItem.droite + '</span>';
             printHtml += '</div>';
           }
           printHtml += '</div>';
@@ -1300,6 +1411,23 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         printHtml += '</ul></div>';
         printHtml += '</div>';
       }
+
+      // ✅ ENCADRÉ NOTE FINAL
+      printHtml += '<div class="zone-note-finale">';
+      printHtml += '<div class="note-titre">Évaluation de l\'exercice</div>';
+      printHtml += '<div class="note-ligne">';
+      printHtml += '<span><strong>Nombre total de questions :</strong> ' + nbTotalQuestions + '</span>';
+      printHtml += '<span><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</span>';
+      printHtml += '</div>';
+      printHtml += '<div class="note-ligne-appreciation">';
+      printHtml += '<strong>Appréciation :</strong>';
+      printHtml += '</div>';
+      printHtml += '<div class="note-appreciation-lignes">';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
+      printHtml += '<div class="note-appreciation-ligne"></div>';
+      printHtml += '</div>';
+      printHtml += '</div>';
 
       printHtml += `
         <div class="pied-page">
@@ -1328,7 +1456,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         setTimeout(function() {
           document.body.removeChild(iframe);
         }, 1000);
-      }, 500);
+      }, 1500);   // ✅ 1500ms pour laisser le temps à la police arabe de charger
     }
 
     // ============================================================
