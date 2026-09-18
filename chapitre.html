@@ -108,14 +108,12 @@
       color: var(--text-secondary, #444);
     }
 
-    /* Type tt: texte à trous (carré plein) */
     .progress-dot.type-tt {
       border-radius: 0 !important;
       width: 14px !important;
       height: 14px !important;
     }
 
-    /* Type vf: vrai/faux (2 barres) */
     .progress-dot.type-vf {
       border-radius: 0 !important;
       width: 16px !important;
@@ -134,7 +132,6 @@
       border-bottom-color: var(--text-secondary, #444) !important;
     }
 
-    /* Relier = deux points reliés (petit trait) */
     .progress-dot.type-relier {
       border-radius: 0 !important;
       width: 18px !important;
@@ -248,6 +245,10 @@
       flex-shrink: 0;
       transition: all 0.2s;
       box-sizing: border-box;
+    }
+    /* ✅ Carré si la réponse est partagée par plusieurs gauches */
+    .relier-item .point.point-partage {
+      border-radius: 0;
     }
     .relier-colonne.gauche .relier-item .point { order: 2; }
     .relier-colonne.gauche .relier-item .texte { order: 1; }
@@ -605,11 +606,10 @@
       relierAssociations: {},
       relierSelection: null,
       relierValide: {},
-      // Nouveau : tt et vf
-      ttReponses: {},    // { slideIndex: { essai: 1|2, correct: bool, mot: string } }
-      ttValide: {},      // { slideIndex: true|false }
-      vfReponses: {},    // { slideIndex: { [questionIdx]: { choix: 'v'|'f', correct: bool } } }
-      vfValide: {},      // { slideIndex: true quand toutes répondues }
+      ttReponses: {},
+      ttValide: {},
+      vfReponses: {},
+      vfValide: {},
       vfTotal: 0,
       vfBonnes: 0
     };
@@ -659,9 +659,9 @@
       document.getElementById('fontDecreaseBottom').addEventListener('click', decreaseFont);
     });
 
-        // ============================================================
+    // ============================================================
     // CHARGER LE CHAPITRE
-    // ✅ Utilise ordreBlocs (colonne T) pour reconstruire dans l'ordre
+    // ✅ Utilise ordreBlocs (colonne T) + déduplique les droites relier
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
@@ -680,7 +680,7 @@
           var tags = chapitre.tags || [];
           var aRetenir = chapitre.aRetenir || [];
 
-          // --- 1) Parser chaque type séparément (comme avant) ---
+          // --- 1) Parser chaque type séparément ---
           var parts = contenu.split(' | ');
 
           var slidesArray = [];
@@ -777,18 +777,43 @@
                 slidesFinal.push({ type: 'carte', recto: cartesParsed[idx].recto, verso: cartesParsed[idx].verso, index: slidesFinal.length });
               } else if (type === 'relier' && reliersParsed[idx]) {
                 var rp = reliersParsed[idx];
-                var droiteMelangee = melanger(rp.paires.slice());
-                slidesFinal.push({ type: 'relier', consigne: rp.consigne, paires: rp.paires, droiteMelangee: droiteMelangee, index: slidesFinal.length });
+
+                // ✅ Dédupliquer les droites + marquer celles partagées
+                var compteParDroite = {};
+                rp.paires.forEach(function(paire) {
+                  compteParDroite[paire.droite] = (compteParDroite[paire.droite] || 0) + 1;
+                });
+
+                var droitesUniques = [];
+                var dejaVues = {};
+                rp.paires.forEach(function(paire) {
+                  if (!dejaVues[paire.droite]) {
+                    dejaVues[paire.droite] = true;
+                    droitesUniques.push({
+                      droite: paire.droite,
+                      partagee: compteParDroite[paire.droite] > 1
+                    });
+                  }
+                });
+
+                var droiteMelangee = melanger(droitesUniques);
+                slidesFinal.push({
+                  type: 'relier',
+                  consigne: rp.consigne,
+                  paires: rp.paires,
+                  droiteMelangee: droiteMelangee,
+                  index: slidesFinal.length
+                });
               } else if (type === 'tt' && ttsParsed[idx]) {
                 slidesFinal.push({ type: 'tt', avant: ttsParsed[idx].avant, mot: ttsParsed[idx].mot, apres: ttsParsed[idx].apres, index: slidesFinal.length });
               } else if (type === 'vf' && vfsParsed[idx]) {
                 slidesFinal.push({ type: 'vf', questions: vfsParsed, index: slidesFinal.length });
               } else if (type === 'memo') {
-                // géré à la fin, on skip ici
+                // géré à la fin
               }
             });
           } else {
-            // ⚠️ Fallback : si pas d'ordreBlocs, on garde l'ancien comportement
+            // Fallback : si pas d'ordreBlocs
             slidesArray.forEach(function(texteSlide) {
               slidesFinal.push({ type: 'slide', contenu: texteSlide });
             });
@@ -807,12 +832,27 @@
               slidesFinal.push({ type: 'carte', recto: cp.recto, verso: cp.verso, index: slidesFinal.length });
             });
             reliersParsed.forEach(function(rp) {
-              var dm = melanger(rp.paires.slice());
+              var compteParDroite = {};
+              rp.paires.forEach(function(paire) {
+                compteParDroite[paire.droite] = (compteParDroite[paire.droite] || 0) + 1;
+              });
+              var droitesUniques = [];
+              var dejaVues = {};
+              rp.paires.forEach(function(paire) {
+                if (!dejaVues[paire.droite]) {
+                  dejaVues[paire.droite] = true;
+                  droitesUniques.push({
+                    droite: paire.droite,
+                    partagee: compteParDroite[paire.droite] > 1
+                  });
+                }
+              });
+              var dm = melanger(droitesUniques);
               slidesFinal.push({ type: 'relier', consigne: rp.consigne, paires: rp.paires, droiteMelangee: dm, index: slidesFinal.length });
             });
           }
 
-          // --- 4) Slide MEMO final (toujours à la fin) ---
+          // --- 4) Slide MEMO final ---
           var aRetenirClean = (aRetenir || [])
             .map(function(x) { return String(x).trim(); })
             .filter(function(x) { return x !== ''; });
@@ -855,117 +895,6 @@
           console.error('❌ Erreur:', error);
           afficherErreur(error.message);
         });
-    }
-    // ============================================================
-    // PRÉPARER LES SLIDES
-    // ============================================================
-    function preparerSlidesV2(chapitre, slidesArray, quiz, openQuestion, ordre, carte, relier, vocabulaire, tags, aRetenir, texteTrous, vraiFaux) {
-      var slidesFinal = [];
-
-      slidesArray.forEach(function(texteSlide) {
-        if (texteSlide.trim() !== '') {
-          slidesFinal.push({ type: 'slide', contenu: texteSlide.trim() });
-        }
-      });
-
-      if (quiz.trim() !== '') {
-        var quizsParsed = parserQuizs(quiz);
-        quizsParsed.forEach(function(qp) {
-          if (qp && qp.reponses.length > 0) {
-            slidesFinal.push({ type: 'quiz', question: qp.question, reponses: qp.reponses, index: slidesFinal.length });
-          }
-        });
-      }
-
-      if (openQuestion.trim() !== '') {
-        slidesFinal.push({ type: 'open', question: openQuestion.replace(/^qs:\s*/i, '').trim(), index: slidesFinal.length });
-      }
-
-      if (texteTrous.trim() !== '') {
-        var tts = parserTextesTrous(texteTrous);
-        tts.forEach(function(tt) {
-          slidesFinal.push({
-            type: 'tt',
-            avant: tt.avant,
-            mot: tt.mot,
-            apres: tt.apres,
-            index: slidesFinal.length
-          });
-        });
-      }
-
-      if (vraiFaux.trim() !== '') {
-        var vfs = parserVraiFaux(vraiFaux);
-        if (vfs.length > 0) {
-          slidesFinal.push({
-            type: 'vf',
-            questions: vfs,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      if (ordre.trim() !== '') {
-        var ordreParsed = parserOrdre(ordre);
-        if (ordreParsed && ordreParsed.elements.length > 0) {
-          slidesFinal.push({
-            type: 'ordre',
-            elements: ordreParsed.elements,
-            consigne: ordreParsed.consigne,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      if (carte.trim() !== '') {
-        var carteParsed = parserCarte(carte);
-        if (carteParsed) {
-          slidesFinal.push({ type: 'carte', recto: carteParsed.recto, verso: carteParsed.verso, index: slidesFinal.length });
-        }
-      }
-
-      if (relier.trim() !== '') {
-        var relierParsed = parserRelier(relier);
-        if (relierParsed && relierParsed.paires.length > 0) {
-          var droiteMelangee = melanger(relierParsed.paires.slice());
-          slidesFinal.push({
-            type: 'relier',
-            consigne: relierParsed.consigne,
-            paires: relierParsed.paires,
-            droiteMelangee: droiteMelangee,
-            index: slidesFinal.length
-          });
-        }
-      }
-
-      // Slide MEMO final
-      var aRetenirClean = (aRetenir || [])
-        .map(function(x) { return String(x).trim(); })
-        .filter(function(x) { return x !== ''; });
-
-      var vocabClean = [];
-      (vocabulaire || []).forEach(function(item) {
-        String(item).split(',').forEach(function(mot) {
-          var m = mot.trim();
-          if (m !== '') vocabClean.push(m);
-        });
-      });
-
-      var tagsClean = (tags || [])
-        .map(function(x) { return String(x).trim(); })
-        .filter(function(x) { return x !== ''; });
-
-      if (aRetenirClean.length > 0 || vocabClean.length > 0 || tagsClean.length > 0) {
-        slidesFinal.push({
-          type: 'memo',
-          aRetenir: aRetenirClean,
-          vocabulaire: vocabClean,
-          tags: tagsClean,
-          index: slidesFinal.length
-        });
-      }
-
-      etat.slides = slidesFinal;
     }
 
     // ============================================================
@@ -1606,6 +1535,7 @@
 
     // ============================================================
     // AFFICHAGE RELIER
+    // ✅ Point carré si la droite est partagée par plusieurs gauches
     // ============================================================
     function afficherRelier(slide, index) {
       etat.relierAssociations[index] = {};
@@ -1629,8 +1559,9 @@
 
       html += '<div class="relier-colonne droite">';
       slide.droiteMelangee.forEach(function(paire, i) {
-        html += '<div class="relier-item" data-cote="droite" data-idx="' + i + '" data-slide="' + index + '" data-gauche-original="' + escapeAttr(paire.gauche) + '" onclick="selectionnerRelier(event, ' + index + ', \'droite\', ' + i + ')">';
-        html += '<span class="point"></span>';
+        var classePoint = paire.partagee ? 'point point-partage' : 'point';
+        html += '<div class="relier-item" data-cote="droite" data-idx="' + i + '" data-slide="' + index + '" data-gauche-original="' + escapeAttr(paire.droite) + '" onclick="selectionnerRelier(event, ' + index + ', \'droite\', ' + i + ')">';
+        html += '<span class="' + classePoint + '"></span>';
         html += '<span class="texte">' + paire.droite + '</span>';
         html += '</div>';
       });
@@ -1764,6 +1695,10 @@
       }
     });
 
+    // ============================================================
+    // VALIDER RELIER
+    // ✅ Compare par valeur (gère les droites partagées)
+    // ============================================================
     function validerRelier(slideIndex) {
       var slide = etat.slides[slideIndex];
       if (!slide || slide.type !== 'relier') return;
@@ -1782,10 +1717,19 @@
 
       for (var gaucheIdx in associations) {
         var droiteIdx = associations[gaucheIdx];
-        var gaucheOrigine = slide.paires[parseInt(gaucheIdx)].gauche;
-        var droiteMelangee = slide.droiteMelangee[parseInt(droiteIdx)];
+        var gaucheText = slide.paires[parseInt(gaucheIdx)].gauche;
+        var droiteChoisie = slide.droiteMelangee[parseInt(droiteIdx)].droite;
 
-        if (droiteMelangee.gauche === gaucheOrigine) {
+        // Chercher la droite attendue pour cette gauche
+        var droiteAttendue = null;
+        for (var pi = 0; pi < slide.paires.length; pi++) {
+          if (slide.paires[pi].gauche === gaucheText) {
+            droiteAttendue = slide.paires[pi].droite;
+            break;
+          }
+        }
+
+        if (droiteChoisie === droiteAttendue) {
           bonnes++;
         } else {
           var elG = slideEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
