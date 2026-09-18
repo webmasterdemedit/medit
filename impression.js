@@ -379,8 +379,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 .arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
-  font-size: 2em;
-  line-height: 1.15;
+  font-size: 1.6em;
+  line-height: 1;
   vertical-align: middle;
 }
 
