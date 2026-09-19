@@ -495,10 +495,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* SLIDES (pleine largeur, PAS dans les colonnes)                */
 /* ============================================================ */
 .slides-zone {
-  margin-bottom: 10px;
+  margin-top: 16px;
+  margin-bottom: 20px;
 }
 .slide { margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid; }
-.slide p { font-size: 11pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
+.slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
 /* CORPS EN 2 COLONNES (exercices + à retenir)                   */
@@ -509,6 +510,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   column-rule: 1px solid #e0dccf;
   font-size: 10pt;
   line-height: 1.3;
+}
+
+.titre-questions {
+  font-family: 'Georgia', serif;
+  font-size: 13pt;
+  font-weight: bold;
+  color: #2b1f14;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  text-align: center;
+  margin-bottom: 10px;
+  padding-bottom: 4px;
+  border-bottom: 1px solid #d8d2c4;
+  column-span: all;
 }
 
 .zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
@@ -806,6 +821,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     if (!slidesZoneFermee) {
       printHtml += '</div>'; // ferme .slides-zone
       printHtml += '<div class="corps-2col">'; // ouvre la zone 2 colonnes
+      printHtml += '<div class="titre-questions">Questions</div>';
       slidesZoneFermee = true;
     }
     if (!zoneExercicesOuverte) {
