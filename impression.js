@@ -400,8 +400,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   flex-direction: column;
   justify-content: center;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   text-align: center;
+}
+.bandeau-titre .ligne-meta-haut {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  font-size: 8.5pt;
+  color: #6b5a48;
+  margin-bottom: 2px;
+}
+.bandeau-titre .ligne-meta-haut .sep-meta {
+  color: #b8a888;
 }
 .bandeau-titre h1 {
   font-family: 'Georgia', serif;
@@ -787,12 +799,13 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <!-- BANDEAU TITRE -->
 <div class="bandeau-titre">
   <div class="ligne-titre">
-    <h1>${chapitre.titre || 'Lecture'}</h1>
-       <div class="meta-droite">
-      Niveau ${chapitre.niveau || 0}
+    <div class="ligne-meta-haut">
+      <span>Livret ${chapitre.categorie || '—'}</span>
+      <span class="sep-meta">◆</span>
+      <span>Niveau ${chapitre.niveau || 0}</span>
     </div>
+    <h1>${chapitre.titre || 'Lecture'}</h1>
   </div>
-  ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
 </div>
 
 <!-- ENCART ÉLÈVE -->
