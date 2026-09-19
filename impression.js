@@ -492,7 +492,16 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* CORPS EN 2 COLONNES                                           */
+/* SLIDES (pleine largeur, PAS dans les colonnes)                */
+/* ============================================================ */
+.slides-zone {
+  margin-bottom: 10px;
+}
+.slide { margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid; }
+.slide p { font-size: 11pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
+
+/* ============================================================ */
+/* CORPS EN 2 COLONNES (exercices + à retenir)                   */
 /* ============================================================ */
 .corps-2col {
   column-count: 2;
@@ -501,9 +510,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   font-size: 10pt;
   line-height: 1.3;
 }
-
-.slide { margin-bottom:6px; break-inside: avoid; page-break-inside: avoid; }
-.slide p { font-size:10.5pt; margin-bottom:3px; text-align:justify; text-indent:1.2em; }
 
 .zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
 
@@ -748,6 +754,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   font-style: italic;
   color: #5a4a3a;
 }
+.pied-page .pied-ecrit {
+  font-style: italic;
+  font-size: 7.5pt;
+  color: #999;
+}
 .pied-page .imprime-le {
   font-style: italic;
   font-size: 7.5pt;
@@ -782,14 +793,21 @@ ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) {
 
 ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 
-<div class="corps-2col">
+<div class="slides-zone">
 `;
 
   var exoNum = 0;
   var hasExercice = false;
   var zoneExercicesOuverte = false;
+  var slidesZoneFermee = false;
 
   function ouvrirZoneExercices() {
+    // Fermer la zone des slides si encore ouverte
+    if (!slidesZoneFermee) {
+      printHtml += '</div>'; // ferme .slides-zone
+      printHtml += '<div class="corps-2col">'; // ouvre la zone 2 colonnes
+      slidesZoneFermee = true;
+    }
     if (!zoneExercicesOuverte) {
       printHtml += '<div class="zone-exercices">';
       zoneExercicesOuverte = true;
@@ -1025,8 +1043,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
-  // Fermer la zone 2 colonnes
-  printHtml += '</div>';
+  // Fermer la zone 2 colonnes (ou la zone slides si aucun exo)
+  if (slidesZoneFermee) {
+    printHtml += '</div>'; // ferme .corps-2col
+  } else {
+    printHtml += '</div>'; // ferme .slides-zone
+  }
 
   // ENCADRÉ NOTE FINAL
   printHtml += '<div class="zone-note-finale">';
