@@ -391,17 +391,17 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* ============================================================ */
 .bandeau-titre {
   background: #f5f3ee;
-  border-left: 4px solid #5a4a3a;
   border-radius: 3px;
   padding: 10px 14px 9px;
   margin-bottom: 8px;
 }
 .bandeau-titre .ligne-titre {
   display: flex;
-  justify-content: space-between;
-  align-items: baseline;
-  gap: 12px;
-  flex-wrap: wrap;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 4px;
+  text-align: center;
 }
 .bandeau-titre h1 {
   font-family: 'Georgia', serif;
