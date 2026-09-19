@@ -796,18 +796,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <body>
 <div class="page">
 
-<!-- BANDEAU TITRE -->
-<div class="bandeau-titre">
-  <div class="ligne-titre">
-    <div class="ligne-meta-haut">
-      <span>Livret ${chapitre.categorie || '—'}</span>
-      <span class="sep-meta">◆</span>
-      <span>Niveau ${chapitre.niveau || 0}</span>
-    </div>
-    <h1>${chapitre.titre || 'Lecture'}</h1>
-  </div>
-</div>
-
 <!-- ENCART ÉLÈVE -->
 <div class="entete-eleve">
   <div class="ligne-eleve">
@@ -815,6 +803,17 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
     <span><strong>Date :</strong> ......... / ......... / .........</span>
     <span><strong>Feuille n° :</strong> .........</span>
   </div>
+</div>
+
+<!-- BANDEAU TITRE -->
+<div class="bandeau-titre">
+  <div class="ligne-titre">
+    <h1>${chapitre.titre || 'Lecture'}</h1>
+       <div class="meta-droite">
+      Niveau ${chapitre.niveau || 0}
+    </div>
+  </div>
+  ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
 </div>
 
 ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
