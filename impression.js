@@ -510,7 +510,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   margin-top: 16px;
   margin-bottom: 20px;
 }
-.slide { margin-bottom: 8px; break-inside: avoid; page-break-inside: avoid; }
+.slide { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
