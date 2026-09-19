@@ -442,7 +442,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* ENCART ÉLÈVE                                                  */
 /* ============================================================ */
 .entete-eleve {
-  margin-bottom: 8px;
+  margin-bottom: 10px;
   padding: 6px 10px;
   background: #fafaf7;
   border: 0.5px solid #d8d2c4;
