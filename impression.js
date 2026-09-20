@@ -934,7 +934,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
       printHtml += '<div class="open-ligne"></div>';
-      printHtml += '<div class="open-ligne"></div>';
       printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
