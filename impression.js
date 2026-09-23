@@ -229,29 +229,21 @@ function parserCopierPourImpression(copierTexte) {
 
 // ============================================================
 // ✅ SOLUTION 2 : ESTIMER LA LARGEUR D'UN MOT ARABE
-// Approximation par nombre de caractères, avec correction
-// des ligatures courantes (لا، لأ، لإ، لآ)
-// Coefficient ajustable si besoin (COEF_PX_PAR_UNITE)
 // ============================================================
-var COEF_PX_PAR_UNITE = 33;   // ← ajuste ici si les cases sont trop larges/courtes
+var COEF_PX_PAR_UNITE = 13;
 
 function estimerLargeurMot(mot) {
   if (!mot) return 0;
-  // Enlever les espaces
   var nettoye = String(mot).replace(/\s/g, '');
   if (!nettoye) return 0;
 
-  // Compter les ligatures courantes (2 caractères = 1 glyphe)
   var nbLigatures =
       (nettoye.match(/لا/g) || []).length +
       (nettoye.match(/لأ/g) || []).length +
       (nettoye.match(/لإ/g) || []).length +
       (nettoye.match(/لآ/g) || []).length;
 
-  // Nombre d'unités visuelles = caractères - ligatures comptées en double
   var nbUnites = nettoye.length - nbLigatures;
-
-  // Largeur estimée en pixels
   return Math.round(nbUnites * COEF_PX_PAR_UNITE);
 }
 
@@ -383,6 +375,7 @@ function genererImpression(chapitre, contenu) {
     else if (bloc.type === 'ordre') nbTotalQuestions++;
     else if (bloc.type === 'relier') nbTotalQuestions++;
     else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
+    else if (bloc.type === 'copier') nbTotalQuestions++;
   });
 
   // --- MÉMO ---
@@ -457,18 +450,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   align-items: center;
   gap: 2px;
   text-align: center;
-}
-.bandeau-titre .ligne-meta-haut {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 8px;
-  font-size: 8.5pt;
-  color: #6b5a48;
-  margin-bottom: 2px;
-}
-.bandeau-titre .ligne-meta-haut .sep-meta {
-  color: #b8a888;
 }
 .bandeau-titre h1 {
   font-family: 'Georgia', serif;
@@ -569,66 +550,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
-/* ✅ BLOC COPIER (arabe + 3 cases à la suite, même ligne)        */
-/* ============================================================ */
-.bloc-copier {
-  margin: 10px 0 14px;
-  padding: 4px 0;
-  width: 100%;
-  text-align: right;
-  direction: rtl;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-
-.copier-ligne {
-  display: inline-flex;
-  align-items: center;
-  flex-direction: row;
-  gap: 10px;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  width: 100%;
-}
-
-.copier-item {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-}
-
-.copier-mot {
-  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 1.7em;
-  line-height: 1;
-  white-space: nowrap;
-  direction: rtl;
-  color: #1a1a1a;
-}
-
-.copier-cases {
-  display: inline-flex;
-}
-
-.copier-case {
-  height: 20px;
-  border: 0.8px solid #5a4a3a;
-  border-right: none;
-  background: white;
-}
-.copier-case:last-child {
-  border-right: 0.8px solid #5a4a3a;
-}
-
-.copier-deuxpoints {
-  font-family: 'Janna LT Bold', 'Traditional Arabic', serif;
-  font-size: 1.7em;
-  line-height: 1;
-  color: #1a1a1a;
-  margin-right: 2px;
-}
-
-/* ============================================================ */
 /* CORPS EN 2 COLONNES (exercices + à retenir)                   */
 /* ============================================================ */
 .corps-2col {
@@ -685,6 +606,23 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   content: "◆ ";
   color: #a89878;
   font-size: 7pt;
+  margin-right: 2px;
+}
+
+/* ✅ Petit titre "Écriture" au-dessus de chaque bloc copier */
+.titre-ecriture {
+  font-size: 8.5pt;
+  font-weight: 600;
+  color: #7a5a1e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+  border-bottom: 0.5px solid #e0d4b8;
+}
+.titre-ecriture::before {
+  content: "✎ ";
+  color: #c8a860;
   margin-right: 2px;
 }
 
@@ -792,6 +730,59 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   box-sizing: border-box;
 }
 .relier-point.relier-point-partage { border-radius: 0; }
+
+/* ============================================================ */
+/* ✅ BLOC COPIER (dans les 2 colonnes comme un exercice)         */
+/* ============================================================ */
+.bloc-copier {
+  width: 100%;
+  direction: rtl;
+  text-align: right;        /* ✅ pousse à droite */
+  padding: 2px 0 4px;
+}
+
+.copier-ligne {
+  display: block;           /* ✅ block pour que text-align marche */
+  width: 100%;
+  text-align: right;        /* ✅ ceinture + bretelles */
+}
+
+.copier-item {
+  display: inline-flex;     /* ✅ chaque groupe = un "mot inline" */
+  align-items: center;
+  gap: 3px;
+  margin-left: 18px;        /* ✅ espace ENTRE les groupes (en RTL = à gauche) */
+  vertical-align: middle;
+}
+.copier-item:first-child {
+  margin-left: 0;
+}
+
+.copier-mot {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 1.7em;
+  line-height: 1;
+  white-space: nowrap;
+  direction: rtl;
+  color: #1a1a1a;
+}
+
+.copier-cases {
+  display: inline-flex;
+  box-sizing: border-box;
+}
+
+.copier-case {
+  display: inline-block;
+  box-sizing: border-box;
+  height: 20px;
+  border: 0.8px solid #5a4a3a;
+  border-right: none;
+  background: white;
+}
+.copier-case:last-child {
+  border-right: 0.8px solid #5a4a3a;
+}
 
 /* ============================================================ */
 /* ZONE MÉMO "À RETENIR"                                         */
@@ -924,9 +915,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <div class="bandeau-titre">
   <div class="ligne-titre">
     <h1>${chapitre.titre || 'Lecture'}</h1>
-       <div class="meta-droite">
-      Niveau ${chapitre.niveau || 0}
-    </div>
+    <div class="meta-droite">Niveau ${chapitre.niveau || 0}</div>
   </div>
   ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
 </div>
@@ -944,10 +933,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   var slidesZoneFermee = false;
 
   function ouvrirZoneExercices() {
-    // Fermer la zone des slides si encore ouverte
     if (!slidesZoneFermee) {
       printHtml += '</div>'; // ferme .slides-zone
-      printHtml += '<div class="corps-2col">'; // ouvre la zone 2 colonnes
+      printHtml += '<div class="corps-2col">';
       printHtml += '<div class="titre-questions">Questions</div>';
       slidesZoneFermee = true;
     }
@@ -959,7 +947,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   // ============================================================
   // PRÉ-CALCUL DES CONSIGNES (gestion singulier / pluriel)
-  // + Fusion open / carte : les deux partagent le même groupe
   // ============================================================
   function typeLogique(t) {
     if (t === 'carte') return 'open';
@@ -972,7 +959,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     tt:     { sing: 'Complétez la phrase :',      plur: 'Complétez les phrases :' },
     vf:     { sing: 'Cochez Vrai ou Faux :',      plur: 'Cochez Vrai ou Faux :' },
     ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
-    relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' }
+    relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' },
+    copier: { sing: 'Recopiez :',                 plur: 'Recopiez :' }
   };
 
   var iGroupe = 0;
@@ -1014,15 +1002,32 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
 
   blocsOrdonnes.forEach(function(bloc) {
-    // ✅ Bloc copier (affiché DANS la zone slides)
+
+    // ========================================================
+    // ✅ BLOC COPIER — Dans les 2 colonnes, comme un exercice
+    // ========================================================
     if (bloc.type === 'copier') {
+      ouvrirZoneExercices();
+      hasExercice = true;
+      exoNum++;
+
       var mots = bloc.data.mots;
 
-      printHtml += '<div class="bloc-copier">';
-      printHtml += '<div class="copier-ligne">';
+      printHtml += '<div class="exo">';
+
+      // ✅ Consigne (unique si plusieurs copier consécutifs)
+      afficherConsigne(bloc);
+
+      // ✅ Petit titre "Écriture" au-dessus de chaque bloc
+      printHtml += '<div class="titre-ecriture">Écriture</div>';
+
+      // ✅ Ligne : numéro + mot arabe + cases, aligné à droite
+      printHtml += '<div class="exo-ligne">';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
+      printHtml += '<span class="bloc-copier">';
+      printHtml += '<span class="copier-ligne">';
 
       for (var cm = 0; cm < mots.length; cm++) {
-        // ✅ SOLUTION 2 : largeur estimée par nombre de caractères
         var largeurEstimee = estimerLargeurMot(mots[cm]);
         var largeurCase = Math.round(largeurEstimee / 3);
 
@@ -1036,12 +1041,16 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         printHtml += '</span>';
       }
 
-      printHtml += '<span class="copier-deuxpoints">:</span>';
-      printHtml += '</div>';
-      printHtml += '</div>';
+      printHtml += '</span>'; // ferme .copier-ligne
+      printHtml += '</span>'; // ferme .bloc-copier
+      printHtml += '</div>';  // ferme .exo-ligne
+      printHtml += '</div>';  // ferme .exo
       return;
     }
 
+    // ========================================================
+    // SLIDE
+    // ========================================================
     if (bloc.type === 'slide') {
       printHtml += '<div class="slide">';
       var paragraphs = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
@@ -1100,7 +1109,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       bloc.data.forEach(function(question, idxVf) {
         exoNum++;
         printHtml += '<div class="exo">';
-        // Consigne affichée UNIQUEMENT sur la première question VF du bloc
         if (idxVf === 0) {
           afficherConsigne(bloc);
         }
@@ -1143,7 +1151,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
       printHtml += '</div>';
     } else if (bloc.type === 'carte') {
-      // Carte : même groupe que open pour la consigne, mais garde sa demi-ligne
       ouvrirZoneExercices();
       hasExercice = true;
       var c = bloc.data;
@@ -1213,7 +1220,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
-  // Fermer la zone 2 colonnes (ou la zone slides si aucun exo)
   if (slidesZoneFermee) {
     printHtml += '</div>'; // ferme .corps-2col
   } else {
@@ -1271,7 +1277,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var parent = texteNode.parentNode;
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
-      // Skip si dans un bloc copier (déjà stylé)
       if (parent.classList && (
             parent.classList.contains('copier-mot') ||
             parent.classList.contains('copier-deuxpoints')
