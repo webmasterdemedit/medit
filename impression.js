@@ -878,7 +878,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     if (!slidesZoneFermee) {
       printHtml += '</div>'; // ferme .slides-zone
       printHtml += '<div class="corps-2col">';
-      printHtml += '<div class="titre-questions">Questions</div>';
+      printHtml += '<div class="titre-questions">Exercices</div>';
       slidesZoneFermee = true;
     }
     if (!zoneExercicesOuverte) {
