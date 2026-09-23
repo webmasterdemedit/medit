@@ -233,7 +233,7 @@ function parserCopierPourImpression(copierTexte) {
 // des ligatures courantes (لا، لأ، لإ، لآ)
 // Coefficient ajustable si besoin (COEF_PX_PAR_UNITE)
 // ============================================================
-var COEF_PX_PAR_UNITE = 13;   // ← ajuste ici si les cases sont trop larges/courtes
+var COEF_PX_PAR_UNITE = 33;   // ← ajuste ici si les cases sont trop larges/courtes
 
 function estimerLargeurMot(mot) {
   if (!mot) return 0;
