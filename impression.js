@@ -208,7 +208,7 @@ function parserVraiFauxPourImpression(vfTexte) {
 }
 
 // ============================================================
-// ✅ NOUVEAU : PARSEUR COPIER
+// ✅ PARSEUR COPIER
 // ============================================================
 function parserCopierPourImpression(copierTexte) {
   if (!copierTexte) return [];
@@ -228,6 +228,34 @@ function parserCopierPourImpression(copierTexte) {
 }
 
 // ============================================================
+// ✅ SOLUTION 2 : ESTIMER LA LARGEUR D'UN MOT ARABE
+// Approximation par nombre de caractères, avec correction
+// des ligatures courantes (لا، لأ، لإ، لآ)
+// Coefficient ajustable si besoin (COEF_PX_PAR_UNITE)
+// ============================================================
+var COEF_PX_PAR_UNITE = 13;   // ← ajuste ici si les cases sont trop larges/courtes
+
+function estimerLargeurMot(mot) {
+  if (!mot) return 0;
+  // Enlever les espaces
+  var nettoye = String(mot).replace(/\s/g, '');
+  if (!nettoye) return 0;
+
+  // Compter les ligatures courantes (2 caractères = 1 glyphe)
+  var nbLigatures =
+      (nettoye.match(/لا/g) || []).length +
+      (nettoye.match(/لأ/g) || []).length +
+      (nettoye.match(/لإ/g) || []).length +
+      (nettoye.match(/لآ/g) || []).length;
+
+  // Nombre d'unités visuelles = caractères - ligatures comptées en double
+  var nbUnites = nettoye.length - nbLigatures;
+
+  // Largeur estimée en pixels
+  return Math.round(nbUnites * COEF_PX_PAR_UNITE);
+}
+
+// ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
 function genererImpression(chapitre, contenu) {
@@ -244,7 +272,7 @@ function genererImpression(chapitre, contenu) {
   var relierTexte = '';
   var ttTexte = '';
   var vfTexte = '';
-  var copierTexte = '';   // ✅ NOUVEAU
+  var copierTexte = '';
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -263,7 +291,7 @@ function genererImpression(chapitre, contenu) {
       ttTexte = ttTexte ? ttTexte + '\n' + part : part;
     } else if (part.startsWith('vf:')) {
       vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-    } else if (part.startsWith('c:')) {   // ✅ NOUVEAU (avant le else final)
+    } else if (part.startsWith('c:')) {
       copierTexte = copierTexte ? copierTexte + '\n' + part : part;
     } else {
       var cleanText = part.replace(/\r\n/g, '\n').trim();
@@ -302,7 +330,7 @@ function genererImpression(chapitre, contenu) {
   }
   var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
   var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
-  var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];   // ✅ NOUVEAU
+  var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
 
   // --- 3) Construire la liste ordonnée des blocs ---
   var blocsOrdonnes = [];
@@ -329,7 +357,7 @@ function genererImpression(chapitre, contenu) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
       } else if (type === 'vf' && vfsParsed.length > 0) {
         blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-      } else if (type === 'copier' && copiersParsed[idx]) {   // ✅ NOUVEAU
+      } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       }
     });
@@ -342,7 +370,7 @@ function genererImpression(chapitre, contenu) {
     ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
-    copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });   // ✅ NOUVEAU
+    copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
   }
 
   // Calculer le nombre total de questions
@@ -541,7 +569,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
-/* ✅ NOUVEAU : BLOC COPIER (arabe + 3 cases à la suite, même ligne) */
+/* ✅ BLOC COPIER (arabe + 3 cases à la suite, même ligne)        */
 /* ============================================================ */
 .bloc-copier {
   margin: 10px 0 14px;
@@ -583,7 +611,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 .copier-case {
-  width: 16px;
   height: 20px;
   border: 0.8px solid #5a4a3a;
   border-right: none;
@@ -987,7 +1014,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
 
   blocsOrdonnes.forEach(function(bloc) {
-    // ✅ NOUVEAU : bloc copier (affiché DANS la zone slides)
+    // ✅ Bloc copier (affiché DANS la zone slides)
     if (bloc.type === 'copier') {
       var mots = bloc.data.mots;
 
@@ -995,12 +1022,16 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="copier-ligne">';
 
       for (var cm = 0; cm < mots.length; cm++) {
+        // ✅ SOLUTION 2 : largeur estimée par nombre de caractères
+        var largeurEstimee = estimerLargeurMot(mots[cm]);
+        var largeurCase = Math.round(largeurEstimee / 3);
+
         printHtml += '<span class="copier-item">';
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>';
-        printHtml += '<span class="copier-cases">';
-        printHtml += '<span class="copier-case"></span>';
-        printHtml += '<span class="copier-case"></span>';
-        printHtml += '<span class="copier-case"></span>';
+        printHtml += '<span class="copier-cases" style="width:' + largeurEstimee + 'px;">';
+        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
+        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
+        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
         printHtml += '</span>';
         printHtml += '</span>';
       }
@@ -1240,7 +1271,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var parent = texteNode.parentNode;
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
-      // ✅ NOUVEAU : skip si dans un bloc copier (déjà stylé)
+      // Skip si dans un bloc copier (déjà stylé)
       if (parent.classList && (
             parent.classList.contains('copier-mot') ||
             parent.classList.contains('copier-deuxpoints')
