@@ -730,7 +730,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   right: 0;
   bottom: 0.28em;                 /* ← ajuste ici si la ligne est trop haute/basse */
   height: 1px;
-  background: #999999;
+  background: #999999 !important;
   pointer-events: none;
 }
 
