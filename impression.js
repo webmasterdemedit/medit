@@ -706,7 +706,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-align: right;
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 1.5em;
+  font-size: 2.5em;
   line-height: 1.2;
   color: #1a1a1a;
   padding: 2px 0 4px;
