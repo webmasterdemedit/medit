@@ -208,6 +208,26 @@ function parserVraiFauxPourImpression(vfTexte) {
 }
 
 // ============================================================
+// ✅ NOUVEAU : PARSEUR COPIER
+// ============================================================
+function parserCopierPourImpression(copierTexte) {
+  if (!copierTexte) return [];
+  var lignes = copierTexte.split('\n')
+    .map(function(l) { return l.trim(); })
+    .filter(function(l) { return l !== ''; });
+  var blocs = [];
+  lignes.forEach(function(ligne) {
+    var contenu = ligne.replace(/^c:\s*/i, '').trim();
+    if (!contenu) return;
+    var mots = contenu.split(',')
+      .map(function(m) { return m.trim(); })
+      .filter(function(m) { return m !== ''; });
+    if (mots.length > 0) blocs.push({ mots: mots });
+  });
+  return blocs;
+}
+
+// ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
 function genererImpression(chapitre, contenu) {
@@ -224,6 +244,7 @@ function genererImpression(chapitre, contenu) {
   var relierTexte = '';
   var ttTexte = '';
   var vfTexte = '';
+  var copierTexte = '';   // ✅ NOUVEAU
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -242,6 +263,8 @@ function genererImpression(chapitre, contenu) {
       ttTexte = ttTexte ? ttTexte + '\n' + part : part;
     } else if (part.startsWith('vf:')) {
       vfTexte = vfTexte ? vfTexte + '\n' + part : part;
+    } else if (part.startsWith('c:')) {   // ✅ NOUVEAU (avant le else final)
+      copierTexte = copierTexte ? copierTexte + '\n' + part : part;
     } else {
       var cleanText = part.replace(/\r\n/g, '\n').trim();
       if (cleanText) {
@@ -279,6 +302,7 @@ function genererImpression(chapitre, contenu) {
   }
   var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
   var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
+  var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];   // ✅ NOUVEAU
 
   // --- 3) Construire la liste ordonnée des blocs ---
   var blocsOrdonnes = [];
@@ -305,6 +329,8 @@ function genererImpression(chapitre, contenu) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
       } else if (type === 'vf' && vfsParsed.length > 0) {
         blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+      } else if (type === 'copier' && copiersParsed[idx]) {   // ✅ NOUVEAU
+        blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       }
     });
   } else {
@@ -316,6 +342,7 @@ function genererImpression(chapitre, contenu) {
     ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
+    copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });   // ✅ NOUVEAU
   }
 
   // Calculer le nombre total de questions
@@ -512,6 +539,67 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 .slide { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
+
+/* ============================================================ */
+/* ✅ NOUVEAU : BLOC COPIER (arabe + 3 cases à la suite, même ligne) */
+/* ============================================================ */
+.bloc-copier {
+  margin: 10px 0 14px;
+  padding: 4px 0;
+  width: 100%;
+  text-align: right;
+  direction: rtl;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.copier-ligne {
+  display: inline-flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  width: 100%;
+}
+
+.copier-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.copier-mot {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 1.7em;
+  line-height: 1;
+  white-space: nowrap;
+  direction: rtl;
+  color: #1a1a1a;
+}
+
+.copier-cases {
+  display: inline-flex;
+}
+
+.copier-case {
+  width: 16px;
+  height: 20px;
+  border: 0.8px solid #5a4a3a;
+  border-right: none;
+  background: white;
+}
+.copier-case:last-child {
+  border-right: 0.8px solid #5a4a3a;
+}
+
+.copier-deuxpoints {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', serif;
+  font-size: 1.7em;
+  line-height: 1;
+  color: #1a1a1a;
+  margin-right: 2px;
+}
 
 /* ============================================================ */
 /* CORPS EN 2 COLONNES (exercices + à retenir)                   */
@@ -899,6 +987,30 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
 
   blocsOrdonnes.forEach(function(bloc) {
+    // ✅ NOUVEAU : bloc copier (affiché DANS la zone slides)
+    if (bloc.type === 'copier') {
+      var mots = bloc.data.mots;
+
+      printHtml += '<div class="bloc-copier">';
+      printHtml += '<div class="copier-ligne">';
+
+      for (var cm = 0; cm < mots.length; cm++) {
+        printHtml += '<span class="copier-item">';
+        printHtml += '<span class="copier-mot">' + mots[cm] + '</span>';
+        printHtml += '<span class="copier-cases">';
+        printHtml += '<span class="copier-case"></span>';
+        printHtml += '<span class="copier-case"></span>';
+        printHtml += '<span class="copier-case"></span>';
+        printHtml += '</span>';
+        printHtml += '</span>';
+      }
+
+      printHtml += '<span class="copier-deuxpoints">:</span>';
+      printHtml += '</div>';
+      printHtml += '</div>';
+      return;
+    }
+
     if (bloc.type === 'slide') {
       printHtml += '<div class="slide">';
       var paragraphs = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
@@ -1128,6 +1240,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var parent = texteNode.parentNode;
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
+      // ✅ NOUVEAU : skip si dans un bloc copier (déjà stylé)
+      if (parent.classList && (
+            parent.classList.contains('copier-mot') ||
+            parent.classList.contains('copier-deuxpoints')
+          )) return;
 
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
