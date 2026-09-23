@@ -228,26 +228,6 @@ function parserCopierPourImpression(copierTexte) {
 }
 
 // ============================================================
-// ✅ SOLUTION 2 : ESTIMER LA LARGEUR D'UN MOT ARABE
-// ============================================================
-var COEF_PX_PAR_UNITE = 13;
-
-function estimerLargeurMot(mot) {
-  if (!mot) return 0;
-  var nettoye = String(mot).replace(/\s/g, '');
-  if (!nettoye) return 0;
-
-  var nbLigatures =
-      (nettoye.match(/لا/g) || []).length +
-      (nettoye.match(/لأ/g) || []).length +
-      (nettoye.match(/لإ/g) || []).length +
-      (nettoye.match(/لآ/g) || []).length;
-
-  var nbUnites = nettoye.length - nbLigatures;
-  return Math.round(nbUnites * COEF_PX_PAR_UNITE);
-}
-
-// ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
 function genererImpression(chapitre, contenu) {
@@ -540,7 +520,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* SLIDES (pleine largeur, PAS dans les colonnes)                */
+/* SLIDES                                                        */
 /* ============================================================ */
 .slides-zone {
   margin-top: 16px;
@@ -550,7 +530,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
-/* CORPS EN 2 COLONNES (exercices + à retenir)                   */
+/* CORPS EN 2 COLONNES                                           */
 /* ============================================================ */
 .corps-2col {
   column-count: 2;
@@ -606,23 +586,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   content: "◆ ";
   color: #a89878;
   font-size: 7pt;
-  margin-right: 2px;
-}
-
-/* ✅ Petit titre "Écriture" au-dessus de chaque bloc copier */
-.titre-ecriture {
-  font-size: 8.5pt;
-  font-weight: 600;
-  color: #7a5a1e;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  margin-bottom: 4px;
-  padding-bottom: 2px;
-  border-bottom: 0.5px solid #e0d4b8;
-}
-.titre-ecriture::before {
-  content: "✎ ";
-  color: #c8a860;
   margin-right: 2px;
 }
 
@@ -732,56 +695,35 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .relier-point.relier-point-partage { border-radius: 0; }
 
 /* ============================================================ */
-/* ✅ BLOC COPIER (dans les 2 colonnes comme un exercice)         */
+/* ✅ BLOC COPIER — Style manuel simple                           */
 /* ============================================================ */
 .bloc-copier {
+  margin-top: 4px;
   width: 100%;
+}
+
+.copier-mots {
+  text-align: right;
   direction: rtl;
-  text-align: right;        /* ✅ pousse à droite */
-  padding: 2px 0 4px;
-}
-
-.copier-ligne {
-  display: block;           /* ✅ block pour que text-align marche */
-  width: 100%;
-  text-align: right;        /* ✅ ceinture + bretelles */
-}
-
-.copier-item {
-  display: inline-flex;     /* ✅ chaque groupe = un "mot inline" */
-  align-items: center;
-  gap: 3px;
-  margin-left: 18px;        /* ✅ espace ENTRE les groupes (en RTL = à gauche) */
-  vertical-align: middle;
-}
-.copier-item:first-child {
-  margin-left: 0;
-}
-
-.copier-mot {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 1.7em;
-  line-height: 1;
+  font-size: 1.5em;
+  line-height: 1.2;
+  color: #1a1a1a;
+  padding: 2px 0 4px;
+  word-spacing: 14px;
+}
+
+.copier-mots .copier-mot {
+  display: inline-block;
   white-space: nowrap;
   direction: rtl;
-  color: #1a1a1a;
 }
 
-.copier-cases {
-  display: inline-flex;
-  box-sizing: border-box;
-}
-
-.copier-case {
-  display: inline-block;
-  box-sizing: border-box;
-  height: 20px;
-  border: 0.8px solid #5a4a3a;
-  border-right: none;
-  background: white;
-}
-.copier-case:last-child {
-  border-right: 0.8px solid #5a4a3a;
+.copier-ligne-pointillee {
+  width: 100%;
+  height: 22px;
+  border-bottom: 1px dotted #5a4a3a;
+  margin-top: 2px;
 }
 
 /* ============================================================ */
@@ -946,7 +888,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
 
   // ============================================================
-  // PRÉ-CALCUL DES CONSIGNES (gestion singulier / pluriel)
+  // PRÉ-CALCUL DES CONSIGNES (singulier / pluriel + groupes)
   // ============================================================
   function typeLogique(t) {
     if (t === 'carte') return 'open';
@@ -1004,7 +946,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   blocsOrdonnes.forEach(function(bloc) {
 
     // ========================================================
-    // ✅ BLOC COPIER — Dans les 2 colonnes, comme un exercice
+    // ✅ BLOC COPIER — Style manuel, ligne pointillée simple
     // ========================================================
     if (bloc.type === 'copier') {
       ouvrirZoneExercices();
@@ -1015,36 +957,26 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
       printHtml += '<div class="exo">';
 
-      // ✅ Consigne (unique si plusieurs copier consécutifs)
+      // Consigne (unique si plusieurs copier consécutifs)
       afficherConsigne(bloc);
 
-      // ✅ Petit titre "Écriture" au-dessus de chaque bloc
-      printHtml += '<div class="titre-ecriture">Écriture</div>';
-
-      // ✅ Ligne : numéro + mot arabe + cases, aligné à droite
+      // Ligne : numéro + mot arabe aligné à droite
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="bloc-copier">';
-      printHtml += '<span class="copier-ligne">';
+      printHtml += '<span class="exo-texte">';
+      printHtml += '<div class="bloc-copier">';
+      printHtml += '<div class="copier-mots">';
 
       for (var cm = 0; cm < mots.length; cm++) {
-        var largeurEstimee = estimerLargeurMot(mots[cm]);
-        var largeurCase = Math.round(largeurEstimee / 3);
-
-        printHtml += '<span class="copier-item">';
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>';
-        printHtml += '<span class="copier-cases" style="width:' + largeurEstimee + 'px;">';
-        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
-        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
-        printHtml += '<span class="copier-case" style="width:' + largeurCase + 'px;"></span>';
-        printHtml += '</span>';
-        printHtml += '</span>';
       }
 
-      printHtml += '</span>'; // ferme .copier-ligne
-      printHtml += '</span>'; // ferme .bloc-copier
-      printHtml += '</div>';  // ferme .exo-ligne
-      printHtml += '</div>';  // ferme .exo
+      printHtml += '</div>'; // ferme .copier-mots
+      printHtml += '<div class="copier-ligne-pointillee"></div>';
+      printHtml += '</div>'; // ferme .bloc-copier
+      printHtml += '</span>'; // ferme .exo-texte
+      printHtml += '</div>'; // ferme .exo-ligne
+      printHtml += '</div>'; // ferme .exo
       return;
     }
 
@@ -1207,7 +1139,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
-  // ZONE MÉMO (dans les colonnes)
+  // ZONE MÉMO
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
@@ -1277,10 +1209,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var parent = texteNode.parentNode;
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
-      if (parent.classList && (
-            parent.classList.contains('copier-mot') ||
-            parent.classList.contains('copier-deuxpoints')
-          )) return;
+      if (parent.classList && parent.classList.contains('copier-mot')) return;
 
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
