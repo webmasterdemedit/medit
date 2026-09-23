@@ -695,7 +695,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .relier-point.relier-point-partage { border-radius: 0; }
 
 /* ============================================================ */
-/* ✅ BLOC COPIER — Style manuel simple                           */
+/* ✅ BLOC COPIER — Style manuel, ligne de base grise             */
 /* ============================================================ */
 .bloc-copier {
   margin-top: 4px;
@@ -707,16 +707,31 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
-  line-height: 1.2;
+  line-height: 1;                 /* ✅ réduit la boîte à la hauteur réelle */
   color: #1a1a1a;
-  padding: 2px 0 4px;
+  padding: 2px 0 0;
   word-spacing: 14px;
+  position: relative;             /* ✅ pour positionner le ::after */
+  display: block;
+  margin-bottom: 6px;
 }
 
 .copier-mots .copier-mot {
   display: inline-block;
   white-space: nowrap;
   direction: rtl;
+}
+
+/* ✅ Ligne grise à la baseline calligraphique */
+.copier-mots::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0.18em;                 /* ← ajuste ici si la ligne est trop haute/basse */
+  height: 1px;
+  background: #b8b8b8;
+  pointer-events: none;
 }
 
 .copier-ligne-pointillee {
@@ -946,7 +961,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   blocsOrdonnes.forEach(function(bloc) {
 
     // ========================================================
-    // ✅ BLOC COPIER — Style manuel, ligne pointillée simple
+    // ✅ BLOC COPIER — Style manuel, ligne de base grise
     // ========================================================
     if (bloc.type === 'copier') {
       ouvrirZoneExercices();
