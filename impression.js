@@ -631,7 +631,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 /* Open */
 .open-lignes { margin-top:3px; margin-left: 24px; }
-.open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:4px; }
+.open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:7px; }
 
 /* Carte : demi-ligne pointillée */
 .carte-ligne-courte {
