@@ -56,130 +56,113 @@
 
     .grille-livrets {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-      gap: 28px;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 20px;
       margin-top: 10px;
     }
 
+    /* === CARTE FORMAT CATÉGORIE / BLOG === */
     .carte-livret {
       position: relative;
       border-radius: 0;
       padding: 0;
-      height: 380px;
+      height: 180px;
       display: flex;
       flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
       cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
+      transition: all 0.25s ease;
+      border: 1px solid;
+      border-left-width: 5px;
       overflow: hidden;
       text-decoration: none;
-      color: #1a1a1a;
       background: var(--bg);
     }
 
     .carte-livret:hover {
-      transform: translateY(-4px);
-      border-color: var(--text);
+      transform: translateY(-3px);
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.08);
     }
 
     .carte-livret:active {
-      transform: scale(0.97);
+      transform: scale(0.98);
     }
 
     .carte-livret .contenu-livret {
       position: relative;
       z-index: 2;
-      padding: 24px 20px;
+      padding: 18px 20px 14px;
       width: 100%;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       height: 100%;
+      text-align: left;
+      align-items: flex-start;
     }
 
     .carte-livret .titre-wrapper {
       display: flex;
       flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-top: 30px;
+      align-items: flex-start;
+      gap: 3px;
+      width: 100%;
     }
 
     .carte-livret .auteur-livret {
       font-size: 10px;
-      font-weight: 300;
+      font-weight: 500;
       letter-spacing: 2px;
       text-transform: uppercase;
-      opacity: 0.6;
+      opacity: 0.7;
       margin-bottom: 2px;
-      color: rgba(26, 26, 26, 0.5);
     }
 
     .carte-livret .titre-livret {
       font-family: 'Georgia', serif;
-      font-size: 22px;
+      font-size: 20px;
       font-weight: 700;
       letter-spacing: 0.3px;
-      margin-bottom: 0;
       line-height: 1.2;
-      max-width: 90%;
-      color: #1a1a1a;
-      text-align: center;
+      max-width: 100%;
+      text-align: left;
+      color: var(--text);
     }
 
     .carte-livret .sous-titre-livret {
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 400;
       opacity: 0.8;
       margin-top: 4px;
-      color: rgba(26, 26, 26, 0.8);
       line-height: 1.3;
-      text-align: center;
+      text-align: left;
+      color: var(--text-secondary);
     }
 
-    .carte-livret .edition-info {
-      margin-top: auto;
+    /* === META BAS DE CARTE === */
+    .carte-livret .meta-bas {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      gap: 2px;
-      padding-bottom: 10px;
+      justify-content: space-between;
+      width: 100%;
+      gap: 12px;
+      margin-top: auto;
     }
 
-    .carte-livret .edition-nom {
+    .carte-livret .meta-textes {
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    .carte-livret .meta-pourcentage {
+      font-size: 12px;
       font-weight: 700;
-      font-style: italic;
-      font-size: 11px;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
+      color: var(--text);
+      white-space: nowrap;
     }
 
-    .carte-livret .edition-date {
-      font-size: 10px;
-      opacity: 1;
-      color: rgba(26, 26, 26, 0.7);
-      font-weight: 500;
-    }
-
-    .carte-livret .badge-niveau {
-      position: absolute;
-      top: 14px;
-      right: 14px;
-      z-index: 3;
-      padding: 3px 12px;
-      font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      color: rgba(26, 26, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70);
-    }
-
+    /* === BARRE DE PROGRESSION INTÉGRÉE === */
     .carte-livret .progression-livret {
       position: absolute;
       bottom: 0;
@@ -187,42 +170,56 @@
       right: 0;
       z-index: 3;
       height: 4px;
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(0, 0, 0, 0.06);
       overflow: hidden;
     }
 
     .carte-livret .progression-livret .barre {
       height: 100%;
-      background: rgba(255, 255, 255, 0.60);
       transition: width 0.6s ease;
       width: 0%;
     }
 
-    /* === UNIQUEMENT AJOUT POUR VERROUILLÉ === */
+    /* === BADGE NIVEAU === */
+    .carte-livret .badge-niveau {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 3;
+      padding: 3px 10px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.75);
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      border-radius: 999px;
+    }
+
+    /* === VERROUILLÉ === */
     .carte-livret.verrouille {
-      filter: grayscale(1) opacity(0.4);
+      filter: grayscale(1) opacity(0.45);
       cursor: not-allowed;
       pointer-events: none;
     }
 
     .carte-livret.verrouille:hover {
       transform: none;
-      border-color: var(--border);
+      box-shadow: none;
     }
 
-    .section-verrouillee {
-      margin-top: 40px;
-      padding-top: 20px;
-      border-top: 1px solid var(--border);
+    .carte-livret .cadenas {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 5;
+      font-size: 28px;
+      opacity: 0.5;
+      pointer-events: none;
     }
 
-    .section-verrouillee .titre-section {
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--text-secondary);
-      margin-bottom: 14px;
-    }
-
+    /* === VIDES / LOADER === */
     .vide-livrets {
       grid-column: 1 / -1;
       text-align: center;
@@ -269,23 +266,19 @@
       to { transform: rotate(360deg); }
     }
 
+    /* === RESPONSIVE === */
     @media (max-width: 640px) {
       .page-livrets { padding: 12px 16px 30px; }
       .page-livrets h1 { font-size: 22px; }
-      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 16px; }
-      .carte-livret { height: 280px; }
+      .grille-livrets { grid-template-columns: 1fr; gap: 14px; }
+      .carte-livret { height: 150px; }
       .carte-livret .titre-livret { font-size: 17px; }
       .carte-livret .sous-titre-livret { font-size: 11px; }
       .carte-livret .auteur-livret { font-size: 9px; }
-      .carte-livret .badge-niveau { font-size: 10px; top: 10px; right: 10px; padding: 2px 10px; }
+      .carte-livret .badge-niveau { font-size: 10px; top: 10px; right: 10px; padding: 2px 8px; }
+      .carte-livret .contenu-livret { padding: 14px 16px 12px; }
       .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
       .stat-item { font-size: 13px; }
-    }
-
-    @media (max-width: 400px) {
-      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 12px; }
-      .carte-livret { height: 240px; }
-      .carte-livret .titre-livret { font-size: 15px; }
     }
   </style>
 
@@ -303,7 +296,7 @@
   <div class="page page-livrets">
 
     <h1>Mes livrets</h1>
-    <p class="sous-titre-page">Chaque livret regroupe des chapitres sur un même thème. Cliquez sur un livret pour commencer l'apprentissage.</p>
+    <p class="sous-titre-page">Chaque livret regroupe des textes sur un même thème. Cliquez sur un livret pour commencer l'apprentissage.</p>
 
     <div class="stats-ligne" id="statsLigne">
       <div class="stat-item">
@@ -311,7 +304,7 @@
         <span class="nombre" id="totalLivrets">0</span>
       </div>
       <div class="stat-item">
-        <span>Chapitres total :</span>
+        <span>Textes total :</span>
         <span class="nombre" id="totalChapitres">0</span>
       </div>
       <div class="stat-item">
@@ -363,18 +356,6 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
-                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return mois[date.getMonth()] + ' ' + date.getFullYear();
-      } catch(e) {
-        return dateStr;
-      }
-    }
-
     function chargerLivrets() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -396,12 +377,10 @@
                 livretsData[l.titre] = {
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
-                  date: l.date || '',
                   preRequis: l.preRequis || '',
                   auteur: l.auteur || ''
                 };
               });
-              console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
             }
           }
 
@@ -431,7 +410,6 @@
                   livretsData[l.titre] = {
                     couleur: l.couleur || '#2d6a4f',
                     sousTitre: l.sousTitre || '',
-                    date: l.date || '',
                     preRequis: l.preRequis || '',
                     auteur: l.auteur || ''
                   };
@@ -455,6 +433,18 @@
             `;
           }
         });
+    }
+
+    function hexToRgba(hex, alpha) {
+      if (!hex) return 'rgba(45, 106, 79, ' + alpha + ')';
+      var h = hex.replace('#', '');
+      if (h.length === 3) {
+        h = h.split('').map(function(c) { return c + c; }).join('');
+      }
+      var r = parseInt(h.substring(0, 2), 16);
+      var g = parseInt(h.substring(2, 4), 16);
+      var b = parseInt(h.substring(4, 6), 16);
+      return 'rgba(' + r + ', ' + g + ', ' + b + ', ' + alpha + ')';
     }
 
     function afficherLivrets() {
@@ -500,7 +490,7 @@
           <div class="vide-livrets">
             <span class="icone">◈</span>
             <h2>Aucun livret disponible</h2>
-            <p>Aucune catégorie de chapitres n'est disponible pour votre niveau (${niveauEtudiant}).</p>
+            <p>Aucune catégorie de textes n'est disponible pour votre niveau (${niveauEtudiant}).</p>
           </div>
         `;
         return;
@@ -511,11 +501,10 @@
       livrets.forEach(function(livret) {
         var data = livretsData[livret.nom] || {};
         var sousTitre = data.sousTitre || '';
-        var date = data.date || '';
         var auteur = data.auteur || '';
         var nbChapitres = livret.chapitres || 0;
 
-        // ✅ DÉVERROUILLAGE : déverrouillé si AU MOINS UN chapitre a un niveau <= niveau étudiant
+        // Déverrouillé si AU MOINS UN texte a un niveau <= niveau étudiant
         var disponible = false;
         livret.chapitresListe.forEach(function(ch) {
           if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) {
@@ -523,9 +512,15 @@
           }
         });
 
-        var couleur = disponible ? (data.couleur || '#2d6a4f') : '#666666';
+        var couleur = data.couleur || '#2d6a4f';
+        var couleurAffichee = disponible ? couleur : '#888888';
 
-        // ✅ BADGE DYNAMIQUE : "Niveau X" si un seul niveau, sinon "Livret X à Y"
+        // Fond très clair teinté + bordure couleur
+        var fondClair = hexToRgba(couleurAffichee, 0.07);
+        var bordureCouleur = hexToRgba(couleurAffichee, 0.35);
+        var barreCouleur = couleurAffichee;
+
+        // Badge dynamique
         var badgeTexte;
         if (livret.niveauMin === livret.niveauMax) {
           badgeTexte = 'Niveau ' + livret.niveauMin;
@@ -533,7 +528,7 @@
           badgeTexte = 'Niveau ' + livret.niveauMin + ' à ' + livret.niveauMax;
         }
 
-        // Progression : on garde la logique existante (valide)
+        // Progression
         var validees = 0;
         livret.chapitresListe.forEach(function(chapitre) {
           var reponse = toutesLesReponses[chapitre.id];
@@ -543,14 +538,13 @@
         });
 
         var pourcentage = nbChapitres > 0 ? Math.round((validees / nbChapitres) * 100) : 0;
-        var dateFormatee = formatDate(date);
         var classeVerrou = disponible ? '' : 'verrouille';
 
         html += `
           <div class="carte-livret ${classeVerrou}" 
-               style="background: ${couleur}; border-color: ${couleur};"
+               style="background: ${fondClair}; border-color: ${bordureCouleur}; border-left-color: ${couleurAffichee};"
                onclick="${disponible ? 'window.location.href=\'/medit/livret.html?cat=' + encodeURIComponent(livret.nom) + '\'' : ''}">
-            ${!disponible ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:36px;opacity:0.6;pointer-events:none;">🔒︎︎︎</div>' : ''}
+            ${!disponible ? '<div class="cadenas">🔒</div>' : ''}
             <span class="badge-niveau">${badgeTexte}</span>
             <div class="contenu-livret">
               <div class="titre-wrapper">
@@ -558,13 +552,13 @@
                 <span class="titre-livret">${livret.nom}</span>
                 ${sousTitre ? `<span class="sous-titre-livret">${sousTitre}</span>` : ''}
               </div>
-              <div class="edition-info">
-                <span class="edition-nom">Qiraat Édition</span>
-                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              <div class="meta-bas">
+                <span class="meta-textes">${nbChapitres} texte${nbChapitres > 1 ? 's' : ''}</span>
+                <span class="meta-pourcentage">${pourcentage}%</span>
               </div>
             </div>
             <div class="progression-livret">
-              <div class="barre" style="width: ${pourcentage}%;"></div>
+              <div class="barre" style="width: ${pourcentage}%; background: ${barreCouleur};"></div>
             </div>
           </div>
         `;
