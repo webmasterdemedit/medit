@@ -2,6 +2,7 @@
 // IMPRESSION - Qiraat
 // Fichier autonome : génère une page imprimable pour un chapitre
 // Dépend de : DataManager (data-manager.js)
+// + Support images (img:nom:position:taille)
 // ============================================================
 
 // ============================================================
@@ -43,7 +44,12 @@ function imprimerChapitre(chapitreId, titre, chapitresData) {
     return;
   }
 
-  genererImpression(chapitre, contenu);
+  // ✅ Charger les images du livret AVANT de générer l'impression
+  chargerImagesLivret(chapitre.categorie).then(function(images) {
+    genererImpression(chapitre, contenu, images || {});
+  }).catch(function() {
+    genererImpression(chapitre, contenu, {});
+  });
 }
 
 // ============================================================
@@ -230,7 +236,8 @@ function parserCopierPourImpression(copierTexte) {
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
-function genererImpression(chapitre, contenu) {
+function genererImpression(chapitre, contenu, imagesLivret) {
+  imagesLivret = imagesLivret || {};
   var ordreBlocs = chapitre.ordreBlocs || [];
 
   // --- 1) Parser chaque type séparément ---
@@ -530,6 +537,48 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
+/* IMAGES DANS LES SLIDES                                        */
+/* ============================================================ */
+.slide::after {
+  content: "";
+  display: table;
+  clear: both;
+}
+.print-img {
+  display: block;
+  height: auto;
+  border: none;
+  margin: 10px 0;
+  page-break-inside: avoid;
+  break-inside: avoid;
+}
+.print-img-centre {
+  margin-left: auto;
+  margin-right: auto;
+}
+.print-img-gauche {
+  float: left;
+  margin: 6px 14px 8px 0;
+}
+.print-img-droite {
+  float: right;
+  margin: 6px 0 8px 14px;
+}
+.print-img-petit  { max-width: 150px; }
+.print-img-moyen  { max-width: 220px; }
+.print-img-grand  { max-width: 320px; }
+
+.img-manquante {
+  display: block;
+  padding: 8px;
+  border: 1px dashed #999;
+  color: #666;
+  font-size: 9pt;
+  text-align: center;
+  margin: 8px 0;
+}
+
+/* ============================================================ */
 /* CORPS EN 2 COLONNES                                           */
 /* ============================================================ */
 .corps-2col {
@@ -707,11 +756,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
-  line-height: 1;                 /* ✅ réduit la boîte à la hauteur réelle */
+  line-height: 1;
   color: #1a1a1a;
   padding: 2px 0 0;
   word-spacing: 14px;
-  position: relative;             /* ✅ pour positionner le ::after */
+  position: relative;
   display: block;
   margin-bottom: 6px;
 }
@@ -722,13 +771,12 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   direction: rtl;
 }
 
-/* ✅ Ligne grise à la baseline calligraphique */
 .copier-mots::after {
   content: "";
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.28em;          /* ← ajuste ici si la ligne est trop haute/basse */
+  bottom: 0.28em;
   height: 1px;
   background: #fa0202 !important;
   pointer-events: none;
@@ -961,7 +1009,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   blocsOrdonnes.forEach(function(bloc) {
 
     // ========================================================
-    // ✅ BLOC COPIER — Style manuel, ligne de base grise
+    // ✅ BLOC COPIER
     // ========================================================
     if (bloc.type === 'copier') {
       ouvrirZoneExercices();
@@ -971,11 +1019,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var mots = bloc.data.mots;
 
       printHtml += '<div class="exo">';
-
-      // Consigne (unique si plusieurs copier consécutifs)
       afficherConsigne(bloc);
 
-      // Ligne : numéro + mot arabe aligné à droite
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">';
@@ -986,12 +1031,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>';
       }
 
-      printHtml += '</div>'; // ferme .copier-mots
+      printHtml += '</div>';
       printHtml += '<div class="copier-ligne-pointillee"></div>';
-      printHtml += '</div>'; // ferme .bloc-copier
-      printHtml += '</span>'; // ferme .exo-texte
-      printHtml += '</div>'; // ferme .exo-ligne
-      printHtml += '</div>'; // ferme .exo
+      printHtml += '</div>';
+      printHtml += '</span>';
+      printHtml += '</div>';
+      printHtml += '</div>';
       return;
     }
 
@@ -1000,10 +1045,51 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     // ========================================================
     if (bloc.type === 'slide') {
       printHtml += '<div class="slide">';
-      var paragraphs = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
-      paragraphs.forEach(function(p) {
-        printHtml += '<p>' + p.trim() + '</p>';
+      var lignesSlide = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
+      var bufferTexte = '';
+
+      function flushTexteImpression() {
+        if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+        var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
+        paras.forEach(function(p) {
+          printHtml += '<p>' + p.trim() + '</p>';
+        });
+        bufferTexte = '';
+      }
+
+      lignesSlide.forEach(function(l) {
+        var trimmed = l.trim();
+
+        var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
+        if (imgMatch) {
+          flushTexteImpression();
+
+          var nomImg = imgMatch[1];
+          var opt1 = (imgMatch[2] || '').toLowerCase();
+          var opt2 = (imgMatch[3] || '').toLowerCase();
+
+          var position = 'centre';
+          var taille = 'moyen';
+          [opt1, opt2].forEach(function(o) {
+            if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
+            else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
+          });
+
+          var url = imagesLivret[nomImg];
+          if (!url) {
+            printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
+          } else {
+            var classes = 'print-img print-img-' + position + ' print-img-' + taille;
+            printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="' + classes + '">';
+          }
+          return;
+        }
+
+        bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
       });
+
+      flushTexteImpression();
+
       printHtml += '</div>';
     } else if (bloc.type === 'quiz') {
       ouvrirZoneExercices();
@@ -1032,10 +1118,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
-printHtml += '<div class="open-ligne"></div>';
-printHtml += '<div class="open-ligne"></div>';
-printHtml += '<div class="open-ligne"></div>';
-printHtml += '</div></div>';
+      printHtml += '<div class="open-ligne"></div>';
+      printHtml += '<div class="open-ligne"></div>';
+      printHtml += '<div class="open-ligne"></div>';
+      printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
       hasExercice = true;
