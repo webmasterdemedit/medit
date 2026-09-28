@@ -463,6 +463,23 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 .page { max-width:100%; }
 
+.entete-eleve {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+  background: #fafaf7;
+  border: 0.5px solid #d8d2c4;
+  border-radius: 3px;
+  font-size: 9.5pt;
+}
+.entete-eleve .ligne-eleve {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.entete-eleve span { white-space: nowrap; }
+.entete-eleve strong { font-weight: 600; color: #3a2e22; }
+
 /* ============================================================ */
 /* BANDEAU TITRE                                                 */
 /* ============================================================ */
