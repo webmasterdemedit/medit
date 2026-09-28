@@ -580,8 +580,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   margin: 6px 0 6px 16px;
   padding: 4px 0 0 0;
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 15pt;
-  font-weight: 700;
+  font-size: 12pt;
+font-weight: 500;
   font-style: normal;
   color: #3a2e22;
   text-align: right;
