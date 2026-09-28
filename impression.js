@@ -272,6 +272,14 @@ function parserCopierPourImpression(copierTexte) {
   });
   return blocs;
 }
+// ============================================================
+// ✅ RENDU DU TEXTE ENTRE '' → italique + chevrons « »
+// ============================================================
+function rendreCitations(texte) {
+  if (!texte || texte.indexOf("''") === -1) return texte;
+  // Remplace chaque paire ''...'' par « ... » en italique
+  return texte.replace(/''([^']+)''/g, '<em>« $1 »</em>');
+}
 
 // ============================================================
 // GÉNÉRATION IMPRESSION
@@ -1080,7 +1088,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
         paras.forEach(function(p) {
-          printHtml += '<p>' + rendreSources(p.trim()) + '</p>';
+          printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
         });
         bufferTexte = '';
       }
