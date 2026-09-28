@@ -585,7 +585,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   font-style: normal;
   color: #3a2e22;
   text-align: right;
-  max-width: 35%;
+  max-width: 23%;
   line-height: 1.2;
   text-indent: 0;
   white-space: normal;
