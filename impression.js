@@ -273,12 +273,12 @@ function parserCopierPourImpression(copierTexte) {
   return blocs;
 }
 // ============================================================
-// ✅ RENDU DU TEXTE ENTRE '' → italique + chevrons « »
+// ✅ RENDU DES CITATIONS "..." → « ... » en italique
 // ============================================================
 function rendreCitations(texte) {
-  if (!texte || texte.indexOf("''") === -1) return texte;
-  // Remplace chaque paire ''...'' par « ... » en italique
-  return texte.replace(/''([^']+)''/g, '<em>« $1 »</em>');
+  if (!texte || texte.indexOf('"') === -1) return texte;
+  // Gère les guillemets doubles droits "..." ET courbes “...”
+  return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
 }
 
 // ============================================================
@@ -860,6 +860,9 @@ font-weight: 700;
   letter-spacing:1px;
   color:#7a5a1e;
   margin-bottom:4px;
+}
+.slide p em {
+  font-style: italic;
 }
 .zone-memo .titre-memo::before {
   content: "✦ ";
