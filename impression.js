@@ -448,7 +448,7 @@ function genererImpression(chapitre, contenu, imagesLivret) {
 <html>
 <head>
 <meta charset="UTF-8">
-<title>${chapitre.titre || 'Lecture'}</title>
+<title>${chapitre.categorie ? chapitre.categorie + ' - ' : ''}${chapitre.titre || 'Lecture'} - Niveau ${chapitre.niveau || 0}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.2cm 1.5cm 1.2cm 1.5cm; size: A4; }
