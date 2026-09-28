@@ -1085,13 +1085,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var bufferTexte = '';
 
       function flushTexteImpression() {
-        if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-        var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
-        paras.forEach(function(p) {
-          printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
-        });
-        bufferTexte = '';
-      }
+  if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+  var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
+  paras.forEach(function(p) {
+    printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
+  });
+  bufferTexte = '';
+}
 
       lignesSlide.forEach(function(l) {
         var trimmed = l.trim();
