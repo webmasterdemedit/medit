@@ -440,9 +440,14 @@ function genererImpression(chapitre, contenu, imagesLivret) {
   var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'long', year: 'numeric'
   });
-  var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+    var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
     hour: '2-digit', minute: '2-digit'
   });
+
+  var nomFichierPdf = (chapitre.titre || 'Lecture') +
+    (chapitre.categorie ? ' - ' + chapitre.categorie : '') +
+    ' - Niveau ' + (chapitre.niveau || 0);
+  nomFichierPdf = nomFichierPdf.replace(/[\\/:*?"<>|]/g, '-');
 
   var printHtml = `<!DOCTYPE html>
 <html>
