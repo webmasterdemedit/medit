@@ -3,8 +3,7 @@
 // Fichier autonome : génère une page imprimable pour un chapitre
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
-// + Support sources [xxx] rendues en marge droite
-// + Support guillemets "..." → « ... » en italique
+// + Support sources [xxx] rendues en marge droite, sans crochets
 // ============================================================
 
 // ============================================================
@@ -54,22 +53,15 @@ function imprimerChapitre(chapitreId, titre, chapitresData) {
 }
 
 // ============================================================
-// ✅ RENDU DES GUILLEMETS "..." → « ... » en italique
-// ============================================================
-function rendreGuillemets(texte) {
-  return texte.replace(/"([^"]+)"/g, '<em>« $1 »</em>');
-}
-
-// ============================================================
 // ✅ RENDU DES SOURCES [xxx]
 // - Supprime les crochets
 // - Si [xxx] est en fin de phrase, le déplace au début de cette phrase
 // ============================================================
 function rendreSources(texte) {
-  if (!/\[[^\]]+\]/.test(texte)) return rendreGuillemets(texte);
+  if (!/\[[^\]]+\]/.test(texte)) return texte;
 
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
-  if (!matchSource) return rendreGuillemets(texte);
+  if (!matchSource) return texte;
   var contenuSource = matchSource[1].trim();
 
   var texteSansSource = texte.replace(/\[[^\]]+\]\.?/, '').trim();
@@ -100,7 +92,7 @@ function rendreSources(texte) {
 
   var spanSource = '<span class="source-marge">' + contenuSource + '</span>';
 
-  return rendreGuillemets(avant + spanSource + phrase);
+  return avant + spanSource + phrase;
 }
 
 // ============================================================
@@ -577,10 +569,10 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 .slide { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
-.slide p em { font-style: italic; }
 
 /* ============================================================ */
 /* SOURCES [xxx] — bloc flottant en marge droite                 */
+/* Georgia bold, plus gd que le texte, descendu dans son cadre    */
 /* ============================================================ */
 .slide p .source-marge {
   float: right;
@@ -588,12 +580,12 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   margin: 6px 0 6px 16px;
   padding: 4px 0 0 0;
   font-family: 'Georgia', 'Times New Roman', serif;
-  font-size: 15pt;
-  font-weight: 700;
+  font-size: 12pt;
+font-weight: 500;
   font-style: normal;
   color: #3a2e22;
   text-align: right;
-  max-width: 35%;
+  max-width: 23%;
   line-height: 1.2;
   text-indent: 0;
   white-space: normal;
