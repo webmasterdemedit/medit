@@ -693,7 +693,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   display: inline-block;
   width: 16px;
   height: 16px;
-  line-height: 17px;
+  line-height: 15px;
   text-align: center;
   background: transparent;
   color: #1a1a1a;
