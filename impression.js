@@ -935,9 +935,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <!-- ENCART ÉLÈVE -->
 <div class="entete-eleve">
   <div class="ligne-eleve">
-    <span><strong>Nom et prénom :</strong></span>
-    <span><strong>Date :</strong></span>
-    <span><strong>Feuille n° :</strong></span>
+    <span><strong>Nom et prénom :</strong> ....................................................</span>
+    <span><strong>Date :</strong> ......... / ......... / .........</span>
+    <span><strong>Feuille n° :</strong> .........</span>
   </div>
 </div>
 
