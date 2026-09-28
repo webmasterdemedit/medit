@@ -272,12 +272,12 @@ function parserCopierPourImpression(copierTexte) {
   });
   return blocs;
 }
+
 // ============================================================
 // ✅ RENDU DES CITATIONS "..." → « ... » en italique
 // ============================================================
 function rendreCitations(texte) {
   if (!texte || texte.indexOf('"') === -1) return texte;
-  // Gère les guillemets doubles droits "..." ET courbes “...”
   return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
 }
 
@@ -467,61 +467,35 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* BANDEAU TITRE                                                 */
 /* ============================================================ */
 .bandeau-titre {
-  background: #f5f3ee;
+  background: #f2f2f2;
   border-radius: 3px;
   padding: 10px 14px 9px;
   margin-bottom: 8px;
 }
 .bandeau-titre .ligne-titre {
   display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  gap: 2px;
-  text-align: center;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 10px;
+  text-align: left;
 }
 .bandeau-titre h1 {
   font-family: 'Georgia', serif;
   font-size: 16pt;
   font-weight: bold;
-  color: #2b1f14;
+  color: #1a1a1a;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   line-height: 1.15;
   margin: 0;
 }
 .bandeau-titre .meta-droite {
-  font-size: 8.5pt;
-  color: #6b5a48;
+  font-size: 9pt;
+  color: #555;
   text-align: right;
   white-space: nowrap;
 }
-.bandeau-titre .sous-titre {
-  font-size: 10pt;
-  font-style: italic;
-  color: #6b5a48;
-  margin-top: 2px;
-}
-
-/* ============================================================ */
-/* ENCART ÉLÈVE                                                  */
-/* ============================================================ */
-.entete-eleve {
-  margin-bottom: 10px;
-  padding: 6px 10px;
-  background: #fafaf7;
-  border: 0.5px solid #d8d2c4;
-  border-radius: 3px;
-  font-size: 9.5pt;
-}
-.entete-eleve .ligne-eleve {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-.entete-eleve span { white-space: nowrap; }
-.entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
 /* ============================================================ */
 /* CHIPS TAGS + VOCABULAIRE                                      */
@@ -535,11 +509,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   display: inline-block;
   padding: 1px 9px;
   margin: 1px 3px;
-  background: #f0ede6;
+  background: #f0f0f0;
   border-radius: 10px;
-  font-size: 8.5pt;
-  color: #5a4a3a;
-  font-style: italic;
+  font-size: 9.5pt;
+  color: #444;
+  font-style: normal;
 }
 
 .vocab-haut {
@@ -553,7 +527,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   font-size: 8.5pt;
   text-transform: uppercase;
   letter-spacing: 1px;
-  color: #5a4a3a;
+  color: #555;
   margin-right: 6px;
 }
 .vocab-haut .memo-mot {
@@ -561,7 +535,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   padding: 1px 9px;
   margin: 1px 3px;
   background: #faf8f4;
-  border: 0.5px solid #c8bfa8;
+  border: 0.5px solid #bbb;
   border-radius: 10px;
   font-size: 9pt;
   color: #3a2e22;
@@ -580,7 +554,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 /* ============================================================ */
 /* SOURCES [xxx] — bloc flottant en marge droite                 */
-/* Georgia bold, plus gd que le texte, descendu dans son cadre    */
 /* ============================================================ */
 .slide p .source-marge {
   float: right;
@@ -589,15 +562,22 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   padding: 4px 0 0 0;
   font-family: 'Georgia', 'Times New Roman', serif;
   font-size: 12pt;
-font-weight: 700;
+  font-weight: 700;
   font-style: normal;
-  color: #3a2e22;
+  color: #333;
   text-align: right;
   max-width: 23%;
   line-height: 1.2;
   text-indent: 0;
   white-space: normal;
   vertical-align: top;
+}
+
+/* ============================================================ */
+/* CITATIONS "..." → « ... » italique                            */
+/* ============================================================ */
+.slide p em {
+  font-style: italic;
 }
 
 /* ============================================================ */
@@ -657,13 +637,13 @@ font-weight: 700;
   font-family: 'Georgia', serif;
   font-size: 13pt;
   font-weight: bold;
-  color: #2b1f14;
+  color: #1a1a1a;
   letter-spacing: 0.5px;
   text-transform: uppercase;
   text-align: center;
   margin-bottom: 10px;
   padding-bottom: 4px;
-  border-bottom: 1px solid #d8d2c4;
+  border-bottom: 1px solid #ddd;
   column-span: all;
 }
 
@@ -672,7 +652,7 @@ font-weight: 700;
 .exo {
   margin-bottom:9px;
   padding-bottom:7px;
-  border-bottom: 0.5px dotted #d8d2c4;
+  border-bottom: 0.5px dotted #ddd;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -685,19 +665,19 @@ font-weight: 700;
 .consigne-exo {
   font-size: 8.5pt;
   font-weight: 600;
-  color: #5a4a3a;
+  color: #333;
   text-transform: uppercase;
   letter-spacing: 0.8px;
   margin-bottom: 3px;
   margin-top: 2px;
   padding: 2px 8px;
-  background: #faf8f4;
-  border-left: 2.5px solid #a89878;
+  background: #f5f5f5;
+  border-left: 2.5px solid #888;
   border-radius: 2px;
 }
 .consigne-exo::before {
   content: "◆ ";
-  color: #a89878;
+  color: #888;
   font-size: 7pt;
   margin-right: 2px;
 }
@@ -715,8 +695,9 @@ font-weight: 700;
   height: 16px;
   line-height: 16px;
   text-align: center;
-  background: #5a4a3a;
-  color: #ffffff;
+  background: transparent;
+  color: #1a1a1a;
+  border: 0.8px solid #1a1a1a;
   border-radius: 50%;
   font-weight: bold;
   font-size: 8.5pt;
@@ -734,7 +715,7 @@ font-weight: 700;
   display:inline-block;
   width:9px;
   height:9px;
-  border:0.8px solid #5a4a3a;
+  border:0.8px solid #333;
   margin-right:4px;
   vertical-align:middle;
   background:white;
@@ -762,13 +743,13 @@ font-weight: 700;
 }
 .ordre-cell-texte { white-space: nowrap; }
 .ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
-.ordre-lettre { font-weight: bold; color: #5a4a3a; }
+.ordre-lettre { font-weight: bold; color: #333; }
 
 .tt-phrase-print { flex: 1; font-size: 10pt; line-height: 1.5; }
 .tt-phrase-print .tt-trou {
   display: inline-block;
   min-width: 80px;
-  border-bottom: 0.8px solid #5a4a3a;
+  border-bottom: 0.8px solid #333;
   text-align: center;
   padding: 0 4px;
 }
@@ -792,7 +773,7 @@ font-weight: 700;
 .relier-point {
   width: 7px;
   height: 7px;
-  border: 1px solid #5a4a3a;
+  border: 1px solid #333;
   border-radius: 50%;
   background: white;
   flex-shrink: 0;
@@ -832,7 +813,7 @@ font-weight: 700;
   right: 0;
   bottom: 0.28em;
   height: 1px;
-  background: #fa0202 !important;
+  background: #333 !important;
   pointer-events: none;
 }
 
@@ -846,9 +827,9 @@ font-weight: 700;
 .zone-memo {
   margin-top:10px;
   padding: 7px 10px 8px;
-  background: #fdf9ef;
-  border: 0.5px solid #e0d4b8;
-  border-left: 3px solid #c8a860;
+  background: #f7f7f7;
+  border: 0.5px solid #ccc;
+  border-left: 3px solid #999;
   border-radius: 3px;
   break-inside: avoid;
   page-break-inside: avoid;
@@ -858,15 +839,12 @@ font-weight: 700;
   font-size:8.5pt;
   text-transform:uppercase;
   letter-spacing:1px;
-  color:#7a5a1e;
+  color:#555;
   margin-bottom:4px;
-}
-.slide p em {
-  font-style: italic;
 }
 .zone-memo .titre-memo::before {
   content: "✦ ";
-  color: #c8a860;
+  color: #999;
   margin-right: 2px;
 }
 .zone-memo .memo-bloc { margin-bottom:5px; }
@@ -883,7 +861,7 @@ font-weight: 700;
   content: "●";
   position: absolute;
   left: 0;
-  color: #c8a860;
+  color: #999;
   font-size: 6pt;
   top: 4px;
 }
@@ -892,7 +870,7 @@ font-weight: 700;
   margin-top: 14px;
   padding: 7px 12px;
   background: #fafaf7;
-  border: 0.5px solid #5a4a3a;
+  border: 0.5px solid #333;
   border-radius: 3px;
   page-break-inside: avoid;
   break-inside: avoid;
@@ -905,7 +883,7 @@ font-weight: 700;
 .zone-note-finale .note-ligne {
   font-size: 10pt;
   white-space: nowrap;
-  color: #2b1f14;
+  color: #1a1a1a;
 }
 .zone-note-finale .note-ligne strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation {
@@ -914,7 +892,7 @@ font-weight: 700;
   display: flex;
   align-items: baseline;
   gap: 4px;
-  color: #2b1f14;
+  color: #1a1a1a;
 }
 .zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation .ligne-pointillee {
@@ -930,7 +908,7 @@ font-weight: 700;
   color: #666;
   margin-top: 10px;
   padding-top: 5px;
-  border-top: 0.5px solid #d8d2c4;
+  border-top: 0.5px solid #ddd;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -938,7 +916,7 @@ font-weight: 700;
 }
 .pied-page .pied-centre {
   font-style: italic;
-  color: #5a4a3a;
+  color: #555;
 }
 .pied-page .pied-ecrit {
   font-style: italic;
@@ -955,22 +933,12 @@ font-weight: 700;
 <body>
 <div class="page">
 
-<!-- ENCART ÉLÈVE -->
-<div class="entete-eleve">
-  <div class="ligne-eleve">
-    <span><strong>Nom et prénom :</strong> ....................................................</span>
-    <span><strong>Date :</strong> ......... / ......... / .........</span>
-    <span><strong>Feuille n° :</strong> .........</span>
-  </div>
-</div>
-
 <!-- BANDEAU TITRE -->
 <div class="bandeau-titre">
   <div class="ligne-titre">
     <h1>${chapitre.titre || 'Lecture'}</h1>
-    <div class="meta-droite">Niveau ${chapitre.niveau || 0}</div>
+    <div class="meta-droite">${chapitre.categorie ? chapitre.categorie + ' — ' : ''}Niveau ${chapitre.niveau || 0}</div>
   </div>
-  ${chapitre.categorie ? '<div class="sous-titre">' + chapitre.categorie + '</div>' : ''}
 </div>
 
 ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
@@ -1088,13 +1056,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var bufferTexte = '';
 
       function flushTexteImpression() {
-  if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-  var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
-  paras.forEach(function(p) {
-    printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
-  });
-  bufferTexte = '';
-}
+        if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+        var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
+        paras.forEach(function(p) {
+          printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
+        });
+        bufferTexte = '';
+      }
 
       lignesSlide.forEach(function(l) {
         var trimmed = l.trim();
@@ -1304,7 +1272,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
   printHtml += '</div>';
 
-    printHtml += `
+  printHtml += `
     <div class="pied-page">
       <span class="pied-centre">Qiraat &mdash; W. Khan</span>
       <span class="pied-ecrit">Écrit le ${dateCreationStr || '—'}</span>
