@@ -246,7 +246,6 @@
       transition: all 0.2s;
       box-sizing: border-box;
     }
-    /* ✅ Carré si la réponse est partagée par plusieurs gauches */
     .relier-item .point.point-partage {
       border-radius: 0;
     }
@@ -549,6 +548,49 @@
       font-weight: 500;
       color: var(--text, #111);
     }
+
+    /* ============================================================ */
+    /* IMAGES DANS LES SLIDES                                       */
+    /* ============================================================ */
+    .slide-img {
+      display: block;
+      height: auto;
+      border: none;
+      margin: 18px 0;
+    }
+    .slide-img-centre {
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .slide-img-gauche {
+      float: left;
+      margin: 8px 20px 12px 0;
+    }
+    .slide-img-droite {
+      float: right;
+      margin: 8px 0 12px 20px;
+    }
+    .slide-img-petit  { max-width: 180px; }
+    .slide-img-moyen  { max-width: 280px; }
+    .slide-img-grand  { max-width: 420px; }
+
+    .slide-content::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+
+    .img-manquante {
+      display: block;
+      padding: 12px;
+      background: var(--bg-hover, #f5f5f5);
+      border: 1px dashed var(--border, #ccc);
+      color: var(--text-secondary, #666);
+      font-size: 13px;
+      font-family: 'Inter', sans-serif;
+      text-align: center;
+      margin: 12px 0;
+    }
   </style>
 </head>
 <body>
@@ -611,7 +653,8 @@
       vfReponses: {},
       vfValide: {},
       vfTotal: 0,
-      vfBonnes: 0
+      vfBonnes: 0,
+      imagesLivret: {}
     };
 
     // ============================================================
@@ -661,7 +704,6 @@
 
     // ============================================================
     // CHARGER LE CHAPITRE
-    // ✅ Utilise ordreBlocs (colonne T) + déduplique les droites relier
     // ============================================================
     function chargerChapitre(id) {
       fetch(SCRIPT_URL + '?action=getChapitre&id=' + encodeURIComponent(id))
@@ -671,7 +713,12 @@
         })
         .then(function(data) {
           if (!data.success || !data.chapitre) throw new Error(data.message || 'Chapitre introuvable');
-
+          return chargerImagesLivret(data.chapitre.categorie).then(function(images) {
+            etat.imagesLivret = images || {};
+            return data;
+          });
+        })
+        .then(function(data) {
           var chapitre = data.chapitre;
           var contenu = chapitre.contenu || '';
           var ordreBlocs = chapitre.ordreBlocs || [];
@@ -680,7 +727,6 @@
           var tags = chapitre.tags || [];
           var aRetenir = chapitre.aRetenir || [];
 
-          // --- 1) Parser chaque type séparément ---
           var parts = contenu.split(' | ');
 
           var slidesArray = [];
@@ -720,7 +766,6 @@
             }
           });
 
-          // --- 2) Parser les exos en tableaux indexés ---
           var quizsParsed = quizTexte ? parserQuizs(quizTexte) : [];
           var opensParsed = [];
           if (openTexte) {
@@ -753,7 +798,6 @@
           var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
           var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
 
-          // --- 3) Reconstruire dans l'ordre donné par ordreBlocs ---
           var slidesFinal = [];
 
           if (ordreBlocs.length > 0) {
@@ -778,7 +822,6 @@
               } else if (type === 'relier' && reliersParsed[idx]) {
                 var rp = reliersParsed[idx];
 
-                // ✅ Dédupliquer les droites + marquer celles partagées
                 var compteParDroite = {};
                 rp.paires.forEach(function(paire) {
                   compteParDroite[paire.droite] = (compteParDroite[paire.droite] || 0) + 1;
@@ -813,7 +856,6 @@
               }
             });
           } else {
-            // Fallback : si pas d'ordreBlocs
             slidesArray.forEach(function(texteSlide) {
               slidesFinal.push({ type: 'slide', contenu: texteSlide });
             });
@@ -852,7 +894,6 @@
             });
           }
 
-          // --- 4) Slide MEMO final ---
           var aRetenirClean = (aRetenir || [])
             .map(function(x) { return String(x).trim(); })
             .filter(function(x) { return x !== ''; });
@@ -898,7 +939,7 @@
     }
 
     // ============================================================
-    // PARSEUR TEXTE À TROUS
+    // PARSEURS
     // ============================================================
     function parserTextesTrous(texte) {
       var lignes = texte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -921,9 +962,6 @@
       return resultats;
     }
 
-    // ============================================================
-    // PARSEUR VRAI/FAUX
-    // ============================================================
     function parserVraiFaux(texte) {
       var lignes = texte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var questions = [];
@@ -947,9 +985,6 @@
       return questions;
     }
 
-    // ============================================================
-    // PARSEUR QUIZ
-    // ============================================================
     function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return [];
@@ -993,9 +1028,6 @@
       return quizs;
     }
 
-    // ============================================================
-    // PARSEUR RELIER
-    // ============================================================
     function parserRelier(relierTexte) {
       var lignes = relierTexte.split('\n')
         .map(function(l) { return l.trim(); })
@@ -1021,9 +1053,6 @@
       return { consigne: consigne, paires: paires };
     }
 
-    // ============================================================
-    // MÉLANGER
-    // ============================================================
     function melanger(array) {
       var copie = array.slice();
       for (var i = copie.length - 1; i > 0; i--) {
@@ -1035,9 +1064,6 @@
       return copie;
     }
 
-    // ============================================================
-    // PARSEURS SPÉCIFIQUES
-    // ============================================================
     function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
@@ -1075,7 +1101,7 @@
     }
 
     // ============================================================
-    // RÉCUPÉRER LES NOTES
+    // NOTES
     // ============================================================
     function recupererNotes() {
       var nom = localStorage.getItem('etudiant_id') || 'anonyme';
@@ -1142,29 +1168,19 @@
 
           var resultatHtml = '';
           var lignesTableau = [];
+          var bufferTexte = '';
 
-          lignes.forEach(function(l) {
-            if (l.includes('|')) {
-              lignesTableau.push(l);
-            } else {
-              if (lignesTableau.length > 0) {
-                resultatHtml += '<table class="tableau-slide">';
-                lignesTableau.forEach(function(ligneTableau) {
-                  var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
-                  resultatHtml += '<tr>';
-                  cellules.forEach(function(c) {
-                    resultatHtml += '<td>' + formaterTexte(c) + '</td>';
-                  });
-                  resultatHtml += '</tr>';
-                });
-                resultatHtml += '</table>';
-                lignesTableau = [];
-              }
-              resultatHtml += '<p>' + formaterTexte(l.trim()) + '</p>';
-            }
-          });
+          function flushBufferTexte() {
+            if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+            var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
+            paras.forEach(function(p) {
+              resultatHtml += '<p>' + formaterTexte(p.trim()) + '</p>';
+            });
+            bufferTexte = '';
+          }
 
-          if (lignesTableau.length > 0) {
+          function flushTableau() {
+            if (lignesTableau.length === 0) return;
             resultatHtml += '<table class="tableau-slide">';
             lignesTableau.forEach(function(ligneTableau) {
               var cellules = ligneTableau.split('|').map(function(c) { return c.trim(); });
@@ -1175,7 +1191,50 @@
               resultatHtml += '</tr>';
             });
             resultatHtml += '</table>';
+            lignesTableau = [];
           }
+
+          lignes.forEach(function(l) {
+            var trimmed = l.trim();
+
+            var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
+            if (imgMatch) {
+              flushBufferTexte();
+              flushTableau();
+
+              var nomImg = imgMatch[1];
+              var opt1 = (imgMatch[2] || '').toLowerCase();
+              var opt2 = (imgMatch[3] || '').toLowerCase();
+
+              var position = 'centre';
+              var taille = 'moyen';
+              [opt1, opt2].forEach(function(o) {
+                if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
+                else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
+              });
+
+              var url = etat.imagesLivret[nomImg];
+              if (!url) {
+                resultatHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
+              } else {
+                var classes = 'slide-img slide-img-' + position + ' slide-img-' + taille;
+                resultatHtml += '<img src="' + url + '" alt="' + nomImg + '" class="' + classes + '" loading="lazy">';
+              }
+              return;
+            }
+
+            if (trimmed.includes('|')) {
+              flushBufferTexte();
+              lignesTableau.push(trimmed);
+              return;
+            }
+
+            flushTableau();
+            bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
+          });
+
+          flushBufferTexte();
+          flushTableau();
 
           html += resultatHtml;
         }
@@ -1292,7 +1351,7 @@
     }
 
     // ============================================================
-    // AFFICHAGE MEMO
+    // AFFICHAGES
     // ============================================================
     function afficherMemo(slide) {
       var html = '';
@@ -1335,9 +1394,6 @@
       return html;
     }
 
-    // ============================================================
-    // AFFICHAGE TEXTE À TROUS
-    // ============================================================
     function afficherTexteTrous(slide, index) {
       etat.ttReponses[index] = { essai: 0, correct: false };
       etat.ttValide[index] = false;
@@ -1442,9 +1498,6 @@
       fetch(url).then(function(r) { return r.json(); }).catch(function() {});
     }
 
-    // ============================================================
-    // AFFICHAGE VRAI/FAUX
-    // ============================================================
     function afficherVraiFaux(slide, index) {
       etat.vfReponses[index] = {};
       etat.vfValide[index] = false;
@@ -1533,10 +1586,6 @@
       fetch(url).then(function(r) { return r.json(); }).catch(function() {});
     }
 
-    // ============================================================
-    // AFFICHAGE RELIER
-    // ✅ Point carré si la droite est partagée par plusieurs gauches
-    // ============================================================
     function afficherRelier(slide, index) {
       etat.relierAssociations[index] = {};
       etat.relierSelection = null;
@@ -1580,9 +1629,6 @@
       return String(str).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/'/g, '&#39;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ============================================================
-    // INTERACTION RELIER
-    // ============================================================
     function selectionnerRelier(event, slideIndex, cote, idx) {
       if (event) event.stopPropagation();
       if (etat.relierValide[slideIndex]) return;
@@ -1695,10 +1741,6 @@
       }
     });
 
-    // ============================================================
-    // VALIDER RELIER
-    // ✅ Compare par valeur (gère les droites partagées)
-    // ============================================================
     function validerRelier(slideIndex) {
       var slide = etat.slides[slideIndex];
       if (!slide || slide.type !== 'relier') return;
@@ -1720,7 +1762,6 @@
         var gaucheText = slide.paires[parseInt(gaucheIdx)].gauche;
         var droiteChoisie = slide.droiteMelangee[parseInt(droiteIdx)].droite;
 
-        // Chercher la droite attendue pour cette gauche
         var droiteAttendue = null;
         for (var pi = 0; pi < slide.paires.length; pi++) {
           if (slide.paires[pi].gauche === gaucheText) {
@@ -1799,9 +1840,6 @@
         .catch(function(e) { console.error('Erreur sauvegarde relier:', e); });
     }
 
-    // ============================================================
-    // FONCTIONS D'AFFICHAGE QUIZ / OPEN / ORDRE / CARTE
-    // ============================================================
     function afficherQuiz(slide) {
       var html = '';
       html += '<div class="quiz-question">' + (slide.question || 'Question') + '</div>';
@@ -1895,7 +1933,7 @@
     }
 
     // ============================================================
-    // NAVIGATION ET INTERACTION QUIZ
+    // QUIZ & INTERACTIONS
     // ============================================================
     function selectionnerReponse(event, quizIndex, reponseIndex) {
       event.stopPropagation();
@@ -2153,9 +2191,6 @@
       });
     }
 
-    // ============================================================
-    // NOTES
-    // ============================================================
     function toggleNote(index) {
       var area = document.getElementById('noteArea-' + index);
       var toggle = document.getElementById('noteToggle-' + index);
@@ -2219,9 +2254,6 @@
         });
     }
 
-    // ============================================================
-    // ORDRE
-    // ============================================================
     function deplacerOrdre(btn, direction, index) {
       var item = btn.closest('.ordre-item');
       var list = item.closest('.ordre-list');
@@ -2318,9 +2350,6 @@
         .catch(function(e) { console.error('Erreur sauvegarde ordre:', e); });
     }
 
-    // ============================================================
-    // CARTES
-    // ============================================================
     function retournerCarte(index) {
       var inner = document.getElementById('carteInner-' + index);
       if (!inner) return;
@@ -2401,9 +2430,6 @@
         .catch(function(e) { console.error('Erreur sauvegarde cartes:', e); });
     }
 
-    // ============================================================
-    // FERMER
-    // ============================================================
     function fermerLiseuse() {
       var categorie = etat.chapitre ? etat.chapitre.categorie : '';
       if (categorie) {
@@ -2424,9 +2450,6 @@
       `;
     }
 
-    // ============================================================
-    // EXPOSER GLOBALEMENT
-    // ============================================================
     window.selectionnerReponse = selectionnerReponse;
     window.envoyerReponseOuverte = envoyerReponseOuverte;
     window.slideSuivante = slideSuivante;
