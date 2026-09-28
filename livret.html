@@ -877,11 +877,13 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
           }
         }
 
-               var mots = chapitre.mots || 0;
+                     var mots = chapitre.mots || 0;
 
         // ============================================================
         // COMPTAGE DES EXERCICES (via ordreBlocs)
-        // 1 type présent = 1 exercice. slide et memo exclus.
+        // Total = nb de TYPES distincts (1 type = 1 exercice)
+        // Détail = nb d'OCCURRENCES par type
+        // slide et memo exclus.
         // ============================================================
         var TYPES_EXERCICES = [
           { prefix: 'quiz:',   label: 'QCM' },
@@ -895,31 +897,28 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
         ];
 
         var ordreBlocs = chapitre.ordreBlocs || [];
-        var typesPresents = [];
+        var detailParts = [];
         var nbExercices = 0;
 
         if (ordreBlocs.length > 0) {
           for (var t = 0; t < TYPES_EXERCICES.length; t++) {
             var type = TYPES_EXERCICES[t];
-            var trouve = false;
+            var count = 0;
             for (var ob = 0; ob < ordreBlocs.length; ob++) {
-              if (ordreBlocs[ob].indexOf(type.prefix) === 0) {
-                trouve = true;
-                break;
-              }
+              if (ordreBlocs[ob].indexOf(type.prefix) === 0) count++;
             }
-            if (trouve) {
-              typesPresents.push(type.label);
+            if (count > 0) {
               nbExercices++;
+              detailParts.push(count + ' ' + type.label);
             }
           }
         } else {
-          // Fallback ancien format : hasQuiz + hasQuestion
-          if (chapitre.hasQuiz)    { typesPresents.push('QCM');     nbExercices++; }
-          if (chapitre.hasQuestion){ typesPresents.push('Ouverte'); nbExercices++; }
+          // Fallback ancien format
+          if (chapitre.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+          if (chapitre.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
         }
 
-        var detailExercices = typesPresents.join(' · ');
+        var detailExercices = detailParts.join(' · ');
         var exercicesHtml =
           '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' +
           (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
@@ -927,7 +926,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
         var metaHtml = '';
 
         if (estLu) {
-          // ... tout le if/else existant RESTE IDENTIQUE
+          // ... (ton code existant du if (estLu) RESTE IDENTIQUE)
         } else {
           metaHtml = exercicesHtml;
         }
