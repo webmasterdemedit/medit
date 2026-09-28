@@ -3,7 +3,7 @@
 // Fichier autonome : génère une page imprimable pour un chapitre
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
-// + Support sources [xxx] rendues en marge droite, italique, sans crochets
+// + Support sources [xxx] rendues en marge droite, sans crochets
 // ============================================================
 
 // ============================================================
@@ -45,7 +45,6 @@ function imprimerChapitre(chapitreId, titre, chapitresData) {
     return;
   }
 
-  // ✅ Charger les images du livret AVANT de générer l'impression
   chargerImagesLivret(chapitre.categorie).then(function(images) {
     genererImpression(chapitre, contenu, images || {});
   }).catch(function() {
@@ -57,48 +56,28 @@ function imprimerChapitre(chapitreId, titre, chapitresData) {
 // ✅ RENDU DES SOURCES [xxx]
 // - Supprime les crochets
 // - Si [xxx] est en fin de phrase, le déplace au début de cette phrase
-// - Retourne un HTML avec <span class="source-marge"> placé en tête de phrase
 // ============================================================
 function rendreSources(texte) {
-  // 1) Détecter s'il y a au moins un [xxx]
   if (!/\[[^\]]+\]/.test(texte)) return texte;
 
-  // 2) Extraire la source
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
   if (!matchSource) return texte;
   var contenuSource = matchSource[1].trim();
 
-  // 3) Retirer la source du texte (ainsi qu'un éventuel point juste après)
   var texteSansSource = texte.replace(/\[[^\]]+\]\.?/, '').trim();
 
-  // 4) Trouver le début de la phrase où était la source
-  //    On cherche la dernière ponctuation forte AVANT l'emplacement de la source
-  var positionSource = texte.indexOf(matchSource[0]);
-
-  // Position de la source dans le texte sans source
-  var positionSourceSansSource = texteSansSource.length;
-  // On approxime : on cherche la dernière phrase avant la fin
-  // (car la source est en fin de phrase → elle est presque toujours en fin de paragraphe)
-
-  // On cherche la dernière ponctuation forte (., !, ?) suivie d'un espace ou fin
   var texteAvant = texteSansSource;
   var idxDernierePonctuation = -1;
   for (var i = texteAvant.length - 1; i >= 0; i--) {
     var c = texteAvant.charAt(i);
     if (c === '.' || c === '!' || c === '?') {
-      // On veut la ponctuation qui termine la phrase contenant la source
-      // La source est après cette ponctuation (ou avant, on ne sait pas)
-      // En pratique : la source est TOUJOURS en fin de phrase, donc elle est APRES la dernière ponctuation.
       idxDernierePonctuation = i;
       break;
     }
   }
 
-  // Début de la phrase = après la ponctuation forte précédente (celle d'AVANT la phrase)
-  // On cherche l'avant-dernière ponctuation
   var idxDebutPhrase = 0;
   if (idxDernierePonctuation !== -1) {
-    // Chercher une ponctuation forte AVANT idxDernierePonctuation
     for (var j = idxDernierePonctuation - 1; j >= 0; j--) {
       var c2 = texteAvant.charAt(j);
       if (c2 === '.' || c2 === '!' || c2 === '?') {
@@ -106,10 +85,8 @@ function rendreSources(texte) {
         break;
       }
     }
-    // Si pas trouvé, la phrase commence au début du texte
   }
 
-  // Insérer le span au début de la phrase
   var avant = texteAvant.substring(0, idxDebutPhrase);
   var phrase = texteAvant.substring(idxDebutPhrase);
 
@@ -279,9 +256,6 @@ function parserVraiFauxPourImpression(vfTexte) {
   return questions;
 }
 
-// ============================================================
-// ✅ PARSEUR COPIER
-// ============================================================
 function parserCopierPourImpression(copierTexte) {
   if (!copierTexte) return [];
   var lignes = copierTexte.split('\n')
@@ -306,7 +280,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
   imagesLivret = imagesLivret || {};
   var ordreBlocs = chapitre.ordreBlocs || [];
 
-  // --- 1) Parser chaque type séparément ---
   var parts = contenu.split(' | ');
 
   var slidesArray = [];
@@ -349,7 +322,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     }
   });
 
-  // --- 2) Parser les exos en tableaux indexés ---
   var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
   var opensParsed = [];
   if (openTexte) {
@@ -377,7 +349,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
   var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
   var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
 
-  // --- 3) Construire la liste ordonnée des blocs ---
   var blocsOrdonnes = [];
 
   if (ordreBlocs.length > 0) {
@@ -418,7 +389,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
   }
 
-  // Calculer le nombre total de questions
   var nbTotalQuestions = 0;
   blocsOrdonnes.forEach(function(bloc) {
     if (bloc.type === 'quiz') nbTotalQuestions++;
@@ -431,7 +401,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     else if (bloc.type === 'copier') nbTotalQuestions++;
   });
 
-  // --- MÉMO ---
   var aRetenirClean = (chapitre.aRetenir || [])
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
@@ -448,7 +417,6 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
 
-  // DATES
   var dateCreation = chapitre.date || '';
   var dateCreationStr = '';
   if (dateCreation) {
@@ -603,16 +571,19 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
-/* SOURCES [xxx] — bloc flottant en marge droite, italique       */
+/* SOURCES [xxx] — bloc flottant en marge droite                 */
+/* Georgia bold, plus gd que le texte, descendu dans son cadre    */
 /* ============================================================ */
 .slide p .source-marge {
   float: right;
   display: inline-block;
-  margin: 0 0 4px 14px;
-  padding: 0;
-  font-size: 8.5pt;
-  font-style: italic;
-  color: #5a4a3a;
+  margin: 6px 0 6px 16px;
+  padding: 4px 0 0 0;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  font-size: 15pt;
+  font-weight: 700;
+  font-style: normal;
+  color: #3a2e22;
   text-align: right;
   max-width: 35%;
   line-height: 1.2;
@@ -749,7 +720,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   line-height: 1.35;
 }
 
-/* Quiz */
 .quiz-reponses { margin-left: 24px; margin-top: 2px; }
 .quiz-rep { display:block; margin-bottom:1px; font-size:9.5pt; }
 .quiz-case {
@@ -763,11 +733,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 1px;
 }
 
-/* Open */
 .open-lignes { margin-top:3px; margin-left: 24px; }
 .open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:9px; }
 
-/* Carte : demi-ligne pointillée */
 .carte-ligne-courte {
   margin-top: 3px;
   margin-left: 24px;
@@ -776,7 +744,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   height: 14px;
 }
 
-/* Ordre */
 .ordre-grille {
   margin: 3px 0 3px 24px;
   display: grid;
@@ -789,7 +756,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .ordre-cell-pointille { white-space: nowrap; color: #333; align-self: center; font-size: 9pt; }
 .ordre-lettre { font-weight: bold; color: #5a4a3a; }
 
-/* Textes à trous */
 .tt-phrase-print { flex: 1; font-size: 10pt; line-height: 1.5; }
 .tt-phrase-print .tt-trou {
   display: inline-block;
@@ -799,11 +765,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   padding: 0 4px;
 }
 
-/* Vrai/Faux */
 .exo-texte-vf { font-size: 9.5pt; line-height: 1.35; flex: 1; }
 .vf-ligne .vf-cases { font-size: 9pt; white-space: nowrap; margin-left: 4px; flex-shrink: 0; }
 
-/* Relier */
 .relier-zone-lignes { position: relative; margin: 4px 0 4px 24px; max-width: 100%; }
 .relier-lignes-grid { display: flex; justify-content: space-between; align-items: center; gap: 60px; }
 .relier-col-lignes { flex: 1; display: flex; flex-direction: column; gap: 3px; }
@@ -828,9 +792,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 .relier-point.relier-point-partage { border-radius: 0; }
 
-/* ============================================================ */
-/* ✅ BLOC COPIER — Style manuel, ligne de base grise             */
-/* ============================================================ */
 .bloc-copier {
   margin-top: 4px;
   width: 100%;
@@ -874,9 +835,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   margin-top: 2px;
 }
 
-/* ============================================================ */
-/* ZONE MÉMO "À RETENIR"                                         */
-/* ============================================================ */
 .zone-memo {
   margin-top:10px;
   padding: 7px 10px 8px;
@@ -919,9 +877,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   top: 4px;
 }
 
-/* ============================================================ */
-/* BLOC FINAL                                                    */
-/* ============================================================ */
 .zone-note-finale {
   margin-top: 14px;
   padding: 7px 12px;
@@ -958,9 +913,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   height: 12px;
 }
 
-/* ============================================================ */
-/* PIED DE PAGE                                                  */
-/* ============================================================ */
 .pied-page {
   text-align: center;
   font-size: 8pt;
@@ -1024,7 +976,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   function ouvrirZoneExercices() {
     if (!slidesZoneFermee) {
-      printHtml += '</div>'; // ferme .slides-zone
+      printHtml += '</div>';
       printHtml += '<div class="corps-2col">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       slidesZoneFermee = true;
@@ -1035,9 +987,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
   }
 
-  // ============================================================
-  // PRÉ-CALCUL DES CONSIGNES (singulier / pluriel + groupes)
-  // ============================================================
   function typeLogique(t) {
     if (t === 'carte') return 'open';
     return t;
@@ -1093,9 +1042,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   blocsOrdonnes.forEach(function(bloc) {
 
-    // ========================================================
-    // ✅ BLOC COPIER
-    // ========================================================
     if (bloc.type === 'copier') {
       ouvrirZoneExercices();
       hasExercice = true;
@@ -1125,9 +1071,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       return;
     }
 
-    // ========================================================
-    // SLIDE
-    // ========================================================
     if (bloc.type === 'slide') {
       printHtml += '<div class="slide">';
       var lignesSlide = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
@@ -1327,7 +1270,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
-  // ZONE MÉMO
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
@@ -1341,12 +1283,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
 
   if (slidesZoneFermee) {
-    printHtml += '</div>'; // ferme .corps-2col
+    printHtml += '</div>';
   } else {
-    printHtml += '</div>'; // ferme .slides-zone
+    printHtml += '</div>';
   }
 
-  // ENCADRÉ NOTE FINAL
   printHtml += '<div class="zone-note-finale">';
   printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
   printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
