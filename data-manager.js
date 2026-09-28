@@ -1,5 +1,6 @@
 // ============================================================
 // data-manager.js - OPTIMISÉ (1 REQUÊTE)
+// + Support images par livret
 // ============================================================
 
 var DataManager = {
@@ -20,7 +21,6 @@ var DataManager = {
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) {
-                    // S'assurer que toutes les propriétés existent
                     data.livrets = data.livrets || [];
                     data.chapitres = data.chapitres || [];
                     data.tousLesChapitres = data.tousLesChapitres || [];
@@ -36,7 +36,6 @@ var DataManager = {
                     data.disciplines = data.disciplines || '';
                     data.historique = data.historique || [];
                     
-                    // 🔥 IMPORTANT : garder le cache en mémoire
                     DataManager._dernierChargement = data;
                     
                     console.log('✅ Données chargées en 1 requête');
@@ -67,9 +66,6 @@ var DataManager = {
         return null;
     },
 
-    // ============================================================
-    // NOUVEAU : chapitre complet (avec contenu + voc + tags + aRetenir)
-    // ============================================================
     getChapitreComplet: function(chapitreId) {
         var cache = this._dernierChargement;
         if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
@@ -172,6 +168,33 @@ var DataManager = {
             return cache.historique;
         }
         return [];
+    },
+
+    // ============================================================
+    // 🖼️ IMAGES D'UN LIVRET (cache mémoire)
+    // ============================================================
+    _cacheImages: {},
+
+    chargerImages: function(nomLivret) {
+        var self = this;
+        if (this._cacheImages[nomLivret]) {
+            return Promise.resolve(this._cacheImages[nomLivret]);
+        }
+        var url = CONFIG.SCRIPT_URL + '?action=getImages&livret=' + encodeURIComponent(nomLivret);
+        return fetch(url)
+            .then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success && data.images) {
+                    self._cacheImages[nomLivret] = data.images;
+                    return data.images;
+                }
+                return {};
+            })
+            .catch(function() { return {}; });
+    },
+
+    getImagesCache: function(nomLivret) {
+        return this._cacheImages[nomLivret] || {};
     },
 
     // ============================================================
@@ -377,6 +400,9 @@ function getMessagePerso() { return DataManager.getMessagePerso(); }
 function getDisciplines() { return DataManager.getDisciplines(); }
 function getMdp() { return DataManager.getMdp(); }
 function getLivrets() { return DataManager.getLivrets(); }
+
+function chargerImagesLivret(nomLivret) { return DataManager.chargerImages(nomLivret); }
+function getImagesLivretCache(nomLivret) { return DataManager.getImagesCache(nomLivret); }
 
 function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
     return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
