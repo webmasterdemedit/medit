@@ -3,6 +3,7 @@
 // Fichier autonome : génère une page imprimable pour un chapitre
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
+// + Support sources [xxx] rendues en marge droite, italique, sans crochets
 // ============================================================
 
 // ============================================================
@@ -50,6 +51,71 @@ function imprimerChapitre(chapitreId, titre, chapitresData) {
   }).catch(function() {
     genererImpression(chapitre, contenu, {});
   });
+}
+
+// ============================================================
+// ✅ RENDU DES SOURCES [xxx]
+// - Supprime les crochets
+// - Si [xxx] est en fin de phrase, le déplace au début de cette phrase
+// - Retourne un HTML avec <span class="source-marge"> placé en tête de phrase
+// ============================================================
+function rendreSources(texte) {
+  // 1) Détecter s'il y a au moins un [xxx]
+  if (!/\[[^\]]+\]/.test(texte)) return texte;
+
+  // 2) Extraire la source
+  var matchSource = texte.match(/\[([^\]]+)\]\.?/);
+  if (!matchSource) return texte;
+  var contenuSource = matchSource[1].trim();
+
+  // 3) Retirer la source du texte (ainsi qu'un éventuel point juste après)
+  var texteSansSource = texte.replace(/\[[^\]]+\]\.?/, '').trim();
+
+  // 4) Trouver le début de la phrase où était la source
+  //    On cherche la dernière ponctuation forte AVANT l'emplacement de la source
+  var positionSource = texte.indexOf(matchSource[0]);
+
+  // Position de la source dans le texte sans source
+  var positionSourceSansSource = texteSansSource.length;
+  // On approxime : on cherche la dernière phrase avant la fin
+  // (car la source est en fin de phrase → elle est presque toujours en fin de paragraphe)
+
+  // On cherche la dernière ponctuation forte (., !, ?) suivie d'un espace ou fin
+  var texteAvant = texteSansSource;
+  var idxDernierePonctuation = -1;
+  for (var i = texteAvant.length - 1; i >= 0; i--) {
+    var c = texteAvant.charAt(i);
+    if (c === '.' || c === '!' || c === '?') {
+      // On veut la ponctuation qui termine la phrase contenant la source
+      // La source est après cette ponctuation (ou avant, on ne sait pas)
+      // En pratique : la source est TOUJOURS en fin de phrase, donc elle est APRES la dernière ponctuation.
+      idxDernierePonctuation = i;
+      break;
+    }
+  }
+
+  // Début de la phrase = après la ponctuation forte précédente (celle d'AVANT la phrase)
+  // On cherche l'avant-dernière ponctuation
+  var idxDebutPhrase = 0;
+  if (idxDernierePonctuation !== -1) {
+    // Chercher une ponctuation forte AVANT idxDernierePonctuation
+    for (var j = idxDernierePonctuation - 1; j >= 0; j--) {
+      var c2 = texteAvant.charAt(j);
+      if (c2 === '.' || c2 === '!' || c2 === '?') {
+        idxDebutPhrase = j + 1;
+        break;
+      }
+    }
+    // Si pas trouvé, la phrase commence au début du texte
+  }
+
+  // Insérer le span au début de la phrase
+  var avant = texteAvant.substring(0, idxDebutPhrase);
+  var phrase = texteAvant.substring(idxDebutPhrase);
+
+  var spanSource = '<span class="source-marge">' + contenuSource + '</span>';
+
+  return avant + spanSource + phrase;
 }
 
 // ============================================================
@@ -535,6 +601,25 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 .slide { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
 .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
+
+/* ============================================================ */
+/* SOURCES [xxx] — bloc flottant en marge droite, italique       */
+/* ============================================================ */
+.slide p .source-marge {
+  float: right;
+  display: inline-block;
+  margin: 0 0 4px 14px;
+  padding: 0;
+  font-size: 8.5pt;
+  font-style: italic;
+  color: #5a4a3a;
+  text-align: right;
+  max-width: 35%;
+  line-height: 1.2;
+  text-indent: 0;
+  white-space: normal;
+  vertical-align: top;
+}
 
 /* ============================================================ */
 /* IMAGES DANS LES SLIDES                                        */
@@ -1052,7 +1137,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
         paras.forEach(function(p) {
-          printHtml += '<p>' + p.trim() + '</p>';
+          printHtml += '<p>' + rendreSources(p.trim()) + '</p>';
         });
         bufferTexte = '';
       }
