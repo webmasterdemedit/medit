@@ -466,7 +466,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .entete-eleve {
   margin-bottom: 10px;
   padding: 6px 10px;
-  background: #fafaf7;
   font-size: 9.5pt;
 }
 .entete-eleve .ligne-eleve {
