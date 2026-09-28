@@ -1367,6 +1367,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       parent.replaceChild(frag, texteNode);
     });
 
+        // Forcer le titre du document de l'iframe (utilisé pour le nom du PDF)
+    try {
+      iframeDoc2.title = nomFichierPdf;
+      iframe.contentWindow.document.title = nomFichierPdf;
+    } catch (e) { /* ignore */ }
+
     iframe.contentWindow.print();
     setTimeout(function() {
       document.body.removeChild(iframe);
