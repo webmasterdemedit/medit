@@ -8,7 +8,7 @@ var CLE_CACHE      = 'qiraat_data_v1';
 var CLE_TIMESTAMP  = 'qiraat_data_ts';
 var CLE_NOM        = 'qiraat_data_nom';
 var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du livret
-var DUREE_CACHE_MS = 30 * 60 * 1000;   // 30 min
+var DUREE_CACHE_MS = 5 * 60 * 1000; // 5 min au lieu de 30
 
 var DataManager = {
 
