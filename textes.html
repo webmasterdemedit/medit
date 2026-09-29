@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Blog - Qiraat</title>
+  <title>Tous les textes - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
@@ -16,7 +16,7 @@
       padding: 20px 30px 40px;
     }
 
-    /* ---------- EN-TÊTE BLOG ---------- */
+    /* ---------- EN-TÊTE ---------- */
     .entete-blog {
       margin-bottom: 24px;
       padding-bottom: 20px;
@@ -520,7 +520,7 @@
 
     <!-- EN-TÊTE -->
     <div class="entete-blog">
-      <h1>Blog</h1>
+      <h1>Tous les textes</h1>
       <div class="sous-titre-blog">
         Tous les textes et exercices, tous livrets confondus, classés du plus récent au plus ancien.
       </div>
@@ -629,7 +629,7 @@
     // ============================================================
     // CHARGEMENT
     // ============================================================
-    function chargerBlog() {
+    function chargerTextes() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
         window.location.href = '/medit/index.html';
@@ -666,7 +666,7 @@
             });
           }
 
-          initialiserBlog();
+          initialiserTextes();
         })
         .catch(function(error) {
           console.error('Erreur chargement:', error);
@@ -696,7 +696,7 @@
                 toutesLesReponses[r.chapitreId].push(r);
               });
             }
-            initialiserBlog();
+            initialiserTextes();
           } else {
             document.getElementById('contenuChapitres').innerHTML = `
               <div class="vide-chapitres">
@@ -713,7 +713,7 @@
     // ============================================================
     // INITIALISATION
     // ============================================================
-    function initialiserBlog() {
+    function initialiserTextes() {
       chapitresData.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
@@ -885,7 +885,7 @@
         carte.addEventListener('click', function() {
           var id = this.getAttribute('data-chapitre-id');
           if (id) {
-            window.location.href = '/medit/article.html?id=' + encodeURIComponent(id);
+            window.location.href = '/medit/texte.html?id=' + encodeURIComponent(id);
           }
         });
       });
@@ -1049,7 +1049,7 @@
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
-      chargerBlog();
+      chargerTextes();
     }
 
     if (document.readyState === 'loading') {
