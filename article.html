@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Article - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+  <style>
+    /* ============================================================ */
+    /* PAGE ARTICLE                                                  */
+    /* ============================================================ */
+    .page-article {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 20px 30px 60px;
+    }
+
+    /* ---------- BOUTON RETOUR ---------- */
+    .btn-retour {
+      display: inline-block;
+      margin-bottom: 20px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-retour:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    /* ---------- EN-TÊTE ARTICLE ---------- */
+    .entete-article {
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .entete-article .livret-badge {
+      display: inline-block;
+      padding: 3px 14px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+
+    .entete-article h1 {
+      font-family: 'Georgia', serif;
+      font-size: 34px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.25;
+      letter-spacing: 0.3px;
+      margin-bottom: 14px;
+    }
+
+    .entete-article .meta-article {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px 20px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .entete-article .meta-article .meta-item .label {
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+
+    .entete-article .meta-article .meta-item .valeur {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .entete-article .badge-niveau-article {
+      display: inline-block;
+      padding: 2px 10px;
+      font-size: 11px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      margin-left: 6px;
+    }
+
+    /* ---------- CONTENU DE L'ARTICLE ---------- */
+    .contenu-article {
+      font-family: 'Georgia', serif;
+      font-size: 17px;
+      line-height: 1.85;
+      color: var(--text);
+      font-weight: 400;
+    }
+
+    .contenu-article p {
+      margin-bottom: 20px;
+    }
+
+    .contenu-article h2 {
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 32px 0 14px;
+      letter-spacing: 0.3px;
+    }
+
+    .contenu-article h3 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 26px 0 10px;
+    }
+
+    .contenu-article strong {
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .contenu-article em {
+      font-style: italic;
+    }
+
+    /* Bloc "slide" (chaque slide devient un paragraphe aéré) */
+    .bloc-slide {
+      margin-bottom: 28px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .bloc-slide:last-child {
+      border-bottom: none;
+    }
+
+    /* ---------- IMAGES DANS LE TEXTE ---------- */
+    .conteneur-image {
+      margin: 24px 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .conteneur-image img {
+      max-width: 100%;
+      height: auto;
+      border: 1px solid var(--border);
+      display: block;
+    }
+
+    .conteneur-image .legende-image {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-top: 6px;
+      text-align: center;
+    }
+
+    /* Tailles */
+    .conteneur-image.taille-petit img  { max-width: 220px; }
+    .conteneur-image.taille-moyen img  { max-width: 420px; }
+    .conteneur-image.taille-grand img  { max-width: 100%; }
+
+    /* Position */
+    .conteneur-image.position-gauche {
+      align-items: flex-start;
+    }
+    .conteneur-image.position-droite {
+      align-items: flex-end;
+    }
+    .conteneur-image.position-centre {
+      align-items: center;
+    }
+
+    /* ---------- BLOC MÉMO (vocabulaire, tags, à retenir) ---------- */
+    .bloc-memo {
+      margin: 40px 0 20px;
+      padding: 20px 24px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      border-left: 4px solid var(--border-hover);
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .bloc-memo .memo-titre {
+      font-family: 'Georgia', serif;
+      font-size: 15px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 10px;
+      letter-spacing: 0.3px;
+    }
+
+    .bloc-memo .memo-liste {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .bloc-memo .memo-liste li {
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+      padding: 4px 0 4px 18px;
+      position: relative;
+    }
+
+    .bloc-memo .memo-liste li:before {
+      content: '•';
+      position: absolute;
+      left: 4px;
+      color: var(--text-muted);
+    }
+
+    .bloc-memo .memo-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 4px;
+    }
+
+    .bloc-memo .memo-tags .tag {
+      padding: 2px 10px;
+      font-size: 11px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    /* ---------- PIED D'ARTICLE : bouton imprimer ---------- */
+    .pied-article {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .pied-article .btn-imprimer {
+      display: inline-block;
+      padding: 8px 20px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .pied-article .btn-imprimer:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    /* ---------- LOADER / VIDE ---------- */
+    .loader {
+      text-align: center;
+      padding: 60px 20px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .vide-article {
+      text-align: center;
+      padding: 60px 20px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .vide-article .icone {
+      font-size: 40px;
+      display: block;
+      margin-bottom: 12px;
+      color: var(--text-secondary);
+    }
+
+    .vide-article h2 {
+      font-size: 20px;
+      color: var(--text);
+      font-weight: 500;
+      margin-bottom: 6px;
+    }
+
+    .vide-article p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    /* ---------- DEVISE ---------- */
+    .devise {
+      margin-top: 48px;
+      padding-top: 24px;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      font-family: 'Georgia', serif;
+      font-style: italic;
+      font-size: 14px;
+      color: var(--text-secondary);
+      line-height: 1.7;
+    }
+
+    /* ---------- RESPONSIVE ---------- */
+    @media (max-width: 768px) {
+      .page-article { padding: 12px 18px 40px; }
+      .entete-article h1 { font-size: 26px; }
+      .contenu-article { font-size: 16px; line-height: 1.75; }
+      .conteneur-image.taille-moyen img { max-width: 100%; }
+      .conteneur-image.taille-petit img { max-width: 180px; }
+    }
+
+    @media (max-width: 400px) {
+      .entete-article h1 { font-size: 22px; }
+      .contenu-article { font-size: 15px; }
+    }
+
+    /* ============================================================ */
+    /* IMPRESSION                                                    */
+    /* ============================================================ */
+    @media print {
+      header, footer, .btn-retour, .pied-article, .devise, .bloc-memo {
+        display: none !important;
+      }
+      .page-article { max-width: 100%; padding: 0; }
+      .contenu-article { font-size: 12pt; line-height: 1.6; }
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      document.write(xhr.responseText);
+    }
+  </script>
+</head>
+<body>
+
+  <div class="page page-article">
+
+    <a href="/medit/blog.html" class="btn-retour">← Retour au blog</a>
+
+    <div id="articleContainer">
+      <div class="loader">
+        <div class="spinner"></div>
+        <p>Chargement de l'article...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script src="/medit/impression.js"></script>
+
+  <script>
+    // ============================================================
+    // ÉTAT GLOBAL
+    // ============================================================
+    var chapitreActuel = null;
+    var chapitresData = [];
+    var livretsData = {};
+    var imagesLivret = {};
+    var niveauEtudiant = 0;
+    var nomEtudiant = '';
+
+    // ============================================================
+    // FORMATER LA DATE (jj mois aaaa)
+    // ============================================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var date = new Date(dateStr);
+        if (isNaN(date.getTime())) return '';
+        var mois = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin',
+                    'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+        return date.getDate() + ' ' + mois[date.getMonth()] + ' ' + date.getFullYear();
+      } catch(e) {
+        return '';
+      }
+    }
+
+    // ============================================================
+    // ÉCHAPPER LE HTML
+    // ============================================================
+    function echapperHtml(str) {
+      if (!str) return '';
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;');
+    }
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerArticle() {
+      var params = new URLSearchParams(window.location.search);
+      var chapitreId = params.get('id');
+
+      if (!chapitreId) {
+        afficherErreur('Aucun article spécifié.');
+        return;
+      }
+
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+      nomEtudiant = id;
+
+      DataManager.charger()
+        .then(function(data) {
+          niveauEtudiant = data.niveau || 0;
+          chapitresData = data.tousLesChapitres || data.chapitres || [];
+
+          livretsData = {};
+          if (data.livrets && Array.isArray(data.livrets)) {
+            data.livrets.forEach(function(l) {
+              livretsData[l.titre] = {
+                couleur: l.couleur || '#2d6a4f',
+                sousTitre: l.sousTitre || '',
+                date: l.date || '',
+                auteur: l.auteur || '',
+                description: l.description || ''
+              };
+            });
+          }
+
+          // Trouver le chapitre
+          chapitreActuel = null;
+          for (var i = 0; i < chapitresData.length; i++) {
+            if (chapitresData[i].id === chapitreId) {
+              chapitreActuel = chapitresData[i];
+              break;
+            }
+          }
+
+          if (!chapitreActuel && data.chapitresComplets && data.chapitresComplets[chapitreId]) {
+            chapitreActuel = data.chapitresComplets[chapitreId];
+          }
+
+          if (!chapitreActuel) {
+            afficherErreur('Article introuvable.');
+            return;
+          }
+
+          // Charger les images du livret
+          chargerImagesPuisAfficher(chapitreActuel);
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            niveauEtudiant = cache.niveau || 0;
+            chapitresData = cache.tousLesChapitres || cache.chapitres || [];
+            if (cache.livrets && Array.isArray(cache.livrets)) {
+              livretsData = {};
+              cache.livrets.forEach(function(l) {
+                livretsData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  auteur: l.auteur || '',
+                  description: l.description || ''
+                };
+              });
+            }
+            for (var i = 0; i < chapitresData.length; i++) {
+              if (chapitresData[i].id === chapitreId) {
+                chapitreActuel = chapitresData[i];
+                break;
+              }
+            }
+            if (chapitreActuel) {
+              chargerImagesPuisAfficher(chapitreActuel);
+            } else {
+              afficherErreur('Article introuvable (cache).');
+            }
+          } else {
+            afficherErreur('Erreur de connexion.');
+          }
+        });
+    }
+
+    // ============================================================
+    // CHARGER LES IMAGES (via API getImages)
+    // ============================================================
+    function chargerImagesPuisAfficher(chapitre) {
+      if (!chapitre.categorie) {
+        afficherArticle(chapitre);
+        return;
+      }
+
+      fetch(API_URL + '?action=getImages&livret=' + encodeURIComponent(chapitre.categorie))
+        .then(function(r) { return r.json(); })
+        .then(function(j) {
+          if (j.success && j.images) {
+            imagesLivret = j.images;
+          }
+          afficherArticle(chapitre);
+        })
+        .catch(function() {
+          afficherArticle(chapitre);
+        });
+    }
+
+    // ============================================================
+    // AFFICHER L'ARTICLE
+    // ============================================================
+    function afficherArticle(chapitre) {
+      var container = document.getElementById('articleContainer');
+
+      var livretInfo = livretsData[chapitre.categorie] || {};
+      var dateCreation = chapitre.date ? formatDate(chapitre.date) : '';
+      var dateModif = chapitre.dateModif ? formatDate(chapitre.dateModif) : '';
+
+      // Construction de l'en-tête
+      var enteteHtml = `
+        <div class="entete-article">
+          ${chapitre.categorie ? `<span class="livret-badge">${echapperHtml(chapitre.categorie)}</span>` : ''}
+          <h1>${echapperHtml(chapitre.titre)}</h1>
+          <div class="meta-article">
+            <span class="meta-item">
+              <span class="label">Niveau</span>
+              <span class="badge-niveau-article">${chapitre.niveau || 0}</span>
+            </span>
+            ${dateCreation ? `<span class="meta-item"><span class="label">Publié :</span><span class="valeur">${dateCreation}</span></span>` : ''}
+            ${dateModif ? `<span class="meta-item"><span class="label">Modifié :</span><span class="valeur">${dateModif}</span></span>` : ''}
+          </div>
+        </div>
+      `;
+
+      // Construction du contenu
+      var contenuHtml = '<div class="contenu-article">';
+      contenuHtml += construireContenuContinu(chapitre);
+      contenuHtml += '</div>';
+
+      // Bloc mémo (vocabulaire, tags, à retenir)
+      var memoHtml = construireBlocMemo(chapitre);
+
+      // Bouton imprimer en bas
+      var piedHtml = `
+        <div class="pied-article">
+          <button class="btn-imprimer" onclick="imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}', chapitresData)">
+            🖨 Imprimer
+          </button>
+        </div>
+      `;
+
+      container.innerHTML = enteteHtml + contenuHtml + memoHtml + piedHtml;
+
+      // Mettre à jour le titre de la page
+      document.title = chapitre.titre + ' - Qiraat';
+    }
+
+    // ============================================================
+    // CONSTRUIRE LE CONTENU CONTINU
+    // ============================================================
+    function construireContenuContinu(chapitre) {
+      var contenu = chapitre.contenu || '';
+      if (!contenu) {
+        return '<p><em>Cet article est vide.</em></p>';
+      }
+
+      // Le contenu est un assemblage de slides séparés par '\n\n'
+      // On va parser chaque slide pour extraire les images
+      var slides = contenu.split('\n\n');
+      var html = '';
+
+      for (var i = 0; i < slides.length; i++) {
+        var slide = slides[i].trim();
+        if (!slide) continue;
+
+        html += '<div class="bloc-slide">';
+        html += traiterSlide(slide);
+        html += '</div>';
+      }
+
+      return html;
+    }
+
+    // ============================================================
+    // TRAITER UNE SLIDE (paragraphes + images)
+    // ============================================================
+    function traiterSlide(slide) {
+      var lignes = slide.split('\n');
+      var html = '';
+      var paragrapheEnCours = [];
+
+      function flushParagraphe() {
+        if (paragrapheEnCours.length > 0) {
+          var texte = paragrapheEnCours.join(' ');
+          html += '<p>' + formaterTexteInline(texte) + '</p>';
+          paragrapheEnCours = [];
+        }
+      }
+
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i].trim();
+        if (!ligne) {
+          flushParagraphe();
+          continue;
+        }
+
+        // Image : img:nom:position:taille
+        if (/^img:/i.test(ligne)) {
+          flushParagraphe();
+          html += traiterImage(ligne);
+          continue;
+        }
+
+        paragrapheEnCours.push(ligne);
+      }
+
+      flushParagraphe();
+      return html;
+    }
+
+    // ============================================================
+    // TRAITER UNE IMAGE
+    // ============================================================
+    function traiterImage(ligne) {
+      var parts = ligne.split(':');
+      // img:nom:position:taille
+      var nom = parts[1] ? parts[1].trim() : '';
+      var position = parts[2] ? parts[2].trim().toLowerCase() : 'centre';
+      var taille = parts[3] ? parts[3].trim().toLowerCase() : 'moyen';
+
+      if (!nom) return '';
+
+      var url = imagesLivret[nom];
+      if (!url) {
+        return '<div class="conteneur-image position-centre taille-moyen">' +
+               '<div class="legende-image">[image "' + echapperHtml(nom) + '" introuvable]</div>' +
+               '</div>';
+      }
+
+      var classesPosition = 'position-centre';
+      if (position === 'gauche' || position === 'left') classesPosition = 'position-gauche';
+      else if (position === 'droite' || position === 'right') classesPosition = 'position-droite';
+
+      var classesTaille = 'taille-moyen';
+      if (taille === 'petit' || taille === 'small' || taille === 's') classesTaille = 'taille-petit';
+      else if (taille === 'grand' || taille === 'large' || taille === 'l' || taille === 'plein') classesTaille = 'taille-grand';
+
+      return '<div class="conteneur-image ' + classesPosition + ' ' + classesTaille + '">' +
+             '<img src="' + url + '" alt="' + echapperHtml(nom) + '" loading="lazy" />' +
+             '</div>';
+    }
+
+    // ============================================================
+    // FORMATER LE TEXTE INLINE (gras, italique, etc.)
+    // ============================================================
+    function formaterTexteInline(texte) {
+      var html = echapperHtml(texte);
+
+      // **gras**
+      html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+      // *italique*
+      html = html.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+      // `code`
+      html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+
+      return html;
+    }
+
+    // ============================================================
+    // BLOC MÉMO (vocabulaire, tags, à retenir)
+    // ============================================================
+    function construireBlocMemo(chapitre) {
+      var vocabulaire = chapitre.vocabulaire || [];
+      var tags = chapitre.tags || [];
+      var aRetenir = chapitre.aRetenir || [];
+
+      if (vocabulaire.length === 0 && tags.length === 0 && aRetenir.length === 0) {
+        return '';
+      }
+
+      var html = '<div class="bloc-memo">';
+
+      if (aRetenir.length > 0) {
+        html += '<div class="memo-titre">À retenir</div>';
+        html += '<ul class="memo-liste">';
+        aRetenir.forEach(function(item) {
+          html += '<li>' + formaterTexteInline(item) + '</li>';
+        });
+        html += '</ul>';
+      }
+
+      if (vocabulaire.length > 0) {
+        html += '<div class="memo-titre" style="margin-top:16px;">Vocabulaire</div>';
+        html += '<ul class="memo-liste">';
+        vocabulaire.forEach(function(item) {
+          html += '<li>' + formaterTexteInline(item) + '</li>';
+        });
+        html += '</ul>';
+      }
+
+      if (tags.length > 0) {
+        html += '<div class="memo-titre" style="margin-top:16px;">Tags</div>';
+        html += '<div class="memo-tags">';
+        tags.forEach(function(t) {
+          html += '<span class="tag">#' + echapperHtml(t) + '</span>';
+        });
+        html += '</div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
+    // ============================================================
+    // AFFICHER UNE ERREUR
+    // ============================================================
+    function afficherErreur(message) {
+      document.getElementById('articleContainer').innerHTML = `
+        <div class="vide-article">
+          <span class="icone">◈</span>
+          <h2>${message}</h2>
+          <p>Vérifiez le lien ou retournez au blog.</p>
+          <a href="/medit/blog.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour au blog</a>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      chargerArticle();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
