@@ -18,7 +18,7 @@
 
     /* ---------- EN-TÊTE BLOG ---------- */
     .entete-blog {
-      margin-bottom: 32px;
+      margin-bottom: 24px;
       padding-bottom: 20px;
       border-bottom: 1px solid var(--border);
     }
@@ -61,23 +61,52 @@
       margin-left: 4px;
     }
 
-    /* ---------- FILTRES ---------- */
-    .barre-filtres {
+    /* ---------- ZONE DE FILTRES ---------- */
+    .zone-filtres {
+      margin-bottom: 20px;
+      padding: 14px 18px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .zone-filtres .ligne-filtre {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
       align-items: center;
-      margin-bottom: 20px;
+      gap: 10px;
     }
 
-    .barre-filtres .filtre-label {
+    .zone-filtres .ligne-filtre + .ligne-filtre {
+      margin-top: 12px;
+      padding-top: 12px;
+      border-top: 1px solid var(--border);
+    }
+
+    .zone-filtres .filtre-label {
       font-size: 13px;
       color: var(--text-secondary);
-      margin-right: 4px;
+      font-weight: 500;
+      min-width: 68px;
     }
 
-    .barre-filtres .filtre {
-      padding: 4px 14px;
+    .champ-recherche {
+      flex: 1;
+      min-width: 220px;
+      padding: 7px 14px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .champ-recherche:focus { border-color: var(--border-hover); }
+    .champ-recherche::placeholder { color: var(--text-muted); font-style: italic; }
+
+    .btn-effacer {
+      padding: 7px 14px;
       font-size: 12px;
       font-family: 'Roboto', sans-serif;
       background: transparent;
@@ -87,20 +116,44 @@
       transition: all 0.2s;
     }
 
-    .barre-filtres .filtre:hover {
+    .btn-effacer:hover {
+      background: var(--bg-active);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .liste-filtres {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      flex: 1;
+    }
+
+    .liste-filtres .filtre {
+      padding: 4px 14px;
+      font-size: 12px;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .liste-filtres .filtre:hover {
       background: var(--bg-hover);
       border-color: var(--border-hover);
       color: var(--text);
     }
 
-    .barre-filtres .filtre.actif {
+    .liste-filtres .filtre.actif {
       background: var(--bg-active);
       border-color: var(--border-hover);
       color: var(--text);
       font-weight: 500;
     }
 
-    /* ---------- CARTES CHAPITRES ---------- */
+    /* ---------- SECTION ---------- */
     .section-chapitres h3 {
       font-family: 'Georgia', serif;
       font-size: 18px;
@@ -110,104 +163,194 @@
       letter-spacing: 0.3px;
     }
 
+    .section-chapitres h3 .compteur {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      font-weight: 400;
+      color: var(--text-secondary);
+      margin-left: 8px;
+    }
+
+    /* ============================================================ */
+    /* CARTE ARTICLE : couverture à gauche + contenu à droite       */
+    /* ============================================================ */
     .carte-chapitre {
+      display: flex;
+      align-items: stretch;
+      gap: 16px;
       background: var(--bg);
       border: 1px solid var(--border);
-      padding: 14px 18px;
-      margin-bottom: 10px;
-      transition: all 0.2s;
-      display: flex;
-      flex-wrap: wrap;
-      align-items: center;
-      justify-content: space-between;
+      padding: 14px;
+      margin-bottom: 12px;
+      transition: border-color 0.2s, transform 0.15s;
+      min-height: 200px;
+      cursor: pointer;
     }
 
     .carte-chapitre:hover {
       border-color: var(--border-hover);
     }
 
-    .carte-chapitre .infos {
-      flex: 1;
-      min-width: 200px;
+    .carte-chapitre:active {
+      transform: scale(0.995);
     }
 
-    .carte-chapitre .titre {
+    /* --- Mini-couverture (à gauche) --- */
+    .carte-chapitre .mini-couverture {
+      flex-shrink: 0;
+      width: 140px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+      padding: 14px 10px;
+      color: #1a1a1a;
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--border);
+    }
+
+    .carte-chapitre .mini-couverture .badge-niveau-couv {
+      position: absolute;
+      top: 8px;
+      right: 8px;
+      z-index: 3;
+      padding: 2px 8px;
+      font-size: 9px;
       font-weight: 500;
-      font-size: 15px;
-      color: var(--text);
+      letter-spacing: 0.4px;
+      color: rgba(26, 26, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.70);
     }
 
-    .carte-chapitre .meta {
+    .carte-chapitre .mini-couverture .contenu-couv {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+      width: 100%;
+      padding-top: 20px;
+    }
+
+    .carte-chapitre .mini-couverture .auteur-couv {
+      font-size: 8px;
+      font-weight: 300;
+      letter-spacing: 1.5px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      color: rgba(26, 26, 26, 0.5);
+      margin-bottom: 3px;
+    }
+
+    .carte-chapitre .mini-couverture .titre-couv {
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+      color: #1a1a1a;
+      margin-bottom: 6px;
+    }
+
+    .carte-chapitre .mini-couverture .sous-titre-couv {
+      font-size: 9px;
+      font-weight: 500;
+      opacity: 0.8;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.3;
+    }
+
+    .carte-chapitre .mini-couverture .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding-top: 8px;
+    }
+
+    .carte-chapitre .mini-couverture .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 8px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+
+    .carte-chapitre .mini-couverture .progression-couv {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .carte-chapitre .mini-couverture .progression-couv .barre {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    /* --- Contenu à droite --- */
+    .carte-chapitre .contenu-principal {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      min-width: 0;
+    }
+
+    .carte-chapitre .titre-chapitre {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      margin-bottom: 6px;
+    }
+
+    /* --- Bas de carte : dates + bouton imprimer --- */
+    .carte-chapitre .bas-carte {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 8px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
+      margin-top: auto;
+    }
+
+    .carte-chapitre .dates-chapitre {
       display: flex;
       flex-wrap: wrap;
-      gap: 6px 12px;
-      margin-top: 4px;
-      font-size: 12px;
-      color: var(--text-secondary);
-      align-items: center;
-    }
-
-    .carte-chapitre .meta .badge-icone {
-      display: inline-block;
-      padding: 1px 10px;
-      background: var(--bg-hover);
+      gap: 4px 16px;
       font-size: 11px;
       color: var(--text-secondary);
-      border: 1px solid var(--border);
     }
 
-    .carte-chapitre .meta .niveau-badge {
-      font-size: 11px;
-      padding: 1px 10px;
-      background: var(--bg-hover);
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
-    }
-
-    .carte-chapitre .meta .livret-badge {
-      font-size: 11px;
-      padding: 1px 10px;
-      background: var(--bg-hover);
-      color: var(--text);
-      border: 1px solid var(--border-hover);
-      font-weight: 500;
-    }
-
-    .carte-chapitre .meta .mots {
-      font-size: 11px;
+    .carte-chapitre .dates-chapitre .date-item .label {
       color: var(--text-muted);
-      margin-left: 4px;
+      margin-right: 4px;
     }
 
-    .carte-chapitre .statut {
-      font-size: 12px;
-      color: var(--text-secondary);
-      text-align: right;
-      min-width: 120px;
-    }
-
-    .carte-chapitre .statut .date-label {
-      font-weight: 400;
-      color: var(--text-secondary);
-    }
-
-    .carte-chapitre .statut .date-validation {
+    .carte-chapitre .dates-chapitre .date-item .valeur {
       color: var(--text);
       font-weight: 500;
-    }
-
-    .carte-chapitre .btn-wrap {
-      width: 100%;
-      padding-top: 6px;
-      margin-top: 6px;
-      border-top: 1px solid var(--border);
-      display: flex;
-      justify-content: flex-end;
     }
 
     .carte-chapitre .btn-imprimer {
       display: inline-block;
-      padding: 3px 14px;
+      padding: 4px 14px;
       font-size: 11px;
       font-family: 'Roboto', sans-serif;
       background: transparent;
@@ -216,6 +359,7 @@
       cursor: pointer;
       color: var(--text-secondary);
       transition: all 0.2s;
+      flex-shrink: 0;
     }
 
     .carte-chapitre .btn-imprimer:hover {
@@ -224,19 +368,61 @@
       color: var(--text);
     }
 
-    .carte-chapitre .retenir-cadre {
-      margin-top: 4px;
-      padding: 4px 12px;
-      background: var(--bg-hover);
-      font-size: 12px;
-      color: var(--text-secondary);
-      border-left: 3px solid var(--border-hover);
+    /* ---------- PAGINATION ---------- */
+    .pagination {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 24px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
     }
 
-    .carte-chapitre .retenir-cadre strong {
-      font-weight: 600;
-      margin-right: 6px;
+    .pagination button {
+      min-width: 36px;
+      height: 36px;
+      padding: 0 10px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .pagination button:hover:not(:disabled):not(.actif) {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
       color: var(--text);
+    }
+
+    .pagination button.actif {
+      background: var(--bg-active);
+      border-color: var(--border-hover);
+      color: var(--text);
+      font-weight: 700;
+    }
+
+    .pagination button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .pagination .ellipsis {
+      padding: 0 4px;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .pagination .info-page {
+      width: 100%;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 8px;
     }
 
     /* ---------- VIDES / LOADER ---------- */
@@ -289,14 +475,33 @@
       .page-blog { padding: 12px 16px 30px; }
       .entete-blog h1 { font-size: 26px; }
       .stats-blog { justify-content: flex-start; gap: 16px; }
-      .carte-chapitre { flex-direction: column; align-items: stretch; gap: 6px; }
-      .carte-chapitre .statut { text-align: left; min-width: unset; }
-      .carte-chapitre .btn-wrap { justify-content: flex-start; }
+      .zone-filtres .filtre-label { min-width: unset; width: 100%; }
+      .pagination button { min-width: 32px; height: 32px; font-size: 12px; }
+
+      .carte-chapitre { flex-direction: column; min-height: unset; }
+      .carte-chapitre .mini-couverture {
+        width: 100%;
+        height: 110px;
+        flex-direction: row;
+        justify-content: center;
+      }
+      .carte-chapitre .mini-couverture .contenu-couv {
+        padding-top: 0;
+        flex-direction: row;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+      }
+      .carte-chapitre .mini-couverture .edition-info {
+        margin-top: 0;
+        padding-top: 0;
+      }
     }
 
     @media (max-width: 400px) {
       .entete-blog h1 { font-size: 22px; }
       .entete-blog .sous-titre-blog { font-size: 13px; }
+      .carte-chapitre .titre-chapitre { font-size: 15px; }
     }
   </style>
 
@@ -313,16 +518,31 @@
 
   <div class="page page-blog">
 
+    <!-- EN-TÊTE -->
     <div class="entete-blog">
       <h1>Blog</h1>
       <div class="sous-titre-blog">
-        Tous les chapitres, tous livrets confondus, classés du plus récent au plus ancien.
+        Tous les textes et exercices, tous livrets confondus, classés du plus récent au plus ancien.
       </div>
       <div id="statsBlog"></div>
     </div>
 
-    <div id="barreFiltres" class="barre-filtres"></div>
+    <!-- FILTRES -->
+    <div class="zone-filtres">
+      <div class="ligne-filtre">
+        <span class="filtre-label">Recherche</span>
+        <input type="text" id="champRecherche" class="champ-recherche"
+               placeholder="Rechercher un titre, un tag, un livret..."
+               autocomplete="off" />
+        <button type="button" class="btn-effacer" id="btnEffacer">Effacer</button>
+      </div>
+      <div class="ligne-filtre">
+        <span class="filtre-label">Livret</span>
+        <div class="liste-filtres" id="listeFiltres"></div>
+      </div>
+    </div>
 
+    <!-- CONTENU -->
     <div id="contenuChapitres">
       <div class="loader">
         <div class="spinner"></div>
@@ -362,28 +582,48 @@
 
   <script>
     // ============================================================
-    // DONNÉES
+    // CONFIGURATION
+    // ============================================================
+    var CHAPITRES_PAR_PAGE = 20;
+
+    // ============================================================
+    // ÉTAT GLOBAL
     // ============================================================
     var toutesLesReponses = {};
     var chapitresData = [];
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var livretsData = {};
-    var filtreActuel = 'tous'; // 'tous' ou nom de livret
+
+    var filtreLivretActuel = 'tous';
+    var rechercheActuelle = '';
+    var pageActuelle = 1;
+    var chapitresFiltres = [];
 
     // ============================================================
-    // FORMATER LA DATE
+    // FORMATER LA DATE (jj mois aaaa)
     // ============================================================
     function formatDate(dateStr) {
       if (!dateStr) return '';
       try {
         var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return mois[date.getMonth()] + ' ' + date.getFullYear();
+        if (isNaN(date.getTime())) return '';
+        var mois = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
+                    'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
+        return date.getDate() + ' ' + mois[date.getMonth()] + ' ' + date.getFullYear();
       } catch(e) {
-        return dateStr;
+        return '';
       }
+    }
+
+    // ============================================================
+    // NORMALISER UNE CHAÎNE
+    // ============================================================
+    function normaliser(str) {
+      if (!str) return '';
+      return str.toString().toLowerCase()
+        .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+        .trim();
     }
 
     // ============================================================
@@ -400,7 +640,7 @@
       DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
-          chapitresData = data.chapitres || [];
+          chapitresData = data.tousLesChapitres || data.chapitres || [];
 
           livretsData = {};
           if (data.livrets && Array.isArray(data.livrets)) {
@@ -426,14 +666,14 @@
             });
           }
 
-          afficherBlog();
+          initialiserBlog();
         })
         .catch(function(error) {
           console.error('Erreur chargement:', error);
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            chapitresData = cache.chapitres || [];
+            chapitresData = cache.tousLesChapitres || cache.chapitres || [];
             if (cache.livrets && Array.isArray(cache.livrets)) {
               livretsData = {};
               cache.livrets.forEach(function(l) {
@@ -456,7 +696,7 @@
                 toutesLesReponses[r.chapitreId].push(r);
               });
             }
-            afficherBlog();
+            initialiserBlog();
           } else {
             document.getElementById('contenuChapitres').innerHTML = `
               <div class="vide-chapitres">
@@ -471,36 +711,44 @@
     }
 
     // ============================================================
-    // AFFICHER LE BLOG
+    // INITIALISATION
     // ============================================================
-    function afficherBlog() {
-      // Tous les chapitres, sans filtre par livret ni par niveau
-      // (le contenu de chapitresData est déjà filtré par niveau côté API)
-      var chapitres = chapitresData.slice();
-
-      // Tri chronologique : plus récent en premier
-      chapitres.sort(function(a, b) {
+    function initialiserBlog() {
+      chapitresData.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
         return db - da;
       });
 
-      // Stats globales
-      var totalChapitres = chapitres.length;
+      afficherStats();
+      afficherFiltresLivrets();
+      attacherEvenements();
+      appliquerFiltres();
+    }
+
+    // ============================================================
+    // STATS
+    // ============================================================
+    function afficherStats() {
+      var totalChapitres = chapitresData.length;
       var totalLivrets = Object.keys(livretsData).length;
 
       var statsHtml = `
         <div class="stats-blog">
-          <span class="stat-item">Chapitres : <span class="nombre">${totalChapitres}</span></span>
+          <span class="stat-item">Textes & exercices : <span class="nombre">${totalChapitres}</span></span>
           <span class="stat-item">Livrets : <span class="nombre">${totalLivrets}</span></span>
           <span class="stat-item">Niveau : <span class="nombre">${niveauEtudiant}</span></span>
         </div>
       `;
       document.getElementById('statsBlog').innerHTML = statsHtml;
+    }
 
-      // Filtres par livret (optionnel, pratique si bcp de chapitres)
+    // ============================================================
+    // FILTRES LIVRETS
+    // ============================================================
+    function afficherFiltresLivrets() {
       var categories = {};
-      chapitres.forEach(function(c) {
+      chapitresData.forEach(function(c) {
         var cat = c.categorie || 'Sans catégorie';
         categories[cat] = (categories[cat] || 0) + 1;
       });
@@ -508,201 +756,229 @@
         return a.localeCompare(b, 'fr', { sensitivity: 'base' });
       });
 
-      var filtresHtml = '<span class="filtre-label">Filtrer :</span>';
-      filtresHtml += `<button class="filtre ${filtreActuel === 'tous' ? 'actif' : ''}" onclick="changerFiltre('tous')">Tous (${totalChapitres})</button>`;
+      var html = '';
+      html += `<button type="button" class="filtre ${filtreLivretActuel === 'tous' ? 'actif' : ''}" data-cat="tous">Tous (${chapitresData.length})</button>`;
       catsTriees.forEach(function(cat) {
-        filtresHtml += `<button class="filtre ${filtreActuel === cat ? 'actif' : ''}" onclick="changerFiltre('${cat.replace(/'/g, "\\'")}')">${cat} (${categories[cat]})</button>`;
+        html += `<button type="button" class="filtre ${filtreLivretActuel === cat ? 'actif' : ''}" data-cat="${cat.replace(/"/g, '&quot;')}">${cat} (${categories[cat]})</button>`;
       });
-      document.getElementById('barreFiltres').innerHTML = filtresHtml;
 
-      // Filtre appliqué
-      var chapitresAffiches = chapitres;
-      if (filtreActuel !== 'tous') {
-        chapitresAffiches = chapitres.filter(function(c) {
-          return (c.categorie || 'Sans catégorie') === filtreActuel;
+      document.getElementById('listeFiltres').innerHTML = html;
+
+      var boutons = document.querySelectorAll('#listeFiltres .filtre');
+      boutons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          filtreLivretActuel = this.getAttribute('data-cat');
+          pageActuelle = 1;
+          afficherFiltresLivrets();
+          appliquerFiltres();
         });
-      }
-
-      afficherChapitres(chapitresAffiches);
+      });
     }
 
     // ============================================================
-    // CHANGER FILTRE
+    // ÉVÉNEMENTS
     // ============================================================
-    function changerFiltre(cat) {
-      filtreActuel = cat;
-      afficherBlog();
+    function attacherEvenements() {
+      var champ = document.getElementById('champRecherche');
+      var btnEffacer = document.getElementById('btnEffacer');
+
+      var timer = null;
+      champ.addEventListener('input', function() {
+        clearTimeout(timer);
+        var val = this.value;
+        timer = setTimeout(function() {
+          rechercheActuelle = val;
+          pageActuelle = 1;
+          appliquerFiltres();
+        }, 200);
+      });
+
+      btnEffacer.addEventListener('click', function() {
+        champ.value = '';
+        rechercheActuelle = '';
+        pageActuelle = 1;
+        appliquerFiltres();
+      });
+    }
+
+    // ============================================================
+    // APPLIQUER FILTRES
+    // ============================================================
+    function appliquerFiltres() {
+      var rech = normaliser(rechercheActuelle);
+
+      chapitresFiltres = chapitresData.filter(function(c) {
+        if (filtreLivretActuel !== 'tous') {
+          if ((c.categorie || 'Sans catégorie') !== filtreLivretActuel) return false;
+        }
+
+        if (rech) {
+          var titreNorm = normaliser(c.titre);
+          var catNorm = normaliser(c.categorie);
+          var tagsNorm = '';
+          if (c.tags && c.tags.length) {
+            tagsNorm = normaliser(c.tags.join(' '));
+          }
+          if (titreNorm.indexOf(rech) === -1 &&
+              catNorm.indexOf(rech) === -1 &&
+              tagsNorm.indexOf(rech) === -1) {
+            return false;
+          }
+        }
+
+        return true;
+      });
+
+      afficherChapitres();
     }
 
     // ============================================================
     // AFFICHER LES CHAPITRES
     // ============================================================
-    function afficherChapitres(chapitres) {
+    function afficherChapitres() {
       var container = document.getElementById('contenuChapitres');
 
-      if (chapitres.length === 0) {
+      if (chapitresFiltres.length === 0) {
         container.innerHTML = `
           <div class="vide-chapitres">
             <span class="icone">◈</span>
-            <h4>Aucun chapitre</h4>
-            <p>Aucun chapitre accessible à votre niveau pour le moment.</p>
+            <h4>Aucun chapitre trouvé</h4>
+            <p>Essayez de modifier votre recherche ou vos filtres.</p>
           </div>
         `;
         return;
       }
 
-      var html = '<div class="section-chapitres">';
-      html += '<h3>' + (filtreActuel === 'tous' ? 'Tous les chapitres' : filtreActuel) + '</h3>';
+      var totalPages = Math.ceil(chapitresFiltres.length / CHAPITRES_PAR_PAGE);
+      if (pageActuelle > totalPages) pageActuelle = totalPages;
+      if (pageActuelle < 1) pageActuelle = 1;
 
-      for (var i = 0; i < chapitres.length; i++) {
-        var chapitre = chapitres[i];
+      var debut = (pageActuelle - 1) * CHAPITRES_PAR_PAGE;
+      var fin = debut + CHAPITRES_PAR_PAGE;
+      var pageChapitres = chapitresFiltres.slice(debut, fin);
 
-        var dateValidation = '';
-        var retenir = '';
-        var estLu = false;
-        var estValide = false;
-
-        var reponses = toutesLesReponses[chapitre.id] || [];
-        if (reponses.length > 0) {
-          var toutesValides = true;
-          for (var j = 0; j < reponses.length; j++) {
-            if (reponses[j].valide !== 'valide') {
-              toutesValides = false;
-              break;
-            }
-            if (reponses[j].date) dateValidation = reponses[j].date;
-            if (reponses[j].retenir) retenir = reponses[j].retenir;
-          }
-          if (toutesValides) {
-            estLu = true;
-            estValide = true;
-          }
-        }
-
-        var mots = chapitre.mots || 0;
-
-        // ============================================================
-        // COMPTAGE DES EXERCICES (via ordreBlocs)
-        // ============================================================
-        var TYPES_EXERCICES = [
-          { prefix: 'quiz:',   label: 'QCM' },
-          { prefix: 'open:',   label: 'Ouverte' },
-          { prefix: 'ordre:',  label: 'Ordre' },
-          { prefix: 'carte:',  label: 'Carte' },
-          { prefix: 'relier:', label: 'Relier' },
-          { prefix: 'tt:',     label: 'Trous' },
-          { prefix: 'vf:',     label: 'VF' },
-          { prefix: 'copier:', label: 'Copier' }
-        ];
-
-        var ordreBlocs = chapitre.ordreBlocs || [];
-        var detailParts = [];
-        var nbExercices = 0;
-
-        if (ordreBlocs.length > 0) {
-          for (var t = 0; t < TYPES_EXERCICES.length; t++) {
-            var type = TYPES_EXERCICES[t];
-            var count = 0;
-            for (var ob = 0; ob < ordreBlocs.length; ob++) {
-              if (ordreBlocs[ob].indexOf(type.prefix) === 0) count++;
-            }
-            if (count > 0) {
-              nbExercices++;
-              detailParts.push(count + ' ' + type.label);
-            }
-          }
-        } else {
-          if (chapitre.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
-          if (chapitre.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
-        }
-
-        var detailExercices = detailParts.join(' · ');
-        var exercicesHtml =
-          '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' +
-          (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
-
-        var metaHtml = exercicesHtml;
-
-        var dateHtml = '';
-        var dateLabelHtml = '';
-
-        if (estLu && dateValidation) {
-          var d = new Date(dateValidation);
-          if (!isNaN(d.getTime())) {
-            var dateStr = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-            var heureStr = d.toLocaleTimeString('fr-FR', {
-              hour: '2-digit', minute: '2-digit'
-            });
-            dateLabelHtml = '<span class="date-label">Fait :</span>';
-            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
-          }
-        }
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre">
-              <strong>À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
-        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
-
-        var livretBadge = chapitre.categorie
-          ? '<span class="livret-badge">' + chapitre.categorie + '</span>'
-          : '';
-
-        var imprimerHtml = `
-          <div class="btn-wrap">
-            <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}', chapitresData)">
-              🖨 Imprimer
-            </button>
-          </div>
-        `;
-
-        // Pas de onclick sur la carte : plus de e-learning
-        html += `
-          <div class="carte-chapitre">
-            <div class="infos">
-              <div class="titre">${chapitre.titre}</div>
-              <div class="meta">
-                <span class="niveau-badge">Niveau ${chapitre.niveau}</span>
-                ${livretBadge}
-                ${metaHtml}
-                ${motsHtml}
-                ${retenirHtml}
-              </div>
-            </div>
-            <div class="statut">
-              ${dateLabelHtml}
-              ${dateHtml}
-            </div>
-            ${imprimerHtml}
-          </div>
-        `;
+      var titreSection = 'Tous les textes et exercices';
+      if (filtreLivretActuel !== 'tous') {
+        titreSection = filtreLivretActuel;
+      }
+      if (rechercheActuelle.trim()) {
+        titreSection += ' — recherche "' + rechercheActuelle.trim() + '"';
       }
 
+      var html = '<div class="section-chapitres">';
+      html += '<h3>' + titreSection +
+              '<span class="compteur">(' + chapitresFiltres.length + ' résultat' +
+              (chapitresFiltres.length > 1 ? 's' : '') + ')</span></h3>';
+
+      for (var i = 0; i < pageChapitres.length; i++) {
+        html += genererCarteChapitre(pageChapitres[i]);
+      }
       html += '</div>';
+
+      html += genererPagination(totalPages);
+
       container.innerHTML = html;
+
+      // Attacher le clic sur les cartes
+      var cartes = container.querySelectorAll('.carte-chapitre');
+      cartes.forEach(function(carte) {
+        carte.addEventListener('click', function() {
+          var id = this.getAttribute('data-chapitre-id');
+          if (id) {
+            window.location.href = '/medit/article.html?id=' + encodeURIComponent(id);
+          }
+        });
+      });
+
+      // Attacher le clic sur le bouton imprimer (stopPropagation)
+      var boutonsImprimer = container.querySelectorAll('.btn-imprimer');
+      boutonsImprimer.forEach(function(btn) {
+        btn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          var id = this.getAttribute('data-chapitre-id');
+          var titre = this.getAttribute('data-chapitre-titre');
+          if (id && typeof imprimerChapitre === 'function') {
+            imprimerChapitre(id, titre, chapitresData);
+          }
+        });
+      });
+
+      // Pagination
+      var boutonsPage = container.querySelectorAll('.pagination button[data-page]');
+      boutonsPage.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          var p = parseInt(this.getAttribute('data-page'));
+          if (p && p !== pageActuelle) {
+            pageActuelle = p;
+            afficherChapitres();
+            var top = document.querySelector('.zone-filtres');
+            if (top) top.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        });
+      });
     }
 
     // ============================================================
-    // DÉMARRAGE
+    // GÉNÉRER UNE CARTE CHAPITRE
     // ============================================================
-    function demarrer() {
-      chargerBlog();
-    }
+    function genererCarteChapitre(chapitre) {
+      var livretInfo = livretsData[chapitre.categorie] || {};
+      var couleur = livretInfo.couleur || '#2d6a4f';
+      var sousTitre = livretInfo.sousTitre || '';
+      var auteur = livretInfo.auteur || '';
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
-  </script>
+      // Option A : dates création + modification du chapitre
+      var dateCreation = chapitre.date ? formatDate(chapitre.date) : '';
+      var dateModif = chapitre.dateModif ? formatDate(chapitre.dateModif) : '';
 
-</body>
-</html>
+      // Progression étudiant (pour la barre de la couverture)
+      var pourcentage = 0;
+      var reponses = toutesLesReponses[chapitre.id] || [];
+      if (reponses.length > 0) {
+        var toutesValides = true;
+        for (var j = 0; j < reponses.length; j++) {
+          if (reponses[j].valide !== 'valide') {
+            toutesValides = false;
+            break;
+          }
+        }
+        pourcentage = toutesValides ? 100 : 50;
+      }
+
+      // Bloc dates
+      var datesHtml = '';
+      if (dateCreation) {
+        datesHtml += `<span class="date-item"><span class="label">Créé :</span><span class="valeur">${dateCreation}</span></span>`;
+      }
+      if (dateModif) {
+        datesHtml += `<span class="date-item"><span class="label">Modifié :</span><span class="valeur">${dateModif}</span></span>`;
+      }
+
+      var titreEchappe = chapitre.titre.replace(/"/g, '&quot;');
+
+      return `
+        <div class="carte-chapitre" data-chapitre-id="${chapitre.id}">
+          <div class="mini-couverture" style="background: ${couleur}; border-color: ${couleur};">
+            <span class="badge-niveau-couv">Niv. ${chapitre.niveau}</span>
+            <div class="contenu-couv">
+              <div>
+                ${auteur ? `<div class="auteur-couv">${auteur}</div>` : ''}
+                <div class="titre-couv">${chapitre.categorie || 'Sans catégorie'}</div>
+                ${sousTitre ? `<div class="sous-titre-couv">${sousTitre}</div>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+              </div>
+            </div>
+            <div class="progression-couv">
+              <div class="barre" style="width: ${pourcentage}%;"></div>
+            </div>
+          </div>
+
+          <div class="contenu-principal">
+            <div class="titre-chapitre">${chapitre.titre}</div>
+            <div class="bas-carte">
+              <div class="dates-chapitre">${datesHtml}</div>
+              <button class="btn-imprimer"
+                      data-chapitre-id="${chapitre.id}"
+                      data-chapitre
