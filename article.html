@@ -112,23 +112,6 @@
       margin-bottom: 20px;
     }
 
-    .contenu-article h2 {
-      font-family: 'Georgia', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text);
-      margin: 32px 0 14px;
-      letter-spacing: 0.3px;
-    }
-
-    .contenu-article h3 {
-      font-family: 'Georgia', serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-      margin: 26px 0 10px;
-    }
-
     .contenu-article strong {
       font-weight: 700;
       color: var(--text);
@@ -179,15 +162,9 @@
     .conteneur-image.taille-grand img  { max-width: 100%; }
 
     /* Position */
-    .conteneur-image.position-gauche {
-      align-items: flex-start;
-    }
-    .conteneur-image.position-droite {
-      align-items: flex-end;
-    }
-    .conteneur-image.position-centre {
-      align-items: center;
-    }
+    .conteneur-image.position-gauche { align-items: flex-start; }
+    .conteneur-image.position-droite { align-items: flex-end; }
+    .conteneur-image.position-centre { align-items: center; }
 
     /* ---------- BLOC MÉMO (vocabulaire, tags, à retenir) ---------- */
     .bloc-memo {
@@ -421,7 +398,7 @@
     var nomEtudiant = '';
 
     // ============================================================
-    // FORMATER LA DATE (jj mois aaaa)
+    // FORMATER LA DATE
     // ============================================================
     function formatDate(dateStr) {
       if (!dateStr) return '';
@@ -437,14 +414,41 @@
     }
 
     // ============================================================
-    // ÉCHAPPER LE HTML
+    // ÉCHAPPER HTML
     // ============================================================
     function echapperHtml(str) {
       if (!str) return '';
-      return str
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;');
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ============================================================
+    // 🔍 TROUVER UN CHAPITRE (même méthode que l'impression)
+    // ============================================================
+    function trouverChapitre(chapitreId, chapitresDataParam) {
+      var chapitre = null;
+
+      // 1. Chercher dans chapitresData (comme l'impression)
+      if (chapitresDataParam && chapitresDataParam.length > 0) {
+        for (var i = 0; i < chapitresDataParam.length; i++) {
+          if (String(chapitresDataParam[i].id) === String(chapitreId)) {
+            chapitre = chapitresDataParam[i];
+            break;
+          }
+        }
+      }
+
+      // 2. Fallback : tousLesChapitres du DataManager
+      if (!chapitre && typeof DataManager !== 'undefined') {
+        var tous = DataManager.getTousLesChapitres();
+        for (var j = 0; j < tous.length; j++) {
+          if (String(tous[j].id) === String(chapitreId)) {
+            chapitre = tous[j];
+            break;
+          }
+        }
+      }
+
+      return chapitre;
     }
 
     // ============================================================
@@ -469,8 +473,8 @@
       DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
-          chapitresData = data.tousLesChapitres || data.chapitres || [];
 
+          // Livrets
           livretsData = {};
           if (data.livrets && Array.isArray(data.livrets)) {
             data.livrets.forEach(function(l) {
@@ -484,35 +488,36 @@
             });
           }
 
-          // Trouver le chapitre
-          chapitreActuel = null;
-          for (var i = 0; i < chapitresData.length; i++) {
-            if (chapitresData[i].id === chapitreId) {
-              chapitreActuel = chapitresData[i];
-              break;
-            }
-          }
+          // ✅ On récupère les chapitres exactement comme l'impression
+          chapitresData = data.tousLesChapitres || data.chapitres || [];
 
-          if (!chapitreActuel && data.chapitresComplets && data.chapitresComplets[chapitreId]) {
-            chapitreActuel = data.chapitresComplets[chapitreId];
-          }
+          // ✅ On cherche le chapitre avec la même méthode que l'impression
+          chapitreActuel = trouverChapitre(chapitreId, chapitresData);
 
           if (!chapitreActuel) {
+            console.error('❌ Chapitre introuvable:', chapitreId);
+            console.log('📋 IDs dispo:', chapitresData.map(function(c) { return c.id; }));
             afficherErreur('Article introuvable.');
             return;
           }
 
-          // Charger les images du livret
+          console.log('✅ Article trouvé:', chapitreActuel.titre);
+          console.log('📏 Contenu (longueur):', (chapitreActuel.contenu || '').length);
+
+          // ✅ On charge les images comme l'impression
           chargerImagesPuisAfficher(chapitreActuel);
         })
         .catch(function(error) {
-          console.error('Erreur chargement:', error);
+          console.error('❌ Erreur chargerArticle:', error);
+
+          // Fallback : cache
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             chapitresData = cache.tousLesChapitres || cache.chapitres || [];
+
+            livretsData = {};
             if (cache.livrets && Array.isArray(cache.livrets)) {
-              livretsData = {};
               cache.livrets.forEach(function(l) {
                 livretsData[l.titre] = {
                   couleur: l.couleur || '#2d6a4f',
@@ -523,25 +528,19 @@
                 };
               });
             }
-            for (var i = 0; i < chapitresData.length; i++) {
-              if (chapitresData[i].id === chapitreId) {
-                chapitreActuel = chapitresData[i];
-                break;
-              }
-            }
+
+            chapitreActuel = trouverChapitre(chapitreId, chapitresData);
             if (chapitreActuel) {
               chargerImagesPuisAfficher(chapitreActuel);
-            } else {
-              afficherErreur('Article introuvable (cache).');
+              return;
             }
-          } else {
-            afficherErreur('Erreur de connexion.');
           }
+          afficherErreur('Erreur de chargement.');
         });
     }
 
     // ============================================================
-    // CHARGER LES IMAGES (via API getImages)
+    // CHARGER LES IMAGES (comme l'impression : chargerImagesLivret)
     // ============================================================
     function chargerImagesPuisAfficher(chapitre) {
       if (!chapitre.categorie) {
@@ -549,17 +548,29 @@
         return;
       }
 
-      fetch(API_URL + '?action=getImages&livret=' + encodeURIComponent(chapitre.categorie))
-        .then(function(r) { return r.json(); })
-        .then(function(j) {
-          if (j.success && j.images) {
-            imagesLivret = j.images;
-          }
-          afficherArticle(chapitre);
-        })
-        .catch(function() {
-          afficherArticle(chapitre);
-        });
+      // ✅ Utilise la même fonction globale que l'impression
+      if (typeof chargerImagesLivret === 'function') {
+        chargerImagesLivret(chapitre.categorie)
+          .then(function(images) {
+            imagesLivret = images || {};
+            afficherArticle(chapitre);
+          })
+          .catch(function() {
+            imagesLivret = {};
+            afficherArticle(chapitre);
+          });
+      } else {
+        // Fallback
+        DataManager.chargerImages(chapitre.categorie)
+          .then(function(images) {
+            imagesLivret = images || {};
+            afficherArticle(chapitre);
+          })
+          .catch(function() {
+            imagesLivret = {};
+            afficherArticle(chapitre);
+          });
+      }
     }
 
     // ============================================================
@@ -568,11 +579,9 @@
     function afficherArticle(chapitre) {
       var container = document.getElementById('articleContainer');
 
-      var livretInfo = livretsData[chapitre.categorie] || {};
       var dateCreation = chapitre.date ? formatDate(chapitre.date) : '';
       var dateModif = chapitre.dateModif ? formatDate(chapitre.dateModif) : '';
 
-      // Construction de l'en-tête
       var enteteHtml = `
         <div class="entete-article">
           ${chapitre.categorie ? `<span class="livret-badge">${echapperHtml(chapitre.categorie)}</span>` : ''}
@@ -588,15 +597,12 @@
         </div>
       `;
 
-      // Construction du contenu
       var contenuHtml = '<div class="contenu-article">';
       contenuHtml += construireContenuContinu(chapitre);
       contenuHtml += '</div>';
 
-      // Bloc mémo (vocabulaire, tags, à retenir)
       var memoHtml = construireBlocMemo(chapitre);
 
-      // Bouton imprimer en bas
       var piedHtml = `
         <div class="pied-article">
           <button class="btn-imprimer" onclick="imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}', chapitresData)">
@@ -606,39 +612,67 @@
       `;
 
       container.innerHTML = enteteHtml + contenuHtml + memoHtml + piedHtml;
-
-      // Mettre à jour le titre de la page
       document.title = chapitre.titre + ' - Qiraat';
     }
 
     // ============================================================
     // CONSTRUIRE LE CONTENU CONTINU
+    // ------------------------------------------------------------
+    // Le contenu est composé de slides séparées par ' | '
+    // (exactement comme dans impression.js → parts = contenu.split(' | '))
+    // On ne garde QUE les slides (on ignore q:, qs:, o:, r:, l:, tt:, vf:, c:)
     // ============================================================
     function construireContenuContinu(chapitre) {
       var contenu = chapitre.contenu || '';
-      if (!contenu) {
+      if (!contenu || contenu.trim() === '') {
         return '<p><em>Cet article est vide.</em></p>';
       }
 
-      // Le contenu est un assemblage de slides séparés par '\n\n'
-      // On va parser chaque slide pour extraire les images
-      var slides = contenu.split('\n\n');
+      // ✅ Même découpage que l'impression
+      var parts = contenu.split(' | ');
+
+      // ✅ On garde uniquement les slides (exclut les exercices)
+      var slidesArray = [];
+      parts.forEach(function(part) {
+        part = part.trim();
+        if (!part) return;
+
+        // Ignorer les blocs d'exercices
+        if (/^q:/i.test(part)) return;
+        if (/^qs:/i.test(part)) return;
+        if (/^o:/i.test(part)) return;
+        if (/^r:/i.test(part)) return;
+        if (/^l:/i.test(part)) return;
+        if (/^tt:/i.test(part)) return;
+        if (/^vf:/i.test(part)) return;
+        if (/^c:/i.test(part)) return;
+
+        // Sinon → slide
+        var cleanText = part.replace(/\r\n/g, '\n').trim();
+        if (cleanText) {
+          var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+          subSlides.forEach(function(sub) {
+            slidesArray.push(sub.trim());
+          });
+        }
+      });
+
+      if (slidesArray.length === 0) {
+        return '<p><em>Cet article est vide.</em></p>';
+      }
+
       var html = '';
-
-      for (var i = 0; i < slides.length; i++) {
-        var slide = slides[i].trim();
-        if (!slide) continue;
-
+      slidesArray.forEach(function(slide) {
         html += '<div class="bloc-slide">';
         html += traiterSlide(slide);
         html += '</div>';
-      }
+      });
 
       return html;
     }
 
     // ============================================================
-    // TRAITER UNE SLIDE (paragraphes + images)
+    // TRAITER UNE SLIDE
     // ============================================================
     function traiterSlide(slide) {
       var lignes = slide.split('\n');
@@ -655,12 +689,9 @@
 
       for (var i = 0; i < lignes.length; i++) {
         var ligne = lignes[i].trim();
-        if (!ligne) {
-          flushParagraphe();
-          continue;
-        }
+        if (!ligne) { flushParagraphe(); continue; }
 
-        // Image : img:nom:position:taille
+        // Image
         if (/^img:/i.test(ligne)) {
           flushParagraphe();
           html += traiterImage(ligne);
@@ -669,22 +700,27 @@
 
         paragrapheEnCours.push(ligne);
       }
-
       flushParagraphe();
       return html;
     }
 
     // ============================================================
-    // TRAITER UNE IMAGE
+    // TRAITER UNE IMAGE (même format que l'impression)
     // ============================================================
     function traiterImage(ligne) {
-      var parts = ligne.split(':');
-      // img:nom:position:taille
-      var nom = parts[1] ? parts[1].trim() : '';
-      var position = parts[2] ? parts[2].trim().toLowerCase() : 'centre';
-      var taille = parts[3] ? parts[3].trim().toLowerCase() : 'moyen';
+      var imgMatch = ligne.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
+      if (!imgMatch) return '';
 
-      if (!nom) return '';
+      var nom = imgMatch[1];
+      var opt1 = (imgMatch[2] || '').toLowerCase();
+      var opt2 = (imgMatch[3] || '').toLowerCase();
+
+      var position = 'centre';
+      var taille = 'moyen';
+      [opt1, opt2].forEach(function(o) {
+        if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
+        else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
+      });
 
       var url = imagesLivret[nom];
       if (!url) {
@@ -693,13 +729,8 @@
                '</div>';
       }
 
-      var classesPosition = 'position-centre';
-      if (position === 'gauche' || position === 'left') classesPosition = 'position-gauche';
-      else if (position === 'droite' || position === 'right') classesPosition = 'position-droite';
-
-      var classesTaille = 'taille-moyen';
-      if (taille === 'petit' || taille === 'small' || taille === 's') classesTaille = 'taille-petit';
-      else if (taille === 'grand' || taille === 'large' || taille === 'l' || taille === 'plein') classesTaille = 'taille-grand';
+      var classesPosition = 'position-' + position;
+      var classesTaille = 'taille-' + taille;
 
       return '<div class="conteneur-image ' + classesPosition + ' ' + classesTaille + '">' +
              '<img src="' + url + '" alt="' + echapperHtml(nom) + '" loading="lazy" />' +
@@ -707,23 +738,18 @@
     }
 
     // ============================================================
-    // FORMATER LE TEXTE INLINE (gras, italique, etc.)
+    // FORMATER LE TEXTE INLINE
     // ============================================================
     function formaterTexteInline(texte) {
       var html = echapperHtml(texte);
-
-      // **gras**
       html = html.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
-      // *italique*
       html = html.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
-      // `code`
       html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
-
       return html;
     }
 
     // ============================================================
-    // BLOC MÉMO (vocabulaire, tags, à retenir)
+    // BLOC MÉMO
     // ============================================================
     function construireBlocMemo(chapitre) {
       var vocabulaire = chapitre.vocabulaire || [];
@@ -768,7 +794,7 @@
     }
 
     // ============================================================
-    // AFFICHER UNE ERREUR
+    // ERREUR
     // ============================================================
     function afficherErreur(message) {
       document.getElementById('articleContainer').innerHTML = `
