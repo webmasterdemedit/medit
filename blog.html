@@ -981,4 +981,83 @@
               <div class="dates-chapitre">${datesHtml}</div>
               <button class="btn-imprimer"
                       data-chapitre-id="${chapitre.id}"
-                      data-chapitre
+                      data-chapitre-titre="${titreEchappe}">
+                🖨 Imprimer
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // GÉNÉRER LA PAGINATION
+    // ============================================================
+    function genererPagination(totalPages) {
+      if (totalPages <= 1) return '';
+
+      var html = '<div class="pagination">';
+
+      html += `<button type="button" data-page="${pageActuelle - 1}" ${pageActuelle === 1 ? 'disabled' : ''}>‹ Précédent</button>`;
+
+      var pages = calculerPages(totalPages, pageActuelle);
+      pages.forEach(function(p) {
+        if (p === '...') {
+          html += '<span class="ellipsis">…</span>';
+        } else {
+          html += `<button type="button" data-page="${p}" class="${p === pageActuelle ? 'actif' : ''}">${p}</button>`;
+        }
+      });
+
+      html += `<button type="button" data-page="${pageActuelle + 1}" ${pageActuelle === totalPages ? 'disabled' : ''}>Suivant ›</button>`;
+
+      html += `<div class="info-page">Page ${pageActuelle} sur ${totalPages}</div>`;
+
+      html += '</div>';
+      return html;
+    }
+
+    // ============================================================
+    // CALCUL DES PAGES À AFFICHER
+    // ============================================================
+    function calculerPages(total, courante) {
+      var pages = [];
+      var delta = 2;
+
+      if (total <= 7) {
+        for (var i = 1; i <= total; i++) pages.push(i);
+        return pages;
+      }
+
+      pages.push(1);
+
+      var debut = Math.max(2, courante - delta);
+      var fin = Math.min(total - 1, courante + delta);
+
+      if (debut > 2) pages.push('...');
+
+      for (var i = debut; i <= fin; i++) pages.push(i);
+
+      if (fin < total - 1) pages.push('...');
+
+      pages.push(total);
+
+      return pages;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      chargerBlog();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
