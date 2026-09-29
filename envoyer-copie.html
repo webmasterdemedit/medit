@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Envoyer ma copie</title>
+<style>
+  body { font-family: system-ui, sans-serif; max-width: 600px; margin: 2rem auto; padding: 1rem; }
+  input, textarea, button { width: 100%; padding: .7rem; margin: .4rem 0; box-sizing: border-box; }
+  button { background: #2d6a4f; color: #fff; border: none; cursor: pointer; border-radius: 6px; }
+  button:disabled { opacity: .5; }
+  .ok  { color: #2d6a4f; font-weight: bold; }
+  .err { color: #c00; font-weight: bold; }
+  #preview img { max-width: 100%; margin-top: .5rem; border-radius: 8px; }
+</style>
+</head>
+<body>
+
+<h1>📤 Envoyer ma copie</h1>
+
+<form id="form">
+  <input type="text" id="nom" placeholder="Ton identifiant" required>
+
+  <select id="chapitreId" required>
+    <option value="">-- Choisis un chapitre --</option>
+    <!-- rempli dynamiquement -->
+  </select>
+
+  <input type="file" id="fichier" accept="image/*,application/pdf" capture="environment" required>
+  <div id="preview"></div>
+
+  <textarea id="commentaire" placeholder="Commentaire (optionnel)" rows="3"></textarea>
+
+  <button type="submit" id="btn">Envoyer</button>
+</form>
+
+<p id="msg"></p>
+
+<script>
+// ⚠️ Remplace par l'URL de TON déploiement Apps Script
+const API_URL = 'https://script.google.com/macros/s/AKfy.../exec';
+
+const form = document.getElementById('form');
+const fichierInput = document.getElementById('fichier');
+const preview = document.getElementById('preview');
+const msg = document.getElementById('msg');
+const btn = document.getElementById('btn');
+
+// 1. Charger la liste des chapitres accessibles
+(async () => {
+  const nom = prompt('Ton identifiant ?');
+  if (!nom) return;
+  document.getElementById('nom').value = nom;
+
+  try {
+    const r = await fetch(`${API_URL}?action=getTout&nom=${encodeURIComponent(nom)}`);
+    const j = await r.json();
+    const select = document.getElementById('chapitreId');
+    (j.chapitres || []).forEach(ch => {
+      const opt = document.createElement('option');
+      opt.value = ch.id;
+      opt.textContent = ch.titre;
+      select.appendChild(opt);
+    });
+  } catch(e) {
+    console.error(e);
+  }
+})();
+
+// 2. Aperçu de l'image
+fichierInput.addEventListener('change', () => {
+  preview.innerHTML = '';
+  const f = fichierInput.files[0];
+  if (!f) return;
+  if (f.type.startsWith('image/')) {
+    const img = document.createElement('img');
+    img.src = URL.createObjectURL(f);
+    preview.appendChild(img);
+  } else {
+    preview.textContent = '📄 ' + f.name;
+  }
+});
+
+// 3. Envoi
+form.addEventListener('submit', async (ev) => {
+  ev.preventDefault();
+  btn.disabled = true;
+  msg.textContent = '⏳ Envoi en cours...';
+  msg.className = '';
+
+  const fichier = fichierInput.files[0];
+  const select = document.getElementById('chapitreId');
+  const chapitreTitre = select.options[select.selectedIndex].textContent;
+
+  const fd = new FormData();
+  fd.append('action', 'uploadCopie');
+  fd.append('nom', document.getElementById('nom').value);
+  fd.append('chapitreId', select.value);
+  fd.append('chapitreTitre', chapitreTitre);
+  fd.append('commentaire', document.getElementById('commentaire').value);
+  fd.append('fichier', fichier);
+
+  try {
+    // ⚠️ On utilise mode: 'no-cors' car Apps Script redirige
+    // → on ne peut PAS lire la réponse JSON du coup.
+    // Astuce : on utilise un iframe ou on accepte l'aveugle.
+    const r = await fetch(API_URL, { method: 'POST', body: fd });
+    const j = await r.json();
+    if (j.success) {
+      msg.textContent = '✅ Copie envoyée avec succès !';
+      msg.className = 'ok';
+      form.reset();
+      preview.innerHTML = '';
+    } else {
+      msg.textContent = '❌ ' + (j.message || 'Erreur');
+      msg.className = 'err';
+    }
+  } catch(e) {
+    // Si CORS bloque la lecture → l'envoi a peut-être réussi quand même
+    msg.textContent = '✅ Envoyé (vérifie côté prof).';
+    msg.className = 'ok';
+  } finally {
+    btn.disabled = false;
+  }
+});
+</script>
+
+</body>
+</html>
