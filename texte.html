@@ -4,14 +4,14 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Article - Qiraat</title>
+  <title>Texte - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
     /* ============================================================ */
-    /* PAGE ARTICLE                                                  */
+    /* PAGE TEXTE                                                    */
     /* ============================================================ */
     .page-article {
       max-width: 820px;
@@ -40,7 +40,7 @@
     }
 
     /* ============================================================ */
-    /* FEUILLE ARTICLE : reproduction CSS de l'impression            */
+    /* FEUILLE TEXTE : reproduction CSS de l'impression              */
     /* ============================================================ */
     .feuille-article {
       background: #ffffff;
@@ -335,12 +335,12 @@
 
   <div class="page page-article">
 
-    <a href="/medit/tous-les-textes.html" class="btn-retour">← Retour au blog</a>
+    <a href="/medit/textes.html" class="btn-retour">← Retour aux textes</a>
 
     <div id="articleContainer">
       <div class="loader">
         <div class="spinner"></div>
-        <p>Chargement de l'article...</p>
+        <p>Chargement du texte...</p>
       </div>
     </div>
 
@@ -383,7 +383,7 @@
     var imagesLivret = {};
 
     // ============================================================
-    // ✅ HELPERS (copiés d'impression.js, sans le toucher)
+    // HELPERS (copiés d'impression.js, sans le toucher)
     // ============================================================
 
     // --- Rendu des sources [xxx] ---
@@ -452,7 +452,7 @@
     }
 
     // ============================================================
-    // ✅ CONSTRUCTION DU HTML (même logique qu'impression)
+    // CONSTRUCTION DU HTML (même logique qu'impression)
     // MAIS : on garde UNIQUEMENT les slides (pas les exercices)
     // ============================================================
     function construireHtmlArticle(chapitre, imagesLivret) {
@@ -609,7 +609,7 @@
     }
 
     // ============================================================
-    // ✅ AJOUT : enveloppe les mots arabes dans <span class="arabe">
+    // Enveloppe les mots arabes dans <span class="arabe">
     // (comme le fait impression.js dans l'iframe)
     // ============================================================
     function arabiserDans(container) {
@@ -664,7 +664,7 @@
       var params = new URLSearchParams(window.location.search);
       var chapitreId = params.get('id');
 
-      if (!chapitreId) { afficherErreur('Aucun article spécifié.'); return; }
+      if (!chapitreId) { afficherErreur('Aucun texte spécifié.'); return; }
 
       var id = localStorage.getItem('etudiant_id');
       if (!id) { window.location.href = '/medit/index.html'; return; }
@@ -675,7 +675,7 @@
           chapitreActuel = trouverChapitre(chapitreId, chapitresData);
 
           if (!chapitreActuel) {
-            afficherErreur('Article introuvable.');
+            afficherErreur('Texte introuvable.');
             return;
           }
 
@@ -710,7 +710,7 @@
     }
 
     // ============================================================
-    // AFFICHER L'ARTICLE
+    // AFFICHER LE TEXTE
     // ============================================================
     function afficherArticle(chapitre) {
       var container = document.getElementById('articleContainer');
@@ -728,7 +728,7 @@
 
       container.innerHTML = html;
 
-      // ✅ Transformer les mots arabes en <span class="arabe">
+      // Transformer les mots arabes en <span class="arabe">
       arabiserDans(container);
 
       document.title = chapitre.titre + ' - Qiraat';
@@ -742,8 +742,8 @@
         <div class="vide-article">
           <span class="icone">◈</span>
           <h2>${message}</h2>
-          <p>Vérifiez le lien ou retournez au blog.</p>
-          <a href="/medit/tous-les-textes.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour au blog</a>
+          <p>Vérifiez le lien ou retournez aux textes.</p>
+          <a href="/medit/textes.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux textes</a>
         </div>
       `;
     }
