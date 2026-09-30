@@ -1,0 +1,1011 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Livret - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+  <style>
+    .page-livret {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 20px 30px 40px;
+    }
+
+    .entete-livret {
+      display: flex;
+      gap: 32px;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .couverture-mini {
+      flex-shrink: 0;
+      width: 200px;
+      height: 280px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 0;
+      color: #1a1a1a;
+      border: 1px solid var(--border);
+      position: relative;
+      overflow: hidden;
+      background: var(--bg);
+      cursor: default;
+    }
+
+    .couverture-mini .contenu-couv {
+      position: relative;
+      z-index: 2;
+      padding: 24px 20px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 100%;
+    }
+
+    .couverture-mini .titre-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
+      margin-top: 30px;
+    }
+
+    .couverture-mini .titre-couv {
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      margin-bottom: 0;
+      line-height: 1.2;
+      max-width: 90%;
+      color: #1a1a1a;
+      text-align: center;
+    }
+
+    .couverture-mini .sous-titre-couv {
+      font-size: 13px;
+      font-weight: 500;
+      opacity: 0.8;
+      margin-top: 8px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.3;
+      text-align: center;
+    }
+
+    .couverture-mini .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      padding-bottom: 10px;
+    }
+
+    .couverture-mini .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 11px;
+      letter-spacing: 1px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+
+    .couverture-mini .edition-date {
+      font-size: 10px;
+      opacity: 1;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
+    }
+
+    .couverture-mini .badge-niveau-couv {
+      position: absolute;
+      top: 14px;
+      right: 14px;
+      z-index: 3;
+      padding: 3px 12px;
+      font-size: 11px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      color: rgba(26, 26, 26, 0.85);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.70);
+    }
+
+    .couverture-mini .progression-couv {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+
+    .couverture-mini .progression-couv .barre {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
+    }
+
+    .description-livret {
+      flex: 1;
+      padding-top: 4px;
+    }
+
+    .description-livret h2 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.3px;
+    }
+
+    .description-livret .pre-requis {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 10px;
+      font-weight: 300;
+    }
+
+    .description-livret .pre-requis strong {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .description-livret .texte-desc {
+      font-size: 15px;
+      line-height: 1.7;
+      color: var(--text-secondary);
+      font-weight: 300;
+    }
+
+    .description-livret .texte-desc p {
+      margin-bottom: 8px;
+    }
+
+    .stats-livret {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      padding: 10px 16px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .stats-livret .stat-item {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stats-livret .stat-item .nombre {
+      font-weight: 700;
+      font-size: 16px;
+      color: var(--text);
+      margin-left: 4px;
+    }
+
+    .btn-retour {
+      display: inline-block;
+      margin-bottom: 16px;
+      padding: 6px 18px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      text-decoration: none;
+    }
+
+    .btn-retour:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .section-chapitres {
+      margin-top: 8px;
+    }
+
+    .section-chapitres h3 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 14px;
+      letter-spacing: 0.3px;
+    }
+
+    .carte-chapitre {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      padding: 14px 18px;
+      margin-bottom: 10px;
+      transition: all 0.2s;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      cursor: pointer;
+    }
+
+    .carte-chapitre:hover {
+      border-color: var(--border-hover);
+    }
+
+    .carte-chapitre .infos {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .carte-chapitre .titre {
+      font-weight: 500;
+      font-size: 15px;
+      color: var(--text);
+    }
+
+    .carte-chapitre .meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 12px;
+      margin-top: 4px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-chapitre .meta .badge-icone {
+      display: inline-block;
+      padding: 1px 10px;
+      background: var(--bg-hover);
+      font-size: 11px;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .carte-chapitre .meta .badge-icone.clickable {
+      cursor: pointer;
+      color: var(--text);
+      border-color: var(--border-hover);
+    }
+
+    .carte-chapitre .meta .badge-icone.clickable:hover {
+      background: var(--bg-active);
+    }
+
+    .carte-chapitre .statut {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-align: right;
+      min-width: 120px;
+    }
+
+    .carte-chapitre .statut .date-label {
+      font-weight: 400;
+      color: var(--text-secondary);
+    }
+
+    .carte-chapitre .statut .date-validation {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .carte-chapitre .btn-wrap {
+      width: 100%;
+      padding-top: 6px;
+      margin-top: 6px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .carte-chapitre .btn-imprimer {
+      display: inline-block;
+      padding: 3px 14px;
+      font-size: 11px;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+    }
+
+    .carte-chapitre .btn-imprimer:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+
+    .carte-chapitre .retenir-cadre {
+      margin-top: 4px;
+      padding: 4px 12px;
+      background: var(--bg-hover);
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-left: 3px solid var(--border-hover);
+    }
+
+    .carte-chapitre .retenir-cadre strong {
+      font-weight: 600;
+      margin-right: 6px;
+      color: var(--text);
+    }
+
+    .carte-chapitre .niveau-badge {
+      font-size: 11px;
+      padding: 1px 10px;
+      background: var(--bg-hover);
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .carte-chapitre .mots {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-left: 4px;
+    }
+
+    .vide-chapitres {
+      text-align: center;
+      padding: 40px 20px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+    }
+
+    .vide-chapitres .icone {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-secondary);
+    }
+
+    .vide-chapitres h4 {
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .vide-chapitres p {
+      color: var(--text-secondary);
+      font-size: 14px;
+    }
+
+    .loader {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .spinner {
+      width: 36px;
+      height: 36px;
+      border: 3px solid var(--border);
+      border-top-color: var(--text);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 10px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    @media (max-width: 768px) {
+      .page-livret { padding: 12px 16px 30px; }
+      .entete-livret { flex-direction: column; align-items: center; gap: 20px; padding-bottom: 18px; }
+      .couverture-mini { width: 160px; height: 220px; }
+      .couverture-mini .titre-couv { font-size: 20px; }
+      .description-livret { width: 100%; text-align: center; }
+      .description-livret h2 { font-size: 20px; }
+      .stats-livret { justify-content: center; gap: 16px; }
+      .carte-chapitre { flex-direction: column; align-items: stretch; gap: 6px; }
+      .carte-chapitre .statut { text-align: left; min-width: unset; }
+      .carte-chapitre .btn-wrap { justify-content: flex-start; }
+    }
+
+    @media (max-width: 400px) {
+      .couverture-mini { width: 140px; height: 190px; }
+      .couverture-mini .titre-couv { font-size: 17px; }
+      .description-livret .texte-desc { font-size: 14px; }
+      .stats-livret .stat-item { font-size: 12px; }
+    }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+    }
+
+    .modal-contenu {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      max-width: 540px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      padding: 28px 32px 24px;
+      position: relative;
+    }
+
+    .modal-contenu h3 {
+      font-family: 'Georgia', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .modal-sous-titre {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 10px;
+    }
+
+    .modal-contenu .modal-annotation {
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .modal-contenu .modal-annotation:last-child {
+      border-bottom: none;
+    }
+
+    .modal-contenu .modal-annotation strong {
+      display: block;
+      font-size: 12px;
+      color: var(--text);
+      font-weight: 600;
+      margin-bottom: 2px;
+    }
+
+    .modal-contenu .aucune-annotation {
+      color: var(--text-secondary);
+      font-style: italic;
+      padding: 12px 0;
+      text-align: center;
+    }
+
+    .modal-contenu .modal-close {
+      display: block;
+      width: 100%;
+      margin-top: 16px;
+      padding: 10px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .modal-contenu .modal-close:hover {
+      background: var(--bg-active);
+      color: var(--text);
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      document.write(xhr.responseText);
+    }
+  </script>
+</head>
+<body>
+
+  <div class="page page-livret">
+
+    <a href="/medit/mes-livrets.html" class="btn-retour">← Retourner aux livrets</a>
+
+    <div id="enteteLivret">
+      <div class="loader">
+        <div class="spinner"></div>
+        <p>Chargement du livret...</p>
+      </div>
+    </div>
+
+    <div id="contenuChapitres"></div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script src="/medit/impression.js"></script>
+
+  <script>
+    // ============================================================
+    // DONNÉES
+    // ============================================================
+    var toutesLesReponses = {};
+    var chapitresData = [];
+    var niveauEtudiant = 0;
+    var nomEtudiant = '';
+    var categorieActuelle = '';
+    var livretsData = {};
+
+    // ============================================================
+    // FORMATER LA DATE
+    // ============================================================
+    function formatDate(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var date = new Date(dateStr);
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
+        return mois[date.getMonth()] + ' ' + date.getFullYear();
+      } catch(e) {
+        return dateStr;
+      }
+    }
+
+    // ============================================================
+    // MODAL ANNOTATIONS
+    // ============================================================
+    function ouvrirAnnotations(chapitreId, titre) {
+      var reponse = toutesLesReponses[chapitreId] || null;
+      var annotations = reponse ? reponse.annotations : '';
+
+      var modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modalAnnotations';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotations();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Annotations</div>';
+
+      if (annotations && annotations.trim() !== '') {
+        var parts = annotations.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split(':');
+          if (kv.length === 2) {
+            var slideNum = kv[0].replace('slide', '');
+            var texte = kv[1];
+            html += '<div class="modal-annotation">';
+            html += '<strong>Slide ' + slideNum + '</strong>';
+            html += texte;
+            html += '</div>';
+          }
+        }
+      } else {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce chapitre.</div>';
+      }
+
+      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+      html += '</div>';
+
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
+    }
+
+    function fermerAnnotations() {
+      var modal = document.getElementById('modalAnnotations');
+      if (modal) modal.remove();
+    }
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function chargerLivret() {
+      var params = new URLSearchParams(window.location.search);
+      categorieActuelle = params.get('cat') || '';
+
+      if (!categorieActuelle) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-chapitres" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucune catégorie spécifiée</h4>
+            <p>Veuillez sélectionner un livret depuis la page d'accueil.</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuChapitres').innerHTML = '';
+        return;
+      }
+
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+      nomEtudiant = id;
+
+      DataManager.charger()
+        .then(function(data) {
+          niveauEtudiant = data.niveau || 0;
+          chapitresData = data.chapitres || [];
+
+          livretsData = {};
+          if (data.livrets) {
+            if (Array.isArray(data.livrets)) {
+              data.livrets.forEach(function(l) {
+                livretsData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  pages: l.pages || '',
+                  description: l.description || '',
+                  auteur: l.auteur || ''
+                };
+              });
+            }
+          }
+
+          toutesLesReponses = {};
+          if (data.reponses) {
+            data.reponses.forEach(function(r) {
+              if (!toutesLesReponses[r.chapitreId]) {
+                toutesLesReponses[r.chapitreId] = [];
+              }
+              toutesLesReponses[r.chapitreId].push(r);
+            });
+          }
+
+          afficherLivret();
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            niveauEtudiant = cache.niveau || 0;
+            chapitresData = cache.chapitres || [];
+            if (cache.livrets) {
+              if (Array.isArray(cache.livrets)) {
+                livretsData = {};
+                cache.livrets.forEach(function(l) {
+                  livretsData[l.titre] = {
+                    couleur: l.couleur || '#2d6a4f',
+                    sousTitre: l.sousTitre || '',
+                    date: l.date || '',
+                    pages: l.pages || '',
+                    description: l.description || '',
+                    auteur: l.auteur || ''
+                  };
+                });
+              }
+            }
+            afficherLivret();
+          } else {
+            document.getElementById('enteteLivret').innerHTML = `
+              <div class="vide-chapitres" style="margin-top:20px;">
+                <span class="icone">⚠</span>
+                <h4>Erreur de chargement</h4>
+                <p>Vérifiez votre connexion internet.</p>
+                <button onclick="location.reload();" style="margin-top:10px;padding:8px 20px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);">Réessayer</button>
+              </div>
+            `;
+            document.getElementById('contenuChapitres').innerHTML = '';
+          }
+        });
+    }
+
+    // ============================================================
+    // AFFICHER LE LIVRET
+    // ============================================================
+    function afficherLivret() {
+      var chapitresFiltres = chapitresData.filter(function(p) {
+        return (p.categorie || 'Sans catégorie') === categorieActuelle;
+      });
+
+      chapitresFiltres.sort(function(a, b) {
+        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+      });
+
+      if (chapitresFiltres.length === 0) {
+        document.getElementById('enteteLivret').innerHTML = `
+          <div class="vide-chapitres" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucun chapitre</h4>
+            <p>Ce livret ne contient pas encore de chapitres accessibles à votre niveau (${niveauEtudiant}).</p>
+            <a href="/medit/mes-livrets.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+          </div>
+        `;
+        document.getElementById('contenuChapitres').innerHTML = '';
+        return;
+      }
+
+      var niveauLivret = chapitresFiltres[0].niveau || 1;
+      var totalChapitres = chapitresFiltres.length;
+
+      var validees = 0;
+      chapitresFiltres.forEach(function(chapitre) {
+        var reponse = toutesLesReponses[chapitre.id];
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          if (total === 1 && bonnes === 1) validees++;
+          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
+        }
+      });
+
+      var livretInfo = livretsData[categorieActuelle] || {};
+      var couleur = livretInfo.couleur || '#2d6a4f';
+      var sousTitre = livretInfo.sousTitre || '';
+      var dateLivret = livretInfo.date || '';
+      var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
+      var pages = livretInfo.pages || '';
+      var auteur = livretInfo.auteur || '';
+
+      var dateFormatee = formatDate(dateLivret);
+      var pourcentage = totalChapitres > 0 ? Math.round((validees / totalChapitres) * 100) : 0;
+
+      var enteteHtml = `
+        <div class="entete-livret">
+          <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
+            <span class="badge-niveau-couv">Niveau ${niveauLivret}</span>
+            <div class="contenu-couv">
+              <div class="titre-wrapper">
+                <span class="titre-couv">${categorieActuelle}</span>
+                ${sousTitre ? `<span class="sous-titre-couv">${sousTitre}</span>` : ''}
+              </div>
+              <div class="edition-info">
+                <span class="edition-nom">Qiraat Édition</span>
+                ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
+              </div>
+            </div>
+            <div class="progression-couv">
+              <div class="barre" style="width: ${pourcentage}%;"></div>
+            </div>
+          </div>
+          <div class="description-livret">
+            <h2>${categorieActuelle}</h2>
+            ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
+${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
+            <div class="texte-desc">
+              <p>${description}</p>
+            </div>
+            <div class="stats-livret">
+              <span class="stat-item">Textes : <span class="nombre">${totalChapitres}</span></span>
+              <span class="stat-item">Validés : <span class="nombre">${validees}</span></span>
+              <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('enteteLivret').innerHTML = enteteHtml;
+
+      afficherChapitres(chapitresFiltres);
+    }
+
+    // ============================================================
+    // AFFICHER LES CHAPITRES
+    // ============================================================
+    function afficherChapitres(chapitres) {
+      var container = document.getElementById('contenuChapitres');
+
+      if (chapitres.length === 0) {
+        container.innerHTML = `
+          <div class="vide-chapitres">
+            <span class="icone">🎬</span>
+            <h4>Aucun chapitre</h4>
+            <p>Ce livret ne contient pas encore de chapitres.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="section-chapitres"><h3>Chapitres</h3>';
+
+      for (var i = 0; i < chapitres.length; i++) {
+        var chapitre = chapitres[i];
+        var reponse = toutesLesReponses[chapitre.id];
+
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === chapitre.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
+
+        var dateValidation = '';
+        var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        var reponses = toutesLesReponses[chapitre.id] || [];
+        if (reponses.length > 0) {
+          var toutesValides = true;
+          for (var j = 0; j < reponses.length; j++) {
+            if (reponses[j].valide !== 'valide') {
+              toutesValides = false;
+              break;
+            }
+            if (reponses[j].date) dateValidation = reponses[j].date;
+            if (reponses[j].retenir) retenir = reponses[j].retenir;
+          }
+          
+          if (toutesValides) {
+            estLu = true;
+            estValide = true;
+          }
+        }
+
+                     var mots = chapitre.mots || 0;
+
+        // ============================================================
+        // COMPTAGE DES EXERCICES (via ordreBlocs)
+        // Total = nb de TYPES distincts (1 type = 1 exercice)
+        // Détail = nb d'OCCURRENCES par type
+        // slide et memo exclus.
+        // ============================================================
+        var TYPES_EXERCICES = [
+          { prefix: 'quiz:',   label: 'QCM' },
+          { prefix: 'open:',   label: 'Ouverte' },
+          { prefix: 'ordre:',  label: 'Ordre' },
+          { prefix: 'carte:',  label: 'Carte' },
+          { prefix: 'relier:', label: 'Relier' },
+          { prefix: 'tt:',     label: 'Trous' },
+          { prefix: 'vf:',     label: 'VF' },
+          { prefix: 'copier:', label: 'Copier' }
+        ];
+
+        var ordreBlocs = chapitre.ordreBlocs || [];
+        var detailParts = [];
+        var nbExercices = 0;
+
+        if (ordreBlocs.length > 0) {
+          for (var t = 0; t < TYPES_EXERCICES.length; t++) {
+            var type = TYPES_EXERCICES[t];
+            var count = 0;
+            for (var ob = 0; ob < ordreBlocs.length; ob++) {
+              if (ordreBlocs[ob].indexOf(type.prefix) === 0) count++;
+            }
+            if (count > 0) {
+              nbExercices++;
+              detailParts.push(count + ' ' + type.label);
+            }
+          }
+        } else {
+          // Fallback ancien format
+          if (chapitre.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+          if (chapitre.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+        }
+
+        var detailExercices = detailParts.join(' · ');
+        var exercicesHtml =
+          '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' +
+          (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
+
+        var metaHtml = '';
+
+        if (estLu) {
+          // ... (ton code existant du if (estLu) RESTE IDENTIQUE)
+        } else {
+          metaHtml = exercicesHtml;
+        }
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre">
+              <strong>À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        var imprimerHtml = `
+          <div class="btn-wrap">
+            <button class="btn-imprimer" onclick="event.stopPropagation(); imprimerChapitre('${chapitre.id}', '${chapitre.titre.replace(/'/g, "\\'")}', chapitresData)">
+              🖨 Imprimer
+            </button>
+          </div>
+        `;
+
+        var onClickAttr = 'onclick="window.location.href=\'/medit/chapitre.html?id=' + chapitre.id + '\'"';
+
+        html += `
+          <div class="carte-chapitre" ${onClickAttr}>
+            <div class="infos">
+              <div class="titre">${chapitre.titre}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${chapitre.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+            ${imprimerHtml}
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      chargerLivret();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
