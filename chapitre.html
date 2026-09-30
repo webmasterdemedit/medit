@@ -4,23 +4,39 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Texte - Qiraat</title>
+  <title>Chapitre - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
   <style>
     /* ============================================================ */
-    /* PAGE TEXTE                                                    */
+    /* LAYOUT GLOBAL                                                */
     /* ============================================================ */
-    .page-article {
-      max-width: 820px;
+    .page-chapitre {
+      max-width: 1400px;
       margin: 0 auto;
       padding: 20px 30px 60px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 32px;
     }
 
-    /* Fil d'Ariane */
+    /* Sur grand écran : 2 colonnes */
+    @media (min-width: 1200px) {
+      .page-chapitre {
+        grid-template-columns: minmax(0, 820px) 360px;
+        align-items: start;
+      }
+      .colonne-principale { grid-column: 1; }
+      .colonne-laterale  { grid-column: 2; position: sticky; top: 20px; }
+    }
+
+    /* ============================================================ */
+    /* FIL D'ARIANE                                                 */
+    /* ============================================================ */
     .fil-ariane {
+      grid-column: 1 / -1;
       font-family: 'Roboto', sans-serif;
       font-size: 12px;
       color: var(--text-muted);
@@ -36,17 +52,15 @@
       border-bottom: 1px solid transparent;
       transition: border-color 0.2s, color 0.2s;
     }
-    .fil-ariane a:hover {
-      color: var(--text);
-      border-bottom-color: var(--text);
-    }
+    .fil-ariane a:hover { color: var(--text); border-bottom-color: var(--text); }
     .fil-ariane .sep { color: var(--text-muted); opacity: 0.6; }
     .fil-ariane .current { color: var(--text-secondary); }
 
-    /* Bouton retour */
     .btn-retour {
+      grid-column: 1 / -1;
       display: inline-block;
-      margin-bottom: 20px;
+      justify-self: start;
+      margin-bottom: 8px;
       padding: 6px 18px;
       font-size: 13px;
       font-family: 'Roboto', sans-serif;
@@ -64,9 +78,9 @@
     }
 
     /* ============================================================ */
-    /* FEUILLE TEXTE                                                 */
+    /* FEUILLE CHAPITRE                                             */
     /* ============================================================ */
-    .feuille-article {
+    .feuille-chapitre {
       background: #ffffff;
       color: #1a1a1a;
       font-family: 'Times New Roman', Times, serif;
@@ -76,22 +90,21 @@
       border: 1px solid var(--border);
     }
 
-    .feuille-article .arabe,
-    .feuille-article [lang="ar"] {
+    .feuille-chapitre .arabe,
+    .feuille-chapitre [lang="ar"] {
       font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
       font-size: 1.7em;
       line-height: 1;
       vertical-align: middle;
     }
 
-    /* Bandeau titre */
-    .feuille-article .bandeau-titre {
+    .feuille-chapitre .bandeau-titre {
       background: #f2f2f2;
       border-radius: 3px;
       padding: 10px 14px 9px;
       margin-bottom: 8px;
     }
-    .feuille-article .bandeau-titre .ligne-titre {
+    .feuille-chapitre .bandeau-titre .ligne-titre {
       display: flex;
       flex-direction: row;
       justify-content: space-between;
@@ -99,7 +112,7 @@
       gap: 10px;
       text-align: left;
     }
-    .feuille-article .bandeau-titre h1 {
+    .feuille-chapitre .bandeau-titre h1 {
       font-family: 'Georgia', serif;
       font-size: 16pt;
       font-weight: bold;
@@ -109,7 +122,7 @@
       line-height: 1.15;
       margin: 0;
     }
-    .feuille-article .bandeau-titre .meta-droite {
+    .feuille-chapitre .bandeau-titre .meta-droite {
       font-size: 9pt;
       color: #555;
       text-align: right;
@@ -122,13 +135,12 @@
       margin-top: 2px;
     }
 
-    /* Tags */
-    .feuille-article .tags-haut {
+    .feuille-chapitre .tags-haut {
       margin-top: 4px;
       margin-bottom: 4px;
       text-align: center;
     }
-    .feuille-article .tags-haut .memo-tag {
+    .feuille-chapitre .tags-haut .memo-tag {
       display: inline-block;
       padding: 1px 9px;
       margin: 1px 3px;
@@ -139,13 +151,12 @@
       font-style: normal;
     }
 
-    /* Vocabulaire */
-    .feuille-article .vocab-haut {
+    .feuille-chapitre .vocab-haut {
       margin-top: 3px;
       margin-bottom: 8px;
       text-align: center;
     }
-    .feuille-article .vocab-haut .titre-memo {
+    .feuille-chapitre .vocab-haut .titre-memo {
       display: inline;
       font-weight: 600;
       font-size: 8.5pt;
@@ -154,7 +165,7 @@
       color: #555;
       margin-right: 6px;
     }
-    .feuille-article .vocab-haut .memo-mot {
+    .feuille-chapitre .vocab-haut .memo-mot {
       display: inline-block;
       padding: 1px 9px;
       margin: 1px 3px;
@@ -166,22 +177,20 @@
       line-height: 1.35;
     }
 
-    /* Slides */
-    .feuille-article .slides-zone {
+    .feuille-chapitre .slides-zone {
       margin-top: 16px;
       margin-bottom: 20px;
     }
-    .feuille-article .slide { margin-bottom: 8px; }
-    .feuille-article .slide p {
+    .feuille-chapitre .slide { margin-bottom: 8px; }
+    .feuille-chapitre .slide p {
       font-size: 14.3pt;
       margin-bottom: 4px;
       text-align: justify;
       text-indent: 1.2em;
     }
-    .feuille-article .slide p em { font-style: italic; }
+    .feuille-chapitre .slide p em { font-style: italic; }
 
-    /* Sources en marge */
-    .feuille-article .slide p .source-marge {
+    .feuille-chapitre .slide p .source-marge {
       float: right;
       display: inline-block;
       margin: 6px 0 6px 16px;
@@ -199,26 +208,25 @@
       vertical-align: top;
     }
 
-    /* Images */
-    .feuille-article .slide::after {
+    .feuille-chapitre .slide::after {
       content: "";
       display: table;
       clear: both;
     }
-    .feuille-article .print-img {
+    .feuille-chapitre .print-img {
       display: block;
       height: auto;
       border: none;
       margin: 10px 0;
     }
-    .feuille-article .print-img-centre { margin-left: auto; margin-right: auto; }
-    .feuille-article .print-img-gauche { float: left; margin: 6px 14px 8px 0; }
-    .feuille-article .print-img-droite { float: right; margin: 6px 0 8px 14px; }
-    .feuille-article .print-img-petit  { max-width: 150px; }
-    .feuille-article .print-img-moyen  { max-width: 220px; }
-    .feuille-article .print-img-grand  { max-width: 320px; }
+    .feuille-chapitre .print-img-centre { margin-left: auto; margin-right: auto; }
+    .feuille-chapitre .print-img-gauche { float: left; margin: 6px 14px 8px 0; }
+    .feuille-chapitre .print-img-droite { float: right; margin: 6px 0 8px 14px; }
+    .feuille-chapitre .print-img-petit  { max-width: 150px; }
+    .feuille-chapitre .print-img-moyen  { max-width: 220px; }
+    .feuille-chapitre .print-img-grand  { max-width: 320px; }
 
-    .feuille-article .img-manquante {
+    .feuille-chapitre .img-manquante {
       display: block;
       padding: 8px;
       border: 1px dashed #999;
@@ -228,8 +236,7 @@
       margin: 8px 0;
     }
 
-    /* Bloc "À retenir" */
-    .feuille-article .zone-memo {
+    .feuille-chapitre .zone-memo {
       margin-top: 20px;
       padding: 10px 14px;
       background: #f7f7f7;
@@ -237,7 +244,7 @@
       border-left: 3px solid #999;
       border-radius: 3px;
     }
-    .feuille-article .zone-memo .titre-memo {
+    .feuille-chapitre .zone-memo .titre-memo {
       font-weight: 600;
       font-size: 10pt;
       text-transform: uppercase;
@@ -245,24 +252,24 @@
       color: #555;
       margin-bottom: 6px;
     }
-    .feuille-article .zone-memo .titre-memo::before {
+    .feuille-chapitre .zone-memo .titre-memo::before {
       content: "✦ ";
       color: #999;
       margin-right: 2px;
     }
-    .feuille-article .zone-memo .memo-liste {
+    .feuille-chapitre .zone-memo .memo-liste {
       list-style: none;
       padding: 0;
       margin: 0;
     }
-    .feuille-article .zone-memo .memo-liste li {
+    .feuille-chapitre .zone-memo .memo-liste li {
       font-size: 11pt;
       margin-bottom: 3px;
       padding-left: 13px;
       position: relative;
       line-height: 1.4;
     }
-    .feuille-article .zone-memo .memo-liste li::before {
+    .feuille-chapitre .zone-memo .memo-liste li::before {
       content: "●";
       position: absolute;
       left: 0;
@@ -272,7 +279,7 @@
     }
 
     /* ============================================================ */
-    /* BOUTON IMPRIMER (après le bloc texte, pleine largeur)         */
+    /* BOUTON IMPRIMER                                              */
     /* ============================================================ */
     .bloc-imprimer {
       margin-top: 24px;
@@ -301,66 +308,22 @@
     }
 
     /* ============================================================ */
-    /* ZONE BASSE : navigation, livret, à découvrir                 */
+    /* COLONNE LATÉRALE (grand écran)                               */
     /* ============================================================ */
-    .zone-basse {
-      margin-top: 40px;
-    }
-
-    /* ---------- Navigation précédent/suivant ---------- */
-    .nav-prev-suivant {
-      display: flex;
-      justify-content: space-between;
-      gap: 12px;
-      margin-bottom: 32px;
-      flex-wrap: wrap;
-    }
-    .nav-prev-suivant a,
-    .nav-prev-suivant .nav-placeholder {
-      flex: 1;
-      min-width: 200px;
-      padding: 14px 18px;
+    .colonne-laterale .bloc-section {
+      margin-bottom: 24px;
+      padding: 16px 18px;
       background: var(--bg);
       border: 1px solid var(--border);
-      text-decoration: none;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
     }
-    .nav-prev-suivant a:hover {
-      border-color: var(--border-hover);
-      background: var(--bg-hover);
-    }
-    .nav-prev-suivant .nav-placeholder { opacity: 0.3; cursor: default; }
-    .nav-prev-suivant .nav-label {
-      font-family: 'Roboto', sans-serif;
-      font-size: 11px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 0.8px;
-    }
-    .nav-prev-suivant .nav-titre {
-      font-family: 'Georgia', serif;
-      font-size: 15px;
-      color: var(--text);
-      font-weight: 500;
-      line-height: 1.3;
-    }
-    .nav-prev-suivant .nav-suivant { text-align: right; }
-    .nav-prev-suivant .nav-suivant .nav-label,
-    .nav-prev-suivant .nav-suivant .nav-titre { text-align: right; }
+    .colonne-laterale .bloc-section:last-child { margin-bottom: 0; }
 
-    /* ---------- Bloc section ---------- */
-    .bloc-section {
-      margin-bottom: 32px;
-    }
     .bloc-section .bloc-titre {
       font-family: 'Georgia', serif;
-      font-size: 16px;
+      font-size: 14px;
       font-weight: 700;
       color: var(--text);
-      margin-bottom: 14px;
+      margin-bottom: 12px;
       padding-bottom: 8px;
       border-bottom: 1px solid var(--border);
       letter-spacing: 0.3px;
@@ -368,38 +331,74 @@
       align-items: center;
       gap: 8px;
     }
-    .bloc-section .bloc-titre .icone { font-size: 18px; opacity: 0.7; }
+    .bloc-section .bloc-titre .icone { font-size: 16px; opacity: 0.7; }
     .bloc-section .bloc-titre .compteur {
       font-family: 'Roboto', sans-serif;
-      font-size: 12px;
+      font-size: 11px;
       font-weight: 400;
       color: var(--text-muted);
       margin-left: auto;
     }
 
-    /* ---------- Encart livret ---------- */
-    .encart-livret {
+    /* Navigation précédent/suivant (latéral) */
+    .nav-prev-suivant {
       display: flex;
-      gap: 20px;
-      align-items: stretch;
-      padding: 20px;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .nav-prev-suivant a,
+    .nav-prev-suivant .nav-placeholder {
+      padding: 10px 14px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
       text-decoration: none;
       transition: all 0.2s;
-      min-height: 160px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .nav-prev-suivant a:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-active);
+    }
+    .nav-prev-suivant .nav-placeholder { opacity: 0.4; cursor: default; }
+    .nav-prev-suivant .nav-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .nav-prev-suivant .nav-titre {
+      font-family: 'Georgia', serif;
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+
+    /* Encart livret (latéral) */
+    .encart-livret {
+      display: flex;
+      gap: 12px;
+      align-items: stretch;
+      padding: 12px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: all 0.2s;
     }
     .encart-livret:hover { border-color: var(--border-hover); }
 
     .encart-livret .mini-couverture {
       flex-shrink: 0;
-      width: 110px;
+      width: 70px;
       display: flex;
       flex-direction: column;
       justify-content: space-between;
       align-items: center;
       text-align: center;
-      padding: 12px 8px;
+      padding: 8px 6px;
       color: #1a1a1a;
       position: relative;
       overflow: hidden;
@@ -407,11 +406,11 @@
     }
     .encart-livret .mini-couverture .badge-niveau-couv {
       position: absolute;
-      top: 6px;
-      right: 6px;
+      top: 4px;
+      right: 4px;
       z-index: 3;
-      padding: 1px 7px;
-      font-size: 8px;
+      padding: 1px 5px;
+      font-size: 7px;
       font-weight: 500;
       color: rgba(26, 26, 26, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
@@ -425,37 +424,21 @@
       justify-content: space-between;
       height: 100%;
       width: 100%;
-      padding-top: 18px;
-    }
-    .encart-livret .mini-couverture .auteur-couv {
-      font-size: 7px;
-      font-weight: 300;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      color: rgba(26, 26, 26, 0.5);
-      margin-bottom: 3px;
+      padding-top: 12px;
     }
     .encart-livret .mini-couverture .titre-couv {
       font-family: 'Georgia', serif;
-      font-size: 11px;
+      font-size: 9px;
       font-weight: 700;
       line-height: 1.2;
       color: #1a1a1a;
-      margin-bottom: 4px;
-    }
-    .encart-livret .mini-couverture .sous-titre-couv {
-      font-size: 8px;
-      font-weight: 500;
-      opacity: 0.8;
-      color: rgba(26, 26, 26, 0.8);
-      line-height: 1.3;
+      margin-bottom: 2px;
     }
     .encart-livret .mini-couverture .edition-nom {
       font-weight: 700;
       font-style: italic;
-      font-size: 7px;
-      letter-spacing: 0.8px;
+      font-size: 6px;
+      letter-spacing: 0.5px;
       opacity: 0.6;
       text-transform: uppercase;
       color: rgba(26, 26, 26, 0.6);
@@ -466,53 +449,48 @@
       display: flex;
       flex-direction: column;
       justify-content: center;
-      gap: 6px;
+      gap: 4px;
       min-width: 0;
     }
     .encart-livret .encart-label {
       font-family: 'Roboto', sans-serif;
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 0.8px;
     }
     .encart-livret .encart-nom-livret {
       font-family: 'Georgia', serif;
-      font-size: 20px;
+      font-size: 15px;
       font-weight: 700;
       color: var(--text);
       line-height: 1.25;
-      margin-bottom: 4px;
-    }
-    .encart-livret .encart-description {
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      font-weight: 300;
     }
     .encart-livret .encart-cta {
       font-family: 'Roboto', sans-serif;
-      font-size: 12px;
+      font-size: 11px;
       color: var(--text-secondary);
-      margin-top: 8px;
+      margin-top: 4px;
       display: inline-flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
     }
     .encart-livret:hover .encart-cta { color: var(--text); }
 
-    /* ---------- Liste textes du même livret ---------- */
+    /* Liste textes (latéral) */
     .liste-textes {
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 4px;
+      max-height: 340px;
+      overflow-y: auto;
     }
     .liste-textes .item-texte {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 10px 16px;
+      gap: 8px;
+      padding: 8px 12px;
       background: var(--bg);
       border: 1px solid var(--border);
       text-decoration: none;
@@ -527,10 +505,9 @@
       border-color: var(--border-hover);
       cursor: default;
     }
-    .liste-textes .item-texte.actuel:hover { background: var(--bg-active); }
     .liste-textes .item-texte .item-titre {
       font-family: 'Georgia', serif;
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text);
       font-weight: 400;
       line-height: 1.3;
@@ -540,7 +517,7 @@
     .liste-textes .item-texte.actuel .item-titre { font-weight: 700; }
     .liste-textes .item-texte .item-marqueur {
       font-family: 'Roboto', sans-serif;
-      font-size: 11px;
+      font-size: 10px;
       color: var(--text-muted);
       flex-shrink: 0;
     }
@@ -549,170 +526,105 @@
       font-weight: 600;
     }
 
-    /* ============================================================ */
-    /* GALERIE DE LIVRETS (défilement horizontal)                    */
-    /* ============================================================ */
+    /* Galerie livrets (latéral) */
     .galerie-livrets {
       display: flex;
-      gap: 14px;
-      overflow-x: auto;
-      overflow-y: hidden;
-      padding: 6px 4px 18px 4px;
-      scroll-snap-type: x proximity;
-      -webkit-overflow-scrolling: touch;
-    }
-
-    /* Scrollbar stylée */
-    .galerie-livrets::-webkit-scrollbar {
-      height: 8px;
-    }
-    .galerie-livrets::-webkit-scrollbar-track {
-      background: var(--bg-hover);
-      border-radius: 4px;
-    }
-    .galerie-livrets::-webkit-scrollbar-thumb {
-      background: var(--border-hover);
-      border-radius: 4px;
-    }
-    .galerie-livrets::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
-    }
-
-    /* Carte livret */
-    .carte-livret-mini {
-      flex-shrink: 0;
-      width: 160px;
-      height: 220px;
-      display: flex;
       flex-direction: column;
+      gap: 8px;
+    }
+    .carte-livret-mini {
+      display: flex;
       align-items: center;
-      justify-content: center;
-      text-align: center;
-      padding: 0;
+      gap: 10px;
+      padding: 10px 12px;
       color: #1a1a1a;
       position: relative;
-      overflow: hidden;
       border: 1px solid var(--border);
       text-decoration: none;
-      transition: all 0.25s;
-      scroll-snap-align: start;
+      transition: all 0.2s;
       cursor: pointer;
     }
-
     .carte-livret-mini:hover {
-      transform: translateY(-4px);
+      transform: translateX(2px);
       border-color: var(--text);
     }
-
-    .carte-livret-mini .contenu-couv {
-      position: relative;
-      z-index: 2;
-      padding: 18px 12px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-    }
-
-    .carte-livret-mini .titre-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-top: 22px;
-    }
-
-    .carte-livret-mini .auteur-livret {
+    .carte-livret-mini .badge-niveau {
+      position: absolute;
+      top: 6px;
+      right: 8px;
+      padding: 1px 6px;
       font-size: 8px;
-      font-weight: 300;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      margin-bottom: 2px;
-      color: rgba(26, 26, 26, 0.5);
+      font-weight: 500;
+      color: rgba(26, 26, 26, 0.85);
+      background: rgba(255, 255, 255, 0.70);
+      border: 1px solid rgba(255, 255, 255, 0.15);
     }
-
+    .carte-livret-mini .couleur-pastille {
+      flex-shrink: 0;
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,0.1);
+    }
+    .carte-livret-mini .infos-livret {
+      flex: 1;
+      min-width: 0;
+    }
     .carte-livret-mini .titre-livret {
       font-family: 'Georgia', serif;
-      font-size: 15px;
+      font-size: 13px;
       font-weight: 700;
-      letter-spacing: 0.3px;
       line-height: 1.2;
-      max-width: 95%;
       color: #1a1a1a;
+      margin-bottom: 2px;
     }
-
     .carte-livret-mini .sous-titre-livret {
       font-size: 10px;
       font-weight: 500;
-      opacity: 0.8;
-      margin-top: 4px;
-      color: rgba(26, 26, 26, 0.8);
+      opacity: 0.75;
+      color: rgba(26, 26, 26, 0.75);
       line-height: 1.3;
     }
-
-    .carte-livret-mini .edition-info {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1px;
-      padding-bottom: 4px;
-    }
-
-    .carte-livret-mini .edition-nom {
-      font-weight: 700;
-      font-style: italic;
-      font-size: 8px;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
-    }
-
-    .carte-livret-mini .edition-date {
-      font-size: 7px;
-      color: rgba(26, 26, 26, 0.7);
-      font-weight: 500;
-    }
-
-    .carte-livret-mini .badge-niveau {
-      position: absolute;
-      top: 8px;
-      right: 8px;
-      z-index: 3;
-      padding: 2px 8px;
-      font-size: 8px;
-      font-weight: 500;
-      letter-spacing: 0.4px;
-      color: rgba(26, 26, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70);
-    }
-
-    /* Carte livret ACTUEL (celui du texte ouvert) */
     .carte-livret-mini.actuel {
       box-shadow: 0 0 0 2px var(--text);
     }
     .carte-livret-mini.actuel::after {
       content: "● Actuel";
       position: absolute;
-      bottom: 6px;
-      left: 50%;
-      transform: translateX(-50%);
+      bottom: 4px;
+      right: 6px;
       font-family: 'Roboto', sans-serif;
-      font-size: 9px;
+      font-size: 8px;
       font-weight: 600;
       color: #fff;
-      background: rgba(0, 0, 0, 0.5);
-      padding: 2px 8px;
-      border-radius: 10px;
-      letter-spacing: 0.3px;
-      z-index: 4;
+      background: rgba(0, 0, 0, 0.55);
+      padding: 1px 6px;
+      border-radius: 8px;
     }
 
-    /* Loader / erreur */
+    /* ============================================================ */
+    /* BLOCS EN BAS (mobile uniquement)                             */
+    /* ============================================================ */
+    .zone-basse-mobile {
+      margin-top: 40px;
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+    }
+
+    /* Sur grand écran : on cache la version mobile */
+    @media (min-width: 1200px) {
+      .zone-basse-mobile { display: none; }
+    }
+
+    /* Sur mobile : on cache la colonne latérale */
+    @media (max-width: 1199px) {
+      .colonne-laterale { display: none; }
+    }
+
+    /* ============================================================ */
+    /* LOADER / ERREUR                                              */
+    /* ============================================================ */
     .loader { text-align: center; padding: 60px 20px; }
     .spinner {
       width: 36px; height: 36px;
@@ -724,22 +636,22 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    .vide-article {
+    .vide-chapitre {
       text-align: center;
       padding: 60px 20px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
     }
-    .vide-article .icone {
+    .vide-chapitre .icone {
       font-size: 40px; display: block;
       margin-bottom: 12px;
       color: var(--text-secondary);
     }
-    .vide-article h2 { font-size: 20px; color: var(--text); font-weight: 500; margin-bottom: 6px; }
-    .vide-article p { color: var(--text-secondary); font-size: 14px; }
+    .vide-chapitre h2 { font-size: 20px; color: var(--text); font-weight: 500; margin-bottom: 6px; }
+    .vide-chapitre p { color: var(--text-secondary); font-size: 14px; }
 
-    /* Devise */
     .devise {
+      grid-column: 1 / -1;
       margin-top: 40px;
       padding-top: 24px;
       border-top: 1px solid var(--border);
@@ -751,33 +663,16 @@
       line-height: 1.7;
     }
 
-    /* Responsive */
+    /* ============================================================ */
+    /* RESPONSIVE                                                   */
+    /* ============================================================ */
     @media (max-width: 768px) {
-      .page-article { padding: 12px 16px 40px; }
-      .feuille-article { padding: 20px 18px; font-size: 10pt; }
-      .feuille-article .bandeau-titre h1 { font-size: 13pt; }
-      .feuille-article .slide p { font-size: 12pt; }
-      .feuille-article .print-img-moyen,
-      .feuille-article .print-img-grand { max-width: 100%; }
-
-      .nav-prev-suivant { flex-direction: column; }
-      .nav-prev-suivant .nav-suivant { text-align: left; }
-      .nav-prev-suivant .nav-suivant .nav-label,
-      .nav-prev-suivant .nav-suivant .nav-titre { text-align: left; }
-
-      .encart-livret { flex-direction: column; align-items: center; text-align: center; }
-      .encart-livret .mini-couverture { width: 100%; height: 120px; flex-direction: row; justify-content: center; }
-      .encart-livret .mini-couverture .contenu-couv {
-        padding-top: 0;
-        flex-direction: row;
-        align-items: center;
-        gap: 12px;
-      }
-      .encart-livret .encart-cta { justify-content: center; }
-
-      .carte-livret-mini { width: 130px; height: 185px; }
-      .carte-livret-mini .titre-livret { font-size: 13px; }
-      .carte-livret-mini .sous-titre-livret { font-size: 9px; }
+      .page-chapitre { padding: 12px 16px 40px; }
+      .feuille-chapitre { padding: 20px 18px; font-size: 10pt; }
+      .feuille-chapitre .bandeau-titre h1 { font-size: 13pt; }
+      .feuille-chapitre .slide p { font-size: 12pt; }
+      .feuille-chapitre .print-img-moyen,
+      .feuille-chapitre .print-img-grand { max-width: 100%; }
     }
   </style>
 
@@ -792,19 +687,23 @@
 </head>
 <body>
 
-  <div class="page page-article">
+  <div class="page page-chapitre">
 
     <!-- Fil d'Ariane -->
     <div class="fil-ariane" id="filAriane"></div>
 
-    <a href="/medit/textes.html" class="btn-retour">← Retour aux chapitrestes</a>
+    <a href="/medit/chapitres.html" class="btn-retour">← Retour aux chapitres</a>
 
-    <div id="articleContainer">
+    <div id="chapitreContainer" class="colonne-principale">
       <div class="loader">
         <div class="spinner"></div>
-        <p>Chargement du texte...</p>
+        <p>Chargement du chapitre...</p>
       </div>
     </div>
+
+    <aside class="colonne-laterale" id="colonneLaterale"></aside>
+
+    <div class="zone-basse-mobile" id="zoneBasseMobile"></div>
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
@@ -913,12 +812,12 @@
     }
 
     // ============================================================
-    // CONSTRUCTION DU HTML DE L'ARTICLE
+    // CONSTRUCTION DU HTML DU CHAPITRE
     // ============================================================
-    function construireHtmlArticle(chapitre, imagesLivret) {
+    function construireHtmlChapitre(chapitre, imagesLivret) {
       imagesLivret = imagesLivret || {};
       var contenu = chapitre.contenu || '';
-      if (!contenu) return '<p><em>Article vide.</em></p>';
+      if (!contenu) return '<p><em>Chapitre vide.</em></p>';
 
       var ordreBlocs = chapitre.ordreBlocs || [];
       var parts = contenu.split(' | ');
@@ -978,7 +877,6 @@
 
       var html = '';
 
-      // Bandeau titre
       html += '<div class="bandeau-titre">';
       html += '  <div class="ligne-titre">';
       html += '    <h1>' + echapperHtml(chapitre.titre || 'Lecture') + '</h1>';
@@ -990,21 +888,18 @@
       html += '  </div>';
       html += '</div>';
 
-      // Tags
       if (tagsClean.length > 0) {
         html += '<div class="tags-haut">';
         tagsClean.forEach(function(t) { html += '<span class="memo-tag">#' + echapperHtml(t) + '</span>'; });
         html += '</div>';
       }
 
-      // Vocabulaire
       if (vocabClean.length > 0) {
         html += '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>';
         vocabClean.forEach(function(m) { html += '<span class="memo-mot">' + echapperHtml(m) + '</span>'; });
         html += '</div>';
       }
 
-      // Slides
       html += '<div class="slides-zone">';
       blocsSlide.forEach(function(slideData) {
         html += '<div class="slide">';
@@ -1050,7 +945,6 @@
       });
       html += '</div>';
 
-      // À retenir
       if (aRetenirClean.length > 0) {
         html += '<div class="zone-memo">';
         html += '<div class="memo-bloc">';
@@ -1065,7 +959,7 @@
     }
 
     // ============================================================
-    // Enveloppe les mots arabes
+    // ARABISER
     // ============================================================
     function arabiserDans(container) {
       if (!container) return;
@@ -1112,10 +1006,10 @@
       var html = '';
       html += '<a href="/medit/index.html">Accueil</a>';
       html += '<span class="sep">›</span>';
-      html += '<a href="/medit/textes.html">Tous les textes</a>';
+      html += '<a href="/medit/chapitres.html">Tous les chapitres</a>';
       if (chapitre.categorie) {
         html += '<span class="sep">›</span>';
-        html += '<a href="/medit/textes.html?livret=' + encodeURIComponent(chapitre.categorie) + '">' + echapperHtml(chapitre.categorie) + '</a>';
+        html += '<a href="/medit/chapitres.html?livret=' + encodeURIComponent(chapitre.categorie) + '">' + echapperHtml(chapitre.categorie) + '</a>';
       }
       html += '<span class="sep">›</span>';
       html += '<span class="current">' + echapperHtml(chapitre.titre) + '</span>';
@@ -1155,7 +1049,6 @@
     // GALERIE DE TOUS LES LIVRETS
     // ============================================================
     function construireGalerieLivrets(chapitreActuel) {
-      // Récupérer tous les livrets uniques (catégories distinctes)
       var categoriesUniques = {};
       chapitresData.forEach(function(c) {
         var cat = c.categorie || 'Sans catégorie';
@@ -1169,7 +1062,6 @@
         categoriesUniques[cat].nbChapitres++;
       });
 
-      // Trier A→Z
       var livretsTries = Object.keys(categoriesUniques).sort(function(a, b) {
         return a.localeCompare(b, 'fr', { sensitivity: 'base' });
       });
@@ -1180,7 +1072,7 @@
       html += '<div class="bloc-section">';
       html += '  <div class="bloc-titre">';
       html += '    <span class="icone">➡</span> Tous nos livrets';
-      html += '    <span class="compteur">' + livretsTries.length + ' livrets · cliquez pour explorer</span>';
+      html += '    <span class="compteur">' + livretsTries.length + '</span>';
       html += '  </div>';
       html += '  <div class="galerie-livrets">';
 
@@ -1189,44 +1081,17 @@
         var livretMeta = livretsData[cat] || {};
         var couleur = livretMeta.couleur || '#2d6a4f';
         var sousTitre = livretMeta.sousTitre || '';
-        var auteur = livretMeta.auteur || '';
-        var dateLivret = livretMeta.date || '';
-
-        var dateFormatee = '';
-        if (dateLivret) {
-          try {
-            var d = new Date(dateLivret);
-            if (!isNaN(d.getTime())) {
-              var mois = ['janv.', 'févr.', 'mars', 'avr.', 'mai', 'juin',
-                          'juil.', 'août', 'sept.', 'oct.', 'nov.', 'déc.'];
-              dateFormatee = d.getFullYear();
-            }
-          } catch(e) {}
-        }
 
         var estActuel = (cat === chapitreActuel.categorie);
 
         html += '<a class="carte-livret-mini' + (estActuel ? ' actuel' : '') + '" ';
-        html += '   href="/medit/textes.html?livret=' + encodeURIComponent(cat) + '" ';
-        html += '   style="background: ' + couleur + '; border-color: ' + couleur + ';" ';
-        html += '   title="Voir les textes du livret ' + echapperHtml(cat) + '">';
+        html += '   href="/medit/chapitres.html?livret=' + encodeURIComponent(cat) + '" ';
+        html += '   title="Voir les chapitres du livret ' + echapperHtml(cat) + '">';
         html += '  <span class="badge-niveau">Niv. ' + info.niveau + '</span>';
-        html += '  <div class="contenu-couv">';
-        html += '    <div class="titre-wrapper">';
-        if (auteur) {
-          html += '      <span class="auteur-livret">' + echapperHtml(auteur) + '</span>';
-        }
-        html += '      <span class="titre-livret">' + echapperHtml(cat) + '</span>';
-        if (sousTitre) {
-          html += '      <span class="sous-titre-livret">' + echapperHtml(sousTitre) + '</span>';
-        }
-        html += '    </div>';
-        html += '    <div class="edition-info">';
-        html += '      <span class="edition-nom">Qiraat Édition</span>';
-        if (dateFormatee) {
-          html += '      <span class="edition-date">' + dateFormatee + '</span>';
-        }
-        html += '    </div>';
+        html += '  <span class="couleur-pastille" style="background: ' + couleur + ';"></span>';
+        html += '  <div class="infos-livret">';
+        html += '    <div class="titre-livret">' + echapperHtml(cat) + '</div>';
+        if (sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(sousTitre) + '</div>';
         html += '  </div>';
         html += '</a>';
       });
@@ -1238,18 +1103,21 @@
     }
 
     // ============================================================
-    // RENDU DE LA ZONE BASSE
+    // ZONE LATÉRALE (grand écran)
     // ============================================================
-    function construireZoneBasse(chapitre) {
-      var html = '';
+    function construireZoneLaterale(chapitre) {
       var nav = construireNavDansLivret(chapitre);
       var livretInfo = livretsData[chapitre.categorie] || {};
 
-      // ---------- 1. Navigation précédent/suivant ----------
-      html += '<div class="nav-prev-suivant">';
+      var html = '';
+
+      // 1. Navigation
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre"><span class="icone">↔</span> Navigation</div>';
+      html += '  <div class="nav-prev-suivant">';
 
       if (nav.precedent) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
+        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
         html += '  <span class="nav-label">← Précédent</span>';
         html += '  <span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span>';
         html += '</a>';
@@ -1261,63 +1129,142 @@
       }
 
       if (nav.suivant) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.suivant.id) + '" class="nav-suivant">';
+        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.suivant.id) + '">';
         html += '  <span class="nav-label">Suivant →</span>';
         html += '  <span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span>';
         html += '</a>';
       } else {
-        html += '<div class="nav-placeholder nav-suivant">';
+        html += '<div class="nav-placeholder">';
         html += '  <span class="nav-label">Suivant →</span>';
         html += '  <span class="nav-titre">Fin du livret</span>';
         html += '</div>';
       }
 
+      html += '  </div>';
       html += '</div>';
 
-      // ---------- 2. Encart "Ce texte est extrait du livret..." ----------
+      // 2. Encart livret
       if (chapitre.categorie) {
         var couleur = livretInfo.couleur || '#2d6a4f';
         var sousTitre = livretInfo.sousTitre || '';
-        var description = livretInfo.description || '';
-        var auteur = livretInfo.auteur || '';
         var niveau = chapitre.niveau || 1;
 
-        if (description.length > 180) {
-          description = description.substring(0, 177) + '...';
-        }
-
         html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre">📖 Ce texte est extrait du livret</div>';
+        html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
         html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
         html += '    <div class="mini-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
         html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
         html += '      <div class="contenu-couv">';
         html += '        <div>';
-        if (auteur) html += '          <div class="auteur-couv">' + echapperHtml(auteur) + '</div>';
         html += '          <div class="titre-couv">' + echapperHtml(chapitre.categorie) + '</div>';
-        if (sousTitre) html += '          <div class="sous-titre-couv">' + echapperHtml(sousTitre) + '</div>';
         html += '        </div>';
-        html += '        <div class="edition-nom">Qiraat Édition</div>';
+        html += '        <div class="edition-nom">Qiraat</div>';
         html += '      </div>';
         html += '    </div>';
         html += '    <div class="encart-texte">';
-        html += '      <div class="encart-label">Livret</div>';
+        html += '      <div class="encart-label">Extrait du livret</div>';
         html += '      <div class="encart-nom-livret">' + echapperHtml(chapitre.categorie) + '</div>';
-        if (description) {
-          html += '      <div class="encart-description">' + echapperHtml(description) + '</div>';
-        }
         html += '      <div class="encart-cta">Voir le livret →</div>';
         html += '    </div>';
         html += '  </a>';
         html += '</div>';
       }
 
-      // ---------- 3. Liste "Dans le même livret" ----------
+      // 3. Liste "Dans le même livret"
+      if (nav.liste && nav.liste.length > 1) {
+        html += '<div class="bloc-section">';
+        html += '  <div class="bloc-titre">';
+        html += '    <span class="icone">🕮</span> Dans ce livret';
+        html += '    <span class="compteur">' + nav.liste.length + '</span>';
+        html += '  </div>';
+        html += '  <div class="liste-textes">';
+
+        nav.liste.forEach(function(c) {
+          var estActuel = String(c.id) === String(chapitre.id);
+          if (estActuel) {
+            html += '<div class="item-texte actuel">';
+            html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
+            html += '  <span class="item-marqueur">●</span>';
+            html += '</div>';
+          } else {
+            html += '<a class="item-texte" href="/medit/chapitre.html?id=' + encodeURIComponent(c.id) + '">';
+            html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
+            html += '  <span class="item-marqueur">→</span>';
+            html += '</a>';
+          }
+        });
+
+        html += '  </div>';
+        html += '</div>';
+      }
+
+      // 4. Galerie livrets
+      html += construireGalerieLivrets(chapitre);
+
+      return html;
+    }
+
+    // ============================================================
+    // ZONE BASSE (mobile uniquement)
+    // ============================================================
+    function construireZoneBasseMobile(chapitre) {
+      var nav = construireNavDansLivret(chapitre);
+      var livretInfo = livretsData[chapitre.categorie] || {};
+
+      var html = '';
+
+      // 1. Navigation
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre"><span class="icone">↔</span> Navigation</div>';
+      html += '  <div class="nav-prev-suivant">';
+
+      if (nav.precedent) {
+        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
+        html += '  <span class="nav-label">← Précédent</span>';
+        html += '  <span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span>';
+        html += '</a>';
+      }
+
+      if (nav.suivant) {
+        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.suivant.id) + '">';
+        html += '  <span class="nav-label">Suivant →</span>';
+        html += '  <span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span>';
+        html += '</a>';
+      }
+
+      html += '  </div>';
+      html += '</div>';
+
+      // 2. Encart livret
+      if (chapitre.categorie) {
+        var couleur = livretInfo.couleur || '#2d6a4f';
+        var niveau = chapitre.niveau || 1;
+
+        html += '<div class="bloc-section">';
+        html += '  <div class="bloc-titre">📖 Ce chapitre est extrait du livret</div>';
+        html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
+        html += '    <div class="mini-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
+        html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
+        html += '      <div class="contenu-couv">';
+        html += '        <div class="titre-couv">' + echapperHtml(chapitre.categorie) + '</div>';
+        html += '        <div class="edition-nom">Qiraat</div>';
+        html += '      </div>';
+        html += '    </div>';
+        html += '    <div class="encart-texte">';
+        html += '      <div class="encart-label">Livret</div>';
+        html += '      <div class="encart-nom-livret">' + echapperHtml(chapitre.categorie) + '</div>';
+        html += '      <div class="encart-cta">Voir le livret →</div>';
+        html += '    </div>';
+        html += '  </a>';
+        html += '</div>';
+      }
+
+      // 3. Liste "Dans le même livret"
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre">';
         html += '    <span class="icone">🕮</span> Dans le même livret';
-        html += '    <span class="compteur">' + nav.liste.length + ' textes · A → Z</span>';
+        html += '    <span class="compteur">' + nav.liste.length + ' chapitres</span>';
         html += '  </div>';
         html += '  <div class="liste-textes">';
 
@@ -1329,7 +1276,7 @@
             html += '  <span class="item-marqueur">● Vous êtes ici</span>';
             html += '</div>';
           } else {
-            html += '<a class="item-texte" href="/medit/texte.html?id=' + encodeURIComponent(c.id) + '">';
+            html += '<a class="item-texte" href="/medit/chapitre.html?id=' + encodeURIComponent(c.id) + '">';
             html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
             html += '  <span class="item-marqueur">Lire →</span>';
             html += '</a>';
@@ -1340,7 +1287,7 @@
         html += '</div>';
       }
 
-      // ---------- 4. Galerie de TOUS les livrets ----------
+      // 4. Galerie livrets
       html += construireGalerieLivrets(chapitre);
 
       return html;
@@ -1349,11 +1296,11 @@
     // ============================================================
     // CHARGEMENT
     // ============================================================
-    function chargerArticle() {
+    function chargerChapitre() {
       var params = new URLSearchParams(window.location.search);
       var chapitreId = params.get('id');
 
-      if (!chapitreId) { afficherErreur('Aucun texte spécifié.'); return; }
+      if (!chapitreId) { afficherErreur('Aucun chapitre spécifié.'); return; }
 
       var id = localStorage.getItem('etudiant_id');
       if (!id) { window.location.href = '/medit/index.html'; return; }
@@ -1378,7 +1325,7 @@
           chapitreActuel = trouverChapitre(chapitreId, chapitresData);
 
           if (!chapitreActuel) {
-            afficherErreur('Texte introuvable.');
+            afficherErreur('Chapitre introuvable.');
             return;
           }
 
@@ -1386,14 +1333,14 @@
             chargerImagesLivret(chapitreActuel.categorie)
               .then(function(images) {
                 imagesLivret = images || {};
-                afficherArticle(chapitreActuel);
+                afficherChapitre(chapitreActuel);
               })
               .catch(function() {
                 imagesLivret = {};
-                afficherArticle(chapitreActuel);
+                afficherChapitre(chapitreActuel);
               });
           } else {
-            afficherArticle(chapitreActuel);
+            afficherChapitre(chapitreActuel);
           }
         })
         .catch(function(error) {
@@ -1417,7 +1364,7 @@
 
             chapitreActuel = trouverChapitre(chapitreId, chapitresData);
             if (chapitreActuel) {
-              afficherArticle(chapitreActuel);
+              afficherChapitre(chapitreActuel);
               return;
             }
           }
@@ -1426,29 +1373,32 @@
     }
 
     // ============================================================
-    // AFFICHER LE TEXTE
+    // AFFICHER LE CHAPITRE
     // ============================================================
-    function afficherArticle(chapitre) {
-      var container = document.getElementById('articleContainer');
+    function afficherChapitre(chapitre) {
+      var container = document.getElementById('chapitreContainer');
+      var colonneLaterale = document.getElementById('colonneLaterale');
+      var zoneBasseMobile = document.getElementById('zoneBasseMobile');
 
-      var contenuHtml = construireHtmlArticle(chapitre, imagesLivret);
+      var contenuHtml = construireHtmlChapitre(chapitre, imagesLivret);
 
-      // ✅ BOUTON IMPRIMER : juste après le bloc de texte, pleine largeur
       var blocImprimerHtml =
         '<div class="bloc-imprimer">' +
         '  <button class="btn-imprimer-large" onclick="imprimerChapitre(\'' +
         chapitre.id + '\', \'' +
         (chapitre.titre || '').replace(/'/g, "\\'") + '\', chapitresData)">' +
-        '𓂃✍︎ Imprimer ce texte avec les exercices' +
+        '𓂃✍︎ Imprimer ce chapitre avec les exercices' +
         '  </button>' +
         '</div>';
 
-      var zoneBasseHtml = construireZoneBasse(chapitre);
+      // Colonne principale (texte)
+      container.innerHTML = '<div class="feuille-chapitre">' + contenuHtml + blocImprimerHtml + '</div>';
 
-      var html = '<div class="feuille-article">' + contenuHtml + blocImprimerHtml + '</div>';
-      html += '<div class="zone-basse">' + zoneBasseHtml + '</div>';
+      // Colonne latérale (grand écran)
+      colonneLaterale.innerHTML = construireZoneLaterale(chapitre);
 
-      container.innerHTML = html;
+      // Zone basse (mobile)
+      zoneBasseMobile.innerHTML = construireZoneBasseMobile(chapitre);
 
       arabiserDans(container);
       afficherFilAriane(chapitre);
@@ -1460,12 +1410,12 @@
     // ERREUR
     // ============================================================
     function afficherErreur(message) {
-      document.getElementById('articleContainer').innerHTML = `
-        <div class="vide-article">
+      document.getElementById('chapitreContainer').innerHTML = `
+        <div class="vide-chapitre">
           <span class="icone">◈</span>
           <h2>${message}</h2>
-          <p>Vérifiez le lien ou retournez aux textes.</p>
-          <a href="/medit/textes.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux textes</a>
+          <p>Vérifiez le lien ou retournez aux chapitres.</p>
+          <a href="/medit/chapitres.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux chapitres</a>
         </div>
       `;
     }
@@ -1474,9 +1424,9 @@
     // DÉMARRAGE
     // ============================================================
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', chargerArticle);
+      document.addEventListener('DOMContentLoaded', chargerChapitre);
     } else {
-      chargerArticle();
+      chargerChapitre();
     }
   </script>
 
