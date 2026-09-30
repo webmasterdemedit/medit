@@ -22,8 +22,8 @@
       gap: 32px;
     }
 
-    /* Sur grand écran : 2 colonnes */
-    @media (min-width: 1200px) {
+    /* ✅ 2 colonnes dès 1100px (au lieu de 1200px) */
+    @media (min-width: 1100px) {
       .page-chapitre {
         grid-template-columns: minmax(0, 820px) 360px;
         align-items: start;
@@ -121,18 +121,6 @@
       text-transform: uppercase;
       line-height: 1.15;
       margin: 0;
-    }
-    .feuille-chapitre .bandeau-titre .meta-droite {
-      font-size: 9pt;
-      color: #555;
-      text-align: right;
-      white-space: nowrap;
-    }
-    .bandeau-titre .meta-droite .lecture-time {
-      display: block;
-      font-size: 8pt;
-      color: #888;
-      margin-top: 2px;
     }
 
     .feuille-chapitre .tags-haut {
@@ -279,15 +267,67 @@
     }
 
     /* ============================================================ */
-    /* BOUTON IMPRIMER                                              */
+    /* ZONE BAS DU CHAPITRE (nav + boutons)                        */
     /* ============================================================ */
-    .bloc-imprimer {
+    .zone-bas-chapitre {
       margin-top: 24px;
-      padding: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
     }
-    .bloc-imprimer .btn-imprimer-large {
-      display: block;
-      width: 100%;
+
+    /* Navigation précédent/suivant */
+    .nav-bas-chapitre {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .nav-bas-chapitre a,
+    .nav-bas-chapitre .nav-placeholder {
+      flex: 1;
+      min-width: 200px;
+      padding: 14px 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      text-decoration: none;
+      transition: all 0.2s;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+    .nav-bas-chapitre a:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-hover);
+    }
+    .nav-bas-chapitre .nav-placeholder { opacity: 0.3; cursor: default; }
+    .nav-bas-chapitre .nav-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+    }
+    .nav-bas-chapitre .nav-titre {
+      font-family: 'Georgia', serif;
+      font-size: 15px;
+      color: var(--text);
+      font-weight: 500;
+      line-height: 1.3;
+    }
+    .nav-bas-chapitre .nav-suivant { text-align: right; }
+    .nav-bas-chapitre .nav-suivant .nav-label,
+    .nav-bas-chapitre .nav-suivant .nav-titre { text-align: right; }
+
+    /* Boutons d'action en bas */
+    .actions-bas-chapitre {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .btn-action-bas {
+      flex: 1;
+      min-width: 200px;
       padding: 14px 20px;
       font-size: 14px;
       font-family: 'Roboto', sans-serif;
@@ -300,15 +340,29 @@
       color: var(--text-secondary);
       transition: all 0.2s;
       text-align: center;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
     }
-    .bloc-imprimer .btn-imprimer-large:hover {
+    .btn-action-bas:hover {
       background: var(--bg-hover);
       border-color: var(--border-hover);
       color: var(--text);
     }
+    .btn-action-bas.btn-elearning {
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+    }
+    .btn-action-bas.btn-elearning:hover {
+      background: #2d6a4f;
+      color: #fff;
+      border-color: #2d6a4f;
+    }
 
     /* ============================================================ */
-    /* COLONNE LATÉRALE (grand écran)                               */
+    /* COLONNE LATÉRALE                                             */
     /* ============================================================ */
     .colonne-laterale .bloc-section {
       margin-bottom: 24px;
@@ -340,44 +394,42 @@
       margin-left: auto;
     }
 
-    /* Navigation précédent/suivant (latéral) */
-    .nav-prev-suivant {
+    /* Bloc méta (Niveau + temps + dates) */
+    .bloc-meta-chapitre {
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 6px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-secondary);
     }
-    .nav-prev-suivant a,
-    .nav-prev-suivant .nav-placeholder {
-      padding: 10px 14px;
+    .bloc-meta-chapitre .meta-ligne {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 10px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
-      text-decoration: none;
-      transition: all 0.2s;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
     }
-    .nav-prev-suivant a:hover {
-      border-color: var(--border-hover);
-      background: var(--bg-active);
+    .bloc-meta-chapitre .meta-ligne .meta-icone {
+      font-size: 14px;
+      opacity: 0.7;
+      flex-shrink: 0;
     }
-    .nav-prev-suivant .nav-placeholder { opacity: 0.4; cursor: default; }
-    .nav-prev-suivant .nav-label {
-      font-family: 'Roboto', sans-serif;
-      font-size: 10px;
+    .bloc-meta-chapitre .meta-ligne .meta-label {
       color: var(--text-muted);
+      font-size: 10px;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
+      letter-spacing: 0.5px;
+      margin-right: auto;
     }
-    .nav-prev-suivant .nav-titre {
-      font-family: 'Georgia', serif;
-      font-size: 13px;
+    .bloc-meta-chapitre .meta-ligne .meta-valeur {
       color: var(--text);
       font-weight: 500;
-      line-height: 1.3;
+      text-align: right;
     }
 
-    /* Encart livret (latéral) */
+    /* Encart livret */
     .encart-livret {
       display: flex;
       gap: 12px;
@@ -477,15 +529,15 @@
     }
     .encart-livret:hover .encart-cta { color: var(--text); }
 
-    /* Liste textes (latéral) */
-    .liste-textes {
+    /* Liste chapitres du même livret */
+    .liste-chapitres {
       display: flex;
       flex-direction: column;
       gap: 4px;
       max-height: 340px;
       overflow-y: auto;
     }
-    .liste-textes .item-texte {
+    .liste-chapitres .item-chapitre {
       display: flex;
       align-items: center;
       justify-content: space-between;
@@ -496,16 +548,16 @@
       text-decoration: none;
       transition: all 0.2s;
     }
-    .liste-textes .item-texte:hover {
+    .liste-chapitres .item-chapitre:hover {
       border-color: var(--border-hover);
       background: var(--bg-hover);
     }
-    .liste-textes .item-texte.actuel {
+    .liste-chapitres .item-chapitre.actuel {
       background: var(--bg-active);
       border-color: var(--border-hover);
       cursor: default;
     }
-    .liste-textes .item-texte .item-titre {
+    .liste-chapitres .item-chapitre .item-titre {
       font-family: 'Georgia', serif;
       font-size: 13px;
       color: var(--text);
@@ -514,19 +566,19 @@
       flex: 1;
       min-width: 0;
     }
-    .liste-textes .item-texte.actuel .item-titre { font-weight: 700; }
-    .liste-textes .item-texte .item-marqueur {
+    .liste-chapitres .item-chapitre.actuel .item-titre { font-weight: 700; }
+    .liste-chapitres .item-chapitre .item-marqueur {
       font-family: 'Roboto', sans-serif;
       font-size: 10px;
       color: var(--text-muted);
       flex-shrink: 0;
     }
-    .liste-textes .item-texte.actuel .item-marqueur {
+    .liste-chapitres .item-chapitre.actuel .item-marqueur {
       color: var(--text);
       font-weight: 600;
     }
 
-    /* Galerie livrets (latéral) */
+    /* Galerie livrets */
     .galerie-livrets {
       display: flex;
       flex-direction: column;
@@ -611,14 +663,16 @@
       flex-direction: column;
       gap: 24px;
     }
-
-    /* Sur grand écran : on cache la version mobile */
-    @media (min-width: 1200px) {
-      .zone-basse-mobile { display: none; }
+    .zone-basse-mobile .bloc-section {
+      padding: 16px 18px;
+      background: var(--bg);
+      border: 1px solid var(--border);
     }
 
-    /* Sur mobile : on cache la colonne latérale */
-    @media (max-width: 1199px) {
+    @media (min-width: 1100px) {
+      .zone-basse-mobile { display: none; }
+    }
+    @media (max-width: 1099px) {
       .colonne-laterale { display: none; }
     }
 
@@ -663,9 +717,6 @@
       line-height: 1.7;
     }
 
-    /* ============================================================ */
-    /* RESPONSIVE                                                   */
-    /* ============================================================ */
     @media (max-width: 768px) {
       .page-chapitre { padding: 12px 16px 40px; }
       .feuille-chapitre { padding: 20px 18px; font-size: 10pt; }
@@ -689,10 +740,9 @@
 
   <div class="page page-chapitre">
 
-    <!-- Fil d'Ariane -->
     <div class="fil-ariane" id="filAriane"></div>
 
-    <a href="/medit/textes.html" class="btn-retour">← Retour aux chapitres</a>
+    <a href="/medit/chapitres.html" class="btn-retour">← Retour aux chapitres</a>
 
     <div id="chapitreContainer" class="colonne-principale">
       <div class="loader">
@@ -791,6 +841,23 @@
       });
     }
 
+    function formatDateLongue(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+      } catch(e) { return ''; }
+    }
+
+    function formatDateHeure(date) {
+      try {
+        var dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
+        var heureStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+        return dateStr + ' à ' + heureStr;
+      } catch(e) { return ''; }
+    }
+
     // ============================================================
     // TROUVER UN CHAPITRE
     // ============================================================
@@ -812,7 +879,7 @@
     }
 
     // ============================================================
-    // CONSTRUCTION DU HTML DU CHAPITRE
+    // CONSTRUCTION DU HTML DU CHAPITRE (texte)
     // ============================================================
     function construireHtmlChapitre(chapitre, imagesLivret) {
       imagesLivret = imagesLivret || {};
@@ -875,16 +942,16 @@
       var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
       var tempsLecture = Math.max(1, Math.round(nbMots / 200));
 
+      // Stockage pour réutilisation dans la colonne latérale
+      chapitre._nbMots = nbMots;
+      chapitre._tempsLecture = tempsLecture;
+
       var html = '';
 
+      // Bandeau titre (sans les infos de livret)
       html += '<div class="bandeau-titre">';
       html += '  <div class="ligne-titre">';
       html += '    <h1>' + echapperHtml(chapitre.titre || 'Lecture') + '</h1>';
-      html += '    <div class="meta-droite">' +
-              (chapitre.categorie ? echapperHtml(chapitre.categorie) + ' — ' : '') +
-              'Niveau ' + (chapitre.niveau || 0) +
-              '<span class="lecture-time">⏱ ' + tempsLecture + ' min de lecture</span>' +
-              '</div>';
       html += '  </div>';
       html += '</div>';
 
@@ -1006,10 +1073,10 @@
       var html = '';
       html += '<a href="/medit/index.html">Accueil</a>';
       html += '<span class="sep">›</span>';
-      html += '<a href="/medit/textes.html">Tous les chapitres</a>';
+      html += '<a href="/medit/chapitres.html">Tous les chapitres</a>';
       if (chapitre.categorie) {
         html += '<span class="sep">›</span>';
-        html += '<a href="/medit/textes.html?livret=' + encodeURIComponent(chapitre.categorie) + '">' + echapperHtml(chapitre.categorie) + '</a>';
+        html += '<a href="/medit/chapitres.html?livret=' + encodeURIComponent(chapitre.categorie) + '">' + echapperHtml(chapitre.categorie) + '</a>';
       }
       html += '<span class="sep">›</span>';
       html += '<span class="current">' + echapperHtml(chapitre.titre) + '</span>';
@@ -1085,7 +1152,7 @@
         var estActuel = (cat === chapitreActuel.categorie);
 
         html += '<a class="carte-livret-mini' + (estActuel ? ' actuel' : '') + '" ';
-        html += '   href="/medit/textes.html?livret=' + encodeURIComponent(cat) + '" ';
+        html += '   href="/medit/chapitres.html?livret=' + encodeURIComponent(cat) + '" ';
         html += '   title="Voir les chapitres du livret ' + echapperHtml(cat) + '">';
         html += '  <span class="badge-niveau">Niv. ' + info.niveau + '</span>';
         html += '  <span class="couleur-pastille" style="background: ' + couleur + ';"></span>';
@@ -1103,19 +1170,15 @@
     }
 
     // ============================================================
-    // ZONE LATÉRALE (grand écran)
+    // ZONE BAS DU CHAPITRE (nav + boutons)
     // ============================================================
-    function construireZoneLaterale(chapitre) {
+    function construireZoneBasChapitre(chapitre) {
       var nav = construireNavDansLivret(chapitre);
-      var livretInfo = livretsData[chapitre.categorie] || {};
 
-      var html = '';
+      var html = '<div class="zone-bas-chapitre">';
 
-      // 1. Navigation
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre"><span class="icone">↔</span> Navigation</div>';
-      html += '  <div class="nav-prev-suivant">';
-
+      // 1. Navigation précédent/suivant
+      html += '<div class="nav-bas-chapitre">';
       if (nav.precedent) {
         html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
         html += '  <span class="nav-label">← Précédent</span>';
@@ -1127,19 +1190,78 @@
         html += '  <span class="nav-titre">Début du livret</span>';
         html += '</div>';
       }
-
       if (nav.suivant) {
-        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.suivant.id) + '">';
+        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.suivant.id) + '" class="nav-suivant">';
         html += '  <span class="nav-label">Suivant →</span>';
         html += '  <span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span>';
         html += '</a>';
       } else {
-        html += '<div class="nav-placeholder">';
+        html += '<div class="nav-placeholder nav-suivant">';
         html += '  <span class="nav-label">Suivant →</span>';
         html += '  <span class="nav-titre">Fin du livret</span>';
         html += '</div>';
       }
+      html += '</div>';
 
+      // 2. Boutons : Imprimer + E-learning
+      html += '<div class="actions-bas-chapitre">';
+      html += '  <button class="btn-action-bas btn-imprimer" onclick="imprimerChapitre(\'' +
+              chapitre.id + '\', \'' +
+              (chapitre.titre || '').replace(/'/g, "\\'") + '\', chapitresData)">' +
+              '🖨️ Imprimer ce chapitre' +
+              '</button>';
+      html += '  <a class="btn-action-bas btn-elearning" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
+              '🎓 Ouvrir en e-learning' +
+              '</a>';
+      html += '</div>';
+
+      html += '</div>';
+
+      return html;
+    }
+
+    // ============================================================
+    // COLONNE LATÉRALE
+    // ============================================================
+    function construireZoneLaterale(chapitre) {
+      var nav = construireNavDansLivret(chapitre);
+      var livretInfo = livretsData[chapitre.categorie] || {};
+
+      var html = '';
+
+      // 1. Méta (Niveau + temps + écrit + imprimé)
+      var niveau = chapitre.niveau || 0;
+      var tempsLecture = chapitre._tempsLecture || 1;
+      var dateEcrit = formatDateLongue(chapitre.date);
+      var dateImprime = formatDateHeure(new Date());
+
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre"><span class="icone">📊</span> Informations</div>';
+      html += '  <div class="bloc-meta-chapitre">';
+      html += '    <div class="meta-ligne">';
+      html += '      <span class="meta-icone">📶</span>';
+      html += '      <span class="meta-label">Niveau</span>';
+      html += '      <span class="meta-valeur">' + niveau + '</span>';
+      html += '    </div>';
+      html += '    <div class="meta-ligne">';
+      html += '      <span class="meta-icone">⏱</span>';
+      html += '      <span class="meta-label">Temps de lecture</span>';
+      html += '      <span class="meta-valeur">' + tempsLecture + ' min</span>';
+      html += '    </div>';
+      if (dateEcrit) {
+        html += '    <div class="meta-ligne">';
+        html += '      <span class="meta-icone">✍</span>';
+        html += '      <span class="meta-label">Écrit le</span>';
+        html += '      <span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span>';
+        html += '    </div>';
+      }
+      if (dateImprime) {
+        html += '    <div class="meta-ligne">';
+        html += '      <span class="meta-icone">🖨</span>';
+        html += '      <span class="meta-label">Imprimé le</span>';
+        html += '      <span class="meta-valeur">' + echapperHtml(dateImprime) + '</span>';
+        html += '    </div>';
+      }
       html += '  </div>';
       html += '</div>';
 
@@ -1147,7 +1269,6 @@
       if (chapitre.categorie) {
         var couleur = livretInfo.couleur || '#2d6a4f';
         var sousTitre = livretInfo.sousTitre || '';
-        var niveau = chapitre.niveau || 1;
 
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
@@ -1170,24 +1291,24 @@
         html += '</div>';
       }
 
-      // 3. Liste "Dans le même livret"
+      // 3. Liste "Dans ce livret"
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre">';
         html += '    <span class="icone">🕮</span> Dans ce livret';
         html += '    <span class="compteur">' + nav.liste.length + '</span>';
         html += '  </div>';
-        html += '  <div class="liste-textes">';
+        html += '  <div class="liste-chapitres">';
 
         nav.liste.forEach(function(c) {
           var estActuel = String(c.id) === String(chapitre.id);
           if (estActuel) {
-            html += '<div class="item-texte actuel">';
+            html += '<div class="item-chapitre actuel">';
             html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
             html += '  <span class="item-marqueur">●</span>';
             html += '</div>';
           } else {
-            html += '<a class="item-texte" href="/medit/chapitre.html?id=' + encodeURIComponent(c.id) + '">';
+            html += '<a class="item-chapitre" href="/medit/chapitre.html?id=' + encodeURIComponent(c.id) + '">';
             html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
             html += '  <span class="item-marqueur">→</span>';
             html += '</a>';
@@ -1205,92 +1326,11 @@
     }
 
     // ============================================================
-    // ZONE BASSE (mobile uniquement)
+    // ZONE BASSE MOBILE
     // ============================================================
     function construireZoneBasseMobile(chapitre) {
-      var nav = construireNavDansLivret(chapitre);
-      var livretInfo = livretsData[chapitre.categorie] || {};
-
-      var html = '';
-
-      // 1. Navigation
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre"><span class="icone">↔</span> Navigation</div>';
-      html += '  <div class="nav-prev-suivant">';
-
-      if (nav.precedent) {
-        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
-        html += '  <span class="nav-label">← Précédent</span>';
-        html += '  <span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span>';
-        html += '</a>';
-      }
-
-      if (nav.suivant) {
-        html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.suivant.id) + '">';
-        html += '  <span class="nav-label">Suivant →</span>';
-        html += '  <span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span>';
-        html += '</a>';
-      }
-
-      html += '  </div>';
-      html += '</div>';
-
-      // 2. Encart livret
-      if (chapitre.categorie) {
-        var couleur = livretInfo.couleur || '#2d6a4f';
-        var niveau = chapitre.niveau || 1;
-
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre">📖 Ce chapitre est extrait du livret</div>';
-        html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
-        html += '    <div class="mini-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
-        html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
-        html += '      <div class="contenu-couv">';
-        html += '        <div class="titre-couv">' + echapperHtml(chapitre.categorie) + '</div>';
-        html += '        <div class="edition-nom">Qiraat</div>';
-        html += '      </div>';
-        html += '    </div>';
-        html += '    <div class="encart-texte">';
-        html += '      <div class="encart-label">Livret</div>';
-        html += '      <div class="encart-nom-livret">' + echapperHtml(chapitre.categorie) + '</div>';
-        html += '      <div class="encart-cta">Voir le livret →</div>';
-        html += '    </div>';
-        html += '  </a>';
-        html += '</div>';
-      }
-
-      // 3. Liste "Dans le même livret"
-      if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre">';
-        html += '    <span class="icone">🕮</span> Dans le même livret';
-        html += '    <span class="compteur">' + nav.liste.length + ' chapitres</span>';
-        html += '  </div>';
-        html += '  <div class="liste-textes">';
-
-        nav.liste.forEach(function(c) {
-          var estActuel = String(c.id) === String(chapitre.id);
-          if (estActuel) {
-            html += '<div class="item-texte actuel">';
-            html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
-            html += '  <span class="item-marqueur">● Vous êtes ici</span>';
-            html += '</div>';
-          } else {
-            html += '<a class="item-texte" href="/medit/chapitre.html?id=' + encodeURIComponent(c.id) + '">';
-            html += '  <span class="item-titre">' + echapperHtml(c.titre) + '</span>';
-            html += '  <span class="item-marqueur">Lire →</span>';
-            html += '</a>';
-          }
-        });
-
-        html += '  </div>';
-        html += '</div>';
-      }
-
-      // 4. Galerie livrets
-      html += construireGalerieLivrets(chapitre);
-
-      return html;
+      // On réutilise les mêmes blocs que la colonne latérale
+      return construireZoneLaterale(chapitre);
     }
 
     // ============================================================
@@ -1381,18 +1421,12 @@
       var zoneBasseMobile = document.getElementById('zoneBasseMobile');
 
       var contenuHtml = construireHtmlChapitre(chapitre, imagesLivret);
+      var zoneBasHtml = construireZoneBasChapitre(chapitre);
 
-      var blocImprimerHtml =
-        '<div class="bloc-imprimer">' +
-        '  <button class="btn-imprimer-large" onclick="imprimerChapitre(\'' +
-        chapitre.id + '\', \'' +
-        (chapitre.titre || '').replace(/'/g, "\\'") + '\', chapitresData)">' +
-        '𓂃✍︎ Imprimer ce chapitre avec les exercices' +
-        '  </button>' +
-        '</div>';
-
-      // Colonne principale (texte)
-      container.innerHTML = '<div class="feuille-chapitre">' + contenuHtml + blocImprimerHtml + '</div>';
+      // Colonne principale : texte + zone bas (nav + boutons)
+      container.innerHTML =
+        '<div class="feuille-chapitre">' + contenuHtml + '</div>' +
+        zoneBasHtml;
 
       // Colonne latérale (grand écran)
       colonneLaterale.innerHTML = construireZoneLaterale(chapitre);
@@ -1415,7 +1449,7 @@
           <span class="icone">◈</span>
           <h2>${message}</h2>
           <p>Vérifiez le lien ou retournez aux chapitres.</p>
-          <a href="/medit/textes.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux chapitres</a>
+          <a href="/medit/chapitres.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux chapitres</a>
         </div>
       `;
     }
