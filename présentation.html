@@ -191,54 +191,46 @@
 
   <!-- CHARGEMENT IMMÉDIAT DU HEADER -->
   <script>
-    // Fonction définie globalement pour être utilisée après chargement
-    function mettreAJourHeader() {
-      var id = localStorage.getItem('etudiant_id');
-      var nav = document.getElementById('headerNav');
-      if (nav) {
-        if (id) {
-          nav.innerHTML = `
-            <a href="/medit/mes-livrets.html" class="header-btn-compte">📒 Mes textes</a>
-            <a href="/medit/mon-compte.html" class="header-link"> Mon compte</a>
-            <button class="header-btn-deconnexion" onclick="deconnecter()">Se déconnecter</button>
-          `;
-        } else {
-          nav.innerHTML = `
-            <a href="/medit/index.html" class="header-link">E-learning</a>
-            <a href="/medit/index.html" class="header-link">Accueil</a>
-          `;
-        }
-      }
-    }
-
-    // Chargement synchrone du header avant tout le contenu
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/medit/header.html', false);  // false = synchrone
     xhr.send();
     if (xhr.status === 200) {
       document.write(xhr.responseText);
     } else {
-      // Fallback si header non trouvé
+      // Fallback : header par défaut identique à mes-livrets.html
       document.write(`
         <header class="site-header">
           <div class="header-inner">
             <div class="header-left">
               <div class="header-logo">
                 <a href="/medit/index.html">
-                  <span style="font-size:28px;vertical-align:middle;margin-right:8px;">✎❏</span>
-                  <strong>Qiraat</strong> <i>lecture</i>
+                  <span style="font-size:28px;vertical-align:middle;margin-right:8px;">❏✎</span>
+                  <strong>Qiraat</strong>
                 </a>
               </div>
             </div>
             <nav class="header-nav" id="headerNav">
-              <a href="#" onclick="ouvrirConnexion(); return false;">Se connecter</a>
+              <a href="/medit/mes-livrets.html" class="header-link">Mes livrets disponibles</a>
+              <a href="/medit/tous-les-chapitres.html" class="header-link">Tous les chapitres</a>
+              <a href="/medit/mon-compte" class="header-btn-compte">Mon compte</a>
+              <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
             </nav>
           </div>
         </header>
       `);
     }
-    // Mettre à jour après écriture
-    mettreAJourHeader();
+  </script>
+
+  <!-- FONCTION DECONNEXION (utilisée par le header) -->
+  <script>
+    window.deconnecter = function() {
+      if (confirm('Se déconnecter ?')) {
+        localStorage.removeItem('etudiant_id');
+        localStorage.removeItem('etudiant_nom');
+        localStorage.removeItem('etudiant_niveau');
+        window.location.href = '/medit/index.html';
+      }
+    };
   </script>
 </head>
 <body>
