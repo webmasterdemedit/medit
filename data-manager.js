@@ -3,7 +3,14 @@
 // + Support images par livret
 // ============================================================
 
-// Détecter un reload manuel (Ctrl+R / F5)
+// Clés de cache
+var CLE_CACHE      = 'qiraat_data_v1';
+var CLE_TIMESTAMP  = 'qiraat_data_ts';
+var CLE_NOM        = 'qiraat_data_nom';
+var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du livret
+var DUREE_CACHE_MS = 5 * 60 * 1000; // 5 min au lieu de 30
+
+// ✅ Détecter un reload manuel (Ctrl+R / F5)
 var PERF_NAV = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || performance.navigation || {};
 var EST_RELOAD = PERF_NAV.type === 'reload' || PERF_NAV.type === 1;
 
@@ -11,13 +18,6 @@ if (EST_RELOAD) {
     // Forcer un refresh au prochain charger()
     localStorage.setItem(CLE_TIMESTAMP, '0');
 }
-
-// Clés de cache
-var CLE_CACHE      = 'qiraat_data_v1';
-var CLE_TIMESTAMP  = 'qiraat_data_ts';
-var CLE_NOM        = 'qiraat_data_nom';
-var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du livret
-var DUREE_CACHE_MS = 5 * 60 * 1000; // 5 min au lieu de 30
 
 var DataManager = {
 
