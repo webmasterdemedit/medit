@@ -532,7 +532,7 @@
     }
 
     /* ============================================================ */
-    /* ZONE BAS DU CHAPITRE (nav uniquement)                        */
+    /* ZONE BAS DU CHAPITRE (nav + bouton quiz en bas)              */
     /* ============================================================ */
     .zone-bas-chapitre {
       margin-top: 24px;
@@ -582,6 +582,36 @@
     .nav-bas-chapitre .nav-suivant { text-align: right; }
     .nav-bas-chapitre .nav-suivant .nav-label,
     .nav-bas-chapitre .nav-suivant .nav-titre { text-align: right; }
+
+    /* ============================================================ */
+    /* BOUTON PASSER LE QUIZ EN BAS — MÊME FORME AVEC CADRE         */
+    /* ============================================================ */
+    .zone-bas-chapitre .btn-passer-quiz-bas {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      background: transparent;
+      border: 1px solid #2d6a4f;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #2d6a4f;
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .zone-bas-chapitre .btn-passer-quiz-bas:hover {
+      background: #2d6a4f;
+      color: #fff;
+      border-color: #2d6a4f;
+    }
 
     /* ============================================================ */
     /* COLONNE LATÉRALE                                             */
@@ -1934,7 +1964,7 @@
     }
 
     // ============================================================
-    // ZONE BAS DU CHAPITRE (nav uniquement, plus de boutons)
+    // ZONE BAS DU CHAPITRE (nav + bouton quiz en bas)
     // ============================================================
     function construireZoneBasChapitre(chapitre) {
       var nav = construireNavDansLivret(chapitre);
@@ -1966,13 +1996,18 @@
       }
       html += '</div>';
 
+      // ✅ Bouton "Passer le quiz en ligne" EN BAS, après le texte, même forme avec cadre
+      html += '<a class="btn-passer-quiz-bas" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
+              'Passer le quiz en ligne' +
+              '</a>';
+
       html += '</div>';
 
       return html;
     }
 
     // ============================================================
-    // BLOC ACTIONS (boutons imprimer + quiz) — colonne latérale
+    // BLOC ACTIONS (bouton imprimer uniquement) — colonne latérale
     // ============================================================
     function construireBlocActions(chapitre) {
       var html = '';
@@ -1984,9 +2019,6 @@
               (chapitre.titre || '').replace(/'/g, "\\'") + '\', chapitresData)">' +
               'Imprimer le texte et le quiz' +
               '</button>';
-      html += '    <a class="btn-action-lateral btn-elearning" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
-              'Passer le quiz en ligne' +
-              '</a>';
       html += '  </div>';
       html += '</div>';
       return html;
@@ -2001,7 +2033,7 @@
 
       var html = '';
 
-      // ---- Actions (boutons en haut de la colonne latérale) ----
+      // ---- Actions (bouton imprimer en haut de la colonne latérale) ----
       html += construireBlocActions(chapitre);
 
       var niveau = chapitre.niveau || 0;
