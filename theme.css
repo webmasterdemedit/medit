@@ -1,7 +1,8 @@
 /* ============================================================
-   THEME - LISEUSE NOIR & BLANC ABSOLU
+   THEME - LISEUSE "MANUEL ENFANT" (doux, coloré léger)
    Avec mode sombre automatique
    ============================================================ */
+
 /* ===== POLICE ARABE : JANNA LT BOLD ===== */
 @font-face {
     font-family: 'Janna LT Bold';
@@ -11,7 +12,11 @@
     font-display: swap;
 }
 
+/* ============================================================
+   VARIABLES — MODE CLAIR (palette vert d'eau "manuel enfant")
+   ============================================================ */
 :root {
+  /* --- Neutres de base --- */
   --bg: #ffffff;
   --bg-hover: #f5f5f5;
   --bg-active: #e8e8e8;
@@ -20,17 +25,32 @@
   --text-muted: #777777;
   --border: #cccccc;
   --border-hover: #aaaaaa;
+
+  /* --- Palette "manuel enfant" : verts d'eau doux --- */
+  --bg-page: #f4fbf8;         /* fond de page (très très clair) */
+  --bg-header: #d4ebe4;       /* header (vert d'eau) */
+  --bg-sidebar: #e8f5f0;      /* cadres latéraux (plus clair) */
+  --bg-soft: #f0f8f5;         /* surfaces très douces (badges, tags) */
+  --bg-accent: #eef6f2;       /* hover doux sur fond coloré */
+  --border-eau: #b8d9cf;      /* bordures vert d'eau */
+  --border-eau-hover: #6a9a8a;
+  --accent: #2d6a4f;          /* vert principal (liens actifs, titres forts) */
+  --accent-soft: #4a8a72;
+
   --font-serif: Georgia, 'Times New Roman', serif;
   --font-arabic: 'Janna LT Bold', 'Traditional Arabic', serif;
   --font-sans: -apple-system, 'Inter', 'Segoe UI', sans-serif;
 }
 
 /* ===== POLICE ARABE AUTO ===== */
-[lang="ar"], 
+[lang="ar"],
 [dir="rtl"] {
     font-family: var(--font-arabic) !important;
 }
-/* ===== MODE SOMBRE AUTO ===== */
+
+/* ============================================================
+   MODE SOMBRE AUTO (verts d'eau foncés)
+   ============================================================ */
 @media (prefers-color-scheme: dark) {
   :root {
     --bg: #1a1a1a;
@@ -41,12 +61,25 @@
     --text-muted: #777777;
     --border: #3d3d3d;
     --border-hover: #555555;
+
+    /* Verts d'eau foncés */
+    --bg-page: #141c19;
+    --bg-header: #1e2f2a;
+    --bg-sidebar: #1a2823;
+    --bg-soft: #1d2b26;
+    --bg-accent: #223530;
+    --border-eau: #2d4a42;
+    --border-eau-hover: #4a7a6d;
+    --accent: #6abf9e;
+    --accent-soft: #4a8a72;
   }
 }
 
-/* ===== BASE ===== */
+/* ============================================================
+   BASE
+   ============================================================ */
 html, body {
-  background: var(--bg);
+  background: var(--bg-page);
   color: var(--text);
   font-family: var(--font-serif);
   font-size: 18px;
@@ -55,15 +88,20 @@ html, body {
   padding: 0;
 }
 
-/* ===== TOUT EN BLANC ===== */
-body *:not(.carte-livret):not(.carte-livret *):not(.couverture-mini):not(.couverture-mini *):not(.carte-post):not(.carte-post *):not(.contenu-couv):not(.contenu-couv *):not(.titre-couv):not(.nb-lecons-couv):not(.niveau-couv) {
+/* ============================================================
+   NEUTRALISATION DOUCE (on garde la logique noir & blanc,
+   mais on exclut header, footer, sidebars et blocs colorés)
+   ============================================================ */
+body *:not(.carte-livret):not(.carte-livret *):not(.couverture-mini):not(.couverture-mini *):not(.carte-post):not(.carte-post *):not(.contenu-couv):not(.contenu-couv *):not(.titre-couv):not(.nb-lecons-couv):not(.niveau-couv):not(.site-header):not(.site-header *):not(.lecture-header):not(.lecture-header *):not(.site-footer):not(.site-footer *):not(.bloc-section):not(.bloc-section *):not(.zone-basse-mobile):not(.zone-basse-mobile *) {
   background: var(--bg);
   color: var(--text);
   border-color: var(--border);
 }
 
-/* ===== BORDURES CARRÉES ===== */
-.carte-post, .modal-content, .search-bar, .tabs-container, 
+/* ============================================================
+   BORDURES CARRÉES (style épuré conservé)
+   ============================================================ */
+.carte-post, .modal-content, .search-bar, .tabs-container,
 .section-block, .composer-content, .annotation-box,
 .stats, .hero, .vide, .presentation-card, .methode-card,
 .blog-article, .post-footer, .header-admin, .filtres-container {
@@ -72,7 +110,9 @@ body *:not(.carte-livret):not(.carte-livret *):not(.couverture-mini):not(.couver
   box-shadow: none !important;
 }
 
-/* ===== TYPOGRAPHIE ===== */
+/* ============================================================
+   TYPOGRAPHIE
+   ============================================================ */
 h1, h2, h3, h4, p, .titre, .hero .logo, .blog-article h1,
 .presentation-titre, .methode-titre, .carte-post .titre,
 .modal-content h2, .header-admin h1 {
@@ -87,26 +127,68 @@ h1, h2, h3, h4, p, .titre, .hero .logo, .blog-article h1,
   font-family: var(--font-sans);
 }
 
-/* ===== HEADER & FOOTER ===== */
-.site-header, .lecture-header, .site-footer {
-  background: var(--bg);
-  border-bottom: 1px solid var(--border);
+/* ============================================================
+   HEADER & FOOTER — VERT D'EAU
+   ============================================================ */
+.site-header, .lecture-header {
+  background: var(--bg-header) !important;
+  border-bottom: 1px solid var(--border-eau) !important;
 }
 .site-footer {
-  border-top: 1px solid var(--border);
+  background: var(--bg-header) !important;
+  border-top: 1px solid var(--border-eau) !important;
 }
 
-/* ===== LIENS ===== */
-a, .header-link, .carte-post .titre a {
+/* Liens dans le header/footer : on garde le texte lisible */
+.site-header a, .lecture-header a, .site-footer a,
+.header-link {
+  color: var(--text) !important;
+}
+.site-header a:hover, .lecture-header a:hover, .site-footer a:hover,
+.header-link:hover {
+  color: var(--accent) !important;
+}
+
+/* ============================================================
+   CADRES LATÉRAUX ET BLOCS COLORÉS — VERT D'EAU CLAIR
+   ============================================================ */
+.bloc-section,
+.zone-basse-mobile .bloc-section {
+  background: var(--bg-sidebar) !important;
+  border: 1px solid var(--border-eau) !important;
+}
+
+/* Les éléments DANS un bloc-section restent neutres (fond blanc)
+   pour créer un contraste doux avec le vert d'eau du cadre */
+.bloc-section .meta-ligne,
+.bloc-section .vocab-mot,
+.bloc-section .item-chapitre,
+.bloc-section .carte-livret-mini,
+.bloc-section .encart-livret {
+  background: rgba(255, 255, 255, 0.55) !important;
+  border-color: var(--border-eau) !important;
+}
+
+/* Titres des blocs : on garde la couleur du texte, on colore juste la bordure */
+.bloc-titre {
+  border-bottom-color: var(--border-eau) !important;
+}
+
+/* ============================================================
+   LIENS
+   ============================================================ */
+a, .carte-post .titre a {
   color: var(--text);
   text-decoration: none;
   border-bottom: 1px solid transparent;
 }
-a:hover, .header-link:hover, .carte-post .titre a:hover {
+a:hover, .carte-post .titre a:hover {
   border-bottom-color: var(--text);
 }
 
-/* ===== BOUTONS ===== */
+/* ============================================================
+   BOUTONS
+   ============================================================ */
 .btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer,
 .btn-ajout, .btn-export-all, .btn-categories, .carte-post .btn-lire,
 .btn-composer, .btn-add, .btn-groupe .btn, .btn-retour, .btn-footer,
@@ -125,28 +207,32 @@ a:hover, .header-link:hover, .carte-post .titre a:hover {
 .btn-composer:hover, .btn-add:hover, .btn-groupe .btn:hover,
 .btn-retour:hover, .btn-footer:hover, .filtre-cat-btn:hover,
 .tab-btn:hover, .resultat-actions button:hover, .btn-add-section:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .btn-groupe .btn-brouillon.active {
   background: var(--bg-active);
   color: var(--text);
 }
 
-/* ===== BADGES ===== */
+/* ============================================================
+   BADGES
+   ============================================================ */
 .badge, .badge.valide, .badge.lu, .badge.a-faire, .badge.non-vu,
 .post-label {
-  background: var(--bg-hover);
+  background: var(--bg-soft);
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   border-radius: 0 !important;
   padding: 2px 12px;
   font-family: var(--font-sans);
   font-size: 0.8em;
 }
 
-/* ===== FILTRES & ONGLETS ===== */
+/* ============================================================
+   FILTRES & ONGLETS
+   ============================================================ */
 .filtre-cat-btn, .tab-btn {
   background: transparent;
   border: none;
@@ -159,24 +245,28 @@ a:hover, .header-link:hover, .carte-post .titre a:hover {
   color: var(--text);
 }
 .filtre-cat-btn.active, .tab-btn.active {
-  color: var(--text);
-  border-bottom-color: var(--text);
+  color: var(--accent);
+  border-bottom-color: var(--accent);
 }
 .tabs-container {
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--border-eau);
 }
 
-/* ===== MODALES ===== */
+/* ============================================================
+   MODALES
+   ============================================================ */
 .modal-overlay {
-  background: rgba(0,0,0,0.2);
+  background: rgba(0, 0, 0, 0.2);
 }
 .modal-content {
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   box-shadow: none !important;
 }
 
-/* ===== FORMULAIRES ===== */
+/* ============================================================
+   FORMULAIRES
+   ============================================================ */
 input, textarea, select, .search-bar input {
   background: var(--bg);
   border: 1px solid var(--border);
@@ -186,22 +276,26 @@ input, textarea, select, .search-bar input {
   font-family: var(--font-sans);
 }
 input:focus, textarea:focus, select:focus {
-  border-color: var(--text);
+  border-color: var(--accent);
   outline: none;
 }
 
-/* ===== CARTES ===== */
+/* ============================================================
+   CARTES
+   ============================================================ */
 .carte-post {
   background: var(--bg);
   border: 1px solid var(--border);
 }
 .carte-post:hover {
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 
-/* ===== LECTURE MODE - LE CŒUR ===== */
+/* ============================================================
+   LECTURE MODE — LE CŒUR
+   ============================================================ */
 .slides-container {
-  background: var(--bg);
+  background: var(--bg-page);
 }
 .slide-content {
   color: var(--text);
@@ -212,19 +306,21 @@ input:focus, textarea:focus, select:focus {
   margin: 0 auto;
   padding: 20px 0;
   text-align: justify;
-    position: relative; 
+  position: relative;
 }
 .slide-content p {
   margin-bottom: 0.5em;
 }
 .slide-content .slide-idee {
   color: var(--text-secondary);
-  border-left: 2px solid var(--border);
+  border-left: 2px solid var(--border-eau);
   padding-left: 20px;
   font-style: italic;
 }
 
-/* ===== QUIZ EN NOIR & BLANC ===== */
+/* ============================================================
+   QUIZ EN NOIR & BLANC (teinte eau douce)
+   ============================================================ */
 .slide-content .quiz-question {
   font-size: 20px;
   margin-bottom: 20px;
@@ -239,18 +335,19 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.15s;
 }
 .slide-content .quiz-reponse:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
+  border-color: var(--border-eau-hover);
 }
 .slide-content .quiz-reponse.selectionnee {
-  border-color: var(--text);
-  background: var(--bg-active);
+  border-color: var(--accent);
+  background: var(--bg-accent);
 }
 .slide-content .quiz-reponse.correcte {
-  border-color: var(--text);
-  background: var(--bg-active);
+  border-color: var(--accent);
+  background: var(--bg-accent);
 }
 .slide-content .quiz-reponse.incorrecte {
-  border-color: var(--text);
+  border-color: var(--border-eau-hover);
   background: var(--bg-hover);
 }
 .slide-content .quiz-feedback .bonne-reponse,
@@ -258,27 +355,33 @@ input:focus, textarea:focus, select:focus {
   color: var(--text);
 }
 
-/* ===== PAGINATION ===== */
+/* ============================================================
+   PAGINATION
+   ============================================================ */
 .pagination {
   color: var(--text-muted);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: var(--font-sans);
   font-size: 13px;
   padding: 6px 16px;
 }
 
-/* ===== SCROLLBAR ===== */
+/* ============================================================
+   SCROLLBAR
+   ============================================================ */
 ::-webkit-scrollbar-track {
-  background: var(--bg);
+  background: var(--bg-page);
 }
 ::-webkit-scrollbar-thumb {
-  background: var(--border);
+  background: var(--border-eau);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--border-hover);
+  background: var(--border-eau-hover);
 }
 
-/* ===== RESPONSIVE ===== */
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
 @media (max-width: 768px) {
   body { font-size: 16px; }
   .slide-content {
@@ -304,14 +407,13 @@ input:focus, textarea:focus, select:focus {
    LECTURE MODE - STYLES SPÉCIFIQUES (article.html)
    ============================================================ */
 
-/* Contrôle de taille en bas à droite */
 .font-control-bottom {
   position: absolute;
   bottom: 16px;
   right: 16px;
   z-index: 20;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   border-radius: 30px;
   padding: 4px 10px;
   display: flex;
@@ -323,7 +425,7 @@ input:focus, textarea:focus, select:focus {
   transition: border-color 0.2s;
 }
 .font-control-bottom:hover {
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .font-control-bottom button {
   background: transparent;
@@ -343,7 +445,7 @@ input:focus, textarea:focus, select:focus {
   font-family: 'Inter', sans-serif;
 }
 .font-control-bottom button:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
 }
 .font-control-bottom .size-indicator {
@@ -356,7 +458,6 @@ input:focus, textarea:focus, select:focus {
   letter-spacing: 0.3px;
 }
 
-/* Pagination */
 .pagination-text {
   text-align: center;
   margin-top: 12px;
@@ -365,7 +466,6 @@ input:focus, textarea:focus, select:focus {
   color: var(--text-secondary);
 }
 
-/* Loader & Error */
 .lecture-loader {
   display: flex;
   flex-direction: column;
@@ -380,7 +480,7 @@ input:focus, textarea:focus, select:focus {
   width: 40px;
   height: 40px;
   border: 3px solid var(--border);
-  border-top-color: var(--text);
+  border-top-color: var(--accent);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
@@ -410,38 +510,36 @@ input:focus, textarea:focus, select:focus {
   padding: 10px 24px;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   text-decoration: none;
   font-weight: 500;
   transition: all 0.2s;
 }
 .btn-retour:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 
-/* Badge statut */
 .badge-statut {
   font-size: 13px;
   padding: 4px 12px;
   border-radius: 20px;
-  background: var(--bg-hover);
+  background: var(--bg-soft);
   color: var(--text-secondary);
 }
 .badge-statut.valide {
-  color: var(--text);
-  border: 1px solid var(--text);
+  color: var(--accent);
+  border: 1px solid var(--accent);
 }
 .badge-statut.non-valide {
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
 }
 .badge-statut.en-attente {
   color: var(--text-muted);
 }
 
-/* Bouton fermer */
 .btn-close {
   background: transparent;
   border: none;
@@ -452,16 +550,15 @@ input:focus, textarea:focus, select:focus {
   transition: color 0.2s;
 }
 .btn-close:hover {
-  color: var(--text);
+  color: var(--accent);
 }
 
-/* Bouton continuer */
 .btn-continuer {
   margin-top: 20px;
   padding: 10px 24px;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   cursor: pointer;
@@ -473,18 +570,17 @@ input:focus, textarea:focus, select:focus {
   display: inline-block;
 }
 .btn-continuer:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 
-/* Bouton fermer slide */
 .btn-fermer-slide {
   margin-top: 12px;
   padding: 10px 24px;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   cursor: pointer;
@@ -493,9 +589,9 @@ input:focus, textarea:focus, select:focus {
   align-self: center;
 }
 .btn-fermer-slide:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 
 /* ============================================================
@@ -518,15 +614,15 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   gap: 12px;
   padding: 12px 16px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   cursor: pointer;
   transition: all 0.2s;
   font-family: 'Inter', sans-serif;
   font-size: calc(var(--slide-font-size, 18px) * 0.9);
 }
 .quiz-reponse:hover {
-  background: var(--bg-hover);
-  border-color: var(--border-hover);
+  background: var(--bg-accent);
+  border-color: var(--border-eau-hover);
 }
 .quiz-reponse .lettre {
   font-weight: 600;
@@ -538,16 +634,16 @@ input:focus, textarea:focus, select:focus {
   font-size: 18px;
 }
 .quiz-reponse.correcte {
-  border-color: var(--text);
-  background: var(--bg-active);
+  border-color: var(--accent);
+  background: var(--bg-accent);
 }
 .quiz-reponse.incorrecte {
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
   background: var(--bg-hover);
 }
 .quiz-reponse.selectionnee {
-  border-color: var(--text);
-  background: var(--bg-active);
+  border-color: var(--accent);
+  background: var(--bg-accent);
 }
 .quiz-feedback {
   margin-top: 16px;
@@ -560,7 +656,7 @@ input:focus, textarea:focus, select:focus {
   display: block;
 }
 .bonne-reponse {
-  color: var(--text);
+  color: var(--accent);
 }
 .mauvaise-reponse {
   color: var(--text-secondary);
@@ -581,7 +677,7 @@ input:focus, textarea:focus, select:focus {
   min-height: 100px;
   padding: 12px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   color: var(--text);
   font-family: 'Inter', sans-serif;
   font-size: calc(var(--slide-font-size, 18px) * 0.9);
@@ -589,14 +685,14 @@ input:focus, textarea:focus, select:focus {
   outline: none;
 }
 .open-content textarea:focus {
-  border-color: var(--text);
+  border-color: var(--accent);
 }
 .btn-envoyer-reponse {
   margin-top: 12px;
   padding: 10px 24px;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   cursor: pointer;
@@ -604,9 +700,9 @@ input:focus, textarea:focus, select:focus {
   align-self: flex-start;
 }
 .btn-envoyer-reponse:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .btn-envoyer-reponse:disabled {
   opacity: 0.5;
@@ -614,7 +710,7 @@ input:focus, textarea:focus, select:focus {
 }
 .reponse-confirmation {
   margin-top: 12px;
-  color: var(--text);
+  color: var(--accent);
   font-family: 'Inter', sans-serif;
   font-size: calc(var(--slide-font-size, 18px) * 0.9);
   display: none;
@@ -640,10 +736,10 @@ input:focus, textarea:focus, select:focus {
   justify-content: center;
 }
 .retenir-mot {
-  background: var(--bg-hover);
+  background: var(--bg-soft);
   color: var(--text);
   padding: 8px 20px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: 'Inter', sans-serif;
   font-size: calc(var(--slide-font-size, 18px) * 0.9);
   font-weight: 500;
@@ -663,8 +759,8 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  border: 1px solid var(--border);
-  background: var(--bg-hover);
+  border: 1px solid var(--border-eau);
+  background: var(--bg-soft);
   cursor: default;
 }
 .ordre-content .ordre-item .ordre-num {
@@ -684,7 +780,7 @@ input:focus, textarea:focus, select:focus {
 }
 .ordre-content .ordre-item .ordre-boutons button {
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   color: var(--text-secondary);
   cursor: pointer;
   padding: 2px 10px;
@@ -693,9 +789,9 @@ input:focus, textarea:focus, select:focus {
   font-family: 'Inter', sans-serif;
 }
 .ordre-content .ordre-item .ordre-boutons button:hover {
-  background: var(--bg-active);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .ordre-content .ordre-item .ordre-boutons button:disabled {
   opacity: 0.3;
@@ -706,7 +802,7 @@ input:focus, textarea:focus, select:focus {
   padding: 10px 32px;
   background: transparent;
   color: var(--text-secondary);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
   cursor: pointer;
@@ -714,9 +810,9 @@ input:focus, textarea:focus, select:focus {
   align-self: center;
 }
 .ordre-content .btn-valider-ordre:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .ordre-content .btn-valider-ordre:disabled {
   opacity: 0.5;
@@ -729,7 +825,7 @@ input:focus, textarea:focus, select:focus {
   text-align: center;
 }
 .ordre-content .ordre-resultat.correct {
-  color: var(--text);
+  color: var(--accent);
 }
 .ordre-content .ordre-resultat.incorrect {
   color: var(--text-secondary);
@@ -767,7 +863,7 @@ input:focus, textarea:focus, select:focus {
   align-items: center;
   justify-content: center;
   padding: 30px 24px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   background: var(--bg);
   text-align: center;
   font-family: 'Merriweather', serif;
@@ -801,7 +897,7 @@ input:focus, textarea:focus, select:focus {
 .carte-content .carte-boutons button {
   padding: 10px 28px;
   background: transparent;
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   color: var(--text-secondary);
   font-family: 'Inter', sans-serif;
   font-size: 14px;
@@ -809,20 +905,20 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.2s;
 }
 .carte-content .carte-boutons button:hover {
-  background: var(--bg-hover);
+  background: var(--bg-accent);
   color: var(--text);
-  border-color: var(--border-hover);
+  border-color: var(--border-eau-hover);
 }
 .carte-content .carte-boutons button:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 .carte-content .carte-boutons .btn-trouve {
-  border-color: var(--text);
-  color: var(--text);
+  border-color: var(--accent);
+  color: var(--accent);
 }
 .carte-content .carte-boutons .btn-trouve:hover {
-  background: var(--bg-active);
+  background: var(--bg-accent);
 }
 .carte-content .carte-resultat {
   margin-top: 12px;
@@ -855,10 +951,10 @@ input:focus, textarea:focus, select:focus {
   transition: all 0.2s;
 }
 .note-toggle:hover {
-  color: var(--text);
+  color: var(--accent);
 }
 .note-toggle.active {
-  color: var(--text);
+  color: var(--accent);
 }
 .note-area {
   position: absolute;
@@ -866,7 +962,7 @@ input:focus, textarea:focus, select:focus {
   left: 16px;
   right: 16px;
   background: var(--bg);
-  border: 1px solid var(--border);
+  border: 1px solid var(--border-eau);
   padding: 12px 16px;
   display: none;
   z-index: 10;
@@ -898,356 +994,13 @@ input:focus, textarea:focus, select:focus {
   font-family: 'Inter', sans-serif;
 }
 .note-area .note-indicator.saved {
-  color: var(--text);
-}
-
-/* ============================================================
-   QCF4 CORAN - POLICES (CHEMIN CORRIGÉ POUR GitHub Pages)
-   ============================================================ */
-
-@font-face {
-    font-family: 'QCF4_Hafs_01';
-    src: url('fonts/QCF4_Hafs_01_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_02';
-    src: url('fonts/QCF4_Hafs_02_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_03';
-    src: url('fonts/QCF4_Hafs_03_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_04';
-    src: url('fonts/QCF4_Hafs_04_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_05';
-    src: url('fonts/QCF4_Hafs_05_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_06';
-    src: url('fonts/QCF4_Hafs_06_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_07';
-    src: url('fonts/QCF4_Hafs_07_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_08';
-    src: url('fonts/QCF4_Hafs_08_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_09';
-    src: url('fonts/QCF4_Hafs_09_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_10';
-    src: url('fonts/QCF4_Hafs_10_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_11';
-    src: url('fonts/QCF4_Hafs_11_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_12';
-    src: url('fonts/QCF4_Hafs_12_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_13';
-    src: url('fonts/QCF4_Hafs_13_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_14';
-    src: url('fonts/QCF4_Hafs_14_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_15';
-    src: url('fonts/QCF4_Hafs_15_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_16';
-    src: url('fonts/QCF4_Hafs_16_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_17';
-    src: url('fonts/QCF4_Hafs_17_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_18';
-    src: url('fonts/QCF4_Hafs_18_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_19';
-    src: url('fonts/QCF4_Hafs_19_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_20';
-    src: url('fonts/QCF4_Hafs_20_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_21';
-    src: url('fonts/QCF4_Hafs_21_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_22';
-    src: url('fonts/QCF4_Hafs_22_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_23';
-    src: url('fonts/QCF4_Hafs_23_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_24';
-    src: url('fonts/QCF4_Hafs_24_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_25';
-    src: url('fonts/QCF4_Hafs_25_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_26';
-    src: url('fonts/QCF4_Hafs_26_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_27';
-    src: url('fonts/QCF4_Hafs_27_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_28';
-    src: url('fonts/QCF4_Hafs_28_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_29';
-    src: url('fonts/QCF4_Hafs_29_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_30';
-    src: url('fonts/QCF4_Hafs_30_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_31';
-    src: url('fonts/QCF4_Hafs_31_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_32';
-    src: url('fonts/QCF4_Hafs_32_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_33';
-    src: url('fonts/QCF4_Hafs_33_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_34';
-    src: url('fonts/QCF4_Hafs_34_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_35';
-    src: url('fonts/QCF4_Hafs_35_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_36';
-    src: url('fonts/QCF4_Hafs_36_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_37';
-    src: url('fonts/QCF4_Hafs_37_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_38';
-    src: url('fonts/QCF4_Hafs_38_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_39';
-    src: url('fonts/QCF4_Hafs_39_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_40';
-    src: url('fonts/QCF4_Hafs_40_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_41';
-    src: url('fonts/QCF4_Hafs_41_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_42';
-    src: url('fonts/QCF4_Hafs_42_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_43';
-    src: url('fonts/QCF4_Hafs_43_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_44';
-    src: url('fonts/QCF4_Hafs_44_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_45';
-    src: url('fonts/QCF4_Hafs_45_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_46';
-    src: url('fonts/QCF4_Hafs_46_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_Hafs_47';
-    src: url('fonts/QCF4_Hafs_47_W.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
-}
-@font-face {
-    font-family: 'QCF4_QBSML';
-    src: url('fonts/QCF4_QBSML.woff2') format('woff2');
-    font-weight: normal;
-    font-style: normal;
-    font-display: swap;
+  color: var(--accent);
 }
 
 /* ============================================================
    APPLICATION AUTO DE JANNA LT BOLD À TOUT TEXTE ARABE
-   Détection par attributs ajoutés automatiquement
    ============================================================ */
 
-/* Tout élément avec lang="ar" ou dir="rtl" (ajoutés par JS) */
 [lang="ar"],
 [dir="rtl"],
 [lang="ar"] *,
@@ -1255,11 +1008,10 @@ input:focus, textarea:focus, select:focus {
     font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
     direction: rtl !important;
     unicode-bidi: embed !important;
-       font-size: 1.6em !important;
-       color: #696969 !important; 
+    font-size: 1.6em !important;
+    color: #696969 !important;
 }
 
-/* Pour les paragraphes et titres contenant de l'arabe */
 [lang="ar"] p,
 [dir="rtl"] p,
 [lang="ar"] h1, [lang="ar"] h2, [lang="ar"] h3,
@@ -1268,7 +1020,6 @@ input:focus, textarea:focus, select:focus {
     direction: rtl !important;
 }
 
-/* Pour les spans et divs qui contiennent de l'arabe */
 span[lang="ar"],
 span[dir="rtl"],
 div[lang="ar"],
@@ -1281,7 +1032,6 @@ div[dir="rtl"] {
    FORCER JANNA LT BOLD SUR TOUT TEXTE ARABE
    ============================================================ */
 
-/* Force la police sur TOUS les éléments contenant du texte arabe */
 [lang="ar"],
 [dir="rtl"],
 [lang="ar"] *,
@@ -1291,7 +1041,6 @@ div[dir="rtl"] {
     unicode-bidi: embed !important;
 }
 
-/* Spécifiquement pour les paragraphes */
 [lang="ar"] p,
 [dir="rtl"] p,
 p[lang="ar"],
@@ -1299,14 +1048,12 @@ p[dir="rtl"] {
     font-family: 'Janna LT Bold', 'Traditional Arabic', 'Arial', serif !important;
 }
 
-/* Spécifiquement pour le contenu des slides */
 .slide-content [lang="ar"],
 .slide-content [dir="rtl"],
 .slide-content [lang="ar"] *,
 .slide-content [dir="rtl"] * {
     font-family: 'Janna LT Bold', 'Traditional Arabic', 'Arial', serif !important;
 }
-
 
 /* ============================================================
    TABLEAUX AVEC CASES ARRONDIES
@@ -1339,6 +1086,7 @@ p[dir="rtl"] {
 [lang="ar"], [dir="rtl"] {
     text-align: center !important;
 }
+
 .memo-content .retenir-label {
   font-size: calc(var(--slide-font-size, 18px) * 0.7);
   font-weight: 500;
