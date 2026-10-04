@@ -206,12 +206,19 @@
       border-top: 1px solid #e0e0e0;
     }
 
-    .feuille-chapitre .corps-2col {
-      column-count: 2;
-      column-gap: 20px;
+        .feuille-chapitre .corps-2col {
+      /* Équivalence stricte avec l'impression A4 :
+         A4 210mm - marges 1.5cm×2 = 180mm utile
+         2 colonnes + gap 14px → ~88mm/colonne ≈ 333px */
+      column-width: 333px;
+      column-gap: 14px;
       column-rule: 1px solid #e0dccf;
-      font-size: 10.5pt;
-      line-height: 1.35;
+      font-size: 10pt;
+      line-height: 1.3;
+      /* On empêche le conteneur de dépasser la largeur A4 utile */
+      max-width: 680px;
+      margin-left: auto;
+      margin-right: auto;
     }
 
     .feuille-chapitre .titre-exercices {
@@ -439,9 +446,11 @@
     }
 
     /* Responsive : sur mobile, on repasse en 1 colonne */
-    @media (max-width: 768px) {
+        @media (max-width: 768px) {
       .feuille-chapitre .corps-2col {
+        column-width: auto;
         column-count: 1;
+        max-width: 100%;
       }
       .feuille-chapitre .relier-lignes-grid { gap: 20px; }
     }
