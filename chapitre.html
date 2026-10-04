@@ -485,7 +485,54 @@
     }
 
     /* ============================================================ */
-    /* ZONE BAS DU CHAPITRE (nav + boutons)                        */
+    /* BOUTONS D'ACTION DANS LA COLONNE LATÉRALE                    */
+    /* (blanc beige très léger, aspect papier ancien)               */
+    /* ============================================================ */
+    .bloc-actions-chapitre {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .btn-action-lateral {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 100%;
+      padding: 14px 18px;
+      font-size: 14px;
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      background: #faf6ee; /* blanc beige très léger */
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      cursor: pointer;
+      color: var(--text-secondary);
+      transition: all 0.2s;
+      text-align: center;
+      text-decoration: none;
+      box-sizing: border-box;
+    }
+    .btn-action-lateral:hover {
+      background: #f3ecdd;
+      border-color: var(--border-hover);
+      color: var(--text);
+    }
+    .btn-action-lateral.btn-elearning {
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+      background: #f6f3e9;
+    }
+    .btn-action-lateral.btn-elearning:hover {
+      background: #2d6a4f;
+      color: #fff;
+      border-color: #2d6a4f;
+    }
+
+    /* ============================================================ */
+    /* ZONE BAS DU CHAPITRE (nav)                                   */
     /* ============================================================ */
     .zone-bas-chapitre {
       margin-top: 24px;
@@ -535,47 +582,6 @@
     .nav-bas-chapitre .nav-suivant { text-align: right; }
     .nav-bas-chapitre .nav-suivant .nav-label,
     .nav-bas-chapitre .nav-suivant .nav-titre { text-align: right; }
-
-    .actions-bas-chapitre {
-      display: flex;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .btn-action-bas {
-      flex: 1;
-      min-width: 200px;
-      padding: 14px 20px;
-      font-size: 14px;
-      font-family: 'Roboto', sans-serif;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      background: transparent;
-      border: 1px solid var(--border);
-      border-radius: 4px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      transition: all 0.2s;
-      text-align: center;
-      text-decoration: none;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-    }
-    .btn-action-bas:hover {
-      background: var(--bg-hover);
-      border-color: var(--border-hover);
-      color: var(--text);
-    }
-    .btn-action-bas.btn-elearning {
-      border-color: #2d6a4f;
-      color: #2d6a4f;
-    }
-    .btn-action-bas.btn-elearning:hover {
-      background: #2d6a4f;
-      color: #fff;
-      border-color: #2d6a4f;
-    }
 
     /* ============================================================ */
     /* COLONNE LATÉRALE                                             */
@@ -1918,7 +1924,7 @@
         var estActuel = (cat === chapitreActuel.categorie);
 
         html += '<a class="carte-livret-mini' + (estActuel ? ' actuel' : '') + '" ';
-        html += '   href="/medit/présentation.html?cat=' + encodeURIComponent(cat) + '" ';
+        html += '   href="/medit/livret.html?cat=' + encodeURIComponent(cat) + '" ';
         html += '   title="Voir les chapitres du livret ' + echapperHtml(cat) + '">';
         html += '  <span class="badge-niveau">Niv. ' + info.niveau + '</span>';
         html += '  <span class="couleur-pastille" style="background: ' + couleur + ';"></span>';
@@ -1936,7 +1942,7 @@
     }
 
     // ============================================================
-    // ZONE BAS DU CHAPITRE (nav + boutons)
+    // ZONE BAS DU CHAPITRE (nav uniquement, plus de boutons)
     // ============================================================
     function construireZoneBasChapitre(chapitre) {
       var nav = construireNavDansLivret(chapitre);
@@ -1968,19 +1974,29 @@
       }
       html += '</div>';
 
-      html += '<div class="actions-bas-chapitre">';
-      html += '  <button class="btn-action-bas btn-imprimer" onclick="imprimerChapitre(\'' +
+      html += '</div>';
+
+      return html;
+    }
+
+    // ============================================================
+    // BLOC ACTIONS (boutons imprimer + quiz) — pour la colonne latérale
+    // ============================================================
+    function construireBlocActions(chapitre) {
+      var html = '';
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre"><span class="icone">⚙</span> Actions</div>';
+      html += '  <div class="bloc-actions-chapitre">';
+      html += '    <button class="btn-action-lateral btn-imprimer" onclick="imprimerChapitre(\'' +
               chapitre.id + '\', \'' +
               (chapitre.titre || '').replace(/'/g, "\\'") + '\', chapitresData)">' +
-              'Imprimer le textes et le quiz' +
+              'Imprimer le texte et le quiz' +
               '</button>';
-      html += '  <a class="btn-action-bas btn-elearning" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
+      html += '    <a class="btn-action-lateral btn-elearning" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
               'Passer le quiz en ligne' +
               '</a>';
+      html += '  </div>';
       html += '</div>';
-
-      html += '</div>';
-
       return html;
     }
 
@@ -1992,6 +2008,9 @@
       var livretInfo = livretsData[chapitre.categorie] || {};
 
       var html = '';
+
+      // ---- Actions (boutons remontés en haut) ----
+      html += construireBlocActions(chapitre);
 
       var niveau = chapitre.niveau || 0;
       var tempsLecture = chapitre._tempsLecture || 1;
@@ -2041,7 +2060,7 @@
 
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
-        html += '  <a class="encart-livret" href="/medit/présentation.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
+        html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
         html += '    <div class="mini-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
         html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
         html += '      <div class="contenu-couv">';
