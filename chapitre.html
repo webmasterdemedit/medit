@@ -39,7 +39,7 @@
       border-top: 1px solid var(--border);
     }
     .zone-bas-page .bloc-bas {
-      margin-bottom: 40px;
+      margin-bottom: 48px;
     }
     .zone-bas-page .bloc-bas:last-child {
       margin-bottom: 0;
@@ -711,7 +711,7 @@
       flex-shrink: 0;
     }
 
-    /* Encart livret — avec VRAIES proportions de couverture 240×380 */
+    /* Encart livret — couverture au format 110×175 */
     .encart-livret {
       display: flex;
       gap: 14px;
@@ -724,7 +724,6 @@
     }
     .encart-livret:hover { border-color: var(--border-hover); }
 
-    /* Couverture format réel ~110×175 (ratio 240/380 = 0.63) */
     .couverture-vraie {
       flex-shrink: 0;
       width: 110px;
@@ -946,7 +945,6 @@
       overflow: hidden;
       text-decoration: none;
       color: #1a1a1a;
-      background: var(--bg);
     }
     .carte-couverture:hover {
       transform: translateY(-4px);
@@ -1050,7 +1048,6 @@
       width: 0%;
     }
 
-    /* Badge "Actuel" sur la couverture du livret en cours */
     .carte-couverture.actuelle {
       box-shadow: 0 0 0 2px var(--text);
     }
@@ -1069,29 +1066,88 @@
       z-index: 4;
     }
 
-    /* Titre de thème (dans bloc du bas) */
-    .titre-theme-bas {
-      font-family: 'Roboto', sans-serif;
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-muted);
-      text-transform: uppercase;
-      letter-spacing: 1.2px;
-      margin: 20px 0 10px;
-      padding-bottom: 5px;
-      border-bottom: 1px dashed var(--border);
+    /* ============================================================ */
+    /* GRILLE DE THÈMES (gros boutons arrondis)                     */
+    /* ============================================================ */
+    .grille-themes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 16px;
+    }
+
+    .btn-theme-gros {
       display: flex;
       align-items: center;
-      gap: 8px;
-    }
-    .titre-theme-bas:first-child { margin-top: 0; }
-    .titre-theme-bas .theme-actuel-marqueur {
-      font-size: 9px;
+      gap: 14px;
+      padding: 20px 22px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      text-decoration: none;
       color: var(--text);
-      text-transform: none;
-      letter-spacing: 0.3px;
+      font-family: 'Roboto', sans-serif;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: left;
+      box-sizing: border-box;
+      min-height: 78px;
+    }
+    .btn-theme-gros:hover {
+      transform: translateY(-2px);
+      border-color: var(--border-hover);
+      background: var(--bg-hover);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+    }
+    .btn-theme-gros:active { transform: scale(0.98); }
+
+    .btn-theme-gros.actif {
+      border-color: var(--text);
+      background: var(--bg-hover);
+      box-shadow: 0 0 0 2px var(--text);
+    }
+
+    .btn-theme-gros .theme-pastille {
+      flex-shrink: 0;
+      width: 38px;
+      height: 38px;
+      border-radius: 50%;
+      border: 1px solid rgba(0, 0, 0, 0.08);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #fff;
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 0;
+      text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-theme-gros .theme-infos {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .btn-theme-gros .theme-nom {
+      font-family: 'Georgia', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.2;
+      letter-spacing: 0.2px;
+      word-break: break-word;
+    }
+    .btn-theme-gros .theme-compteur {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      color: var(--text-muted);
       font-weight: 400;
-      font-style: italic;
+    }
+    .btn-theme-gros.actif .theme-compteur {
+      color: var(--text-secondary);
     }
 
     /* ============================================================ */
@@ -1181,6 +1237,18 @@
       .couverture-vraie .titre-couv { font-size: 10px; }
       .couverture-vraie .sous-titre-couv { font-size: 6px; }
       .couverture-vraie .auteur-couv { font-size: 5px; }
+
+      .grille-themes {
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 12px;
+      }
+      .btn-theme-gros {
+        padding: 16px 18px;
+        min-height: 68px;
+      }
+      .btn-theme-gros .theme-pastille { width: 34px; height: 34px; font-size: 14px; }
+      .btn-theme-gros .theme-nom { font-size: 15px; }
+      .btn-theme-gros .theme-compteur { font-size: 11px; }
     }
   </style>
 
@@ -1212,7 +1280,6 @@
 
     <div class="zone-basse-mobile" id="zoneBasseMobile"></div>
 
-    <!-- ✅ NOUVEAU : Blocs en bas de page (pleine largeur) -->
     <div class="zone-bas-page" id="zoneBasPage"></div>
 
     <div class="devise">
@@ -1318,6 +1385,13 @@
         var mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
         return mois[d.getMonth()] + ' ' + d.getFullYear();
       } catch(e) { return ''; }
+    }
+
+    // Fonction utilitaire : couleur d'une lettre d'après le nom
+    function initialeTheme(nom) {
+      if (!nom) return '?';
+      var premier = nom.trim().charAt(0).toUpperCase();
+      return premier || '?';
     }
 
     // ============================================================
@@ -2089,8 +2163,7 @@
     }
 
     // ============================================================
-    // COUVERTURE RÉUTILISABLE (pour blocs en bas)
-    // Mêmes proportions que mes-livrets.html
+    // COUVERTURE RÉUTILISABLE (corrigée : applique la couleur)
     // ============================================================
     function construireCouvertureHtml(livret, options) {
       options = options || {};
@@ -2107,8 +2180,13 @@
       var tag = estActuel ? 'div' : 'a';
       var attrs = estActuel ? '' : ' href="' + lien + '" title="' + echapperHtml(livret.titre) + '"';
 
+      // ✅ Correction : couleur de fond appliquée
+      var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
+
       var html = '';
-      html += '<' + tag + ' class="carte-couverture' + (estActuel ? ' actuelle' : '') + '"' + attrs + '>';
+      html += '<' + tag + ' class="carte-couverture' + (estActuel ? ' actuelle' : '') + '"'
+            + ' style="' + styleInline + '"'
+            + attrs + '>';
       html += '  <span class="badge-niveau">Niv. ' + niveau + '</span>';
       html += '  <div class="contenu-livret">';
       html += '    <div class="titre-wrapper">';
@@ -2128,10 +2206,8 @@
     }
 
     // ============================================================
-    // BLOCS DU BAS DE PAGE
+    // BLOC "AUTRES LIVRETS DU THÈME"
     // ============================================================
-
-    // ---- Bloc "Autres livrets du thème" ----
     function construireBlocAutresLivretsMemeTheme(chapitre) {
       if (!chapitre.categorie) return '';
       var livretMeta = livretsData[chapitre.categorie] || {};
@@ -2173,12 +2249,14 @@
       return html;
     }
 
-    // ---- Bloc "Autres thèmes et livrets" ----
-    function construireBlocAutresThemesEtLivrets(chapitre) {
-      if (!chapitre.categorie) return '';
+    // ============================================================
+    // BLOC "LES THÈMES" (gros boutons arrondis)
+    // ============================================================
+    function construireBlocThemes(chapitre) {
       var livretMeta = livretsData[chapitre.categorie] || {};
       var themeActuel = (livretMeta.theme || '').trim();
 
+      // Regrouper les livrets par thème
       var parTheme = {};
       for (var titre in livretsData) {
         var meta = livretsData[titre];
@@ -2186,22 +2264,15 @@
         if (!parTheme[t]) parTheme[t] = [];
         parTheme[t].push({
           titre: titre,
-          couleur: meta.couleur || '#2d6a4f',
-          sousTitre: meta.sousTitre || '',
-          auteur: meta.auteur || '',
-          date: meta.date || '',
-          niveau: meta.niveau || 1,
-          pourcentage: 0
+          couleur: meta.couleur || '#2d6a4f'
         });
       }
 
-      for (var t in parTheme) {
-        parTheme[t].sort(function(a, b) {
-          return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
-        });
-      }
+      var themes = Object.keys(parTheme);
+      if (themes.length === 0) return '';
 
-      var ordreThemes = Object.keys(parTheme).sort(function(a, b) {
+      // Ordre : thème actuel en premier, puis alphabétique
+      themes.sort(function(a, b) {
         var aEstActuel = (a === themeActuel);
         var bEstActuel = (b === themeActuel);
         if (aEstActuel && !bEstActuel) return -1;
@@ -2209,43 +2280,43 @@
         return a.localeCompare(b, 'fr', { sensitivity: 'base' });
       });
 
-      if (ordreThemes.length === 0) return '';
-
       var html = '';
       html += '<div class="bloc-bas">';
-      html += '  <div class="bloc-bas-titre">Les autres thèmes et livrets</div>';
-      html += '  <div class="bloc-bas-sous-titre">Parcourez l\'ensemble de nos collections</div>';
+      html += '  <div class="bloc-bas-titre">Explorer par thème</div>';
+      html += '  <div class="bloc-bas-sous-titre">' + themes.length + ' thème(s) disponible(s)</div>';
+      html += '  <div class="grille-themes">';
 
-      ordreThemes.forEach(function(nomTheme) {
+      themes.forEach(function(nomTheme) {
         var livrets = parTheme[nomTheme];
-        if (!livrets || livrets.length === 0) return;
+        var nbLivrets = livrets.length;
+        var estActif = (nomTheme === themeActuel);
+        // Couleur : première couleur du thème
+        var couleurTheme = (livrets[0] && livrets[0].couleur) || '#2d6a4f';
+        var initiale = initialeTheme(nomTheme);
 
-        var estThemeActuel = (nomTheme === themeActuel);
-
-        html += '<div class="titre-theme-bas">';
-        html += echapperHtml(nomTheme);
-        if (estThemeActuel) {
-          html += ' <span class="theme-actuel-marqueur">— thème en cours</span>';
-        }
-        html += '</div>';
-
-        html += '<div class="grille-couvertures" style="margin-bottom:8px;">';
-        livrets.forEach(function(l) {
-          var estActuel = (l.titre === chapitre.categorie);
-          html += construireCouvertureHtml(l, { actuel: estActuel });
-        });
-        html += '</div>';
+        html += '<a class="btn-theme-gros' + (estActif ? ' actif' : '') + '" '
+              + 'href="/medit/livrets.html?theme=' + encodeURIComponent(nomTheme) + '" '
+              + 'title="Voir les livrets du thème ' + echapperHtml(nomTheme) + '">';
+        html += '  <span class="theme-pastille" style="background: ' + couleurTheme + ';">' + echapperHtml(initiale) + '</span>';
+        html += '  <span class="theme-infos">';
+        html += '    <span class="theme-nom">' + echapperHtml(nomTheme) + '</span>';
+        html += '    <span class="theme-compteur">' + nbLivrets + ' livret' + (nbLivrets > 1 ? 's' : '') + '</span>';
+        html += '  </span>';
+        html += '</a>';
       });
 
+      html += '  </div>';
       html += '</div>';
       return html;
     }
 
-    // ---- Construction de la zone bas de page ----
+    // ============================================================
+    // CONSTRUCTION DE LA ZONE BAS DE PAGE
+    // ============================================================
     function construireZoneBasPage(chapitre) {
       var html = '';
       html += construireBlocAutresLivretsMemeTheme(chapitre);
-      html += construireBlocAutresThemesEtLivrets(chapitre);
+      html += construireBlocThemes(chapitre);
       return html;
     }
 
@@ -2318,14 +2389,12 @@
 
       var html = '';
 
-      // ---- Actions ----
       html += construireBlocActions(chapitre);
 
       var niveau = chapitre.niveau || 0;
       var tempsLecture = chapitre._tempsLecture || 1;
       var dateEcrit = formatDateLongue(chapitre.date);
 
-      // ---- Informations ----
       html += '<div class="bloc-section">';
       html += '  <div class="bloc-titre"><span class="icone"></span> Informations</div>';
       html += '  <div class="bloc-meta-chapitre">';
@@ -2349,7 +2418,6 @@
       html += '  </div>';
       html += '</div>';
 
-      // ---- Vocabulaire ----
       var vocabClean = chapitre._vocabClean || [];
       if (vocabClean.length > 0) {
         html += '<div class="bloc-section">';
@@ -2365,7 +2433,6 @@
         html += '</div>';
       }
 
-      // ---- Encart livret actuel (couverture vraies proportions) ----
       if (chapitre.categorie) {
         var couleur = livretInfo.couleur || '#2d6a4f';
         var sousTitre = livretInfo.sousTitre || '';
@@ -2377,7 +2444,6 @@
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
         html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
 
-        // Couverture au format 110×175 (vraies proportions)
         html += '    <div class="couverture-vraie" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
         html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
         html += '      <div class="contenu-couv">';
@@ -2403,7 +2469,6 @@
         html += '</div>';
       }
 
-      // ---- Dans ce livret ----
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre">';
