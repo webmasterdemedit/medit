@@ -31,6 +31,34 @@
       .colonne-laterale  { grid-column: 2; position: sticky; top: 20px; }
     }
 
+    /* Zone bas de page pleine largeur */
+    .zone-bas-page {
+      grid-column: 1 / -1;
+      margin-top: 48px;
+      padding-top: 32px;
+      border-top: 1px solid var(--border);
+    }
+    .zone-bas-page .bloc-bas {
+      margin-bottom: 40px;
+    }
+    .zone-bas-page .bloc-bas:last-child {
+      margin-bottom: 0;
+    }
+    .zone-bas-page .bloc-bas-titre {
+      font-family: 'Georgia', serif;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      letter-spacing: 0.3px;
+    }
+    .zone-bas-page .bloc-bas-sous-titre {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 20px;
+    }
+
     /* ============================================================ */
     /* FIL D'ARIANE                                                 */
     /* ============================================================ */
@@ -77,7 +105,7 @@
     }
 
     /* ============================================================ */
-    /* FEUILLE CHAPITRE — FOND PAPIER ANCIEN TRÈS SUBTIL            */
+    /* FEUILLE CHAPITRE                                             */
     /* ============================================================ */
     .feuille-chapitre,
     .feuille-chapitre * {
@@ -202,7 +230,7 @@
     }
 
     /* ============================================================ */
-    /* EXERCICES DANS LA FEUILLE CHAPITRE                           */
+    /* EXERCICES                                                    */
     /* ============================================================ */
     .feuille-chapitre .exercices-zone {
       margin-top: 24px;
@@ -231,9 +259,7 @@
       break-inside: avoid;
       page-break-inside: avoid;
     }
-    .feuille-chapitre .exo:last-child {
-      margin-bottom: 0;
-    }
+    .feuille-chapitre .exo:last-child { margin-bottom: 0; }
 
     .feuille-chapitre .consigne-exo {
       font-size: 8.5pt;
@@ -388,10 +414,7 @@
     }
     .feuille-chapitre .relier-point.relier-point-partage { border-radius: 0; }
 
-    .feuille-chapitre .bloc-copier {
-      margin-top: 4px;
-      width: 100%;
-    }
+    .feuille-chapitre .bloc-copier { margin-top: 4px; width: 100%; }
 
     .feuille-chapitre .copier-mots {
       text-align: right;
@@ -406,13 +429,11 @@
       display: block;
       margin-bottom: 8px;
     }
-
     .feuille-chapitre .copier-mots .copier-mot {
       display: inline-block;
       white-space: nowrap;
       direction: rtl;
     }
-
     .feuille-chapitre .copier-mots::after {
       content: "";
       position: absolute;
@@ -432,7 +453,7 @@
     }
 
     /* ============================================================ */
-    /* BLOC À RETENIR (sous la feuille, avant nav)                  */
+    /* BLOC À RETENIR                                               */
     /* ============================================================ */
     .bloc-a-retenir {
       margin-top: 24px;
@@ -465,9 +486,7 @@
       position: relative;
       border-bottom: 1px dashed #e8e2d0;
     }
-    .bloc-a-retenir .bloc-a-retenir-liste li:last-child {
-      border-bottom: none;
-    }
+    .bloc-a-retenir .bloc-a-retenir-liste li:last-child { border-bottom: none; }
     .bloc-a-retenir .bloc-a-retenir-liste li::before {
       content: "●";
       position: absolute;
@@ -478,7 +497,7 @@
     }
 
     /* ============================================================ */
-    /* BLOC ACTIONS — BOUTONS DANS LA COLONNE LATÉRALE              */
+    /* BLOC ACTIONS                                                 */
     /* ============================================================ */
     .bloc-actions-chapitre {
       display: flex;
@@ -523,7 +542,7 @@
     }
 
     /* ============================================================ */
-    /* ZONE BAS DU CHAPITRE (bouton quiz AVANT la nav)              */
+    /* ZONE BAS DU CHAPITRE                                         */
     /* ============================================================ */
     .zone-bas-chapitre {
       margin-top: 24px;
@@ -692,11 +711,12 @@
       flex-shrink: 0;
     }
 
+    /* Encart livret — avec VRAIES proportions de couverture 240×380 */
     .encart-livret {
       display: flex;
-      gap: 12px;
-      align-items: stretch;
-      padding: 12px;
+      gap: 14px;
+      align-items: flex-start;
+      padding: 14px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
       text-decoration: none;
@@ -704,58 +724,118 @@
     }
     .encart-livret:hover { border-color: var(--border-hover); }
 
-    .encart-livret .mini-couverture {
+    /* Couverture format réel ~110×175 (ratio 240/380 = 0.63) */
+    .couverture-vraie {
       flex-shrink: 0;
-      width: 70px;
+      width: 110px;
+      height: 175px;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
       align-items: center;
+      justify-content: center;
       text-align: center;
-      padding: 8px 6px;
+      padding: 0;
       color: #1a1a1a;
       position: relative;
       overflow: hidden;
       border: 1px solid var(--border);
+      box-sizing: border-box;
     }
-    .encart-livret .mini-couverture .badge-niveau-couv {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      z-index: 3;
-      padding: 1px 5px;
+    .couverture-vraie .contenu-couv {
+      position: relative;
+      z-index: 2;
+      padding: 12px 10px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+    .couverture-vraie .titre-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 16px;
+    }
+    .couverture-vraie .auteur-couv {
+      font-size: 6px;
+      font-weight: 300;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      color: rgba(26, 26, 26, 0.5);
+    }
+    .couverture-vraie .titre-couv {
+      font-family: 'Georgia', serif;
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1.15;
+      color: #1a1a1a;
+      margin-bottom: 0;
+      max-width: 95%;
+    }
+    .couverture-vraie .sous-titre-couv {
       font-size: 7px;
       font-weight: 500;
+      opacity: 0.85;
+      margin-top: 2px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.25;
+      max-width: 95%;
+    }
+    .couverture-vraie .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding-bottom: 4px;
+    }
+    .couverture-vraie .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 6px;
+      letter-spacing: 0.6px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+    .couverture-vraie .edition-date {
+      font-size: 6px;
+      opacity: 1;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
+    }
+    .couverture-vraie .badge-niveau-couv {
+      position: absolute;
+      top: 6px;
+      right: 6px;
+      z-index: 3;
+      padding: 1px 6px;
+      font-size: 7px;
+      font-weight: 500;
+      letter-spacing: 0.3px;
       color: rgba(26, 26, 26, 0.85);
       border: 1px solid rgba(255, 255, 255, 0.15);
       background: rgba(255, 255, 255, 0.70);
     }
-    .encart-livret .mini-couverture .contenu-couv {
-      position: relative;
-      z-index: 2;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
+    .couverture-vraie .progression-couv {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
+    }
+    .couverture-vraie .progression-couv .barre {
       height: 100%;
-      width: 100%;
-      padding-top: 12px;
-    }
-    .encart-livret .mini-couverture .titre-couv {
-      font-family: 'Georgia', serif;
-      font-size: 9px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: #1a1a1a;
-      margin-bottom: 2px;
-    }
-    .encart-livret .mini-couverture .edition-nom {
-      font-weight: 700;
-      font-style: italic;
-      font-size: 6px;
-      letter-spacing: 0.5px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
     }
 
     .encart-livret .encart-texte {
@@ -775,7 +855,7 @@
     }
     .encart-livret .encart-nom-livret {
       font-family: 'Georgia', serif;
-      font-size: 15px;
+      font-size: 16px;
       font-weight: 700;
       color: var(--text);
       line-height: 1.25;
@@ -784,13 +864,14 @@
       font-family: 'Roboto', sans-serif;
       font-size: 11px;
       color: var(--text-secondary);
-      margin-top: 4px;
+      margin-top: 6px;
       display: inline-flex;
       align-items: center;
       gap: 4px;
     }
     .encart-livret:hover .encart-cta { color: var(--text); }
 
+    /* Liste chapitres */
     .liste-chapitres {
       display: flex;
       flex-direction: column;
@@ -839,71 +920,144 @@
       font-weight: 600;
     }
 
-    .galerie-livrets {
+    /* ============================================================ */
+    /* GRILLE DE COUVERTURES (blocs en bas de page)                 */
+    /* Mêmes proportions que mes-livrets.html (240×380 → ici 130×205) */
+    /* ============================================================ */
+    .grille-couvertures {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: 18px;
+    }
+
+    .carte-couverture {
+      position: relative;
+      border-radius: 0;
+      padding: 0;
+      height: 205px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
-    }
-    .carte-livret-mini {
-      display: flex;
       align-items: center;
-      gap: 10px;
-      padding: 10px 12px;
-      color: #1a1a1a;
-      position: relative;
-      border: 1px solid var(--border);
-      text-decoration: none;
-      transition: all 0.2s;
+      justify-content: center;
+      text-align: center;
       cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid var(--border);
+      overflow: hidden;
+      text-decoration: none;
+      color: #1a1a1a;
+      background: var(--bg);
     }
-    .carte-livret-mini:hover {
-      transform: translateX(2px);
+    .carte-couverture:hover {
+      transform: translateY(-4px);
       border-color: var(--text);
     }
-    .carte-livret-mini .badge-niveau {
+    .carte-couverture:active { transform: scale(0.97); }
+
+    .carte-couverture .contenu-livret {
+      position: relative;
+      z-index: 2;
+      padding: 14px 12px;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      box-sizing: border-box;
+    }
+    .carte-couverture .titre-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
+      margin-top: 18px;
+    }
+    .carte-couverture .auteur-livret {
+      font-size: 8px;
+      font-weight: 300;
+      letter-spacing: 1.4px;
+      text-transform: uppercase;
+      opacity: 0.6;
+      color: rgba(26, 26, 26, 0.5);
+    }
+    .carte-couverture .titre-livret {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.2;
+      max-width: 95%;
+      color: #1a1a1a;
+      text-align: center;
+    }
+    .carte-couverture .sous-titre-livret {
+      font-size: 9px;
+      font-weight: 500;
+      opacity: 0.85;
+      margin-top: 3px;
+      color: rgba(26, 26, 26, 0.8);
+      line-height: 1.25;
+      text-align: center;
+      max-width: 95%;
+    }
+    .carte-couverture .edition-info {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      padding-bottom: 6px;
+    }
+    .carte-couverture .edition-nom {
+      font-weight: 700;
+      font-style: italic;
+      font-size: 7px;
+      letter-spacing: 0.8px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      color: rgba(26, 26, 26, 0.6);
+    }
+    .carte-couverture .edition-date {
+      font-size: 7px;
+      color: rgba(26, 26, 26, 0.7);
+      font-weight: 500;
+    }
+    .carte-couverture .badge-niveau {
       position: absolute;
-      top: 6px;
+      top: 8px;
       right: 8px;
-      padding: 1px 6px;
+      z-index: 3;
+      padding: 2px 7px;
       font-size: 8px;
       font-weight: 500;
       color: rgba(26, 26, 26, 0.85);
-      background: rgba(255, 255, 255, 0.70);
       border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.70);
     }
-    .carte-livret-mini .couleur-pastille {
-      flex-shrink: 0;
-      width: 28px;
-      height: 28px;
-      border-radius: 50%;
-      border: 1px solid rgba(0,0,0,0.1);
+    .carte-couverture .progression-livret {
+      position: absolute;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      z-index: 3;
+      height: 2px;
+      background: rgba(255, 255, 255, 0.15);
+      overflow: hidden;
     }
-    .carte-livret-mini .infos-livret {
-      flex: 1;
-      min-width: 0;
+    .carte-couverture .progression-livret .barre {
+      height: 100%;
+      background: rgba(255, 255, 255, 0.60);
+      transition: width 0.6s ease;
+      width: 0%;
     }
-    .carte-livret-mini .titre-livret {
-      font-family: 'Georgia', serif;
-      font-size: 13px;
-      font-weight: 700;
-      line-height: 1.2;
-      color: #1a1a1a;
-      margin-bottom: 2px;
-    }
-    .carte-livret-mini .sous-titre-livret {
-      font-size: 10px;
-      font-weight: 500;
-      opacity: 0.75;
-      color: rgba(26, 26, 26, 0.75);
-      line-height: 1.3;
-    }
-    .carte-livret-mini.actuel {
+
+    /* Badge "Actuel" sur la couverture du livret en cours */
+    .carte-couverture.actuelle {
       box-shadow: 0 0 0 2px var(--text);
     }
-    .carte-livret-mini.actuel::after {
+    .carte-couverture.actuelle::after {
       content: "● Actuel";
       position: absolute;
-      bottom: 4px;
+      bottom: 6px;
       right: 6px;
       font-family: 'Roboto', sans-serif;
       font-size: 8px;
@@ -912,31 +1066,36 @@
       background: rgba(0, 0, 0, 0.55);
       padding: 1px 6px;
       border-radius: 8px;
+      z-index: 4;
     }
 
-    /* ============================================================ */
-    /* NOUVEAUX BLOCS : Thème + autres livrets                      */
-    /* ============================================================ */
-    .bloc-theme-titre {
+    /* Titre de thème (dans bloc du bas) */
+    .titre-theme-bas {
       font-family: 'Roboto', sans-serif;
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 600;
       color: var(--text-muted);
       text-transform: uppercase;
       letter-spacing: 1.2px;
-      margin: 12px 0 6px;
-      padding-bottom: 4px;
+      margin: 20px 0 10px;
+      padding-bottom: 5px;
       border-bottom: 1px dashed var(--border);
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .bloc-theme-titre:first-child {
-      margin-top: 0;
-    }
-    .carte-livret-mini.theme-item {
-      padding: 8px 10px;
+    .titre-theme-bas:first-child { margin-top: 0; }
+    .titre-theme-bas .theme-actuel-marqueur {
+      font-size: 9px;
+      color: var(--text);
+      text-transform: none;
+      letter-spacing: 0.3px;
+      font-weight: 400;
+      font-style: italic;
     }
 
     /* ============================================================ */
-    /* BLOCS EN BAS (mobile uniquement)                             */
+    /* ZONE BASSE MOBILE                                            */
     /* ============================================================ */
     .zone-basse-mobile {
       margin-top: 40px;
@@ -1007,6 +1166,21 @@
       .feuille-chapitre .print-img-grand { max-width: 100%; }
       .feuille-chapitre .exo { padding: 10px 10px 8px; }
       .feuille-chapitre .relier-lignes-grid { gap: 30px; }
+
+      .grille-couvertures {
+        grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+        gap: 14px;
+      }
+      .carte-couverture { height: 175px; }
+      .carte-couverture .titre-livret { font-size: 12px; }
+      .carte-couverture .sous-titre-livret { font-size: 8px; }
+      .carte-couverture .auteur-livret { font-size: 7px; }
+      .carte-couverture .badge-niveau { font-size: 7px; top: 6px; right: 6px; padding: 1px 6px; }
+
+      .couverture-vraie { width: 90px; height: 143px; }
+      .couverture-vraie .titre-couv { font-size: 10px; }
+      .couverture-vraie .sous-titre-couv { font-size: 6px; }
+      .couverture-vraie .auteur-couv { font-size: 5px; }
     }
   </style>
 
@@ -1037,6 +1211,9 @@
     <aside class="colonne-laterale" id="colonneLaterale"></aside>
 
     <div class="zone-basse-mobile" id="zoneBasseMobile"></div>
+
+    <!-- ✅ NOUVEAU : Blocs en bas de page (pleine largeur) -->
+    <div class="zone-bas-page" id="zoneBasPage"></div>
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
@@ -1133,11 +1310,13 @@
       } catch(e) { return ''; }
     }
 
-    function formatDateHeure(date) {
+    function formatDateMoisAnnee(dateStr) {
+      if (!dateStr) return '';
       try {
-        var dateStr = date.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-        var heureStr = date.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
-        return dateStr + ' à ' + heureStr;
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        var mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
+        return mois[d.getMonth()] + ' ' + d.getFullYear();
       } catch(e) { return ''; }
     }
 
@@ -1162,7 +1341,7 @@
     }
 
     // ============================================================
-    // ✅ PARSERS D'EXERCICES (copiés depuis impression.js)
+    // PARSERS D'EXERCICES
     // ============================================================
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -1340,7 +1519,7 @@
     }
 
     // ============================================================
-    // ✅ CONSTRUCTION DES EXERCICES POUR LA FEUILLE CHAPITRE
+    // CONSTRUCTION DES EXERCICES
     // ============================================================
     function construireExercicesPourFeuille(blocsOrdonnes) {
       var html = '';
@@ -1596,7 +1775,7 @@
     }
 
     // ============================================================
-    // ✅ CONSTRUCTION DU HTML DU CHAPITRE (texte + exercices)
+    // CONSTRUCTION DU HTML DU CHAPITRE
     // ============================================================
     function construireHtmlChapitre(chapitre, imagesLivret) {
       imagesLivret = imagesLivret || {};
@@ -1802,7 +1981,7 @@
     }
 
     // ============================================================
-    // BLOC À RETENIR (colonne principale, avant nav)
+    // BLOC À RETENIR
     // ============================================================
     function construireBlocARetenir(chapitre) {
       var aRetenirClean = (chapitre.aRetenir || [])
@@ -1910,74 +2089,55 @@
     }
 
     // ============================================================
-    // GALERIE DE TOUS LES LIVRETS (dépréciée, gardée au cas où)
+    // COUVERTURE RÉUTILISABLE (pour blocs en bas)
+    // Mêmes proportions que mes-livrets.html
     // ============================================================
-    function construireGalerieLivrets(chapitreActuel) {
-      var categoriesUniques = {};
-      chapitresData.forEach(function(c) {
-        var cat = c.categorie || 'Sans catégorie';
-        if (!categoriesUniques[cat]) {
-          categoriesUniques[cat] = {
-            nom: cat,
-            niveau: c.niveau || 1,
-            nbChapitres: 0
-          };
-        }
-        categoriesUniques[cat].nbChapitres++;
-      });
+    function construireCouvertureHtml(livret, options) {
+      options = options || {};
+      var estActuel = !!options.actuel;
+      var lien = options.lien || ('/medit/livret.html?cat=' + encodeURIComponent(livret.titre));
+      var couleur = livret.couleur || '#2d6a4f';
+      var sousTitre = livret.sousTitre || '';
+      var auteur = livret.auteur || '';
+      var date = livret.date || '';
+      var niveau = livret.niveau || 0;
+      var dateFormatee = formatDateMoisAnnee(date);
+      var pourcentage = livret.pourcentage || 0;
 
-      var livretsTries = Object.keys(categoriesUniques).sort(function(a, b) {
-        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
-      });
-
-      if (livretsTries.length === 0) return '';
+      var tag = estActuel ? 'div' : 'a';
+      var attrs = estActuel ? '' : ' href="' + lien + '" title="' + echapperHtml(livret.titre) + '"';
 
       var html = '';
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre">';
-      html += '    <span class="icone">➡</span> Tous nos livrets';
-      html += '    <span class="compteur">' + livretsTries.length + '</span>';
+      html += '<' + tag + ' class="carte-couverture' + (estActuel ? ' actuelle' : '') + '"' + attrs + '>';
+      html += '  <span class="badge-niveau">Niv. ' + niveau + '</span>';
+      html += '  <div class="contenu-livret">';
+      html += '    <div class="titre-wrapper">';
+      if (auteur) html += '      <span class="auteur-livret">' + echapperHtml(auteur) + '</span>';
+      html += '      <span class="titre-livret">' + echapperHtml(livret.titre) + '</span>';
+      if (sousTitre) html += '      <span class="sous-titre-livret">' + echapperHtml(sousTitre) + '</span>';
+      html += '    </div>';
+      html += '    <div class="edition-info">';
+      html += '      <span class="edition-nom">Qiraat Édition</span>';
+      if (dateFormatee) html += '      <span class="edition-date">' + dateFormatee + '</span>';
+      html += '    </div>';
       html += '  </div>';
-      html += '  <div class="galerie-livrets">';
-
-      livretsTries.forEach(function(cat) {
-        var info = categoriesUniques[cat];
-        var livretMeta = livretsData[cat] || {};
-        var couleur = livretMeta.couleur || '#2d6a4f';
-        var sousTitre = livretMeta.sousTitre || '';
-
-        var estActuel = (cat === chapitreActuel.categorie);
-
-        html += '<a class="carte-livret-mini' + (estActuel ? ' actuel' : '') + '" ';
-        html += '   href="/medit/livret.html?cat=' + encodeURIComponent(cat) + '" ';
-        html += '   title="Voir les chapitres du livret ' + echapperHtml(cat) + '">';
-        html += '  <span class="badge-niveau">Niv. ' + info.niveau + '</span>';
-        html += '  <span class="couleur-pastille" style="background: ' + couleur + ';"></span>';
-        html += '  <div class="infos-livret">';
-        html += '    <div class="titre-livret">' + echapperHtml(cat) + '</div>';
-        if (sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(sousTitre) + '</div>';
-        html += '  </div>';
-        html += '</a>';
-      });
-
-      html += '  </div>';
-      html += '</div>';
+      html += '  <div class="progression-livret"><div class="barre" style="width: ' + pourcentage + '%;"></div></div>';
+      html += '</' + tag + '>';
 
       return html;
     }
 
     // ============================================================
-    // ✅ NOUVEAU : AUTRES LIVRETS DU MÊME THÈME
+    // BLOCS DU BAS DE PAGE
     // ============================================================
-    function construireAutresLivretsMemeTheme(chapitre) {
-      if (!chapitre.categorie) return '';
 
-      // Récupérer le thème du livret actuel
+    // ---- Bloc "Autres livrets du thème" ----
+    function construireBlocAutresLivretsMemeTheme(chapitre) {
+      if (!chapitre.categorie) return '';
       var livretMeta = livretsData[chapitre.categorie] || {};
       var themeActuel = (livretMeta.theme || '').trim();
       if (!themeActuel) return '';
 
-      // Trouver tous les livrets qui partagent ce thème (sauf le livret actuel)
       var autresLivrets = [];
       for (var titre in livretsData) {
         if (titre === chapitre.categorie) continue;
@@ -1987,56 +2147,38 @@
             titre: titre,
             couleur: meta.couleur || '#2d6a4f',
             sousTitre: meta.sousTitre || '',
-            niveau: meta.niveau || 1
+            auteur: meta.auteur || '',
+            date: meta.date || '',
+            niveau: meta.niveau || 1,
+            pourcentage: 0
           });
         }
       }
-
       if (autresLivrets.length === 0) return '';
 
-      // Tri alphabétique
       autresLivrets.sort(function(a, b) {
         return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
       });
 
       var html = '';
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre">';
-      html += '    <span class="icone">☰</span> Autres livrets du thème';
-      html += '    <span class="compteur">' + autresLivrets.length + '</span>';
-      html += '  </div>';
-      html += '  <div class="galerie-livrets">';
-
+      html += '<div class="bloc-bas">';
+      html += '  <div class="bloc-bas-titre">Autres livrets du thème « ' + echapperHtml(themeActuel) + ' »</div>';
+      html += '  <div class="bloc-bas-sous-titre">' + autresLivrets.length + ' autre(s) livret(s) dans ce même thème</div>';
+      html += '  <div class="grille-couvertures">';
       autresLivrets.forEach(function(l) {
-        html += '<a class="carte-livret-mini" ';
-        html += '   href="/medit/livret.html?cat=' + encodeURIComponent(l.titre) + '" ';
-        html += '   title="Voir le livret ' + echapperHtml(l.titre) + '">';
-        html += '  <span class="badge-niveau">Niv. ' + l.niveau + '</span>';
-        html += '  <span class="couleur-pastille" style="background: ' + l.couleur + ';"></span>';
-        html += '  <div class="infos-livret">';
-        html += '    <div class="titre-livret">' + echapperHtml(l.titre) + '</div>';
-        if (l.sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(l.sousTitre) + '</div>';
-        html += '  </div>';
-        html += '</a>';
+        html += construireCouvertureHtml(l);
       });
-
       html += '  </div>';
       html += '</div>';
-
       return html;
     }
 
-    // ============================================================
-    // ✅ NOUVEAU : AUTRES THÈMES ET LEURS LIVRETS
-    // (groupés par thème, le thème actuel en premier)
-    // ============================================================
-    function construireAutresThemesEtLivrets(chapitre) {
+    // ---- Bloc "Autres thèmes et livrets" ----
+    function construireBlocAutresThemesEtLivrets(chapitre) {
       if (!chapitre.categorie) return '';
-
       var livretMeta = livretsData[chapitre.categorie] || {};
       var themeActuel = (livretMeta.theme || '').trim();
 
-      // Regrouper tous les livrets par thème
       var parTheme = {};
       for (var titre in livretsData) {
         var meta = livretsData[titre];
@@ -2046,18 +2188,19 @@
           titre: titre,
           couleur: meta.couleur || '#2d6a4f',
           sousTitre: meta.sousTitre || '',
-          niveau: meta.niveau || 1
+          auteur: meta.auteur || '',
+          date: meta.date || '',
+          niveau: meta.niveau || 1,
+          pourcentage: 0
         });
       }
 
-      // Trier les livrets à l'intérieur de chaque thème
       for (var t in parTheme) {
         parTheme[t].sort(function(a, b) {
           return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
         });
       }
 
-      // Ordre des thèmes : thème actuel en premier, puis alphabétique
       var ordreThemes = Object.keys(parTheme).sort(function(a, b) {
         var aEstActuel = (a === themeActuel);
         var bEstActuel = (b === themeActuel);
@@ -2069,52 +2212,40 @@
       if (ordreThemes.length === 0) return '';
 
       var html = '';
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre">';
-      html += '    <span class="icone">⊕</span> Les autres thèmes et livrets';
-      html += '  </div>';
+      html += '<div class="bloc-bas">';
+      html += '  <div class="bloc-bas-titre">Les autres thèmes et livrets</div>';
+      html += '  <div class="bloc-bas-sous-titre">Parcourez l\'ensemble de nos collections</div>';
 
       ordreThemes.forEach(function(nomTheme) {
         var livrets = parTheme[nomTheme];
         if (!livrets || livrets.length === 0) return;
 
         var estThemeActuel = (nomTheme === themeActuel);
-        var titreAffiche = nomTheme;
+
+        html += '<div class="titre-theme-bas">';
+        html += echapperHtml(nomTheme);
         if (estThemeActuel) {
-          titreAffiche = nomTheme + ' •';
+          html += ' <span class="theme-actuel-marqueur">— thème en cours</span>';
         }
+        html += '</div>';
 
-        html += '<div class="bloc-theme-titre">' + echapperHtml(titreAffiche) + '</div>';
-        html += '<div class="galerie-livrets" style="margin-bottom:10px;">';
-
+        html += '<div class="grille-couvertures" style="margin-bottom:8px;">';
         livrets.forEach(function(l) {
           var estActuel = (l.titre === chapitre.categorie);
-          var classes = 'carte-livret-mini theme-item';
-          if (estActuel) classes += ' actuel';
-
-          if (estActuel) {
-            html += '<div class="' + classes + '">';
-          } else {
-            html += '<a class="' + classes + '" href="/medit/livret.html?cat=' + encodeURIComponent(l.titre) + '" title="Voir le livret ' + echapperHtml(l.titre) + '">';
-          }
-          html += '  <span class="badge-niveau">Niv. ' + l.niveau + '</span>';
-          html += '  <span class="couleur-pastille" style="background: ' + l.couleur + ';"></span>';
-          html += '  <div class="infos-livret">';
-          html += '    <div class="titre-livret">' + echapperHtml(l.titre) + '</div>';
-          if (l.sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(l.sousTitre) + '</div>';
-          html += '  </div>';
-          if (estActuel) {
-            html += '</div>';
-          } else {
-            html += '</a>';
-          }
+          html += construireCouvertureHtml(l, { actuel: estActuel });
         });
-
         html += '</div>';
       });
 
       html += '</div>';
+      return html;
+    }
 
+    // ---- Construction de la zone bas de page ----
+    function construireZoneBasPage(chapitre) {
+      var html = '';
+      html += construireBlocAutresLivretsMemeTheme(chapitre);
+      html += construireBlocAutresThemesEtLivrets(chapitre);
       return html;
     }
 
@@ -2161,7 +2292,7 @@
     }
 
     // ============================================================
-    // BLOC ACTIONS (bouton imprimer uniquement) — colonne latérale
+    // BLOC ACTIONS
     // ============================================================
     function construireBlocActions(chapitre) {
       var html = '';
@@ -2234,22 +2365,35 @@
         html += '</div>';
       }
 
-      // ---- Encart livret actuel ----
+      // ---- Encart livret actuel (couverture vraies proportions) ----
       if (chapitre.categorie) {
         var couleur = livretInfo.couleur || '#2d6a4f';
+        var sousTitre = livretInfo.sousTitre || '';
+        var auteurLivret = livretInfo.auteur || '';
+        var dateLivret = livretInfo.date || '';
+        var dateFormatee = formatDateMoisAnnee(dateLivret);
 
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
         html += '  <a class="encart-livret" href="/medit/livret.html?cat=' + encodeURIComponent(chapitre.categorie) + '">';
-        html += '    <div class="mini-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
+
+        // Couverture au format 110×175 (vraies proportions)
+        html += '    <div class="couverture-vraie" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
         html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
         html += '      <div class="contenu-couv">';
-        html += '        <div>';
-        html += '          <div class="titre-couv">' + echapperHtml(chapitre.categorie) + '</div>';
+        html += '        <div class="titre-wrapper">';
+        if (auteurLivret) html += '          <span class="auteur-couv">' + echapperHtml(auteurLivret) + '</span>';
+        html += '          <span class="titre-couv">' + echapperHtml(chapitre.categorie) + '</span>';
+        if (sousTitre) html += '          <span class="sous-titre-couv">' + echapperHtml(sousTitre) + '</span>';
         html += '        </div>';
-        html += '        <div class="edition-nom">Qiraat</div>';
+        html += '        <div class="edition-info">';
+        html += '          <span class="edition-nom">Qiraat Édition</span>';
+        if (dateFormatee) html += '          <span class="edition-date">' + dateFormatee + '</span>';
+        html += '        </div>';
         html += '      </div>';
+        html += '      <div class="progression-couv"><div class="barre" style="width: 0%;"></div></div>';
         html += '    </div>';
+
         html += '    <div class="encart-texte">';
         html += '      <div class="encart-label">Extrait du livret</div>';
         html += '      <div class="encart-nom-livret">' + echapperHtml(chapitre.categorie) + '</div>';
@@ -2286,16 +2430,6 @@
         html += '  </div>';
         html += '</div>';
       }
-
-      // ============================================================
-      // ✅ NOUVEAU : Autres livrets du même thème
-      // ============================================================
-      html += construireAutresLivretsMemeTheme(chapitre);
-
-      // ============================================================
-      // ✅ NOUVEAU : Les autres thèmes et livrets
-      // ============================================================
-      html += construireAutresThemesEtLivrets(chapitre);
 
       return html;
     }
@@ -2397,6 +2531,7 @@
       var container = document.getElementById('chapitreContainer');
       var colonneLaterale = document.getElementById('colonneLaterale');
       var zoneBasseMobile = document.getElementById('zoneBasseMobile');
+      var zoneBasPage = document.getElementById('zoneBasPage');
 
       var contenuHtml = construireHtmlChapitre(chapitre, imagesLivret);
       var blocARetenirHtml = construireBlocARetenir(chapitre);
@@ -2409,6 +2544,7 @@
 
       colonneLaterale.innerHTML = construireZoneLaterale(chapitre);
       zoneBasseMobile.innerHTML = construireZoneBasseMobile(chapitre);
+      zoneBasPage.innerHTML = construireZoneBasPage(chapitre);
 
       arabiserDans(container);
       afficherFilAriane(chapitre);
