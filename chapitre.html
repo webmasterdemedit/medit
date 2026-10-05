@@ -433,7 +433,6 @@
 
     /* ============================================================ */
     /* BLOC À RETENIR (sous la feuille, avant nav)                  */
-    /* Contour simple + puce conservée                              */
     /* ============================================================ */
     .bloc-a-retenir {
       margin-top: 24px;
@@ -533,7 +532,6 @@
       gap: 16px;
     }
 
-    /* Bouton "Passer le quiz en ligne" — placé AVANT la nav */
     .zone-bas-chapitre .btn-passer-quiz-bas {
       display: flex;
       align-items: center;
@@ -561,7 +559,6 @@
       border-color: #2d6a4f;
     }
 
-    /* Nav bas de chapitre */
     .nav-bas-chapitre {
       display: flex;
       justify-content: space-between;
@@ -637,7 +634,6 @@
       margin-left: auto;
     }
 
-    /* Bloc méta (Niveau + temps + dates) */
     .bloc-meta-chapitre {
       display: flex;
       flex-direction: column;
@@ -672,7 +668,6 @@
       text-align: right;
     }
 
-    /* Bloc vocabulaire (colonne latérale) */
     .bloc-vocabulaire {
       display: flex;
       flex-direction: column;
@@ -697,7 +692,6 @@
       flex-shrink: 0;
     }
 
-    /* Encart livret */
     .encart-livret {
       display: flex;
       gap: 12px;
@@ -797,7 +791,6 @@
     }
     .encart-livret:hover .encart-cta { color: var(--text); }
 
-    /* Liste chapitres du même livret */
     .liste-chapitres {
       display: flex;
       flex-direction: column;
@@ -846,7 +839,6 @@
       font-weight: 600;
     }
 
-    /* Galerie livrets */
     .galerie-livrets {
       display: flex;
       flex-direction: column;
@@ -920,6 +912,27 @@
       background: rgba(0, 0, 0, 0.55);
       padding: 1px 6px;
       border-radius: 8px;
+    }
+
+    /* ============================================================ */
+    /* NOUVEAUX BLOCS : Thème + autres livrets                      */
+    /* ============================================================ */
+    .bloc-theme-titre {
+      font-family: 'Roboto', sans-serif;
+      font-size: 10px;
+      font-weight: 600;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin: 12px 0 6px;
+      padding-bottom: 4px;
+      border-bottom: 1px dashed var(--border);
+    }
+    .bloc-theme-titre:first-child {
+      margin-top: 0;
+    }
+    .carte-livret-mini.theme-item {
+      padding: 8px 10px;
     }
 
     /* ============================================================ */
@@ -1328,7 +1341,6 @@
 
     // ============================================================
     // ✅ CONSTRUCTION DES EXERCICES POUR LA FEUILLE CHAPITRE
-    // (même logique que genererImpression, mais en HTML)
     // ============================================================
     function construireExercicesPourFeuille(blocsOrdonnes) {
       var html = '';
@@ -1898,7 +1910,7 @@
     }
 
     // ============================================================
-    // GALERIE DE TOUS LES LIVRETS
+    // GALERIE DE TOUS LES LIVRETS (dépréciée, gardée au cas où)
     // ============================================================
     function construireGalerieLivrets(chapitreActuel) {
       var categoriesUniques = {};
@@ -1955,6 +1967,158 @@
     }
 
     // ============================================================
+    // ✅ NOUVEAU : AUTRES LIVRETS DU MÊME THÈME
+    // ============================================================
+    function construireAutresLivretsMemeTheme(chapitre) {
+      if (!chapitre.categorie) return '';
+
+      // Récupérer le thème du livret actuel
+      var livretMeta = livretsData[chapitre.categorie] || {};
+      var themeActuel = (livretMeta.theme || '').trim();
+      if (!themeActuel) return '';
+
+      // Trouver tous les livrets qui partagent ce thème (sauf le livret actuel)
+      var autresLivrets = [];
+      for (var titre in livretsData) {
+        if (titre === chapitre.categorie) continue;
+        var meta = livretsData[titre];
+        if ((meta.theme || '').trim() === themeActuel) {
+          autresLivrets.push({
+            titre: titre,
+            couleur: meta.couleur || '#2d6a4f',
+            sousTitre: meta.sousTitre || '',
+            niveau: meta.niveau || 1
+          });
+        }
+      }
+
+      if (autresLivrets.length === 0) return '';
+
+      // Tri alphabétique
+      autresLivrets.sort(function(a, b) {
+        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+      });
+
+      var html = '';
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre">';
+      html += '    <span class="icone">☰</span> Autres livrets du thème';
+      html += '    <span class="compteur">' + autresLivrets.length + '</span>';
+      html += '  </div>';
+      html += '  <div class="galerie-livrets">';
+
+      autresLivrets.forEach(function(l) {
+        html += '<a class="carte-livret-mini" ';
+        html += '   href="/medit/livret.html?cat=' + encodeURIComponent(l.titre) + '" ';
+        html += '   title="Voir le livret ' + echapperHtml(l.titre) + '">';
+        html += '  <span class="badge-niveau">Niv. ' + l.niveau + '</span>';
+        html += '  <span class="couleur-pastille" style="background: ' + l.couleur + ';"></span>';
+        html += '  <div class="infos-livret">';
+        html += '    <div class="titre-livret">' + echapperHtml(l.titre) + '</div>';
+        if (l.sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(l.sousTitre) + '</div>';
+        html += '  </div>';
+        html += '</a>';
+      });
+
+      html += '  </div>';
+      html += '</div>';
+
+      return html;
+    }
+
+    // ============================================================
+    // ✅ NOUVEAU : AUTRES THÈMES ET LEURS LIVRETS
+    // (groupés par thème, le thème actuel en premier)
+    // ============================================================
+    function construireAutresThemesEtLivrets(chapitre) {
+      if (!chapitre.categorie) return '';
+
+      var livretMeta = livretsData[chapitre.categorie] || {};
+      var themeActuel = (livretMeta.theme || '').trim();
+
+      // Regrouper tous les livrets par thème
+      var parTheme = {};
+      for (var titre in livretsData) {
+        var meta = livretsData[titre];
+        var t = (meta.theme || '').trim() || 'Sans thème';
+        if (!parTheme[t]) parTheme[t] = [];
+        parTheme[t].push({
+          titre: titre,
+          couleur: meta.couleur || '#2d6a4f',
+          sousTitre: meta.sousTitre || '',
+          niveau: meta.niveau || 1
+        });
+      }
+
+      // Trier les livrets à l'intérieur de chaque thème
+      for (var t in parTheme) {
+        parTheme[t].sort(function(a, b) {
+          return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+        });
+      }
+
+      // Ordre des thèmes : thème actuel en premier, puis alphabétique
+      var ordreThemes = Object.keys(parTheme).sort(function(a, b) {
+        var aEstActuel = (a === themeActuel);
+        var bEstActuel = (b === themeActuel);
+        if (aEstActuel && !bEstActuel) return -1;
+        if (!aEstActuel && bEstActuel) return 1;
+        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+      });
+
+      if (ordreThemes.length === 0) return '';
+
+      var html = '';
+      html += '<div class="bloc-section">';
+      html += '  <div class="bloc-titre">';
+      html += '    <span class="icone">⊕</span> Les autres thèmes et livrets';
+      html += '  </div>';
+
+      ordreThemes.forEach(function(nomTheme) {
+        var livrets = parTheme[nomTheme];
+        if (!livrets || livrets.length === 0) return;
+
+        var estThemeActuel = (nomTheme === themeActuel);
+        var titreAffiche = nomTheme;
+        if (estThemeActuel) {
+          titreAffiche = nomTheme + ' •';
+        }
+
+        html += '<div class="bloc-theme-titre">' + echapperHtml(titreAffiche) + '</div>';
+        html += '<div class="galerie-livrets" style="margin-bottom:10px;">';
+
+        livrets.forEach(function(l) {
+          var estActuel = (l.titre === chapitre.categorie);
+          var classes = 'carte-livret-mini theme-item';
+          if (estActuel) classes += ' actuel';
+
+          if (estActuel) {
+            html += '<div class="' + classes + '">';
+          } else {
+            html += '<a class="' + classes + '" href="/medit/livret.html?cat=' + encodeURIComponent(l.titre) + '" title="Voir le livret ' + echapperHtml(l.titre) + '">';
+          }
+          html += '  <span class="badge-niveau">Niv. ' + l.niveau + '</span>';
+          html += '  <span class="couleur-pastille" style="background: ' + l.couleur + ';"></span>';
+          html += '  <div class="infos-livret">';
+          html += '    <div class="titre-livret">' + echapperHtml(l.titre) + '</div>';
+          if (l.sousTitre) html += '    <div class="sous-titre-livret">' + echapperHtml(l.sousTitre) + '</div>';
+          html += '  </div>';
+          if (estActuel) {
+            html += '</div>';
+          } else {
+            html += '</a>';
+          }
+        });
+
+        html += '</div>';
+      });
+
+      html += '</div>';
+
+      return html;
+    }
+
+    // ============================================================
     // ZONE BAS DU CHAPITRE (bouton quiz AVANT la nav)
     // ============================================================
     function construireZoneBasChapitre(chapitre) {
@@ -1962,12 +2126,10 @@
 
       var html = '<div class="zone-bas-chapitre">';
 
-      // ✅ Bouton "Passer le quiz en ligne" EN PREMIER, avant la nav
       html += '<a class="btn-passer-quiz-bas" href="/medit/quiz.html?id=' + encodeURIComponent(chapitre.id) + '">' +
               'Passer le quiz en ligne' +
               '</a>';
 
-      // ✅ Puis la ligne de navigation précédent/suivant
       html += '<div class="nav-bas-chapitre">';
       if (nav.precedent) {
         html += '<a href="/medit/chapitre.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
@@ -2025,13 +2187,14 @@
 
       var html = '';
 
-      // ---- Actions (bouton imprimer en haut de la colonne latérale) ----
+      // ---- Actions ----
       html += construireBlocActions(chapitre);
 
       var niveau = chapitre.niveau || 0;
       var tempsLecture = chapitre._tempsLecture || 1;
       var dateEcrit = formatDateLongue(chapitre.date);
 
+      // ---- Informations ----
       html += '<div class="bloc-section">';
       html += '  <div class="bloc-titre"><span class="icone"></span> Informations</div>';
       html += '  <div class="bloc-meta-chapitre">';
@@ -2055,6 +2218,7 @@
       html += '  </div>';
       html += '</div>';
 
+      // ---- Vocabulaire ----
       var vocabClean = chapitre._vocabClean || [];
       if (vocabClean.length > 0) {
         html += '<div class="bloc-section">';
@@ -2070,9 +2234,9 @@
         html += '</div>';
       }
 
+      // ---- Encart livret actuel ----
       if (chapitre.categorie) {
         var couleur = livretInfo.couleur || '#2d6a4f';
-        var sousTitre = livretInfo.sousTitre || '';
 
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Livret</div>';
@@ -2095,6 +2259,7 @@
         html += '</div>';
       }
 
+      // ---- Dans ce livret ----
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre">';
@@ -2122,7 +2287,15 @@
         html += '</div>';
       }
 
-      html += construireGalerieLivrets(chapitre);
+      // ============================================================
+      // ✅ NOUVEAU : Autres livrets du même thème
+      // ============================================================
+      html += construireAutresLivretsMemeTheme(chapitre);
+
+      // ============================================================
+      // ✅ NOUVEAU : Les autres thèmes et livrets
+      // ============================================================
+      html += construireAutresThemesEtLivrets(chapitre);
 
       return html;
     }
@@ -2154,11 +2327,13 @@
           if (data.livrets && Array.isArray(data.livrets)) {
             data.livrets.forEach(function(l) {
               livretsData[l.titre] = {
+                theme: l.theme || '',
                 couleur: l.couleur || '#2d6a4f',
                 sousTitre: l.sousTitre || '',
                 date: l.date || '',
                 description: l.description || '',
-                auteur: l.auteur || ''
+                auteur: l.auteur || '',
+                niveau: parseInt(l.niveau) || 0
               };
             });
           }
@@ -2194,11 +2369,13 @@
             if (cache.livrets && Array.isArray(cache.livrets)) {
               cache.livrets.forEach(function(l) {
                 livretsData[l.titre] = {
+                  theme: l.theme || '',
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
                   description: l.description || '',
-                  auteur: l.auteur || ''
+                  auteur: l.auteur || '',
+                  niveau: parseInt(l.niveau) || 0
                 };
               });
             }
