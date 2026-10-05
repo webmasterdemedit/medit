@@ -489,6 +489,23 @@
       }
     }
 
+    // ============================================================
+    // Mise à jour de l'URL selon le thème actif
+    // ============================================================
+    function mettreAJourURL(theme) {
+      try {
+        var url = new URL(window.location.href);
+        if (theme === null || theme === '' || theme === '__SANS_THEME__') {
+          url.searchParams.delete('theme');
+        } else {
+          url.searchParams.set('theme', theme);
+        }
+        window.history.replaceState({}, '', url.toString());
+      } catch(e) {
+        console.warn('Impossible de mettre à jour l\'URL:', e);
+      }
+    }
+
     function chargerLivrets() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
@@ -497,6 +514,11 @@
       }
 
       nomEtudiant = id;
+
+      // ✅ Lire le thème passé en paramètre URL
+      var paramsUrl = new URLSearchParams(window.location.search);
+      var themeUrl = paramsUrl.get('theme');
+      themeActif = themeUrl ? themeUrl : null;
 
       DataManager.charger()
         .then(function(data) {
@@ -576,11 +598,8 @@
 
       // ============================================================
       // 1. Construire les livrets À PARTIR DE LA FEUILLE LIVRETS
-      //    (source de vérité). On rattache ensuite les chapitres
-      //    dont categorie === titre du livret.
       // ============================================================
 
-      // Index des chapitres par catégorie
       var chapitresParCategorie = {};
       chapitresData.forEach(function(ch) {
         var cat = (ch.categorie || '').trim();
@@ -589,15 +608,12 @@
         chapitresParCategorie[cat].push(ch);
       });
 
-      // Tous les titres de livrets connus (pour gérer aussi ceux qui
-      // apparaissent dans les chapitres mais pas dans Livrets)
       var titresLivrets = Object.keys(livretsData);
 
       livretsCalcules = titresLivrets.map(function(titre) {
         var meta = livretsData[titre];
         var chapitresDuLivret = chapitresParCategorie[titre] || [];
 
-        // Niveau min / max des chapitres (fallback : niveau du livret)
         var niveauMin = meta.niveau || 1;
         var niveauMax = meta.niveau || 1;
         if (chapitresDuLivret.length > 0) {
@@ -610,7 +626,6 @@
           });
         }
 
-        // Disponibilité : au moins un chapitre accessible OU livret sans chapitres (accessible par défaut)
         var disponible = false;
         if (chapitresDuLivret.length === 0) {
           disponible = true;
@@ -620,7 +635,6 @@
           });
         }
 
-        // Progression
         var validees = 0;
         chapitresDuLivret.forEach(function(ch) {
           var reponse = toutesLesReponses[ch.id];
@@ -646,7 +660,6 @@
         };
       });
 
-      // Tri global : niveau min, puis alphabétique
       livretsCalcules.sort(function(a, b) {
         return a.niveauMin - b.niveauMin
           || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
@@ -671,7 +684,7 @@
       }
 
       // ============================================================
-      // 3. Construire la liste des thèmes (ordre d'apparition)
+      // 3. Construire la liste des thèmes
       // ============================================================
       var themes = [];
       var themesVus = {};
@@ -689,6 +702,15 @@
         }
       });
 
+      // ✅ Vérifier que le thème de l'URL existe bien
+      if (themeActif && themeActif !== '__SANS_THEME__') {
+        var themeExiste = themes.indexOf(themeActif) !== -1;
+        if (!themeExiste) {
+          themeActif = null;
+          mettreAJourURL(null);
+        }
+      }
+
       // ============================================================
       // 4. Construire le HTML : sidebar + grille
       // ============================================================
@@ -698,22 +720,28 @@
       html += '<aside class="sidebar-themes" id="sidebarThemes">';
       html += '<div class="sidebar-titre">Thèmes</div>';
 
-      html += '<button class="theme-item active" data-theme="">'
+      // Bouton "Tous"
+      var classeTous = (themeActif === null) ? ' active' : '';
+      html += '<button class="theme-item' + classeTous + '" data-theme="">'
             + 'Tous'
             + '<span class="compteur">' + livretsCalcules.length + '</span>'
             + '</button>';
 
+      // Boutons par thème
       themes.forEach(function(t) {
         var count = livretsCalcules.filter(function(l) { return l.theme === t; }).length;
-        html += '<button class="theme-item" data-theme="' + escapeAttr(t) + '">'
+        var classeActif = (themeActif === t) ? ' active' : '';
+        html += '<button class="theme-item' + classeActif + '" data-theme="' + escapeAttr(t) + '">'
               + escapeHtml(t)
               + '<span class="compteur">' + count + '</span>'
               + '</button>';
       });
 
+      // Bouton "Sans thème"
       if (aDesSansTheme) {
         var countSans = livretsCalcules.filter(function(l) { return !l.theme; }).length;
-        html += '<button class="theme-item" data-theme="__SANS_THEME__">'
+        var classeSans = (themeActif === '__SANS_THEME__') ? ' active' : '';
+        html += '<button class="theme-item' + classeSans + '" data-theme="__SANS_THEME__">'
               + 'Sans thème'
               + '<span class="compteur">' + countSans + '</span>'
               + '</button>';
@@ -740,6 +768,9 @@
           if (t === '') themeActif = null;
           else if (t === '__SANS_THEME__') themeActif = '__SANS_THEME__';
           else themeActif = t;
+
+          // ✅ Mettre à jour l'URL
+          mettreAJourURL(themeActif);
 
           rendreGrille();
         });
