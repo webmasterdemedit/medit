@@ -127,7 +127,6 @@
       gap: 20px;
     }
 
-    /* Ratio carte : 240 x 380 → ratio ~0.63. Réduite à 190 x 300 pour garder la proportion */
     .carte-livret {
       position: relative;
       border-radius: 0;
@@ -469,7 +468,7 @@
   <script>
     var toutesLesReponses = {};
     var chapitresData = [];
-    var livretsData = {};
+    var livretsData = {};       // { titreLivret: { theme, couleur, sousTitre, date, auteur, ... } }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
@@ -504,6 +503,7 @@
           niveauEtudiant = data.niveau || 0;
           chapitresData = data.tousLesChapitres || data.chapitres || [];
 
+          // Construire livretsData depuis data.livrets (source de vérité)
           livretsData = {};
           if (data.livrets && Array.isArray(data.livrets)) {
             data.livrets.forEach(function(l) {
@@ -513,7 +513,8 @@
                 sousTitre: l.sousTitre || '',
                 date: l.date || '',
                 preRequis: l.preRequis || '',
-                auteur: l.auteur || ''
+                auteur: l.auteur || '',
+                niveau: parseInt(l.niveau) || 0
               };
             });
             console.log('📚 ' + data.livrets.length + ' livrets chargés avec données');
@@ -544,7 +545,8 @@
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
                   preRequis: l.preRequis || '',
-                  auteur: l.auteur || ''
+                  auteur: l.auteur || '',
+                  niveau: parseInt(l.niveau) || 0
                 };
               });
             }
@@ -572,64 +574,75 @@
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // === 1. Construire les catégories (livrets) à partir des chapitres ===
-      var categories = {};
-      var totalChapitres = 0;
+      // ============================================================
+      // 1. Construire les livrets À PARTIR DE LA FEUILLE LIVRETS
+      //    (source de vérité). On rattache ensuite les chapitres
+      //    dont categorie === titre du livret.
+      // ============================================================
 
-      chapitresData.forEach(function(chapitre) {
-        var cat = chapitre.categorie || 'Sans catégorie';
-        var niv = parseInt(chapitre.niveau) || 1;
-
-        if (!categories[cat]) {
-          categories[cat] = {
-            nom: cat,
-            niveauMin: niv,
-            niveauMax: niv,
-            chapitres: 0,
-            chapitresListe: []
-          };
-        }
-
-        categories[cat].niveauMin = Math.min(categories[cat].niveauMin, niv);
-        categories[cat].niveauMax = Math.max(categories[cat].niveauMax, niv);
-        categories[cat].chapitres++;
-        categories[cat].chapitresListe.push(chapitre);
-        totalChapitres++;
+      // Index des chapitres par catégorie
+      var chapitresParCategorie = {};
+      chapitresData.forEach(function(ch) {
+        var cat = (ch.categorie || '').trim();
+        if (!cat) return;
+        if (!chapitresParCategorie[cat]) chapitresParCategorie[cat] = [];
+        chapitresParCategorie[cat].push(ch);
       });
 
-      // === 2. Enrichir chaque livret avec son thème + dispo + progression ===
-      livretsCalcules = Object.values(categories).map(function(livret) {
-        var data = livretsData[livret.nom] || {};
-        var theme = (data.theme || '').trim();
+      // Tous les titres de livrets connus (pour gérer aussi ceux qui
+      // apparaissent dans les chapitres mais pas dans Livrets)
+      var titresLivrets = Object.keys(livretsData);
 
+      livretsCalcules = titresLivrets.map(function(titre) {
+        var meta = livretsData[titre];
+        var chapitresDuLivret = chapitresParCategorie[titre] || [];
+
+        // Niveau min / max des chapitres (fallback : niveau du livret)
+        var niveauMin = meta.niveau || 1;
+        var niveauMax = meta.niveau || 1;
+        if (chapitresDuLivret.length > 0) {
+          niveauMin = Infinity;
+          niveauMax = -Infinity;
+          chapitresDuLivret.forEach(function(ch) {
+            var n = parseInt(ch.niveau) || 1;
+            if (n < niveauMin) niveauMin = n;
+            if (n > niveauMax) niveauMax = n;
+          });
+        }
+
+        // Disponibilité : au moins un chapitre accessible OU livret sans chapitres (accessible par défaut)
         var disponible = false;
-        livret.chapitresListe.forEach(function(ch) {
-          if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
-        });
+        if (chapitresDuLivret.length === 0) {
+          disponible = true;
+        } else {
+          chapitresDuLivret.forEach(function(ch) {
+            if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
+          });
+        }
 
+        // Progression
         var validees = 0;
-        livret.chapitresListe.forEach(function(chapitre) {
-          var reponse = toutesLesReponses[chapitre.id];
+        chapitresDuLivret.forEach(function(ch) {
+          var reponse = toutesLesReponses[ch.id];
           if (reponse && reponse.valide === 'valide') validees++;
         });
-
-        var pourcentage = livret.chapitres > 0
-          ? Math.round((validees / livret.chapitres) * 100)
+        var pourcentage = chapitresDuLivret.length > 0
+          ? Math.round((validees / chapitresDuLivret.length) * 100)
           : 0;
 
         return {
-          nom: livret.nom,
-          theme: theme,
-          niveauMin: livret.niveauMin,
-          niveauMax: livret.niveauMax,
-          chapitres: livret.chapitres,
-          chapitresListe: livret.chapitresListe,
+          nom: titre,
+          theme: (meta.theme || '').trim(),
+          niveauMin: niveauMin,
+          niveauMax: niveauMax,
+          chapitres: chapitresDuLivret.length,
+          chapitresListe: chapitresDuLivret,
           disponible: disponible,
           pourcentage: pourcentage,
-          couleur: data.couleur || '#2d6a4f',
-          sousTitre: data.sousTitre || '',
-          date: data.date || '',
-          auteur: data.auteur || ''
+          couleur: meta.couleur || '#2d6a4f',
+          sousTitre: meta.sousTitre || '',
+          date: meta.date || '',
+          auteur: meta.auteur || ''
         };
       });
 
@@ -639,7 +652,10 @@
           || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
-      // === 3. Stats globales ===
+      // ============================================================
+      // 2. Stats globales
+      // ============================================================
+      var totalChapitres = chapitresData.length;
       document.getElementById('totalLivrets').textContent = livretsCalcules.length;
       document.getElementById('totalChapitres').textContent = totalChapitres;
 
@@ -648,15 +664,15 @@
           <div class="vide-livrets">
             <span class="icone">◈</span>
             <h2>Aucun livret disponible</h2>
-            <p>Aucune catégorie de chapitres n'est disponible pour votre niveau (${niveauEtudiant}).</p>
+            <p>Aucun livret n'est configuré pour le moment.</p>
           </div>
         `;
         return;
       }
 
-      // === 4. Construire la liste des thèmes ===
-      //    Ordre : ordre d'apparition dans livretsCalcules (donc contrôlable via Sheets)
-      //    Les livrets sans thème sont regroupés sous "Sans thème"
+      // ============================================================
+      // 3. Construire la liste des thèmes (ordre d'apparition)
+      // ============================================================
       var themes = [];
       var themesVus = {};
       var aDesSansTheme = false;
@@ -673,20 +689,20 @@
         }
       });
 
-      // === 5. Construire le HTML : sidebar + grille ===
+      // ============================================================
+      // 4. Construire le HTML : sidebar + grille
+      // ============================================================
       var html = '<div class="layout-livrets">';
 
       // --- Sidebar ---
       html += '<aside class="sidebar-themes" id="sidebarThemes">';
       html += '<div class="sidebar-titre">Thèmes</div>';
 
-      // Bouton "Tous"
       html += '<button class="theme-item active" data-theme="">'
             + 'Tous'
             + '<span class="compteur">' + livretsCalcules.length + '</span>'
             + '</button>';
 
-      // Boutons par thème
       themes.forEach(function(t) {
         var count = livretsCalcules.filter(function(l) { return l.theme === t; }).length;
         html += '<button class="theme-item" data-theme="' + escapeAttr(t) + '">'
@@ -695,7 +711,6 @@
               + '</button>';
       });
 
-      // Bouton "Sans thème" si nécessaire
       if (aDesSansTheme) {
         var countSans = livretsCalcules.filter(function(l) { return !l.theme; }).length;
         html += '<button class="theme-item" data-theme="__SANS_THEME__">'
@@ -709,10 +724,12 @@
       // --- Contenu ---
       html += '<div class="contenu-livrets"><div class="grille-livrets" id="grilleLivrets"></div></div>';
 
-      html += '</div>'; // .layout-livrets
+      html += '</div>';
       container.innerHTML = html;
 
-      // === 6. Brancher les clics sur les onglets ===
+      // ============================================================
+      // 5. Brancher les clics sur les onglets
+      // ============================================================
       var boutons = container.querySelectorAll('.sidebar-themes .theme-item');
       boutons.forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -728,7 +745,9 @@
         });
       });
 
-      // === 7. Rendu initial ===
+      // ============================================================
+      // 6. Rendu initial
+      // ============================================================
       rendreGrille();
     }
 
@@ -759,7 +778,6 @@
         var sousTitre = livret.sousTitre || '';
         var date = livret.date || '';
         var auteur = livret.auteur || '';
-        var nbChapitres = livret.chapitres || 0;
 
         var disponible = livret.disponible;
         var couleur = disponible ? (livret.couleur || '#2d6a4f') : '#666666';
@@ -783,7 +801,7 @@
             <span class="badge-niveau">${badgeTexte}</span>
             <div class="contenu-livret">
               <div class="titre-wrapper">
-                ${auteur ? `<span class="auteur-livret">${auteur}</span>` : ''}
+                ${auteur ? `<span class="auteur-livret">${escapeHtml(auteur)}</span>` : ''}
                 <span class="titre-livret">${escapeHtml(livret.nom)}</span>
                 ${sousTitre ? `<span class="sous-titre-livret">${escapeHtml(sousTitre)}</span>` : ''}
               </div>
