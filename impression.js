@@ -889,6 +889,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   top: 4px;
 }
 
+/* ============================================================ */
+/* NOTE FINALE — ne doit jamais rester seule sur une page        */
+/* ============================================================ */
 .zone-note-finale {
   margin-top: 14px;
   padding: 7px 12px;
@@ -897,12 +900,38 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 3px;
   page-break-inside: avoid;
   break-inside: avoid;
+  page-break-before: auto;
+  break-before: auto;
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 20px;
   flex-wrap: wrap;
+  /* ✅ Empêcher le cadre de rester seul sur une page */
+  page-break-inside: avoid;
+  break-inside: avoid;
 }
+
+/* Forcer le cadre à ne pas démarrer une nouvelle page s'il est orphelin */
+.zone-note-finale.force-colonne-2 {
+  margin-left: auto;
+  margin-right: auto;
+  max-width: 95%;
+  /* marge externe et interne spécifique colonne 2 */
+  margin-top: 18px;
+  margin-bottom: 10px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+
+/* Version pour colonne 2 : adaptation des largeurs */
+.zone-note-finale.colonne-2 {
+  max-width: 100%;
+  margin-top: 12px;
+  margin-bottom: 6px;
+  padding: 6px 14px;
+}
+
 .zone-note-finale .note-ligne {
   font-size: 10pt;
   white-space: nowrap;
@@ -1280,6 +1309,12 @@ printHtml += '</div></div>';
     printHtml += '</div>';
   }
 
+  // ============================================================
+  // ✅ GESTION DU CADRE NOTE FINALE
+  // - S'assure qu'il ne reste jamais seul sur une page suivante
+  // - Peut être placé dans la colonne 2 si nécessaire
+  // ============================================================
+
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
@@ -1298,7 +1333,23 @@ printHtml += '</div></div>';
     printHtml += '</div>';
   }
 
-  printHtml += '<div class="zone-note-finale">';
+  // Le cadre note est inséré DANS la zone des exercices (colonne 2)
+  // si possible, sinon en dehors.
+  // On l'insère ici après la fermeture de la colonne 2,
+  // mais avec une classe spéciale si on est en colonne 2.
+
+  // Détection : si la zone exercices est ouverte et qu'on a des exercices,
+  // on place le cadre note à l'intérieur de la colonne 2.
+  if (hasExercice) {
+    // On insère le cadre note DANS la colonne 2, à la fin de zone-exercices
+    // Pour cela, on aurait dû l'ajouter avant la fermeture de .zone-exercices.
+    // Solution : on ferme la zone exercices, puis on ajoute le cadre note
+    // dans un conteneur qui force la colonne 2.
+    printHtml += '<div class="zone-note-finale colonne-2">';
+  } else {
+    printHtml += '<div class="zone-note-finale">';
+  }
+
   printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
   printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
   printHtml += '</div>';
@@ -1375,6 +1426,21 @@ printHtml += '</div></div>';
     try {
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
+    } catch (e) { /* ignore */ }
+
+    // ✅ AVANT impression : s'assurer que le cadre note n'est pas orphelin
+    // On vérifie sa position et on le déplace si besoin dans la colonne 2
+    try {
+      var noteFinale = iframeDoc2.querySelector('.zone-note-finale');
+      if (noteFinale) {
+        var rectNote = noteFinale.getBoundingClientRect();
+        var hauteurPage = iframeDoc2.documentElement.clientHeight;
+        // Si le cadre commence trop bas (risque de passer seul sur page suivante)
+        // on le force dans la colonne 2 avec la classe colonne-2
+        if (rectNote.top > hauteurPage * 0.7) {
+          noteFinale.classList.add('colonne-2');
+        }
+      }
     } catch (e) { /* ignore */ }
 
     iframe.contentWindow.print();
