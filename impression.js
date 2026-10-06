@@ -885,40 +885,39 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   top: 4px;
 }
 
+/* ============================================================ */
+/* ZONE NOTE FINALE — désormais DANS le flux 2 colonnes          */
+/* ============================================================ */
 .zone-note-finale {
-  margin-top: 14px;
-  padding: 7px 12px;
+  margin-top: 10px;
+  padding: 8px 10px;
   background: #fafaf7;
   border: 0.5px solid #333;
   border-radius: 3px;
   page-break-inside: avoid;
   break-inside: avoid;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
+  display: block;
 }
 .zone-note-finale .note-ligne {
   font-size: 10pt;
-  white-space: nowrap;
   color: #1a1a1a;
+  margin-bottom: 6px;
+}
+.zone-note-finale .note-ligne:last-child {
+  margin-bottom: 0;
 }
 .zone-note-finale .note-ligne strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation {
   font-size: 10pt;
-  flex: 1;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
+  display: block;
   color: #1a1a1a;
 }
 .zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
 .zone-note-finale .note-ligne-appreciation .ligne-pointillee {
-  display: inline-block;
-  flex: 1;
+  display: block;
   border-bottom: 0.5px dotted #666;
   height: 12px;
+  margin-top: 2px;
 }
 
 .pied-page {
@@ -1272,10 +1271,17 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
   });
 
+  // ✅ ZONE NOTE / APPRÉCIATION déplacée DANS le flux 2 colonnes
+  //    (juste avant la fermeture de .zone-exercices)
   if (zoneExercicesOuverte) {
+    printHtml += '<div class="zone-note-finale">';
+    printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
+    printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
     printHtml += '</div>';
+    printHtml += '</div>'; // ferme .zone-exercices
   }
 
+  // Le mémo "À retenir" reste HORS du flux 2 colonnes (comportement d'origine)
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
@@ -1293,11 +1299,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   } else {
     printHtml += '</div>';
   }
-
-  printHtml += '<div class="zone-note-finale">';
-  printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
-  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
-  printHtml += '</div>';
 
   printHtml += `
     <div class="pied-page">
