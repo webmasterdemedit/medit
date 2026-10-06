@@ -742,7 +742,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 .open-lignes { margin-top:3px; margin-left: 24px; }
-.open-ligne { border-bottom:0.5px dotted #999; height:14px; margin-bottom:9px; }
+.open-ligne {
+  border-bottom:0.5px dotted #999;
+  height: 22px;              /* ✅ hauteur augmentée (était 14px) */
+  margin-bottom: 18px;       /* ✅ espace interligne augmenté (était 9px) */
+}
 
 .carte-ligne-courte {
   margin-top: 3px;
@@ -1152,10 +1156,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
-      printHtml += '<div class="open-ligne"></div>';
-      printHtml += '<div class="open-ligne"></div>';
-      printHtml += '<div class="open-ligne"></div>';
-      printHtml += '</div></div>';
+for (var ol = 0; ol < 5; ol++) {   // ✅ 5 lignes au lieu de 3
+  printHtml += '<div class="open-ligne"></div>';
+}
+printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
       hasExercice = true;
