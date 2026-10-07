@@ -1,6 +1,8 @@
 // ============================================================
-// data-manager.js - OPTIMISÉ (cache localStorage instantané)
-// + Support images par livret
+// data-manager.js
+// - Navigation normale  → cache
+// - Reload (F5 / Ctrl+R / Ctrl+Shift+R) → Sheet
+// - Images → cache conservé
 // ============================================================
 
 // Clés de cache
@@ -8,21 +10,24 @@ var CLE_CACHE      = 'qiraat_data_v1';
 var CLE_TIMESTAMP  = 'qiraat_data_ts';
 var CLE_NOM        = 'qiraat_data_nom';
 var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du livret
-var DUREE_CACHE_MS = 5 * 60 * 1000; // 5 min au lieu de 30
 
-// ✅ Détecter un reload manuel (Ctrl+R / F5)
+// ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
+// En JS pur on ne peut PAS distinguer Ctrl+Shift+R de F5 : les deux donnent type === 'reload'.
+// Donc tout reload force le rechargement depuis le Sheet.
 var PERF_NAV = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || performance.navigation || {};
 var EST_RELOAD = PERF_NAV.type === 'reload' || PERF_NAV.type === 1;
 
 if (EST_RELOAD) {
-    // Forcer un refresh au prochain charger()
-    localStorage.setItem(CLE_TIMESTAMP, '0');
+    // Forcer la péremption du cache pour ce chargement
+    try { localStorage.setItem(CLE_TIMESTAMP, '0'); } catch(e) {}
 }
 
 var DataManager = {
 
     // ============================================================
-    // CHARGER - cache localStorage instantané + refresh arrière-plan
+    // CHARGER
+    // - Reload  → toujours depuis le Sheet
+    // - Sinon   → cache localStorage (navigation normale)
     // ============================================================
     charger: function(forceRefresh) {
         var id = localStorage.getItem('etudiant_id');
@@ -30,63 +35,71 @@ var DataManager = {
             return Promise.reject('Non connecté');
         }
 
-        // 1. Cache mémoire déjà prêt
-        if (!forceRefresh && this._dernierChargement && this._dernierNom === id) {
+        // 1. Reload explicite → Sheet obligatoire, on ignore tout cache
+        if (EST_RELOAD || forceRefresh) {
+            console.log('🔄 Reload détecté → chargement depuis le Sheet');
+            return this._fetchDepuisSheet(id);
+        }
+
+        // 2. Cache mémoire (même session, même étudiant)
+        if (this._dernierChargement && this._dernierNom === id) {
+            console.log('⚡ Cache mémoire utilisé');
             return Promise.resolve(this._dernierChargement);
         }
 
-        // 2. Cache localStorage
-        if (!forceRefresh) {
-            var cache = this._lireCache(id);
-            if (cache) {
-                this._dernierChargement = cache;
-                this._dernierNom = id;
-
-                // Rafraîchir en arrière-plan si périmé
-                if (this._cachePerime()) {
-                    this._refreshArrierePlan(id);
-                }
-                return Promise.resolve(cache);
-            }
+        // 3. Cache localStorage (navigation normale)
+        var cache = this._lireCache(id);
+        if (cache) {
+            this._dernierChargement = cache;
+            this._dernierNom = id;
+            console.log('⚡ Cache localStorage utilisé');
+            return Promise.resolve(cache);
         }
 
-        // 3. Appel API
-        console.log('🌐 Chargement depuis le serveur...');
+        // 4. Aucun cache → Sheet
+        console.log('🌐 Pas de cache → chargement depuis le Sheet');
+        return this._fetchDepuisSheet(id);
+    },
+
+    // ============================================================
+    // APPEL API SHEET
+    // ============================================================
+    _fetchDepuisSheet: function(id) {
         var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
         var self = this;
 
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
-                if (data.success) {
-                    data.livrets            = data.livrets || [];
-                    data.chapitres          = data.chapitres || [];
-                    data.tousLesChapitres   = data.tousLesChapitres || [];
-                    data.chapitresComplets  = data.chapitresComplets || {};
-                    data.reponses           = data.reponses || [];
-                    data.niveau             = data.niveau || 0;
-                    data.description        = data.description || '';
-                    data.mdp                = data.mdp || '';
-                    data.contact            = data.contact || '';
-                    data.auteur             = data.auteur || '';
-                    data.dateInscription    = data.dateInscription || '';
-                    data.messagePerso       = data.messagePerso || '';
-                    data.disciplines        = data.disciplines || '';
-                    data.historique         = data.historique || [];
-
-                    self._dernierChargement = data;
-                    self._dernierNom = id;
-                    self._ecrireCache(id, data);
-
-                    console.log('✅ Données chargées');
-                    console.log('📚 ' + data.livrets.length + ' livrets');
-                    console.log('📖 ' + data.tousLesChapitres.length + ' chapitres');
-                    console.log('✏️ ' + data.reponses.length + ' réponses');
-
-                    return data;
-                } else {
+                if (!data.success) {
                     throw new Error(data.message || 'Erreur de chargement');
                 }
+
+                data.livrets            = data.livrets || [];
+                data.chapitres          = data.chapitres || [];
+                data.tousLesChapitres   = data.tousLesChapitres || [];
+                data.chapitresComplets  = data.chapitresComplets || {};
+                data.reponses           = data.reponses || [];
+                data.niveau             = data.niveau || 0;
+                data.description        = data.description || '';
+                data.mdp                = data.mdp || '';
+                data.contact            = data.contact || '';
+                data.auteur             = data.auteur || '';
+                data.dateInscription    = data.dateInscription || '';
+                data.messagePerso       = data.messagePerso || '';
+                data.disciplines        = data.disciplines || '';
+                data.historique         = data.historique || [];
+
+                self._dernierChargement = data;
+                self._dernierNom = id;
+                self._ecrireCache(id, data);
+
+                console.log('✅ Données chargées depuis le Sheet');
+                console.log('📚 ' + data.livrets.length + ' livrets');
+                console.log('📖 ' + data.tousLesChapitres.length + ' chapitres');
+                console.log('✏️ ' + data.reponses.length + ' réponses');
+
+                return data;
             })
             .catch(function(error) {
                 console.error('❌ Erreur:', error);
@@ -122,35 +135,6 @@ var DataManager = {
         } catch(e) {
             console.warn('⚠️ Erreur écriture cache (quota ?):', e);
         }
-    },
-
-    _cachePerime: function() {
-        var ts = localStorage.getItem(CLE_TIMESTAMP);
-        if (!ts) return true;
-        return (Date.now() - parseInt(ts)) > DUREE_CACHE_MS;
-    },
-
-    _refreshArrierePlan: function(id) {
-        var self = this;
-        var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
-        fetch(url)
-            .then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) {
-                    data.livrets            = data.livrets || [];
-                    data.chapitres          = data.chapitres || [];
-                    data.tousLesChapitres   = data.tousLesChapitres || [];
-                    data.chapitresComplets  = data.chapitresComplets || {};
-                    data.reponses           = data.reponses || [];
-                    data.niveau             = data.niveau || 0;
-                    self._dernierChargement = data;
-                    self._ecrireCache(id, data);
-                    console.log('🔄 Cache rafraîchi en arrière-plan');
-                }
-            })
-            .catch(function(err) {
-                console.warn('⚠️ Échec refresh arrière-plan:', err);
-            });
     },
 
     // ============================================================
@@ -411,7 +395,7 @@ var DataManager = {
     // ============================================================
     rafraichir: function() {
         this._dernierChargement = null;
-        return this.charger(true);
+        return this.charger(true); // forceRefresh → Sheet
     },
 
     invalider: function() {
@@ -444,7 +428,6 @@ var DataManager = {
     },
 
     getCacheForce: function(id) {
-        // Retourne le cache mémoire OU le cache localStorage
         if (this._dernierChargement) return this._dernierChargement;
         if (id) return this._lireCache(id);
         return null;
