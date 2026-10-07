@@ -9,394 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
-  <style>
-    .page-livrets {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 30px 40px;
-    }
-
-    .page-livrets h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    .page-livrets .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
-    }
-
-    .stats-ligne {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 12px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-
-    .stat-item {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-
-    .stat-item .nombre {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text);
-      margin-left: 6px;
-    }
-
-    /* ===== LAYOUT AVEC SIDEBAR ===== */
-    .layout-livrets {
-      display: flex;
-      gap: 28px;
-      align-items: flex-start;
-      margin-top: 10px;
-    }
-
-    .sidebar-themes {
-      flex: 0 0 200px;
-      position: sticky;
-      top: 20px;
-      border: 1px solid var(--border);
-      padding: 10px 0;
-    }
-
-    .sidebar-themes .sidebar-titre {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 6px 16px 10px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 6px;
-    }
-
-    .sidebar-themes .theme-item {
-      display: block;
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      border-left: 2px solid transparent;
-      color: var(--text-secondary);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: all 0.15s;
-      box-sizing: border-box;
-    }
-
-    .sidebar-themes .theme-item:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-    }
-
-    .sidebar-themes .theme-item.active {
-      border-left-color: var(--text);
-      color: var(--text);
-      background: var(--bg-hover);
-    }
-
-    .sidebar-themes .theme-item .compteur {
-      float: right;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .contenu-livrets {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* ===== GRILLE (tailles réduites, proportions gardées) ===== */
-    .grille-livrets {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 20px;
-    }
-
-    .carte-livret {
-      position: relative;
-      border-radius: 0;
-      padding: 0;
-      height: 300px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      text-decoration: none;
-      color: #1a1a1a;
-      background: var(--bg);
-    }
-
-    .carte-livret:hover {
-      transform: translateY(-4px);
-      border-color: var(--text);
-    }
-
-    .carte-livret:active {
-      transform: scale(0.97);
-    }
-
-    .carte-livret .contenu-livret {
-      position: relative;
-      z-index: 2;
-      padding: 18px 16px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-      box-sizing: border-box;
-    }
-
-    .carte-livret .titre-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-top: 22px;
-    }
-
-    .carte-livret .auteur-livret {
-      font-size: 9px;
-      font-weight: 300;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      margin-bottom: 2px;
-      color: rgba(26, 26, 26, 0.5);
-    }
-
-    .carte-livret .titre-livret {
-      font-family: 'Georgia', serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-bottom: 0;
-      line-height: 1.2;
-      max-width: 90%;
-      color: #1a1a1a;
-      text-align: center;
-    }
-
-    .carte-livret .sous-titre-livret {
-      font-size: 11px;
-      font-weight: 500;
-      opacity: 0.8;
-      margin-top: 4px;
-      color: rgba(26, 26, 26, 0.8);
-      line-height: 1.3;
-      text-align: center;
-    }
-
-    .carte-livret .edition-info {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding-bottom: 8px;
-    }
-
-    .carte-livret .edition-nom {
-      font-weight: 700;
-      font-style: italic;
-      font-size: 9px;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
-    }
-
-    .carte-livret .edition-date {
-      font-size: 9px;
-      opacity: 1;
-      color: rgba(26, 26, 26, 0.7);
-      font-weight: 500;
-    }
-
-    .carte-livret .badge-niveau {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 3;
-      padding: 3px 10px;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      color: rgba(26, 26, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70);
-    }
-
-    .carte-livret .progression-livret {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 3;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.15);
-      overflow: hidden;
-    }
-
-    .carte-livret .progression-livret .barre {
-      height: 100%;
-      background: rgba(255, 255, 255, 0.60);
-      transition: width 0.6s ease;
-      width: 0%;
-    }
-
-    /* === VERROUILLÉ === */
-    .carte-livret.verrouille {
-      filter: grayscale(1) opacity(0.4);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .carte-livret.verrouille:hover {
-      transform: none;
-      border-color: var(--border);
-    }
-
-    /* === VIDE === */
-    .vide-livrets {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-
-    .vide-livrets .icone {
-      font-size: 48px;
-      display: block;
-      margin-bottom: 12px;
-      color: var(--text-secondary);
-    }
-
-    .vide-livrets h2 {
-      font-size: 20px;
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .vide-livrets p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .loader {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 900px) {
-      .layout-livrets {
-        gap: 20px;
-      }
-      .sidebar-themes {
-        flex: 0 0 170px;
-      }
-    }
-
-    @media (max-width: 700px) {
-      .page-livrets { padding: 12px 16px 30px; }
-      .page-livrets h1 { font-size: 22px; }
-
-      .layout-livrets {
-        flex-direction: column;
-        gap: 16px;
-      }
-
-      .sidebar-themes {
-        position: static;
-        flex: none;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0;
-        border: none;
-        border-bottom: 1px solid var(--border);
-        box-sizing: border-box;
-      }
-
-      .sidebar-themes .sidebar-titre {
-        display: none;
-      }
-
-      .sidebar-themes .theme-item {
-        width: auto;
-        white-space: nowrap;
-        border-left: none;
-        border-bottom: 2px solid transparent;
-        padding: 8px 14px;
-      }
-
-      .sidebar-themes .theme-item.active {
-        border-left-color: transparent;
-        border-bottom-color: var(--text);
-      }
-
-      .sidebar-themes .theme-item .compteur {
-        margin-left: 6px;
-        float: none;
-      }
-
-      .grille-livrets {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 14px;
-      }
-      .carte-livret { height: 240px; }
-      .carte-livret .titre-livret { font-size: 15px; }
-      .carte-livret .sous-titre-livret { font-size: 10px; }
-      .carte-livret .auteur-livret { font-size: 8px; }
-      .carte-livret .badge-niveau { font-size: 9px; top: 8px; right: 8px; padding: 2px 8px; }
-      .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
-      .stat-item { font-size: 13px; }
-    }
-
-    @media (max-width: 400px) {
-      .grille-livrets { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-      .carte-livret { height: 210px; }
-      .carte-livret .titre-livret { font-size: 14px; }
-    }
-  </style>
 
   <script>
     var xhr = new XMLHttpRequest();
@@ -468,13 +80,11 @@
   <script>
     var toutesLesReponses = {};
     var chapitresData = [];
-    var livretsData = {};       // { titreLivret: { theme, couleur, sousTitre, date, auteur, ... } }
+    var livretsData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
-    // Thème actuellement sélectionné (null = "Tous")
     var themeActif = null;
-    // Liste des livrets déjà calculée (pour refiltrer sans tout recalculer)
     var livretsCalcules = [];
 
     function formatDate(dateStr) {
@@ -489,9 +99,6 @@
       }
     }
 
-    // ============================================================
-    // Mise à jour de l'URL selon le thème actif
-    // ============================================================
     function mettreAJourURL(theme) {
       try {
         var url = new URL(window.location.href);
@@ -515,7 +122,6 @@
 
       nomEtudiant = id;
 
-      // ✅ Lire le thème passé en paramètre URL
       var paramsUrl = new URLSearchParams(window.location.search);
       var themeUrl = paramsUrl.get('theme');
       themeActif = themeUrl ? themeUrl : null;
@@ -525,7 +131,6 @@
           niveauEtudiant = data.niveau || 0;
           chapitresData = data.tousLesChapitres || data.chapitres || [];
 
-          // Construire livretsData depuis data.livrets (source de vérité)
           livretsData = {};
           if (data.livrets && Array.isArray(data.livrets)) {
             data.livrets.forEach(function(l) {
@@ -596,10 +201,6 @@
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // ============================================================
-      // 1. Construire les livrets À PARTIR DE LA FEUILLE LIVRETS
-      // ============================================================
-
       var chapitresParCategorie = {};
       chapitresData.forEach(function(ch) {
         var cat = (ch.categorie || '').trim();
@@ -665,9 +266,6 @@
           || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
-      // ============================================================
-      // 2. Stats globales
-      // ============================================================
       var totalChapitres = chapitresData.length;
       document.getElementById('totalLivrets').textContent = livretsCalcules.length;
       document.getElementById('totalChapitres').textContent = totalChapitres;
@@ -683,9 +281,6 @@
         return;
       }
 
-      // ============================================================
-      // 3. Construire la liste des thèmes
-      // ============================================================
       var themes = [];
       var themesVus = {};
       var aDesSansTheme = false;
@@ -702,7 +297,6 @@
         }
       });
 
-      // ✅ Vérifier que le thème de l'URL existe bien
       if (themeActif && themeActif !== '__SANS_THEME__') {
         var themeExiste = themes.indexOf(themeActif) !== -1;
         if (!themeExiste) {
@@ -711,23 +305,17 @@
         }
       }
 
-      // ============================================================
-      // 4. Construire le HTML : sidebar + grille
-      // ============================================================
       var html = '<div class="layout-livrets">';
 
-      // --- Sidebar ---
       html += '<aside class="sidebar-themes" id="sidebarThemes">';
       html += '<div class="sidebar-titre">Thèmes</div>';
 
-      // Bouton "Tous"
       var classeTous = (themeActif === null) ? ' active' : '';
       html += '<button class="theme-item' + classeTous + '" data-theme="">'
             + 'Tous'
             + '<span class="compteur">' + livretsCalcules.length + '</span>'
             + '</button>';
 
-      // Boutons par thème
       themes.forEach(function(t) {
         var count = livretsCalcules.filter(function(l) { return l.theme === t; }).length;
         var classeActif = (themeActif === t) ? ' active' : '';
@@ -737,7 +325,6 @@
               + '</button>';
       });
 
-      // Bouton "Sans thème"
       if (aDesSansTheme) {
         var countSans = livretsCalcules.filter(function(l) { return !l.theme; }).length;
         var classeSans = (themeActif === '__SANS_THEME__') ? ' active' : '';
@@ -749,15 +336,11 @@
 
       html += '</aside>';
 
-      // --- Contenu ---
       html += '<div class="contenu-livrets"><div class="grille-livrets" id="grilleLivrets"></div></div>';
 
       html += '</div>';
       container.innerHTML = html;
 
-      // ============================================================
-      // 5. Brancher les clics sur les onglets
-      // ============================================================
       var boutons = container.querySelectorAll('.sidebar-themes .theme-item');
       boutons.forEach(function(btn) {
         btn.addEventListener('click', function() {
@@ -769,20 +352,15 @@
           else if (t === '__SANS_THEME__') themeActif = '__SANS_THEME__';
           else themeActif = t;
 
-          // ✅ Mettre à jour l'URL
           mettreAJourURL(themeActif);
 
           rendreGrille();
         });
       });
 
-      // ============================================================
-      // 6. Rendu initial
-      // ============================================================
       rendreGrille();
     }
 
-    // === Rendu de la grille en fonction du thème actif ===
     function rendreGrille() {
       var grille = document.getElementById('grilleLivrets');
       if (!grille) return;
@@ -851,7 +429,6 @@
       grille.innerHTML = html;
     }
 
-    // === Petits utilitaires ===
     function escapeHtml(str) {
       if (!str) return '';
       return String(str)
