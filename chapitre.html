@@ -1909,8 +1909,15 @@
       var el = document.getElementById('noteLignes');
       if (el) el.innerHTML = html;
 
-      var totalEl = document.getElementById('noteTotalValeur');
+            var totalEl = document.getElementById('noteTotalValeur');
       if (totalEl) totalEl.textContent = note.total.bonnes + ' / ' + note.total.total;
+
+      // Afficher le bouton "Refaire" seulement si < 60 %
+      var btnRevoir = document.getElementById('btnRevoir');
+      if (btnRevoir && note.total.total > 0) {
+        var pourcentage = (note.total.bonnes / note.total.total) * 100;
+        btnRevoir.style.display = (pourcentage < 60) ? 'inline-block' : 'none';
+      }
     }
 
     // ============================================================
@@ -1956,7 +1963,7 @@
       html += '    <span class="note-valeur" id="noteTotalValeur">0 / 0</span>';
       html += '  </div>';
       html += '  <div class="note-actions">';
-      html += '    <button class="btn-revoir" onclick="relireEtRefaire()">Relire le texte et refaire les questions</button>';
+      html += '    <button class="btn-revoir" id="btnRevoir" onclick="relireEtRefaire()" style="display:none;">Relire le texte et refaire les questions</button>';
       html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses()">📤 Envoyer mes réponses</button>';
       html += '  </div>';
       html += '  <div class="envoi-statut" id="envoiStatut"></div>';
