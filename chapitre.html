@@ -31,19 +31,14 @@
       .colonne-laterale  { grid-column: 2; position: sticky; top: 20px; }
     }
 
-    /* Zone bas de page pleine largeur */
     .zone-bas-page {
       grid-column: 1 / -1;
       margin-top: 48px;
       padding-top: 32px;
       border-top: 1px solid var(--border);
     }
-    .zone-bas-page .bloc-bas {
-      margin-bottom: 48px;
-    }
-    .zone-bas-page .bloc-bas:last-child {
-      margin-bottom: 0;
-    }
+    .zone-bas-page .bloc-bas { margin-bottom: 48px; }
+    .zone-bas-page .bloc-bas:last-child { margin-bottom: 0; }
     .zone-bas-page .bloc-bas-titre {
       font-family: 'Georgia', serif;
       font-size: 20px;
@@ -711,7 +706,6 @@
       flex-shrink: 0;
     }
 
-    /* Encart livret — couverture au format 110×175 */
     .encart-livret {
       display: flex;
       gap: 14px;
@@ -870,7 +864,6 @@
     }
     .encart-livret:hover .encart-cta { color: var(--text); }
 
-    /* Liste chapitres */
     .liste-chapitres {
       display: flex;
       flex-direction: column;
@@ -919,10 +912,6 @@
       font-weight: 600;
     }
 
-    /* ============================================================ */
-    /* GRILLE DE COUVERTURES (blocs en bas de page)                 */
-    /* Mêmes proportions que mes-livrets.html (240×380 → ici 130×205) */
-    /* ============================================================ */
     .grille-couvertures {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -1048,9 +1037,7 @@
       width: 0%;
     }
 
-    .carte-couverture.actuelle {
-      box-shadow: 0 0 0 2px var(--text);
-    }
+    .carte-couverture.actuelle { box-shadow: 0 0 0 2px var(--text); }
     .carte-couverture.actuelle::after {
       content: "● Actuel";
       position: absolute;
@@ -1066,9 +1053,6 @@
       z-index: 4;
     }
 
-    /* ============================================================ */
-    /* GRILLE DE THÈMES (gros boutons arrondis)                     */
-    /* ============================================================ */
     .grille-themes {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
@@ -1146,13 +1130,8 @@
       color: var(--text-muted);
       font-weight: 400;
     }
-    .btn-theme-gros.actif .theme-compteur {
-      color: var(--text-secondary);
-    }
+    .btn-theme-gros.actif .theme-compteur { color: var(--text-secondary); }
 
-    /* ============================================================ */
-    /* ZONE BASSE MOBILE                                            */
-    /* ============================================================ */
     .zone-basse-mobile {
       margin-top: 40px;
       display: flex;
@@ -1172,9 +1151,6 @@
       .colonne-laterale { display: none; }
     }
 
-    /* ============================================================ */
-    /* LOADER / ERREUR                                              */
-    /* ============================================================ */
     .loader { text-align: center; padding: 60px 20px; }
     .spinner {
       width: 36px; height: 36px;
@@ -1250,6 +1226,201 @@
       .btn-theme-gros .theme-nom { font-size: 15px; }
       .btn-theme-gros .theme-compteur { font-size: 11px; }
     }
+
+    /* ============================================================ */
+    /* === AJOUT : INTERACTIONS QUIZ / VF / TT / CARTES === */
+    /* ============================================================ */
+
+    .feuille-chapitre .quiz-rep.interactive {
+      cursor: pointer;
+      padding: 4px 6px;
+      border-radius: 3px;
+      transition: background 0.15s;
+      user-select: none;
+    }
+    .feuille-chapitre .quiz-rep.interactive:hover {
+      background: rgba(45, 106, 79, 0.07);
+    }
+    .feuille-chapitre .quiz-rep.correct {
+      background: rgba(45, 106, 79, 0.15);
+      border-left: 3px solid #2d6a4f;
+      padding-left: 8px;
+    }
+    .feuille-chapitre .quiz-rep.incorrect {
+      background: rgba(192, 57, 43, 0.12);
+      border-left: 3px solid #c0392b;
+      padding-left: 8px;
+    }
+    .feuille-chapitre .quiz-rep.correct .quiz-case {
+      background: #2d6a4f !important;
+      border-color: #2d6a4f;
+    }
+    .feuille-chapitre .quiz-rep.incorrect .quiz-case {
+      background: #c0392b !important;
+      border-color: #c0392b;
+    }
+    .feuille-chapitre .quiz-feedback-exo {
+      margin-left: 26px;
+      margin-top: 6px;
+      font-size: 10pt;
+      font-style: italic;
+      min-height: 16px;
+    }
+    .feuille-chapitre .quiz-feedback-exo.ok { color: #2d6a4f; }
+    .feuille-chapitre .quiz-feedback-exo.ko { color: #c0392b; }
+
+    .feuille-chapitre .vf-btn {
+      display: inline-block;
+      padding: 2px 10px;
+      margin-left: 6px;
+      font-size: 9.5pt;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .feuille-chapitre .vf-btn:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+    .feuille-chapitre .vf-btn.vf-ok {
+      background: #2d6a4f;
+      border-color: #2d6a4f;
+      color: #fff;
+    }
+    .feuille-chapitre .vf-btn.vf-ko {
+      background: #c0392b;
+      border-color: #c0392b;
+      color: #fff;
+    }
+    .feuille-chapitre .vf-btn:disabled { cursor: default; opacity: 0.9; }
+
+    .feuille-chapitre .tt-input {
+      display: inline-block;
+      min-width: 100px;
+      max-width: 160px;
+      padding: 1px 6px;
+      font-family: inherit;
+      font-size: 11pt;
+      border: none;
+      border-bottom: 1.2px solid #333;
+      background: transparent;
+      color: #1a1a1a;
+      text-align: center;
+      outline: none;
+    }
+    .feuille-chapitre .tt-input.tt-ok {
+      border-bottom-color: #2d6a4f;
+      color: #2d6a4f;
+      font-weight: 600;
+    }
+    .feuille-chapitre .tt-input.tt-ko {
+      border-bottom-color: #c0392b;
+      color: #c0392b;
+    }
+    .feuille-chapitre .tt-feedback {
+      margin-left: 26px;
+      margin-top: 4px;
+      font-size: 9.5pt;
+      font-style: italic;
+      min-height: 14px;
+    }
+    .feuille-chapitre .tt-feedback.ok { color: #2d6a4f; }
+    .feuille-chapitre .tt-feedback.ko { color: #c0392b; }
+
+    .feuille-chapitre .carte-actions {
+      margin-left: 26px;
+      margin-top: 8px;
+    }
+    .feuille-chapitre .carte-btn-voir {
+      display: inline-block;
+      padding: 3px 12px;
+      font-size: 9.5pt;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .feuille-chapitre .carte-btn-voir:hover {
+      background: rgba(0, 0, 0, 0.06);
+    }
+    .feuille-chapitre .carte-reponse-cachee {
+      display: none;
+      margin-left: 26px;
+      margin-top: 6px;
+      padding: 6px 10px;
+      border-left: 3px solid #2d6a4f;
+      background: rgba(45, 106, 79, 0.08);
+      font-size: 10.5pt;
+      font-style: italic;
+    }
+    .feuille-chapitre .carte-reponse-cachee.visible { display: block; }
+
+    .feuille-chapitre .carte-choix {
+      margin-left: 26px;
+      margin-top: 6px;
+      display: none;
+    }
+    .feuille-chapitre .carte-choix.visible { display: block; }
+    .feuille-chapitre .carte-choix button {
+      padding: 3px 12px;
+      margin-right: 6px;
+      font-size: 9.5pt;
+      font-family: 'Roboto', sans-serif;
+      background: transparent;
+      border: 1px solid #333;
+      border-radius: 3px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .feuille-chapitre .carte-choix button:hover { background: rgba(0, 0, 0, 0.06); }
+    .feuille-chapitre .carte-choix button.trouve { border-color: #2d6a4f; color: #2d6a4f; }
+    .feuille-chapitre .carte-choix button.pas-trouve { border-color: #c0392b; color: #c0392b; }
+    .feuille-chapitre .carte-choix button.trouve.actif { background: #2d6a4f; color: #fff; }
+    .feuille-chapitre .carte-choix button.pas-trouve.actif { background: #c0392b; color: #fff; }
+
+    .bloc-envoi-final {
+      margin-top: 24px;
+      padding: 18px;
+      background: #fffefb;
+      border: 1px solid #e8e2d0;
+      text-align: center;
+    }
+    .bloc-envoi-final .btn-envoyer-final {
+      display: inline-block;
+      padding: 14px 36px;
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      background: #2d6a4f;
+      color: #fff;
+      border: 1px solid #2d6a4f;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .bloc-envoi-final .btn-envoyer-final:hover {
+      background: #1e4d38;
+      border-color: #1e4d38;
+    }
+    .bloc-envoi-final .btn-envoyer-final:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .bloc-envoi-final .envoi-statut {
+      margin-top: 12px;
+      font-size: 13px;
+      font-family: 'Roboto', sans-serif;
+      min-height: 20px;
+    }
+    .bloc-envoi-final .envoi-statut.ok { color: #2d6a4f; }
+    .bloc-envoi-final .envoi-statut.ko { color: #c0392b; }
+
+    /* === FIN AJOUT === */
   </style>
 
   <script>
@@ -1321,6 +1492,17 @@
     var imagesLivret = {};
     var livretsData = {};
 
+    // === AJOUT : état des réponses ===
+    var reponsesChapitre = {
+      quiz: {},        // { quizIdx: { choix: repIdx, correct: bool } }
+      vf: {},          // { vfGlobalIdx: { choix: 'v'|'f', correct: bool } }
+      tt: {},          // { ttIdx: { saisi, correct } }
+      cartes: {},      // { carteIdx: true|false }
+      questionOuverte: '',
+      annotations: {}
+    };
+    var envoiEffectue = false;
+
     // ============================================================
     // HELPERS
     // ============================================================
@@ -1387,11 +1569,18 @@
       } catch(e) { return ''; }
     }
 
-    // Fonction utilitaire : couleur d'une lettre d'après le nom
     function initialeTheme(nom) {
       if (!nom) return '?';
       var premier = nom.trim().charAt(0).toUpperCase();
       return premier || '?';
+    }
+
+    function normaliserComparaison(str) {
+      return String(str)
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
     }
 
     // ============================================================
@@ -1415,7 +1604,7 @@
     }
 
     // ============================================================
-    // PARSERS D'EXERCICES
+    // PARSERS
     // ============================================================
     function parserQuizsPourImpression(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
@@ -1434,8 +1623,10 @@
             reponses: []
           };
         } else if (currentQuiz) {
+          var isCorrect = false;
           var texteRep = ligne;
           if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) {
+            isCorrect = true;
             texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim();
           } else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) {
             texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim();
@@ -1443,7 +1634,8 @@
           if (texteRep) {
             currentQuiz.reponses.push({
               texte: texteRep || 'Réponse',
-              lettre: lettres[currentQuiz.reponses.length] || '?'
+              lettre: lettres[currentQuiz.reponses.length] || '?',
+              correcte: isCorrect
             });
           }
         }
@@ -1567,9 +1759,10 @@
         var contenu = ligne.replace(/^vf:\s*/i, '').trim();
         var match = contenu.match(/\(([vf])\)\s*$/i);
         if (!match) return;
+        var reponse = match[1].toLowerCase();
         var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
         if (question === '') return;
-        questions.push(question);
+        questions.push({ question: question, reponse: reponse });
       });
 
       return questions;
@@ -1593,12 +1786,16 @@
     }
 
     // ============================================================
-    // CONSTRUCTION DES EXERCICES
+    // CONSTRUCTION DES EXERCICES (AVEC INTERACTIONS)
     // ============================================================
     function construireExercicesPourFeuille(blocsOrdonnes) {
       var html = '';
       var exoNum = 0;
       var hasExercice = false;
+      var quizCounter = 0;
+      var ttCounter = 0;
+      var carteCounter = 0;
+      var vfCounter = 0;
 
       function typeLogique(t) {
         if (t === 'carte') return 'open';
@@ -1619,10 +1816,7 @@
       while (iGroupe < blocsOrdonnes.length) {
         var blocCourant = blocsOrdonnes[iGroupe];
         var typeCourant = typeLogique(blocCourant.type);
-        if (typeCourant === 'slide') {
-          iGroupe++;
-          continue;
-        }
+        if (typeCourant === 'slide') { iGroupe++; continue; }
 
         var nbConsecutifs = 1;
         var jGroupe = iGroupe + 1;
@@ -1661,7 +1855,6 @@
           hasExercice = true;
           exoNum++;
           var mots = bloc.data.mots;
-
           html += '<div class="exo">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
@@ -1685,17 +1878,23 @@
           hasExercice = true;
           exoNum++;
           var q = bloc.data;
+          var quizIdx = quizCounter++;
+
           html += '<div class="exo">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
           html += '<span class="exo-num-inline">' + exoNum + '</span>';
           html += '<span class="exo-texte">' + q.question + '</span>';
           html += '</div>';
-          html += '<div class="quiz-reponses">';
-          q.reponses.forEach(function(rep) {
-            html += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
+          html += '<div class="quiz-reponses" data-quiz-idx="' + quizIdx + '">';
+          q.reponses.forEach(function(rep, ri) {
+            html += '<span class="quiz-rep interactive" data-quiz-idx="' + quizIdx + '" data-rep-idx="' + ri + '" data-correct="' + (rep.correcte ? '1' : '0') + '" onclick="repondreQuiz(this)">';
+            html += '<span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte;
+            html += '</span>';
           });
-          html += '</div></div>';
+          html += '</div>';
+          html += '<div class="quiz-feedback-exo" id="quizFeedbackExo-' + quizIdx + '"></div>';
+          html += '</div>';
           return;
         }
 
@@ -1709,9 +1908,7 @@
           html += '<span class="exo-texte">' + bloc.data + '</span>';
           html += '</div>';
           html += '<div class="open-lignes">';
-          html += '<div class="open-ligne"></div>';
-          html += '<div class="open-ligne"></div>';
-          html += '<div class="open-ligne"></div>';
+          html += '<textarea class="open-textarea" id="openReponse" placeholder="Écrivez votre réponse ici..." oninput="reponsesChapitre.questionOuverte = this.value;"></textarea>';
           html += '</div></div>';
           return;
         }
@@ -1720,33 +1917,40 @@
           hasExercice = true;
           exoNum++;
           var tt = bloc.data;
+          var ttIdx = ttCounter++;
           html += '<div class="exo">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
           html += '<span class="exo-num-inline">' + exoNum + '</span>';
           html += '<span class="tt-phrase-print">';
           if (tt.avant) html += tt.avant + ' ';
-          html += '<span class="tt-trou"></span>';
+          html += '<input type="text" class="tt-input" id="ttInput-' + ttIdx + '" data-mot="' + echapperHtml(tt.mot) + '" onkeydown="if(event.key===\'Enter\'){validerTT(' + ttIdx + ');return false;}">';
           if (tt.apres) html += ' ' + tt.apres;
           html += '</span>';
           html += '</div>';
+          html += '<div class="tt-feedback" id="ttFeedback-' + ttIdx + '"></div>';
           html += '</div>';
           return;
         }
 
         if (bloc.type === 'vf') {
           hasExercice = true;
-          bloc.data.forEach(function(question, idxVf) {
+          bloc.data.forEach(function(item, idxVf) {
             exoNum++;
+            var vfIdx = vfCounter++;
             html += '<div class="exo">';
             if (idxVf === 0) {
               afficherConsigne(bloc);
             }
             html += '<div class="exo-ligne vf-ligne">';
             html += '<span class="exo-num-inline">' + exoNum + '</span>';
-            html += '<span class="exo-texte-vf">' + question + '</span>';
-            html += '<span class="vf-cases">☐ V   ☐ F</span>';
+            html += '<span class="exo-texte-vf">' + item.question + '</span>';
+            html += '<span class="vf-cases">';
+            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="v" data-correct="' + (item.reponse === 'v' ? '1' : '0') + '" onclick="repondreVF(this)">VRAI</button>';
+            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="f" data-correct="' + (item.reponse === 'f' ? '1' : '0') + '" onclick="repondreVF(this)">FAUX</button>';
+            html += '</span>';
             html += '</div>';
+            html += '<div class="vf-feedback" id="vfFeedback-' + vfIdx + '"></div>';
             html += '</div>';
           });
           return;
@@ -1757,13 +1961,11 @@
           var ordreData = bloc.data;
           var items = ordreData.elements || [];
           var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
-
           var itemsMelanges = items.slice();
           for (var m = itemsMelanges.length - 1; m > 0; m--) {
             var k = Math.floor(Math.random() * (m + 1));
             var tmp = itemsMelanges[m]; itemsMelanges[m] = itemsMelanges[k]; itemsMelanges[k] = tmp;
           }
-
           var lettres = ['A','B','C','D','E','F','G','H'];
           exoNum++;
           html += '<div class="exo">';
@@ -1789,13 +1991,21 @@
           hasExercice = true;
           exoNum++;
           var c = bloc.data;
+          var carteIdx = carteCounter++;
           html += '<div class="exo">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
           html += '<span class="exo-num-inline">' + exoNum + '</span>';
           html += '<span class="exo-texte">' + c.recto + '</span>';
           html += '</div>';
-          html += '<div class="carte-ligne-courte"></div>';
+          html += '<div class="carte-actions">';
+          html += '<button class="carte-btn-voir" data-carte-idx="' + carteIdx + '" onclick="voirCarteReponse(this)">Voir la réponse</button>';
+          html += '</div>';
+          html += '<div class="carte-reponse-cachee" id="carteRep-' + carteIdx + '">' + echapperHtml(c.verso) + '</div>';
+          html += '<div class="carte-choix" id="carteChoix-' + carteIdx + '">';
+          html += '<button class="trouve" data-carte-idx="' + carteIdx + '" data-choix="trouve" onclick="carteTrouvePasTrouve(this)">✓ J\'ai trouvé</button>';
+          html += '<button class="pas-trouve" data-carte-idx="' + carteIdx + '" data-choix="pas-trouve" onclick="carteTrouvePasTrouve(this)">✗ Pas trouvé</button>';
+          html += '</div>';
           html += '</div>';
           return;
         }
@@ -1812,7 +2022,6 @@
           html += '</div>';
           html += '<div class="relier-zone-lignes">';
           html += '<div class="relier-lignes-grid">';
-
           html += '<div class="relier-col-lignes gauche">';
           for (var rg = 0; rg < relierData.paires.length; rg++) {
             html += '<div class="relier-ligne-item">';
@@ -1821,7 +2030,6 @@
             html += '</div>';
           }
           html += '</div>';
-
           html += '<div class="relier-col-lignes droite">';
           for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
             var dItem = relierData.droitesMelangees[rd];
@@ -1832,7 +2040,6 @@
             html += '</div>';
           }
           html += '</div>';
-
           html += '</div>';
           html += '</div>';
           html += '</div>';
@@ -1846,6 +2053,259 @@
                '<div class="titre-exercices">Exercices</div>' +
                html +
              '</div>';
+    }
+
+    // ============================================================
+    // === AJOUT : INTERACTIONS ===
+    // ============================================================
+    function repondreQuiz(el) {
+      var quizIdx = el.getAttribute('data-quiz-idx');
+      var repIdx = el.getAttribute('data-rep-idx');
+      var correct = el.getAttribute('data-correct') === '1';
+
+      if (reponsesChapitre.quiz[quizIdx]) return; // déjà répondu
+
+      reponsesChapitre.quiz[quizIdx] = { choix: repIdx, correct: correct };
+
+      var parent = el.parentElement;
+      var reps = parent.querySelectorAll('.quiz-rep');
+      reps.forEach(function(r) { r.classList.remove('interactive'); r.style.pointerEvents = 'none'; });
+
+      el.classList.add(correct ? 'correct' : 'incorrect');
+
+      if (!correct) {
+        reps.forEach(function(r) {
+          if (r.getAttribute('data-correct') === '1') r.classList.add('correct');
+        });
+      }
+
+      var feedback = document.getElementById('quizFeedbackExo-' + quizIdx);
+      if (feedback) {
+        if (correct) {
+          feedback.textContent = '✓ Bonne réponse';
+          feedback.className = 'quiz-feedback-exo ok';
+        } else {
+          var bonne = parent.querySelector('.quiz-rep[data-correct="1"]');
+          var texteBonne = bonne ? bonne.textContent.trim() : '';
+          feedback.textContent = '✗ Mauvaise réponse. Bonne réponse : ' + texteBonne;
+          feedback.className = 'quiz-feedback-exo ko';
+        }
+      }
+    }
+
+    function repondreVF(btn) {
+      var vfIdx = btn.getAttribute('data-vf-idx');
+      var choix = btn.getAttribute('data-choix');
+      var correct = btn.getAttribute('data-correct') === '1';
+
+      if (reponsesChapitre.vf[vfIdx]) return;
+
+      reponsesChapitre.vf[vfIdx] = { choix: choix, correct: correct };
+
+      var parent = btn.parentElement;
+      var boutons = parent.querySelectorAll('.vf-btn');
+      boutons.forEach(function(b) { b.disabled = true; });
+
+      btn.classList.add(correct ? 'vf-ok' : 'vf-ko');
+
+      if (!correct) {
+        boutons.forEach(function(b) {
+          if (b.getAttribute('data-correct') === '1') b.classList.add('vf-ok');
+        });
+      }
+
+      var feedback = document.getElementById('vfFeedback-' + vfIdx);
+      if (feedback) {
+        feedback.style.fontSize = '9.5pt';
+        feedback.style.fontStyle = 'italic';
+        feedback.style.marginLeft = '26px';
+        feedback.style.marginTop = '4px';
+        if (correct) {
+          feedback.textContent = '✓ Correct';
+          feedback.style.color = '#2d6a4f';
+        } else {
+          feedback.textContent = '✗ Incorrect';
+          feedback.style.color = '#c0392b';
+        }
+      }
+    }
+
+    function validerTT(ttIdx) {
+      var input = document.getElementById('ttInput-' + ttIdx);
+      if (!input || reponsesChapitre.tt[ttIdx]) return;
+      var saisi = input.value.trim();
+      if (saisi === '') { input.focus(); return; }
+
+      var motAttendu = input.getAttribute('data-mot') || '';
+      var correct = normaliserComparaison(saisi) === normaliserComparaison(motAttendu);
+
+      reponsesChapitre.tt[ttIdx] = { saisi: saisi, correct: correct };
+
+      input.classList.add(correct ? 'tt-ok' : 'tt-ko');
+      input.disabled = true;
+
+      var feedback = document.getElementById('ttFeedback-' + ttIdx);
+      if (feedback) {
+        if (correct) {
+          feedback.textContent = '✓ Bonne réponse';
+          feedback.className = 'tt-feedback ok';
+        } else {
+          feedback.textContent = '✗ La bonne réponse était : « ' + motAttendu + ' »';
+          feedback.className = 'tt-feedback ko';
+        }
+      }
+    }
+
+    function voirCarteReponse(btn) {
+      var carteIdx = btn.getAttribute('data-carte-idx');
+      var rep = document.getElementById('carteRep-' + carteIdx);
+      var choix = document.getElementById('carteChoix-' + carteIdx);
+      if (rep) rep.classList.add('visible');
+      if (choix) choix.classList.add('visible');
+      btn.style.display = 'none';
+    }
+
+    function carteTrouvePasTrouve(btn) {
+      var carteIdx = btn.getAttribute('data-carte-idx');
+      var choix = btn.getAttribute('data-choix');
+      if (reponsesChapitre.cartes[carteIdx] !== undefined) return;
+
+      reponsesChapitre.cartes[carteIdx] = (choix === 'trouve');
+
+      var parent = btn.parentElement;
+      var boutons = parent.querySelectorAll('button');
+      boutons.forEach(function(b) { b.disabled = true; });
+      btn.classList.add('actif');
+    }
+
+    // ============================================================
+    // === AJOUT : ENVOI FINAL ===
+    // ============================================================
+    function construireBlocEnvoi() {
+      return '<div class="bloc-envoi-final">' +
+             '  <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses()">📤 Envoyer mes réponses</button>' +
+             '  <div class="envoi-statut" id="envoiStatut"></div>' +
+             '</div>';
+    }
+
+    function envoyerToutesReponses() {
+      if (envoiEffectue) return;
+      var btn = document.getElementById('btnEnvoyerFinal');
+      var statut = document.getElementById('envoiStatut');
+      if (!btn || !statut) return;
+
+      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      var chapitreId = chapitreActuel ? chapitreActuel.id : '';
+      var titre = chapitreActuel ? chapitreActuel.titre : '';
+
+      btn.disabled = true;
+      btn.textContent = '⏳ Envoi en cours...';
+      statut.textContent = '';
+      statut.className = 'envoi-statut';
+
+      // Calculs
+      var quizTotal = 0, quizBonnes = 0, choixQcmArr = [];
+      Object.keys(reponsesChapitre.quiz).forEach(function(k) {
+        quizTotal++;
+        var r = reponsesChapitre.quiz[k];
+        if (r.correct) quizBonnes++;
+        choixQcmArr.push((r.correct ? 'V' : 'F') + ':' + (parseInt(r.choix) + 1));
+      });
+      var choixQcm = choixQcmArr.join('|');
+
+      var vfTotal = 0, vfBonnes = 0;
+      Object.keys(reponsesChapitre.vf).forEach(function(k) {
+        vfTotal++;
+        if (reponsesChapitre.vf[k].correct) vfBonnes++;
+      });
+
+      var ttTotal = 0, ttBonnes = 0;
+      Object.keys(reponsesChapitre.tt).forEach(function(k) {
+        ttTotal++;
+        if (reponsesChapitre.tt[k].correct) ttBonnes++;
+      });
+
+      var cartesTotal = 0, cartesBonnes = 0, cartesStr = [];
+      Object.keys(reponsesChapitre.cartes).forEach(function(k) {
+        cartesTotal++;
+        if (reponsesChapitre.cartes[k]) cartesBonnes++;
+        cartesStr.push(reponsesChapitre.cartes[k] ? '1' : '0');
+      });
+
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      var promesses = [];
+
+      // Quiz
+      if (quizTotal > 0) {
+        promesses.push(fetch(base + '?action=saveQuiz' +
+          '&nom=' + encodeURIComponent(nom) +
+          '&chapitreId=' + encodeURIComponent(chapitreId) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&choixQcm=' + encodeURIComponent(choixQcm) +
+          '&bonnes=' + quizBonnes +
+          '&total=' + quizTotal).then(function(r){return r.json();}));
+      }
+
+      // VF
+      if (vfTotal > 0) {
+        promesses.push(fetch(base + '?action=saveVraiFaux' +
+          '&nom=' + encodeURIComponent(nom) +
+          '&chapitreId=' + encodeURIComponent(chapitreId) +
+          '&bonnes=' + vfBonnes +
+          '&total=' + vfTotal).then(function(r){return r.json();}));
+      }
+
+      // TT
+      if (ttTotal > 0) {
+        promesses.push(fetch(base + '?action=saveTexteTrous' +
+          '&nom=' + encodeURIComponent(nom) +
+          '&chapitreId=' + encodeURIComponent(chapitreId) +
+          '&bonnes=' + ttBonnes +
+          '&total=' + ttTotal).then(function(r){return r.json();}));
+      }
+
+      // Cartes
+      if (cartesTotal > 0) {
+        promesses.push(fetch(base + '?action=saveCarte' +
+          '&nom=' + encodeURIComponent(nom) +
+          '&chapitreId=' + encodeURIComponent(chapitreId) +
+          '&titre=' + encodeURIComponent(titre) +
+          '&cartes=' + encodeURIComponent(cartesStr.join(',')) +
+          '&bonnes=' + cartesBonnes +
+          '&total=' + cartesTotal).then(function(r){return r.json();}));
+      }
+
+      // Réponse ouverte
+      if (reponsesChapitre.questionOuverte && reponsesChapitre.questionOuverte.trim() !== '') {
+        promesses.push(fetch(base + '?action=saveReponseOuverte' +
+          '&nom=' + encodeURIComponent(nom) +
+          '&chapitreId=' + encodeURIComponent(chapitreId) +
+          '&reponseOuverte=' + encodeURIComponent(reponsesChapitre.questionOuverte)).then(function(r){return r.json();}));
+      }
+
+      if (promesses.length === 0) {
+        btn.disabled = false;
+        btn.textContent = '📤 Envoyer mes réponses';
+        statut.textContent = '⚠️ Aucune réponse à envoyer';
+        statut.className = 'envoi-statut ko';
+        return;
+      }
+
+      Promise.all(promesses)
+        .then(function() {
+          envoiEffectue = true;
+          btn.textContent = '✓ Réponses envoyées';
+          statut.textContent = '✓ Vos réponses ont bien été enregistrées.';
+          statut.className = 'envoi-statut ok';
+        })
+        .catch(function(err) {
+          console.error('Erreur envoi:', err);
+          btn.disabled = false;
+          btn.textContent = '📤 Réessayer l\'envoi';
+          statut.textContent = '⚠️ Erreur d\'envoi. Vérifiez la connexion.';
+          statut.className = 'envoi-statut ko';
+        });
     }
 
     // ============================================================
@@ -1871,24 +2331,15 @@
 
       parts.forEach(function(part) {
         part = part.trim();
-
-        if (part.startsWith('q:')) {
-          quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
-        } else if (part.startsWith('qs:')) {
-          openTexte = openTexte ? openTexte + '\n\n' + part : part;
-        } else if (part.startsWith('o:')) {
-          ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
-        } else if (part.startsWith('r:')) {
-          carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
-        } else if (part.startsWith('l:')) {
-          relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
-        } else if (part.startsWith('tt:')) {
-          ttTexte = ttTexte ? ttTexte + '\n' + part : part;
-        } else if (part.startsWith('vf:')) {
-          vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-        } else if (part.startsWith('c:')) {
-          copierTexte = copierTexte ? copierTexte + '\n' + part : part;
-        } else {
+        if (part.startsWith('q:')) quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
+        else if (part.startsWith('qs:')) openTexte = openTexte ? openTexte + '\n\n' + part : part;
+        else if (part.startsWith('o:')) ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
+        else if (part.startsWith('r:')) carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
+        else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
+        else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
+        else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
+        else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
+        else {
           var cleanText = part.replace(/\r\n/g, '\n').trim();
           if (cleanText) {
             var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
@@ -1932,25 +2383,15 @@
           var type = p[0];
           var idx = p.length > 1 ? parseInt(p[1]) : 0;
 
-          if (type === 'slide' && slidesArray[idx] !== undefined) {
-            blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
-          } else if (type === 'quiz' && quizsParsed[idx]) {
-            blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
-          } else if (type === 'open' && opensParsed[idx] !== undefined) {
-            blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
-          } else if (type === 'ordre' && ordresParsed[idx]) {
-            blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
-          } else if (type === 'carte' && cartesParsed[idx]) {
-            blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
-          } else if (type === 'relier' && reliersParsed[idx]) {
-            blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
-          } else if (type === 'tt' && ttsParsed[idx]) {
-            blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-          } else if (type === 'vf' && vfsParsed.length > 0) {
-            blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-          } else if (type === 'copier' && copiersParsed[idx]) {
-            blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
-          }
+          if (type === 'slide' && slidesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
+          else if (type === 'quiz' && quizsParsed[idx]) blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
+          else if (type === 'open' && opensParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
+          else if (type === 'ordre' && ordresParsed[idx]) blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
+          else if (type === 'carte' && cartesParsed[idx]) blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
+          else if (type === 'relier' && reliersParsed[idx]) blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
+          else if (type === 'tt' && ttsParsed[idx]) blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
+          else if (type === 'vf' && vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+          else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
         });
       } else {
         slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
@@ -2081,7 +2522,6 @@
     function arabiserDans(container) {
       if (!container) return;
       var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-
       var noeuds = [];
       var n;
       while ((n = walker.nextNode())) {
@@ -2163,7 +2603,7 @@
     }
 
     // ============================================================
-    // COUVERTURE RÉUTILISABLE (corrigée : applique la couleur)
+    // COUVERTURE
     // ============================================================
     function construireCouvertureHtml(livret, options) {
       options = options || {};
@@ -2179,8 +2619,6 @@
 
       var tag = estActuel ? 'div' : 'a';
       var attrs = estActuel ? '' : ' href="' + lien + '" title="' + echapperHtml(livret.titre) + '"';
-
-      // ✅ Correction : couleur de fond appliquée
       var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
 
       var html = '';
@@ -2205,9 +2643,6 @@
       return html;
     }
 
-    // ============================================================
-    // BLOC "AUTRES LIVRETS DU THÈME"
-    // ============================================================
     function construireBlocAutresLivretsMemeTheme(chapitre) {
       if (!chapitre.categorie) return '';
       var livretMeta = livretsData[chapitre.categorie] || {};
@@ -2249,14 +2684,10 @@
       return html;
     }
 
-    // ============================================================
-    // BLOC "LES THÈMES" (gros boutons arrondis)
-    // ============================================================
     function construireBlocThemes(chapitre) {
       var livretMeta = livretsData[chapitre.categorie] || {};
       var themeActuel = (livretMeta.theme || '').trim();
 
-      // Regrouper les livrets par thème
       var parTheme = {};
       for (var titre in livretsData) {
         var meta = livretsData[titre];
@@ -2271,7 +2702,6 @@
       var themes = Object.keys(parTheme);
       if (themes.length === 0) return '';
 
-      // Ordre : thème actuel en premier, puis alphabétique
       themes.sort(function(a, b) {
         var aEstActuel = (a === themeActuel);
         var bEstActuel = (b === themeActuel);
@@ -2290,7 +2720,6 @@
         var livrets = parTheme[nomTheme];
         var nbLivrets = livrets.length;
         var estActif = (nomTheme === themeActuel);
-        // Couleur : première couleur du thème
         var couleurTheme = (livrets[0] && livrets[0].couleur) || '#2d6a4f';
         var initiale = initialeTheme(nomTheme);
 
@@ -2310,9 +2739,6 @@
       return html;
     }
 
-    // ============================================================
-    // CONSTRUCTION DE LA ZONE BAS DE PAGE
-    // ============================================================
     function construireZoneBasPage(chapitre) {
       var html = '';
       html += construireBlocAutresLivretsMemeTheme(chapitre);
@@ -2321,7 +2747,7 @@
     }
 
     // ============================================================
-    // ZONE BAS DU CHAPITRE (bouton quiz AVANT la nav)
+    // ZONE BAS DU CHAPITRE
     // ============================================================
     function construireZoneBasChapitre(chapitre) {
       var nav = construireNavDansLivret(chapitre);
@@ -2356,14 +2782,13 @@
         html += '</div>';
       }
       html += '</div>';
-
       html += '</div>';
 
       return html;
     }
 
     // ============================================================
-    // BLOC ACTIONS
+    // COLONNE LATÉRALE
     // ============================================================
     function construireBlocActions(chapitre) {
       var html = '';
@@ -2380,9 +2805,6 @@
       return html;
     }
 
-    // ============================================================
-    // COLONNE LATÉRALE
-    // ============================================================
     function construireZoneLaterale(chapitre) {
       var nav = construireNavDansLivret(chapitre);
       var livretInfo = livretsData[chapitre.categorie] || {};
@@ -2405,7 +2827,7 @@
       html += '    </div>';
       html += '    <div class="meta-ligne">';
       html += '      <span class="meta-icone">⏱</span>';
-      html += '      <span class="meta-label">Temps de lecture avec le maître</span>';
+      html += '      <span class="meta-label">Temps de lecture</span>';
       html += '      <span class="meta-valeur">' + tempsLecture + ' min</span>';
       html += '    </div>';
       if (dateEcrit) {
@@ -2499,9 +2921,6 @@
       return html;
     }
 
-    // ============================================================
-    // ZONE BASSE MOBILE
-    // ============================================================
     function construireZoneBasseMobile(chapitre) {
       return construireZoneLaterale(chapitre);
     }
@@ -2601,10 +3020,12 @@
       var contenuHtml = construireHtmlChapitre(chapitre, imagesLivret);
       var blocARetenirHtml = construireBlocARetenir(chapitre);
       var zoneBasHtml = construireZoneBasChapitre(chapitre);
+      var blocEnvoiHtml = construireBlocEnvoi();
 
       container.innerHTML =
         '<div class="feuille-chapitre">' + contenuHtml + '</div>' +
         blocARetenirHtml +
+        blocEnvoiHtml +
         zoneBasHtml;
 
       colonneLaterale.innerHTML = construireZoneLaterale(chapitre);
