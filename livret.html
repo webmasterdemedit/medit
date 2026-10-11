@@ -260,6 +260,24 @@
       font-weight: 500;
       font-size: 15px;
       color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .carte-chapitre .numero-chapitre {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: var(--text);
+      background: var(--bg-hover);
+      border: 1px solid var(--border-hover);
+      flex-shrink: 0;
     }
 
     .carte-chapitre .meta {
@@ -306,9 +324,6 @@
       color: var(--text);
       font-weight: 500;
     }
-
-    
-    
 
     .carte-chapitre .retenir-cadre {
       margin-top: 4px;
@@ -550,6 +565,20 @@
     var livretsData = {};
 
     // ============================================================
+    // EXTRACTION DU NUMÉRO DE CHAPITRE
+    // ============================================================
+    function extraireNumeroChapitre(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
+    }
+
+    // ============================================================
     // FORMATER LA DATE
     // ============================================================
     function formatDate(dateStr) {
@@ -715,8 +744,14 @@
         return (p.categorie || 'Sans catégorie') === categorieActuelle;
       });
 
+      // Tri par numéro de chapitre, puis alphabétique sur le titre épuré
       chapitresFiltres.sort(function(a, b) {
-        return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' });
+        var numA = extraireNumeroChapitre(a.titre);
+        var numB = extraireNumeroChapitre(b.titre);
+        if (numA !== numB) return numA - numB;
+        return extraireTitreSansNumero(a.titre).localeCompare(
+          extraireTitreSansNumero(b.titre), 'fr', { sensitivity: 'base' }
+        );
       });
 
       if (chapitresFiltres.length === 0) {
@@ -828,6 +863,13 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
           }
         }
 
+        // Extraction du numéro et du titre épuré
+        var numeroChapitre = extraireNumeroChapitre(chapitre.titre);
+        var titreAffiche = extraireTitreSansNumero(chapitre.titre);
+        var numeroHtml = (numeroChapitre !== Infinity)
+          ? '<span class="numero-chapitre">' + numeroChapitre + '</span>'
+          : '';
+
         var dateValidation = '';
         var retenir = '';
         var estLu = false;
@@ -851,7 +893,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
           }
         }
 
-                     var mots = chapitre.mots || 0;
+        var mots = chapitre.mots || 0;
 
         // ============================================================
         // COMPTAGE DES EXERCICES (via ordreBlocs)
@@ -938,7 +980,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
         html += `
           <div class="carte-chapitre" ${onClickAttr}>
             <div class="infos">
-              <div class="titre">${chapitre.titre}</div>
+              <div class="titre">${numeroHtml}${titreAffiche}</div>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${chapitre.niveau}</span>
                 ${metaHtml}
