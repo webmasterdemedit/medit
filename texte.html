@@ -48,8 +48,6 @@
       line-height: 1;
     }
     .feuille-texte .bandeau-titre h1 { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0; }
-    .feuille-texte .tags-haut { margin-top: 4px; margin-bottom: 8px; text-align: center; }
-    .feuille-texte .tags-haut .memo-tag { display: inline-block; padding: 1px 9px; margin: 1px 3px; border-radius: 10px; font-size: 9.5pt; color: #444; font-style: normal; border: 1px solid #e8e2d0; }
     .feuille-texte .slides-zone { margin-top: 16px; margin-bottom: 20px; }
     .feuille-texte .slide { margin-bottom: 8px; }
     .feuille-texte .slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
@@ -191,23 +189,6 @@
     .bloc-actions-texte { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
     .btn-action-lateral { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 18px; font-size: 14px; font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.5px; background: transparent; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; text-align: center; text-decoration: none; box-sizing: border-box; }
     .btn-action-lateral:hover { background: var(--bg-hover); border-color: var(--border-hover); color: var(--text); }
-
-    /* Tags sous le bouton imprimer */
-    .tags-sous-impression {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px 10px;
-      margin-top: 4px;
-      margin-bottom: 4px;
-    }
-    .tags-sous-impression .tag-item {
-      font-family: 'Roboto', sans-serif;
-      font-size: 15px;
-      font-weight: 400;
-      color: #5a5a5a;
-      letter-spacing: 0.2px;
-      line-height: 1.4;
-    }
 
     .zone-bas-texte { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
     .nav-bas-texte { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -447,8 +428,7 @@
       quiz: {}, vf: {}, tt: {}, relier: {}, carte: {}, ordre: {}, copier: {}
     };
 
-    // Toutes les questions ouvertes du texte
-    var questionsOuvertes = []; // [{ texte, reponse: '' }]
+    var questionsOuvertes = [];
 
     // ============================================================
     // HELPERS
@@ -774,7 +754,6 @@
         if (bloc.type === 'open') {
           hasExercice = true;
           exoNum++;
-          // On stocke la question mais on ne l'affiche PAS ici (elle ira dans la popup QUESTIONS)
           questionsOuvertes.push({ texte: bloc.data, reponse: '' });
           return;
         }
@@ -1600,24 +1579,12 @@
         copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
       }
 
-      var vocabClean = [];
-      (texte.vocabulaire || []).forEach(function(item) {
-        String(item).split(',').forEach(function(mot) {
-          var m = mot.trim();
-          if (m !== '') vocabClean.push(m);
-        });
-      });
-
-      var tagsClean = (texte.tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-
       var textePourCompter = '';
       blocsOrdonnes.forEach(function(b) { if (b.type === 'slide') textePourCompter += ' ' + b.data; });
       var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
       var tempsLecture = Math.max(1, Math.round(nbMots / 14));
       texte._nbMots = nbMots;
       texte._tempsLecture = tempsLecture;
-      texte._vocabClean = vocabClean;
-      texte._tagsClean = tagsClean;
 
       window._relierPaires = {};
       var relierCountPourStockage = 0;
@@ -1768,7 +1735,7 @@
       html += '<div class="contenu-theme">';
       html += '<div class="titre-wrapper">';
       if (auteur) html += '<span class="auteur-theme">' + echapperHtml(auteur) + '</span>';
-      html += '<span class="titre-theme">' + echapperHtml(theme.titre) + '</span>';
+      html += '<span class="titre-theme">#' + echapperHtml(theme.titre) + '</span>';
       if (sousTitre) html += '<span class="sous-titre-theme">' + echapperHtml(sousTitre) + '</span>';
       html += '</div>';
       html += '<div class="edition-info">';
@@ -1869,20 +1836,12 @@
     }
 
     function construireBlocActions(texte) {
-  var tagsClean = texte._tagsClean || [];
-  var html = '<div class="bloc-actions-texte">';
-  html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
-  if (tagsClean.length > 0) {
-    html += '<div style="display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:6px;">';
-    tagsClean.forEach(function(t) {
-      html += '<span style="font-family:\'Roboto\',sans-serif;font-size:16px;font-weight:400;color:#555;letter-spacing:0.3px;line-height:1.4;">#' + echapperHtml(t) + '</span>';
-    });
-    html += '</div>';
-  }
-  html += '</div>';
-  return html;
-}
-    
+      var html = '<div class="bloc-actions-texte">';
+      html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
+      html += '</div>';
+      return html;
+    }
+
     function construireZoneLaterale(texte) {
       var nav = construireNavDansTheme(texte);
       var themeInfo = themesData[texte.categorie] || {};
@@ -1927,7 +1886,7 @@
         html += '      <span class="badge-niveau-couv">Niv. ' + niveau + '</span>';
         html += '      <div class="contenu-couv"><div class="titre-wrapper">';
         if (auteurTheme) html += '<span class="auteur-couv">' + echapperHtml(auteurTheme) + '</span>';
-        html += '<span class="titre-couv">' + echapperHtml(texte.categorie) + '</span>';
+        html += '<span class="titre-couv">#' + echapperHtml(texte.categorie) + '</span>';
         if (sousTitre) html += '<span class="sous-titre-couv">' + echapperHtml(sousTitre) + '</span>';
         html += '      </div><div class="edition-info"><span class="edition-nom">Qiraat Édition</span>';
         if (dateFormatee) html += '<span class="edition-date">' + dateFormatee + '</span>';
