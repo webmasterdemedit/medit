@@ -1,4 +1,4 @@
-<!TEXTE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -30,7 +30,23 @@
     .feuille-texte { color: #1a1a1a; font-family: 'Times New Roman', Times, serif; font-size: 11pt; line-height: 1.35; padding: 26px 30px 30px; border: 1px solid #e8e2d0; }
     .feuille-texte .arabe, .feuille-texte [lang="ar"] { font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important; font-size: 1.7em; line-height: 1; vertical-align: middle; }
     .feuille-texte .bandeau-titre { border-radius: 3px; padding: 10px 14px 9px; margin-bottom: 8px; }
-    .feuille-texte .bandeau-titre .ligne-titre { display: flex; flex-direction: row; justify-content: space-between; align-items: baseline; gap: 10px; text-align: left; }
+    .feuille-texte .bandeau-titre .ligne-titre { display: flex; flex-direction: row; justify-content: flex-start; align-items: baseline; gap: 10px; text-align: left; }
+    .feuille-texte .bandeau-titre .numero-texte {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 28px;
+      height: 28px;
+      padding: 0 6px;
+      font-size: 13px;
+      font-weight: 700;
+      color: #1a1a1a;
+      background: #f5f0e8 !important;
+      border: 1px solid #d8d2c0 !important;
+      flex-shrink: 0;
+      font-family: 'Roboto', sans-serif;
+      line-height: 1;
+    }
     .feuille-texte .bandeau-titre h1 { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0; }
     .feuille-texte .tags-haut { margin-top: 4px; margin-bottom: 8px; text-align: center; }
     .feuille-texte .tags-haut .memo-tag { display: inline-block; padding: 1px 9px; margin: 1px 3px; border-radius: 10px; font-size: 9.5pt; color: #444; font-style: normal; border: 1px solid #e8e2d0; }
@@ -175,6 +191,23 @@
     .bloc-actions-texte { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
     .btn-action-lateral { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; padding: 14px 18px; font-size: 14px; font-family: 'Roboto', sans-serif; font-weight: 500; letter-spacing: 0.5px; background: transparent; border: 1px solid var(--border); border-radius: 4px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; text-align: center; text-decoration: none; box-sizing: border-box; }
     .btn-action-lateral:hover { background: var(--bg-hover); border-color: var(--border-hover); color: var(--text); }
+
+    /* Tags sous le bouton imprimer */
+    .tags-sous-impression {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px 10px;
+      margin-top: 4px;
+      margin-bottom: 4px;
+    }
+    .tags-sous-impression .tag-item {
+      font-family: 'Roboto', sans-serif;
+      font-size: 15px;
+      font-weight: 400;
+      color: #5a5a5a;
+      letter-spacing: 0.2px;
+      line-height: 1.4;
+    }
 
     .zone-bas-texte { margin-top: 24px; display: flex; flex-direction: column; gap: 16px; }
     .nav-bas-texte { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
@@ -423,6 +456,17 @@
     function echapperHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
     }
 
     function rendreSources(texte) {
@@ -1573,6 +1617,7 @@
       texte._nbMots = nbMots;
       texte._tempsLecture = tempsLecture;
       texte._vocabClean = vocabClean;
+      texte._tagsClean = tagsClean;
 
       window._relierPaires = {};
       var relierCountPourStockage = 0;
@@ -1585,14 +1630,14 @@
         }
       });
 
-      var html = '';
-      html += '<div class="bandeau-titre"><div class="ligne-titre"><h1>' + echapperHtml(texte.titre || 'Lecture') + '</h1></div></div>';
+      var numeroTexte = extraireNumeroTexte(texte.titre);
+      var titreAffiche = extraireTitreSansNumero(texte.titre);
+      var numeroHtml = (numeroTexte !== Infinity)
+        ? '<span class="numero-texte">' + numeroTexte + '</span>'
+        : '';
 
-      if (tagsClean.length > 0) {
-        html += '<div class="tags-haut">';
-        tagsClean.forEach(function(t) { html += '<span class="memo-tag">#' + echapperHtml(t) + '</span>'; });
-        html += '</div>';
-      }
+      var html = '';
+      html += '<div class="bandeau-titre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
 
       html += '<div class="slides-zone">';
       blocsOrdonnes.forEach(function(bloc) {
@@ -1824,9 +1869,18 @@
     }
 
     function construireBlocActions(texte) {
-      return '<div class="bloc-actions-texte">' +
-             '  <button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>' +
-             '</div>';
+      var tagsClean = texte._tagsClean || [];
+      var html = '<div class="bloc-actions-texte">';
+      html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
+      if (tagsClean.length > 0) {
+        html += '<div class="tags-sous-impression">';
+        tagsClean.forEach(function(t) {
+          html += '<span class="tag-item">#' + echapperHtml(t) + '</span>';
+        });
+        html += '</div>';
+      }
+      html += '</div>';
+      return html;
     }
 
     function construireZoneLaterale(texte) {
