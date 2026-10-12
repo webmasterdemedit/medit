@@ -1869,20 +1869,20 @@
     }
 
     function construireBlocActions(texte) {
-      var tagsClean = texte._tagsClean || [];
-      var html = '<div class="bloc-actions-texte">';
-      html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
-      if (tagsClean.length > 0) {
-        html += '<div class="tags-sous-impression">';
-        tagsClean.forEach(function(t) {
-          html += '<span class="tag-item">#' + echapperHtml(t) + '</span>';
-        });
-        html += '</div>';
-      }
-      html += '</div>';
-      return html;
-    }
-
+  var tagsClean = texte._tagsClean || [];
+  var html = '<div class="bloc-actions-texte">';
+  html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
+  if (tagsClean.length > 0) {
+    html += '<div style="display:flex;flex-wrap:wrap;gap:8px 12px;margin-top:6px;">';
+    tagsClean.forEach(function(t) {
+      html += '<span style="font-family:\'Roboto\',sans-serif;font-size:16px;font-weight:400;color:#555;letter-spacing:0.3px;line-height:1.4;">#' + echapperHtml(t) + '</span>';
+    });
+    html += '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+    
     function construireZoneLaterale(texte) {
       var nav = construireNavDansTheme(texte);
       var themeInfo = themesData[texte.categorie] || {};
