@@ -1,6 +1,6 @@
 // ============================================================
 // IMPRESSION - Qiraat
-// Fichier autonome : génère une page imprimable pour un chapitre
+// Fichier autonome : génère une page imprimable pour un texte
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
 // + Support sources [xxx] rendues en marge droite, sans crochets
@@ -9,46 +9,46 @@
 // ============================================================
 // POINT D'ENTRÉE
 // ============================================================
-function imprimerChapitre(chapitreId, titre, chapitresData) {
-  if (typeof chapitresData === 'undefined' || chapitresData === null) {
-    chapitresData = (typeof window !== 'undefined' && window.chapitresData) ? window.chapitresData : [];
+function imprimerTexte(texteId, titre, textesData) {
+  if (typeof textesData === 'undefined' || textesData === null) {
+    textesData = (typeof window !== 'undefined' && window.textesData) ? window.textesData : [];
   }
 
-  var chapitre = null;
-  if (chapitresData && chapitresData.length > 0) {
-    for (var i = 0; i < chapitresData.length; i++) {
-      if (chapitresData[i].id === chapitreId) {
-        chapitre = chapitresData[i];
+  var texte = null;
+  if (textesData && textesData.length > 0) {
+    for (var i = 0; i < textesData.length; i++) {
+      if (textesData[i].id === texteId) {
+        texte = textesData[i];
         break;
       }
     }
   }
 
-  if (!chapitre) {
-    var tousLesChapitres = DataManager.getTousLesChapitres();
-    for (var i = 0; i < tousLesChapitres.length; i++) {
-      if (tousLesChapitres[i].id === chapitreId) {
-        chapitre = tousLesChapitres[i];
+  if (!texte) {
+    var tousLesTextes = DataManager.getTousLesTextes();
+    for (var i = 0; i < tousLesTextes.length; i++) {
+      if (tousLesTextes[i].id === texteId) {
+        texte = tousLesTextes[i];
         break;
       }
     }
   }
 
-  if (!chapitre) {
-    alert('Chapitre "' + titre + '" non trouvé.');
+  if (!texte) {
+    alert('Texte "' + titre + '" non trouvé.');
     return;
   }
 
-  var contenu = chapitre.contenu || '';
+  var contenu = texte.contenu || '';
   if (!contenu) {
-    alert('Ce chapitre ne contient pas de texte à imprimer.');
+    alert('Ce texte ne contient pas de contenu à imprimer.');
     return;
   }
 
-  chargerImagesLivret(chapitre.categorie).then(function(images) {
-    genererImpression(chapitre, contenu, images || {});
+  chargerImagesTheme(texte.categorie).then(function(images) {
+    genererImpression(texte, contenu, images || {});
   }).catch(function() {
-    genererImpression(chapitre, contenu, {});
+    genererImpression(texte, contenu, {});
   });
 }
 
@@ -284,9 +284,9 @@ function rendreCitations(texte) {
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
-function genererImpression(chapitre, contenu, imagesLivret) {
-  imagesLivret = imagesLivret || {};
-  var ordreBlocs = chapitre.ordreBlocs || [];
+function genererImpression(texte, contenu, imagesTheme) {
+  imagesTheme = imagesTheme || {};
+  var ordreBlocs = texte.ordreBlocs || [];
 
   var parts = contenu.split(' | ');
 
@@ -409,23 +409,23 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     else if (bloc.type === 'copier') nbTotalQuestions++;
   });
 
-  var aRetenirClean = (chapitre.aRetenir || [])
+  var aRetenirClean = (texte.aRetenir || [])
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
 
   var vocabClean = [];
-  (chapitre.vocabulaire || []).forEach(function(item) {
+  (texte.vocabulaire || []).forEach(function(item) {
     String(item).split(',').forEach(function(mot) {
       var m = mot.trim();
       if (m !== '') vocabClean.push(m);
     });
   });
 
-  var tagsClean = (chapitre.tags || [])
+  var tagsClean = (texte.tags || [])
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
 
-  var dateCreation = chapitre.date || '';
+  var dateCreation = texte.date || '';
   var dateCreationStr = '';
   if (dateCreation) {
     var d = new Date(dateCreation);
@@ -444,16 +444,16 @@ function genererImpression(chapitre, contenu, imagesLivret) {
     hour: '2-digit', minute: '2-digit'
   });
 
-  var nomFichierPdf = (chapitre.titre || 'Lecture') +
-    (chapitre.categorie ? ' - ' + chapitre.categorie : '') +
-    ' - Niveau ' + (chapitre.niveau || 0);
+  var nomFichierPdf = (texte.titre || 'Lecture') +
+    (texte.categorie ? ' - ' + texte.categorie : '') +
+    ' - Niveau ' + (texte.niveau || 0);
   nomFichierPdf = nomFichierPdf.replace(/[\\/:*?"<>|]/g, '-');
 
   var printHtml = `<!DOCTYPE html>
 <html>
 <head>
 <meta charset="UTF-8">
-<title>${chapitre.titre || 'Lecture'} - ${chapitre.categorie || ''} - Niveau ${chapitre.niveau || 0}</title>
+<title>${texte.titre || 'Lecture'} - ${texte.categorie || ''} - Niveau ${texte.niveau || 0}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.2cm 1.5cm 1.2cm 1.5cm; size: A4; }
@@ -744,8 +744,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .open-lignes { margin-top:3px; margin-left: 24px; }
 .open-ligne {
   border-bottom:0.5px dotted #999;
-  height: 22px;              /* ✅ hauteur augmentée (était 14px) */
-  margin-bottom: 18px;       /* ✅ espace interligne augmenté (était 9px) */
+  height: 22px;
+  margin-bottom: 18px;
 }
 
 .carte-ligne-courte {
@@ -967,8 +967,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <!-- BANDEAU TITRE -->
 <div class="bandeau-titre">
   <div class="ligne-titre">
-    <h1>${chapitre.titre || 'Lecture'}</h1>
-    <div class="meta-droite">${chapitre.categorie ? chapitre.categorie + ' — ' : ''}Niveau ${chapitre.niveau || 0}</div>
+    <h1>${texte.titre || 'Lecture'}</h1>
+    <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
   </div>
 </div>
 
@@ -1113,7 +1113,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
             else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
           });
 
-          var url = imagesLivret[nomImg];
+          var url = imagesTheme[nomImg];
           if (!url) {
             printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
           } else {
@@ -1156,7 +1156,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
-for (var ol = 0; ol < 5; ol++) {   // ✅ 5 lignes au lieu de 3
+for (var ol = 0; ol < 5; ol++) {
   printHtml += '<div class="open-ligne"></div>';
 }
 printHtml += '</div></div>';
@@ -1371,7 +1371,6 @@ printHtml += '</div></div>';
       parent.replaceChild(frag, texteNode);
     });
 
-        // Forcer le titre du document de l'iframe (utilisé pour le nom du PDF)
     try {
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
