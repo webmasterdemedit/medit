@@ -9,7 +9,7 @@
 var CLE_CACHE      = 'qiraat_data_v1';
 var CLE_TIMESTAMP  = 'qiraat_data_ts';
 var CLE_NOM        = 'qiraat_data_nom';
-var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du livret
+var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du thème
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
 // En JS pur on ne peut PAS distinguer Ctrl+Shift+R de F5 : les deux donnent type === 'reload'.
@@ -95,7 +95,7 @@ var DataManager = {
                 self._ecrireCache(id, data);
 
                 console.log('✅ Données chargées depuis le Sheet');
-                console.log('📚 ' + data.livrets.length + ' livrets');
+                console.log('📚 ' + data.thèmes.length + ' thèmes');
                 console.log('📖 ' + data.tousLesChapitres.length + ' chapitres');
                 console.log('✏️ ' + data.reponses.length + ' réponses');
 
@@ -201,7 +201,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // 🖼️ IMAGES D'UN LIVRET (cache mémoire + localStorage)
+    // 🖼️ IMAGES D'UN thème (cache mémoire + localStorage)
     // ============================================================
     chargerImages: function(nomLivret) {
         var self = this;
