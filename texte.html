@@ -564,19 +564,29 @@
         if (gauche && droite) paires.push({ gauche: gauche, droite: droite });
       }
       if (paires.length === 0) return null;
+
       var compteParDroite = {};
       paires.forEach(function(p) { compteParDroite[p.droite] = (compteParDroite[p.droite] || 0) + 1; });
+
       var droitesUniques = [];
       var dejaVues = {};
       paires.forEach(function(p) {
         if (!dejaVues[p.droite]) {
           dejaVues[p.droite] = true;
-          droitesUniques.push({ droite: p.droite, partagee: compteParDroite[p.droite] > 1 });
+          droitesUniques.push({ droite: p.droite, partagee: compteParDroite[p.droite] > 1, indicesGauche: [] });
         }
       });
-      for (var j = droitesUniques.length - 1; j > 0; j--) {
-        var k = Math.floor(Math.random() * (j + 1));
-        var tmp = droitesUniques[j]; droitesUniques[j] = droitesUniques[k]; droitesUniques[k] = tmp;
+      // Remplir indicesGauche : index de la paire originale à laquelle cette droite correspond
+      paires.forEach(function(p, idx) {
+        for (var j = 0; j < droitesUniques.length; j++) {
+          if (droitesUniques[j].droite === p.droite) { droitesUniques[j].indicesGauche.push(idx); break; }
+        }
+      });
+
+      // Mélanger les droites pour l'affichage
+      for (var k = droitesUniques.length - 1; k > 0; k--) {
+        var r = Math.floor(Math.random() * (k + 1));
+        var tmp = droitesUniques[k]; droitesUniques[k] = droitesUniques[r]; droitesUniques[r] = tmp;
       }
       return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
     }
@@ -866,7 +876,7 @@
           html += '<div class="relier-colonne droite">';
           droitesMelangees.forEach(function(d, i) {
             var classePoint = d.partagee ? 'point point-partage' : 'point';
-            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="droite" data-idx="' + i + '" data-droite-texte="' + echapperHtml(d.droite) + '" onclick="selectionnerRelier(' + relierIdx + ', \'droite\', ' + i + ')">';
+            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="droite" data-idx="' + i + '" data-droite-texte="' + echapperHtml(d.droite) + '" data-indices-gauche="' + (d.indicesGauche || []).join(',') + '" data-max-utilisations="' + (d.indicesGauche || []).length + '" onclick="selectionnerRelier(' + relierIdx + ', \'droite\', ' + i + ')">';
             html += '<span class="' + classePoint + '"></span>';
             html += '<span class="texte">' + d.droite + '</span>';
             html += '</div>';
@@ -1006,6 +1016,7 @@
       var item = exoEl.querySelector('.relier-item[data-cote="' + cote + '"][data-idx="' + idx + '"]');
       if (!item) return;
       if (item.classList.contains('associe')) return;
+
       var sel = st.selection;
       if (!sel) {
         exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
@@ -1019,52 +1030,70 @@
         st.selection = { cote: cote, idx: idx };
         return;
       }
+
       var gaucheIdx = sel.cote === 'gauche' ? sel.idx : idx;
       var droiteIdx = sel.cote === 'droite' ? sel.idx : idx;
+
+      // Gauche déjà associée ?
+      if (st.associations[gaucheIdx] !== undefined) return;
+
+      // Droite déjà pleine ?
       var droiteEl = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
       if (droiteEl && droiteEl.classList.contains('associe')) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
+        var maxUtil = parseInt(droiteEl.getAttribute('data-max-utilisations') || '1');
+        var util = 0;
+        for (var g in st.associations) { if (st.associations[g] == droiteIdx) util++; }
+        if (util >= maxUtil) {
+          exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
+          item.classList.add('selectionne');
+          st.selection = { cote: cote, idx: idx };
+          return;
+        }
       }
+
       var gaucheEl = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
       st.associations[gaucheIdx] = droiteIdx;
       if (gaucheEl) { gaucheEl.classList.remove('selectionne'); gaucheEl.classList.add('associe'); }
-      if (droiteEl) { droiteEl.classList.remove('selectionne'); droiteEl.classList.add('associe'); }
+      if (droiteEl) {
+        droiteEl.classList.remove('selectionne');
+        var maxU = parseInt(droiteEl.getAttribute('data-max-utilisations') || '1');
+        var u = 0;
+        for (var g2 in st.associations) { if (st.associations[g2] == droiteIdx) u++; }
+        if (u >= maxU) droiteEl.classList.add('associe');
+      }
       st.selection = null;
+
       var totalPaires = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]').length;
-      var nbAssociees = Object.keys(st.associations).length;
-      if (nbAssociees >= totalPaires) validerRelier(relierIdx);
+      if (Object.keys(st.associations).length >= totalPaires) validerRelier(relierIdx);
     }
 
     function validerRelier(relierIdx) {
       var exoEl = document.querySelector('.relier-exo[data-relier-idx="' + relierIdx + '"]');
       if (!exoEl) return;
       var st = initRelierState(relierIdx);
-      var mapPaires = st.mapPaires;
-      if (!mapPaires) return;
       var itemsGauche = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]');
       var total = itemsGauche.length;
       var bonnes = 0;
+
       exoEl.querySelectorAll('.relier-item.erreur').forEach(function(el) { el.classList.remove('erreur'); });
+
       for (var gIdx in st.associations) {
         var dIdx = st.associations[gIdx];
-        var texteGauche = itemsGauche[parseInt(gIdx)].querySelector('.texte').textContent.trim();
         var itemDroite = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
-        var texteDroite = itemDroite ? itemDroite.getAttribute('data-droite-texte') : '';
-        var bonne = (mapPaires[texteGauche] === texteDroite);
+        var indicesGauche = (itemDroite ? itemDroite.getAttribute('data-indices-gauche') : '').split(',').map(Number);
+        var bonne = indicesGauche.indexOf(parseInt(gIdx)) !== -1;
         if (bonne) bonnes++;
         else {
           var elG = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gIdx + '"]');
-          var elD = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
           if (elG) elG.classList.add('erreur');
-          if (elD) elD.classList.add('erreur');
+          if (itemDroite) itemDroite.classList.add('erreur');
         }
       }
+
       var resultat = document.getElementById('relierResultat-' + relierIdx);
       var correct = (bonnes === total);
       reponsesTexte.relier[relierIdx] = { valide: correct, bonnes: bonnes, total: total };
+
       if (correct) {
         st.valide = true;
         if (resultat) resultat.textContent = 'Toutes les associations sont correctes.';
@@ -1574,17 +1603,6 @@
       texte._tempsLecture = tempsLecture;
       texte._vocabClean = vocabClean;
 
-      window._relierPaires = {};
-      var relierCountPourStockage = 0;
-      blocsOrdonnes.forEach(function(b) {
-        if (b.type === 'relier') {
-          var map = {};
-          (b.data.paires || []).forEach(function(p) { map[p.gauche] = p.droite; });
-          window._relierPaires[relierCountPourStockage] = map;
-          relierCountPourStockage++;
-        }
-      });
-
       var html = '';
       html += '<div class="bandeau-titre"><div class="ligne-titre"><h1>' + echapperHtml(texte.titre || 'Lecture') + '</h1></div></div>';
 
@@ -1976,10 +1994,6 @@
       arabiserDans(container);
       afficherFilAriane(texte);
       document.title = texte.titre + ' - Qiraat';
-
-      if (window._relierPaires) {
-        Object.keys(window._relierPaires).forEach(function(relierIdx) { setRelierPaires(parseInt(relierIdx), window._relierPaires[relierIdx]); });
-      }
 
       majNoteGlobale();
       initDragAndDropOrdre();
