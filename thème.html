@@ -400,12 +400,12 @@
 
     @media (max-width: 768px) {
       .page- { padding: 12px 16px 30px; }
-      .entete-livret { flex-direction: column; align-items: center; gap: 20px; padding-bottom: 18px; }
+      .entete-thème { flex-direction: column; align-items: center; gap: 20px; padding-bottom: 18px; }
       .couverture-mini { width: 160px; height: 220px; }
       .couverture-mini .titre-couv { font-size: 20px; }
-      .description-livret { width: 100%; text-align: center; }
-      .description-livret h2 { font-size: 20px; }
-      .stats-livret { justify-content: center; gap: 16px; }
+      .description-thème { width: 100%; text-align: center; }
+      .description-thème h2 { font-size: 20px; }
+      .stats-thème { justify-content: center; gap: 16px; }
       .carte-chapitre { flex-direction: column; align-items: stretch; gap: 6px; }
       .carte-chapitre .statut { text-align: left; min-width: unset; }
     }
@@ -413,8 +413,8 @@
     @media (max-width: 400px) {
       .couverture-mini { width: 140px; height: 190px; }
       .couverture-mini .titre-couv { font-size: 17px; }
-      .description-livret .texte-desc { font-size: 14px; }
-      .stats-livret .stat-item { font-size: 12px; }
+      .description-thème .texte-desc { font-size: 14px; }
+      .stats-thème .stat-item { font-size: 12px; }
     }
 
     .modal-overlay {
@@ -510,11 +510,11 @@
 </head>
 <body>
 
-  <div class="page page-livret">
+  <div class="page page-thème">
 
     <a href="/medit/les-thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
 
-    <div id="enteteLivret">
+    <div id="entetethème">
       <div class="loader">
         <div class="spinner"></div>
         <p>Chargement du thème...</p>
@@ -562,7 +562,7 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var categorieActuelle = '';
-    var livretsData = {};
+    var thèmesData = {};
 
     // ============================================================
     // EXTRACTION DU NUMÉRO DE CHAPITRE
@@ -643,12 +643,12 @@
     // ============================================================
     // CHARGEMENT
     // ============================================================
-    function chargerLivret() {
+    function chargerthème() {
       var params = new URLSearchParams(window.location.search);
       categorieActuelle = params.get('cat') || '';
 
       if (!categorieActuelle) {
-        document.getElementById('enteteLivret').innerHTML = `
+        document.getElementById('entetethème').innerHTML = `
           <div class="vide-chapitres" style="margin-top:20px;">
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
@@ -672,11 +672,11 @@
           niveauEtudiant = data.niveau || 0;
           chapitresData = data.chapitres || [];
 
-          livretsData = {};
-          if (data.livrets) {
-            if (Array.isArray(data.livrets)) {
-              data.livrets.forEach(function(l) {
-                livretsData[l.titre] = {
+          thèmesData = {};
+          if (data.thèmes) {
+            if (Array.isArray(data.thèmes)) {
+              data.thèmes.forEach(function(l) {
+                thèmesData[l.titre] = {
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
@@ -698,7 +698,7 @@
             });
           }
 
-          afficherLivret();
+          afficherthème();
         })
         .catch(function(error) {
           console.error('Erreur chargement:', error);
@@ -706,11 +706,11 @@
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
             chapitresData = cache.chapitres || [];
-            if (cache.livrets) {
-              if (Array.isArray(cache.livrets)) {
-                livretsData = {};
-                cache.livrets.forEach(function(l) {
-                  livretsData[l.titre] = {
+            if (cache.thèmes) {
+              if (Array.isArray(cache.thèmes)) {
+                thèmesData = {};
+                cache.thèmes.forEach(function(l) {
+                  thèmesData[l.titre] = {
                     couleur: l.couleur || '#2d6a4f',
                     sousTitre: l.sousTitre || '',
                     date: l.date || '',
@@ -721,9 +721,9 @@
                 });
               }
             }
-            afficherLivret();
+            afficherthème();
           } else {
-            document.getElementById('enteteLivret').innerHTML = `
+            document.getElementById('entetethème').innerHTML = `
               <div class="vide-chapitres" style="margin-top:20px;">
                 <span class="icone">⚠</span>
                 <h4>Erreur de chargement</h4>
@@ -737,9 +737,9 @@
     }
 
     // ============================================================
-    // AFFICHER LE LIVRET
+    // AFFICHER LE thème
     // ============================================================
-    function afficherLivret() {
+    function afficherthème() {
       var chapitresFiltres = chapitresData.filter(function(p) {
         return (p.categorie || 'Sans catégorie') === categorieActuelle;
       });
@@ -755,19 +755,19 @@
       });
 
       if (chapitresFiltres.length === 0) {
-        document.getElementById('enteteLivret').innerHTML = `
+        document.getElementById('entetethème').innerHTML = `
           <div class="vide-chapitres" style="margin-top:20px;">
             <span class="icone">◈</span>
             <h4>Aucun chapitre</h4>
-            <p>Ce livret ne contient pas encore de chapitres accessibles à votre niveau (${niveauEtudiant}).</p>
-            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux livrets</a>
+            <p>Ce thème ne contient pas encore de chapitres accessibles à votre niveau (${niveauEtudiant}).</p>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuChapitres').innerHTML = '';
         return;
       }
 
-      var niveauLivret = chapitresFiltres[0].niveau || 1;
+      var niveauthème = chapitresFiltres[0].niveau || 1;
       var totalChapitres = chapitresFiltres.length;
 
       var validees = 0;
@@ -781,21 +781,21 @@
         }
       });
 
-      var livretInfo = livretsData[categorieActuelle] || {};
-      var couleur = livretInfo.couleur || '#2d6a4f';
-      var sousTitre = livretInfo.sousTitre || '';
-      var dateLivret = livretInfo.date || '';
-      var description = livretInfo.description || 'Ce livret explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
-      var pages = livretInfo.pages || '';
-      var auteur = livretInfo.auteur || '';
+      var thèmeInfo = thèmesData[categorieActuelle] || {};
+      var couleur = thèmeInfo.couleur || '#2d6a4f';
+      var sousTitre = thèmeInfo.sousTitre || '';
+      var datethème = thèmeInfo.date || '';
+      var description = thèmeInfo.description || 'Ce thème explore les thèmes de ' + categorieActuelle + ' à travers ' + totalChapitres + ' chapitres.';
+      var pages = thèmeInfo.pages || '';
+      var auteur = thèmeInfo.auteur || '';
 
-      var dateFormatee = formatDate(dateLivret);
+      var dateFormatee = formatDate(datethème);
       var pourcentage = totalChapitres > 0 ? Math.round((validees / totalChapitres) * 100) : 0;
 
       var enteteHtml = `
-        <div class="entete-livret">
+        <div class="entete-thème">
           <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
-            <span class="badge-niveau-couv">Niveau ${niveauLivret}</span>
+            <span class="badge-niveau-couv">Niveau ${niveauthème}</span>
             <div class="contenu-couv">
               <div class="titre-wrapper">
                 <span class="titre-couv">${categorieActuelle}</span>
@@ -810,14 +810,14 @@
               <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
-          <div class="description-livret">
+          <div class="description-thème">
             <h2>${categorieActuelle}</h2>
             ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
 ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
             <div class="texte-desc">
               <p>${description}</p>
             </div>
-            <div class="stats-livret">
+            <div class="stats-thème">
               <span class="stat-item">Textes : <span class="nombre">${totalChapitres}</span></span>
               <span class="stat-item">Validés : <span class="nombre">${validees}</span></span>
               <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
@@ -826,7 +826,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
         </div>
       `;
 
-      document.getElementById('enteteLivret').innerHTML = enteteHtml;
+      document.getElementById('entetethème').innerHTML = enteteHtml;
 
       afficherChapitres(chapitresFiltres);
     }
@@ -842,7 +842,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
           <div class="vide-chapitres">
             <span class="icone">🎬</span>
             <h4>Aucun chapitre</h4>
-            <p>Ce livret ne contient pas encore de chapitres.</p>
+            <p>Ce thème ne contient pas encore de chapitres.</p>
           </div>
         `;
         return;
@@ -1005,7 +1005,7 @@ ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` :
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
-      chargerLivret();
+      chargerthème();
     }
 
     if (document.readyState === 'loading') {
