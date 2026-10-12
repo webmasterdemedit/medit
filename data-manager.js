@@ -12,13 +12,10 @@ var CLE_NOM        = 'qiraat_data_nom';
 var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du thème
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
-// En JS pur on ne peut PAS distinguer Ctrl+Shift+R de F5 : les deux donnent type === 'reload'.
-// Donc tout reload force le rechargement depuis le Sheet.
 var PERF_NAV = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || performance.navigation || {};
 var EST_RELOAD = PERF_NAV.type === 'reload' || PERF_NAV.type === 1;
 
 if (EST_RELOAD) {
-    // Forcer la péremption du cache pour ce chargement
     try { localStorage.setItem(CLE_TIMESTAMP, '0'); } catch(e) {}
 }
 
@@ -26,8 +23,6 @@ var DataManager = {
 
     // ============================================================
     // CHARGER
-    // - Reload  → toujours depuis le Sheet
-    // - Sinon   → cache localStorage (navigation normale)
     // ============================================================
     charger: function(forceRefresh) {
         var id = localStorage.getItem('etudiant_id');
@@ -35,19 +30,16 @@ var DataManager = {
             return Promise.reject('Non connecté');
         }
 
-        // 1. Reload explicite → Sheet obligatoire, on ignore tout cache
         if (EST_RELOAD || forceRefresh) {
             console.log('🔄 Reload détecté → chargement depuis le Sheet');
             return this._fetchDepuisSheet(id);
         }
 
-        // 2. Cache mémoire (même session, même étudiant)
         if (this._dernierChargement && this._dernierNom === id) {
             console.log('⚡ Cache mémoire utilisé');
             return Promise.resolve(this._dernierChargement);
         }
 
-        // 3. Cache localStorage (navigation normale)
         var cache = this._lireCache(id);
         if (cache) {
             this._dernierChargement = cache;
@@ -56,7 +48,6 @@ var DataManager = {
             return Promise.resolve(cache);
         }
 
-        // 4. Aucun cache → Sheet
         console.log('🌐 Pas de cache → chargement depuis le Sheet');
         return this._fetchDepuisSheet(id);
     },
@@ -75,28 +66,28 @@ var DataManager = {
                     throw new Error(data.message || 'Erreur de chargement');
                 }
 
-                data.livrets            = data.livrets || [];
-                data.chapitres          = data.chapitres || [];
-                data.tousLesChapitres   = data.tousLesChapitres || [];
-                data.chapitresComplets  = data.chapitresComplets || {};
-                data.reponses           = data.reponses || [];
-                data.niveau             = data.niveau || 0;
-                data.description        = data.description || '';
-                data.mdp                = data.mdp || '';
-                data.contact            = data.contact || '';
-                data.auteur             = data.auteur || '';
-                data.dateInscription    = data.dateInscription || '';
-                data.messagePerso       = data.messagePerso || '';
-                data.disciplines        = data.disciplines || '';
-                data.historique         = data.historique || [];
+                data.themes            = data.themes || [];
+                data.textes            = data.textes || [];
+                data.tousLesTextes     = data.tousLesTextes || [];
+                data.textesComplets    = data.textesComplets || {};
+                data.reponses          = data.reponses || [];
+                data.niveau            = data.niveau || 0;
+                data.description       = data.description || '';
+                data.mdp               = data.mdp || '';
+                data.contact           = data.contact || '';
+                data.auteur            = data.auteur || '';
+                data.dateInscription   = data.dateInscription || '';
+                data.messagePerso      = data.messagePerso || '';
+                data.disciplines       = data.disciplines || '';
+                data.historique        = data.historique || [];
 
                 self._dernierChargement = data;
                 self._dernierNom = id;
                 self._ecrireCache(id, data);
 
                 console.log('✅ Données chargées depuis le Sheet');
-                console.log('📚 ' + data.thèmes.length + ' thèmes');
-                console.log('📖 ' + data.tousLesChapitres.length + ' chapitres');
+                console.log('📚 ' + data.themes.length + ' thèmes');
+                console.log('📖 ' + data.tousLesTextes.length + ' textes');
                 console.log('✏️ ' + data.reponses.length + ' réponses');
 
                 return data;
@@ -140,28 +131,28 @@ var DataManager = {
     // ============================================================
     // GETTERS (depuis cache mémoire)
     // ============================================================
-    getChapitre: function(chapitreId) {
+    getTexte: function(texteId) {
         var cache = this._dernierChargement;
-        if (cache && cache.chapitresComplets && cache.chapitresComplets[chapitreId]) {
-            return cache.chapitresComplets[chapitreId];
+        if (cache && cache.textesComplets && cache.textesComplets[texteId]) {
+            return cache.textesComplets[texteId];
         }
         return null;
     },
 
-    getChapitreComplet: function(chapitreId) {
-        return this.getChapitre(chapitreId);
+    getTexteComplet: function(texteId) {
+        return this.getTexte(texteId);
     },
 
-    getChapitres: function() {
-        return (this._dernierChargement && this._dernierChargement.chapitres) || [];
+    getTextes: function() {
+        return (this._dernierChargement && this._dernierChargement.textes) || [];
     },
 
-    getTousLesChapitres: function() {
-        return (this._dernierChargement && this._dernierChargement.tousLesChapitres) || [];
+    getTousLesTextes: function() {
+        return (this._dernierChargement && this._dernierChargement.tousLesTextes) || [];
     },
 
-    getLivrets: function() {
-        return (this._dernierChargement && this._dernierChargement.livrets) || [];
+    getThemes: function() {
+        return (this._dernierChargement && this._dernierChargement.themes) || [];
     },
 
     getReponses: function() {
@@ -201,32 +192,31 @@ var DataManager = {
     },
 
     // ============================================================
-    // 🖼️ IMAGES D'UN thème (cache mémoire + localStorage)
+    // 🖼️ IMAGES D'UN THÈME (cache mémoire + localStorage)
     // ============================================================
-    chargerImages: function(nomLivret) {
+    chargerImagesTheme: function(nomTheme) {
         var self = this;
-        if (this._cacheImages[nomLivret]) {
-            return Promise.resolve(this._cacheImages[nomLivret]);
+        if (this._cacheImages[nomTheme]) {
+            return Promise.resolve(this._cacheImages[nomTheme]);
         }
 
-        // Cache localStorage
         try {
-            var cachedJson = localStorage.getItem(CLE_IMAGES + nomLivret);
+            var cachedJson = localStorage.getItem(CLE_IMAGES + nomTheme);
             if (cachedJson) {
                 var cached = JSON.parse(cachedJson);
-                this._cacheImages[nomLivret] = cached;
+                this._cacheImages[nomTheme] = cached;
                 return Promise.resolve(cached);
             }
         } catch(e) {}
 
-        var url = CONFIG.SCRIPT_URL + '?action=getImages&livret=' + encodeURIComponent(nomLivret);
+        var url = CONFIG.SCRIPT_URL + '?action=getImages&theme=' + encodeURIComponent(nomTheme);
         return fetch(url)
             .then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success && data.images) {
-                    self._cacheImages[nomLivret] = data.images;
+                    self._cacheImages[nomTheme] = data.images;
                     try {
-                        localStorage.setItem(CLE_IMAGES + nomLivret, JSON.stringify(data.images));
+                        localStorage.setItem(CLE_IMAGES + nomTheme, JSON.stringify(data.images));
                     } catch(e) {}
                     return data.images;
                 }
@@ -235,20 +225,20 @@ var DataManager = {
             .catch(function() { return {}; });
     },
 
-    getImagesCache: function(nomLivret) {
-        return this._cacheImages[nomLivret] || {};
+    getImagesThemeCache: function(nomTheme) {
+        return this._cacheImages[nomTheme] || {};
     },
 
     // ============================================================
     // SAUVEGARDES
     // ============================================================
-    sauvegarderOrdre: function(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    sauvegarderOrdre: function(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&titre=' + encodeURIComponent(titre) +
             '&ordreDonne=' + encodeURIComponent(ordreDonne) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -262,13 +252,13 @@ var DataManager = {
             });
     },
 
-    sauvegarderCarte: function(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
+    sauvegarderCarte: function(texteId, titre, cartes, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&titre=' + encodeURIComponent(titre) +
             '&cartes=' + encodeURIComponent(cartes) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -282,13 +272,13 @@ var DataManager = {
             });
     },
 
-    sauvegarderAnnotation: function(chapitreId, slide, annotation) {
+    sauvegarderAnnotation: function(texteId, slide, annotation) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&slide=' + encodeURIComponent(slide) +
             '&annotation=' + encodeURIComponent(annotation);
 
@@ -299,13 +289,13 @@ var DataManager = {
             });
     },
 
-    sauvegarderReponseOuverte: function(chapitreId, reponse) {
+    sauvegarderReponseOuverte: function(texteId, reponse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&reponseOuverte=' + encodeURIComponent(reponse);
 
         return fetch(url).then(function(r) { return r.json(); })
@@ -315,13 +305,13 @@ var DataManager = {
             });
     },
 
-    sauvegarderQuiz: function(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
+    sauvegarderQuiz: function(texteId, titre, choixQcm, bonnes, total, tempsPasse) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&titre=' + encodeURIComponent(titre) +
             '&choixQcm=' + encodeURIComponent(choixQcm) +
             '&bonnes=' + encodeURIComponent(bonnes) +
@@ -335,13 +325,13 @@ var DataManager = {
             });
     },
 
-    sauvegarderLecture: function(chapitreId, titre) {
+    sauvegarderLecture: function(texteId, titre) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&titre=' + encodeURIComponent(titre);
 
         return fetch(url).then(function(r) { return r.json(); })
@@ -351,13 +341,13 @@ var DataManager = {
             });
     },
 
-    marquerRevise: function(chapitreId, revise) {
+    marquerRevise: function(texteId, revise) {
         var id = localStorage.getItem('etudiant_id');
         if (!id) return Promise.reject('Non connecté');
 
         var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
             '&nom=' + encodeURIComponent(id) +
-            '&chapitreId=' + encodeURIComponent(chapitreId) +
+            '&texteId=' + encodeURIComponent(texteId) +
             '&revise=' + encodeURIComponent(revise ? '1' : '0');
 
         return fetch(url).then(function(r) { return r.json(); })
@@ -370,20 +360,20 @@ var DataManager = {
     // ============================================================
     // GET ANNOTATIONS / REVISE
     // ============================================================
-    getAnnotations: function(chapitreId) {
+    getAnnotations: function(texteId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].chapitreId === chapitreId) {
+            if (reponses[i].texteId === texteId) {
                 return reponses[i].annotations || '';
             }
         }
         return '';
     },
 
-    getReviseStatus: function(chapitreId) {
+    getReviseStatus: function(texteId) {
         var reponses = this.getReponses();
         for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].chapitreId === chapitreId) {
+            if (reponses[i].texteId === texteId) {
                 return reponses[i].revise || '0';
             }
         }
@@ -395,7 +385,7 @@ var DataManager = {
     // ============================================================
     rafraichir: function() {
         this._dernierChargement = null;
-        return this.charger(true); // forceRefresh → Sheet
+        return this.charger(true);
     },
 
     invalider: function() {
@@ -412,7 +402,6 @@ var DataManager = {
             localStorage.removeItem(CLE_CACHE);
             localStorage.removeItem(CLE_TIMESTAMP);
             localStorage.removeItem(CLE_NOM);
-            // Vider toutes les images
             for (var i = localStorage.length - 1; i >= 0; i--) {
                 var key = localStorage.key(i);
                 if (key && key.indexOf(CLE_IMAGES) === 0) {
@@ -439,7 +428,7 @@ var DataManager = {
 // ============================================================
 
 function chargerDonnees() { return DataManager.charger(); }
-function getChapitresDuNiveau() { return DataManager.getChapitres(); }
+function getTextesDuNiveau() { return DataManager.getTextes(); }
 function getReponsesEtudiant() { return DataManager.getReponses(); }
 function getNiveauEtudiant() { return DataManager.getNiveau(); }
 function getDescriptionNiveau() { return DataManager.getDescriptionNiveau(); }
@@ -448,35 +437,35 @@ function getContact() { return DataManager.getContact(); }
 function getMessagePerso() { return DataManager.getMessagePerso(); }
 function getDisciplines() { return DataManager.getDisciplines(); }
 function getMdp() { return DataManager.getMdp(); }
-function getLivrets() { return DataManager.getLivrets(); }
+function getThemes() { return DataManager.getThemes(); }
 
-function chargerImagesLivret(nomLivret) { return DataManager.chargerImages(nomLivret); }
-function getImagesLivretCache(nomLivret) { return DataManager.getImagesCache(nomLivret); }
+function chargerImagesTheme(nomTheme) { return DataManager.chargerImagesTheme(nomTheme); }
+function getImagesThemeCache(nomTheme) { return DataManager.getImagesThemeCache(nomTheme); }
 
-function sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderOrdre(chapitreId, titre, ordreDonne, bonnes, total, tempsPasse);
+function sauvegarderOrdre(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderOrdre(texteId, titre, ordreDonne, bonnes, total, tempsPasse);
 }
-function sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderCarte(chapitreId, titre, cartes, bonnes, total, tempsPasse);
+function sauvegarderCarte(texteId, titre, cartes, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderCarte(texteId, titre, cartes, bonnes, total, tempsPasse);
 }
-function sauvegarderAnnotation(chapitreId, slide, annotation) {
-    return DataManager.sauvegarderAnnotation(chapitreId, slide, annotation);
+function sauvegarderAnnotation(texteId, slide, annotation) {
+    return DataManager.sauvegarderAnnotation(texteId, slide, annotation);
 }
-function sauvegarderReponseOuverte(chapitreId, reponse) {
-    return DataManager.sauvegarderReponseOuverte(chapitreId, reponse);
+function sauvegarderReponseOuverte(texteId, reponse) {
+    return DataManager.sauvegarderReponseOuverte(texteId, reponse);
 }
-function sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse) {
-    return DataManager.sauvegarderQuiz(chapitreId, titre, choixQcm, bonnes, total, tempsPasse);
+function sauvegarderQuiz(texteId, titre, choixQcm, bonnes, total, tempsPasse) {
+    return DataManager.sauvegarderQuiz(texteId, titre, choixQcm, bonnes, total, tempsPasse);
 }
-function sauvegarderLecture(chapitreId, titre) {
-    return DataManager.sauvegarderLecture(chapitreId, titre);
+function sauvegarderLecture(texteId, titre) {
+    return DataManager.sauvegarderLecture(texteId, titre);
 }
-function marquerRevise(chapitreId, revise) {
-    return DataManager.marquerRevise(chapitreId, revise);
+function marquerRevise(texteId, revise) {
+    return DataManager.marquerRevise(texteId, revise);
 }
-function getAnnotations(chapitreId) {
-    return DataManager.getAnnotations(chapitreId);
+function getAnnotations(texteId) {
+    return DataManager.getAnnotations(texteId);
 }
-function getReviseStatus(chapitreId) {
-    return DataManager.getReviseStatus(chapitreId);
+function getReviseStatus(texteId) {
+    return DataManager.getReviseStatus(texteId);
 }
