@@ -1870,14 +1870,78 @@ input::placeholder, textarea::placeholder {
 }
 
 @media (max-width: 400px) {
+  .grille-themes {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .carte-couverture .badge-niveau {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    padding: 8px 3px;
+  }
   .carte-couverture .couverture-image img {
     width: 42px;
     height: 42px;
     border-width: 2px;
   }
 }
+
 /* ============================================================
-   CADENAS DE VERROUILLAGE (remplace le style inline en JS)
+   FORCER LES MÊMES PROPORTIONS DANS LES GRILLES DE COUVERTURES
+   ============================================================ */
+.grille-couvertures {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 20px !important;
+  justify-items: center !important;
+}
+
+.grille-couvertures .carte-couverture {
+  width: 100% !important;
+  max-width: 220px !important;
+  aspect-ratio: 2 / 3 !important;
+  height: auto !important;
+  margin: 0 auto !important;
+}
+
+/* ============================================================
+   IMAGE DE COUVERTURE — centrée, cercle, bordure blanche
+   ============================================================ */
+.carte-couverture .couverture-image {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  flex: 0 0 auto;
+  margin: 10px 0;
+  padding: 0;
+  overflow: visible;
+}
+
+.carte-couverture .couverture-image img {
+  display: block;
+  width: 55px;
+  height: 55px;
+  border-radius: 50%;
+  object-fit: cover;
+  object-position: center;
+  border: 3px solid #ffffff;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-sizing: border-box;
+  opacity: 1;
+  filter: none;
+}
+
+@media (max-width: 768px) {
+  .carte-couverture .couverture-image img {
+    width: 48px;
+    height: 48px;
+    border-width: 2.5px;
+  }
+}
+
+/* ============================================================
+   CADENAS DE VERROUILLAGE
    ============================================================ */
 .carte-couverture .cadenas-verrou {
   position: absolute;
@@ -1888,5 +1952,4 @@ input::placeholder, textarea::placeholder {
   font-size: 30px;
   opacity: 0.6;
   pointer-events: none;
-}
 }
