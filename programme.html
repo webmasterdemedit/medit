@@ -9,288 +9,6 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
-  <style>
-    .page-programme {
-      max-width: 1400px;
-      margin: 0 auto;
-      padding: 20px 30px 60px;
-    }
-
-    .page-programme h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-    .page-programme .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
-    }
-
-    .barre-recherche {
-      display: flex;
-      gap: 10px;
-      margin-bottom: 20px;
-      flex-wrap: wrap;
-      align-items: center;
-    }
-    .barre-recherche input[type="text"] {
-      flex: 1;
-      min-width: 220px;
-      padding: 10px 14px;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      font-family: 'Roboto', sans-serif;
-      font-size: 14px;
-      border-radius: 0;
-    }
-    .barre-recherche input[type="text"]:focus {
-      outline: none;
-      border-color: var(--text);
-    }
-    .barre-recherche .compteur-resultats {
-      font-family: 'Roboto', sans-serif;
-      font-size: 12px;
-      color: var(--text-muted);
-    }
-
-    .stats-ligne {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 20px;
-      padding: 12px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-    .stat-item {
-      font-size: 14px;
-      color: var(--text-secondary);
-      font-family: 'Roboto', sans-serif;
-    }
-    .stat-item .nombre {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text);
-      margin-left: 6px;
-    }
-
-    .tableau-wrapper {
-      overflow-x: auto;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-
-    .tableau-programme {
-      width: 100%;
-      border-collapse: collapse;
-      min-width: 800px;
-      font-family: 'Roboto', sans-serif;
-    }
-
-    .tableau-programme th,
-    .tableau-programme td {
-      border: 1px solid var(--border);
-      vertical-align: top;
-      padding: 0;
-    }
-
-    .tableau-programme thead th {
-      background: var(--bg-hover);
-      font-family: 'Georgia', serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      text-align: center;
-      padding: 12px 14px;
-      letter-spacing: 0.5px;
-      position: sticky;
-      top: 0;
-      z-index: 2;
-    }
-    .tableau-programme thead th.coin {
-      text-align: left;
-      background: var(--bg-active);
-      min-width: 160px;
-    }
-
-    .tableau-programme tbody th.theme-cell {
-      background: var(--bg-hover);
-      text-align: left;
-      padding: 14px 16px;
-      font-family: 'Georgia', serif;
-      font-size: 16px;
-      font-weight: 700;
-      color: var(--text);
-      white-space: nowrap;
-      position: sticky;
-      left: 0;
-      z-index: 1;
-      min-width: 160px;
-      border-right: 2px solid var(--border);
-    }
-    .tableau-programme tbody th.theme-cell .theme-nom {
-      display: block;
-      margin-bottom: 4px;
-    }
-    .tableau-programme tbody th.theme-cell .theme-compteur {
-      display: block;
-      font-family: 'Roboto', sans-serif;
-      font-size: 11px;
-      font-weight: 400;
-      color: var(--text-muted);
-      letter-spacing: 0.3px;
-    }
-
-    .cellule-programme {
-      padding: 10px !important;
-      min-width: 260px;
-    }
-
-    .cellule-programme .vide-cell {
-      color: var(--text-muted);
-      text-align: center;
-      font-size: 14px;
-      padding: 16px 0;
-      opacity: 0.5;
-    }
-
-    .bloc-categorie-cell {
-      margin-bottom: 12px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-    .bloc-categorie-cell:last-child {
-      margin-bottom: 0;
-    }
-
-    .bloc-categorie-cell .entete-categorie-cell {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border);
-      background: var(--bg-hover);
-      text-decoration: none;
-      color: var(--text);
-      transition: background 0.15s;
-    }
-    .bloc-categorie-cell .entete-categorie-cell:hover {
-      background: var(--bg-active);
-    }
-    .bloc-categorie-cell .barre-couleur {
-      flex-shrink: 0;
-      width: 4px;
-      height: 22px;
-      border-radius: 0;
-    }
-    .bloc-categorie-cell .titre-categorie-cell {
-      flex: 1;
-      font-family: 'Georgia', serif;
-      font-size: 14px;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.25;
-      min-width: 0;
-      word-break: break-word;
-    }
-    .bloc-categorie-cell .compteur-textes {
-      flex-shrink: 0;
-      font-family: 'Roboto', sans-serif;
-      font-size: 10px;
-      color: var(--text-muted);
-      padding: 1px 7px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-    }
-
-    .bloc-categorie-cell .liste-textes-cell {
-      list-style: none;
-      padding: 6px 0;
-      margin: 0;
-    }
-    .bloc-categorie-cell .liste-textes-cell li {
-      padding: 0;
-      margin: 0;
-    }
-    .bloc-categorie-cell .liste-textes-cell a {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      padding: 6px 12px;
-      font-family: 'Roboto', sans-serif;
-      font-size: 12.5px;
-      color: var(--text-secondary);
-      text-decoration: none;
-      line-height: 1.35;
-      transition: background 0.15s, color 0.15s;
-    }
-    .bloc-categorie-cell .liste-textes-cell a:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-    }
-    .bloc-categorie-cell .liste-textes-cell a::before {
-      content: "▸";
-      color: var(--text-muted);
-      font-size: 9px;
-      flex-shrink: 0;
-    }
-
-    .loader {
-      text-align: center;
-      padding: 60px 20px;
-    }
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    .vide-global {
-      text-align: center;
-      padding: 60px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-    .vide-global .icone {
-      font-size: 40px;
-      display: block;
-      margin-bottom: 12px;
-      color: var(--text-secondary);
-    }
-    .vide-global h2 { font-size: 20px; color: var(--text); font-weight: 500; }
-    .vide-global p { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
-
-    .devise {
-      margin-top: 40px;
-      padding-top: 24px;
-      border-top: 1px solid var(--border);
-      text-align: center;
-      font-family: 'Georgia', serif;
-      font-style: italic;
-      font-size: 14px;
-      color: var(--text-secondary);
-      line-height: 1.7;
-    }
-
-    @media (max-width: 768px) {
-      .page-programme { padding: 12px 16px 40px; }
-      .page-programme h1 { font-size: 22px; }
-      .tableau-programme tbody th.theme-cell { font-size: 14px; min-width: 130px; padding: 10px 12px; }
-      .tableau-programme thead th.coin { min-width: 130px; }
-      .cellule-programme { min-width: 220px; padding: 8px !important; }
-    }
-  </style>
 
   <script>
     var xhr = new XMLHttpRequest();
@@ -353,18 +71,12 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ============================================================
-    // ÉTAT GLOBAL
-    // ============================================================
-    var categoriesData = {};    // { titre: { theme, couleur, niveau, ... } }
-    var textesData = [];        // textes du niveau de l'étudiant
-    var tousTextes = [];        // tous les textes (non filtrés par niveau)
+    var categoriesData = {};
+    var textesData = [];
+    var tousTextes = [];
     var niveauEtudiant = 0;
     var rechercheActive = '';
 
-    // ============================================================
-    // HELPERS
-    // ============================================================
     function echapperHtml(str) {
       if (!str) return '';
       return String(str)
@@ -380,9 +92,6 @@
       return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
-    // ============================================================
-    // CHARGEMENT
-    // ============================================================
     function chargerProgramme() {
       var id = localStorage.getItem('etudiant_id');
       if (!id) { window.location.href = '/medit/index.html'; return; }
@@ -438,9 +147,6 @@
         });
     }
 
-    // ============================================================
-    // CONSTRUCTION DE LA MATRICE
-    // ============================================================
     function construireDonneesProgramme() {
       var ordreThemes = [];
       var themesVus = {};
@@ -503,9 +209,6 @@
       };
     }
 
-    // ============================================================
-    // FILTRAGE PAR RECHERCHE
-    // ============================================================
     function correspondRecherche(theme, categorie, texte) {
       if (!rechercheActive) return true;
       var r = normaliser(rechercheActive);
@@ -515,9 +218,6 @@
       return false;
     }
 
-    // ============================================================
-    // AFFICHAGE
-    // ============================================================
     function afficherProgramme() {
       var conteneur = document.getElementById('contenu');
       var data = construireDonneesProgramme();
@@ -635,9 +335,6 @@
       return Object.keys(vus).length;
     }
 
-    // ============================================================
-    // RECHERCHE
-    // ============================================================
     function brancherRecherche() {
       var input = document.getElementById('rechercheProgramme');
       if (!input) return;
@@ -651,9 +348,6 @@
       });
     }
 
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
     function demarrer() {
       chargerProgramme();
       brancherRecherche();
