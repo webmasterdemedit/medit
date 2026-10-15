@@ -112,23 +112,161 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reset global : tout hérite, sauf composants à identité propre */
+/* Reset global : tout hérite du thème */
 body * {
   background: transparent;
   color: inherit;
   border-color: var(--border);
 }
 
-.couverture-mini, .couverture-mini *,
-.carte-post, .carte-post *,
-.carte-theme, .carte-theme *,
-.carte-texte, .carte-texte *,
-.carte-couverture, .carte-couverture *,
-.couverture-vraie, .couverture-vraie *,
-.contenu-couv, .contenu-couv *,
-.contenu-theme, .contenu-theme * {
-  background: unset;
-  color: unset;
+/* ============================================================
+   EXCEPTIONS : les couvertures gardent leur apparence propre
+   (le JS injecte la couleur du thème en inline, on ne l'écrase pas)
+   ============================================================ */
+
+/* Toutes les couvertures : fond injecté inline, texte sombre lisible */
+.carte-theme,
+.carte-couverture,
+.couverture-mini,
+.couverture-vraie {
+  background: unset;      /* laisse passer la couleur inline */
+  color: #1a1a1a;         /* texte foncé sur fond pastel clair */
+  border-color: unset;    /* laisse passer la couleur inline */
+}
+
+/* Tous les descendants d'une couverture : fond transparent (on voit la couleur du parent) */
+.carte-theme *,
+.carte-couverture *,
+.couverture-mini *,
+.couverture-vraie *,
+.contenu-couv,
+.contenu-couv *,
+.contenu-theme,
+.contenu-theme * {
+  background: transparent;
+  color: inherit;
+  border-color: transparent;
+}
+
+/* On restaure les styles des titres, sous-titres, auteurs, éditions */
+.carte-theme .titre-theme,
+.carte-couverture .titre-theme,
+.couverture-mini .titre-couv,
+.couverture-vraie .titre-couv {
+  display: block;
+  color: #1a1a1a !important;
+  font-family: 'Georgia', serif;
+  font-weight: 700;
+  text-align: center;
+  line-height: 1.2;
+}
+
+.carte-theme .sous-titre-theme,
+.carte-couverture .sous-titre-theme,
+.couverture-mini .sous-titre-couv,
+.couverture-vraie .sous-titre-couv {
+  display: block;
+  color: rgba(26, 26, 26, 0.85) !important;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  text-align: center;
+  line-height: 1.25;
+}
+
+.carte-theme .auteur-theme,
+.carte-couverture .auteur-theme,
+.couverture-vraie .auteur-couv {
+  display: block;
+  color: rgba(26, 26, 26, 0.6) !important;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 300;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  text-align: center;
+}
+
+.carte-theme .edition-nom,
+.carte-couverture .edition-nom,
+.couverture-mini .edition-nom,
+.couverture-vraie .edition-nom {
+  display: block;
+  color: rgba(26, 26, 26, 0.6) !important;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-align: center;
+}
+
+.carte-theme .edition-date,
+.carte-couverture .edition-date,
+.couverture-mini .edition-date,
+.couverture-vraie .edition-date {
+  display: block;
+  color: rgba(26, 26, 26, 0.75) !important;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
+  text-align: center;
+}
+
+/* Les wrappers doivent rester en flex column pour que le titre soit bien centré */
+.carte-theme .contenu-theme,
+.carte-couverture .contenu-theme,
+.couverture-mini .contenu-couv,
+.couverture-vraie .contenu-couv {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100%;
+  width: 100%;
+  padding: inherit;
+  box-sizing: border-box;
+}
+
+.carte-theme .titre-wrapper,
+.carte-couverture .titre-wrapper,
+.couverture-mini .titre-wrapper,
+.couverture-vraie .titre-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.carte-theme .edition-info,
+.carte-couverture .edition-info,
+.couverture-mini .edition-info,
+.couverture-vraie .edition-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  margin-top: auto;
+}
+
+/* Les badges gardent leur fond blanc opaque */
+.carte-theme .badge-niveau,
+.carte-couverture .badge-niveau,
+.couverture-mini .badge-niveau-couv,
+.couverture-vraie .badge-niveau-couv {
+  background: rgba(255, 255, 255, 0.92) !important;
+  color: #1a1a1a !important;
+  border: 1px solid rgba(26, 26, 26, 0.4);
+  border-radius: 4px;
+  font-weight: 600;
+}
+
+/* La barre de progression garde son fond translucide blanc */
+.carte-theme .progression-theme,
+.carte-couverture .progression-theme,
+.couverture-mini .progression-couv {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+.carte-theme .progression-theme .barre,
+.carte-couverture .progression-theme .barre,
+.couverture-mini .progression-couv .barre {
+  background: rgba(255, 255, 255, 0.9) !important;
 }
 
 /* ============================================================
