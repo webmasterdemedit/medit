@@ -1,6 +1,6 @@
 /* ============================================================
-   THEME OLIVE 
-   Sans slides, sans annotations élève, sans lecture mode
+   THEME OLIVE - Uniformisé
+   Une seule classe de couverture : .carte-couverture
    ============================================================ */
 
 @font-face {
@@ -38,7 +38,6 @@
   --lilas:         #9a8aab;
   --lilas-soft:    #e4dcec;
 
-  /* Jaune académique (parchemin) */
   --jaune-academie:       #e8d9a8;
   --jaune-academie-deep:  #d4c088;
   --jaune-academie-soft:  #f2e9c8;
@@ -121,45 +120,56 @@ body * {
 }
 
 /* ============================================================
-   EXCEPTIONS : COUVERTURES (livret ancien + niveau vertical jaune)
+   COUVERTURE UNIQUE - utilisée partout
+   (les-thèmes.html, theme.html, texte.html)
    ============================================================ */
 
-.carte-theme,
-.carte-couverture,
-.couverture-mini,
-.couverture-vraie {
-  background: unset;
-  color: #1a1a1a;
-  border-color: unset;
+.carte-couverture {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 2 / 3;
+  height: auto;
+  box-sizing: border-box;
   display: flex;
   flex-direction: row;        /* niveau à gauche, contenu à droite */
   align-items: stretch;
   justify-content: flex-start;
   overflow: hidden;
-  position: relative;
-  box-sizing: border-box;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1a1a1a;
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  margin: 0 auto;
+  box-shadow: 4px 4px 0 var(--border-strong);
+  transition: all 0.25s ease;
 }
 
-.carte-theme *,
+.carte-couverture:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--text);
+}
+
+.carte-couverture.verrouille {
+  filter: grayscale(0.8) opacity(0.45);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Enfants : pas de fond, couleurs héritées */
 .carte-couverture *,
-.couverture-mini *,
-.couverture-vraie *,
-.contenu-couv,
-.contenu-couv *,
-.contenu-theme,
-.contenu-theme * {
+.carte-couverture .contenu-theme,
+.carte-couverture .contenu-theme * {
   background: transparent;
   color: inherit;
   border-color: transparent;
 }
 
 /* ===== BADGE NIVEAU : bande verticale jaune à gauche ===== */
-.carte-theme .badge-niveau,
-.carte-couverture .badge-niveau,
-.couverture-mini .badge-niveau-couv,
-.couverture-vraie .badge-niveau-couv {
-  position: relative;                 /* dans le flux, plus absolute */
-  order: 0;                            /* avant le contenu */
+.carte-couverture .badge-niveau {
+  position: relative;
+  order: 0;
   flex: 0 0 auto;
   align-self: stretch;
   display: flex;
@@ -179,39 +189,13 @@ body * {
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
-  padding: 14px 6px;                  /* gros espace qui se réduit via clamp */
-  /* Écriture verticale, de bas en haut */
+  padding: 14px 6px;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
 
-/* Sur mobile : la bande se réduit */
-@media (max-width: 768px) {
-  .carte-theme .badge-niveau,
-  .carte-couverture .badge-niveau,
-  .couverture-mini .badge-niveau-couv,
-  .couverture-vraie .badge-niveau-couv {
-    font-size: 9px;
-    letter-spacing: 0.8px;
-    padding: 10px 4px;
-  }
-}
-@media (max-width: 400px) {
-  .carte-theme .badge-niveau,
-  .carte-couverture .badge-niveau,
-  .couverture-mini .badge-niveau-couv,
-  .couverture-vraie .badge-niveau-couv {
-    font-size: 8px;
-    letter-spacing: 0.5px;
-    padding: 8px 3px;
-  }
-}
-
 /* ===== CONTENEUR PRINCIPAL (à droite de la bande niveau) ===== */
-.carte-theme .contenu-theme,
-.carte-couverture .contenu-theme,
-.couverture-mini .contenu-couv,
-.couverture-vraie .contenu-couv {
+.carte-couverture .contenu-theme {
   position: relative;
   z-index: 2;
   order: 1;
@@ -229,11 +213,8 @@ body * {
   text-align: left;
 }
 
-/* ===== FILET VERTICAL DÉCORATIF : du haut jusqu'en bas ===== */
-.carte-theme .contenu-theme::before,
-.carte-couverture .contenu-theme::before,
-.couverture-mini .contenu-couv::before,
-.couverture-vraie .contenu-couv::before {
+/* Filet vertical décoratif */
+.carte-couverture .contenu-theme::before {
   content: "";
   position: absolute;
   left: 8px;
@@ -243,11 +224,8 @@ body * {
   background: rgba(26, 15, 8, 0.4);
 }
 
-/* ===== BLOC HAUT : aligné à gauche ===== */
-.carte-theme .titre-wrapper,
-.carte-couverture .titre-wrapper,
-.couverture-mini .titre-wrapper,
-.couverture-vraie .titre-wrapper {
+/* ===== BLOC HAUT ===== */
+.carte-couverture .titre-wrapper {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -259,10 +237,7 @@ body * {
 }
 
 /* ===== AUTEUR ===== */
-.carte-theme .auteur-theme,
-.carte-couverture .auteur-theme,
-.couverture-mini .auteur-couv,
-.couverture-vraie .auteur-couv {
+.carte-couverture .auteur-theme {
   display: block;
   color: rgba(26, 26, 26, 0.7) !important;
   font-family: var(--font-sans);
@@ -278,11 +253,8 @@ body * {
   text-overflow: ellipsis;
 }
 
-/* ===== TITRE : COMPLET, taille fluide ===== */
-.carte-theme .titre-theme,
-.carte-couverture .titre-theme,
-.couverture-mini .titre-couv,
-.couverture-vraie .titre-couv {
+/* ===== TITRE ===== */
+.carte-couverture .titre-theme {
   display: block;
   overflow: visible;
   color: #1a1a1a !important;
@@ -302,11 +274,8 @@ body * {
   width: 100%;
 }
 
-/* ===== SOUS-TITRE : max 2 lignes ===== */
-.carte-theme .sous-titre-theme,
-.carte-couverture .sous-titre-theme,
-.couverture-mini .sous-titre-couv,
-.couverture-vraie .sous-titre-couv {
+/* ===== SOUS-TITRE ===== */
+.carte-couverture .sous-titre-theme {
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
@@ -325,11 +294,8 @@ body * {
   margin: 2px 0 0 0;
 }
 
-/* ===== BLOC BAS : édition + date alignés à gauche ===== */
-.carte-theme .edition-info,
-.carte-couverture .edition-info,
-.couverture-mini .edition-info,
-.couverture-vraie .edition-info {
+/* ===== BLOC BAS ===== */
+.carte-couverture .edition-info {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -342,11 +308,7 @@ body * {
   text-align: left;
 }
 
-/* ===== QIRAAT ÉDITION : PLUS PETIT ===== */
-.carte-theme .edition-nom,
-.carte-couverture .edition-nom,
-.couverture-mini .edition-nom,
-.couverture-vraie .edition-nom {
+.carte-couverture .edition-nom {
   display: block;
   color: rgba(26, 26, 26, 0.55) !important;
   font-family: var(--font-sans);
@@ -363,11 +325,7 @@ body * {
   max-width: 100%;
 }
 
-/* ===== DATE : ENCORE PLUS PETITE ===== */
-.carte-theme .edition-date,
-.carte-couverture .edition-date,
-.couverture-mini .edition-date,
-.couverture-vraie .edition-date {
+.carte-couverture .edition-date {
   display: block;
   color: rgba(26, 26, 26, 0.65) !important;
   font-family: var(--font-sans);
@@ -383,9 +341,7 @@ body * {
 }
 
 /* ===== PROGRESSION ===== */
-.carte-theme .progression-theme,
-.carte-couverture .progression-theme,
-.couverture-mini .progression-couv {
+.carte-couverture .progression-theme {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -395,16 +351,14 @@ body * {
   z-index: 3;
   overflow: hidden;
 }
-.carte-theme .progression-theme .barre,
-.carte-couverture .progression-theme .barre,
-.couverture-mini .progression-couv .barre {
+.carte-couverture .progression-theme .barre {
   height: 100%;
   background: rgba(255, 255, 255, 0.9) !important;
   transition: width 0.6s ease;
 }
 
 /* ============================================================
-   TYPOGRAPHIE - TITRES ENCADRÉS RESTAURÉS
+   TYPOGRAPHIE
    ============================================================ */
 h1, h2, h3, h4, p,
 .titre,
@@ -436,7 +390,7 @@ h1, h2, h3, h4, p,
   font-family: var(--font-serif);
 }
 
-/* ===== TITRES DE PAGE ENCADRÉS ===== */
+/* Titres de page encadrés */
 .page-themes h1,
 .page-programme h1,
 .page-presentation h1,
@@ -455,7 +409,7 @@ h1, h2, h3, h4, p,
   box-shadow: 4px 4px 0 var(--sauge);
 }
 
-/* ===== TITRES DE SECTION ENCADRÉS ===== */
+/* Titres de section encadrés */
 .feuille-texte .bandeau-titre,
 .feuille-texte .titre-exercices,
 .bloc-a-retenir .bloc-a-retenir-titre,
@@ -519,7 +473,6 @@ h1, h2, h3, h4, p,
   color: var(--text);
 }
 
-/* Métadonnées */
 .meta, .badge, .post-label, .tab-btn, .stat-item,
 .footer-copy, .description, .sous-titre,
 .ordre-badge, .methode-num, .page-num,
@@ -859,31 +812,6 @@ input::placeholder, textarea::placeholder {
 .stats-theme {
   background: var(--sauge-soft);
   border-color: var(--sauge);
-}
-
-/* ============================================================
-   ENCADRÉS DES THÈMES
-   ============================================================ */
-.carte-theme,
-.carte-couverture,
-.couverture-mini,
-.couverture-vraie {
-  border-radius: var(--radius-md);
-  border: 2px solid var(--text);
-  overflow: hidden;
-  box-shadow: 4px 4px 0 var(--border-strong);
-  transition: all 0.25s ease;
-}
-
-.carte-theme:hover,
-.carte-couverture:hover,
-.couverture-mini:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--text);
-}
-
-.carte-theme.verrouille {
-  filter: grayscale(0.8) opacity(0.45);
 }
 
 /* ============================================================
@@ -1762,38 +1690,23 @@ input::placeholder, textarea::placeholder {
   .page-presentation h1,
   .page-theme h1 { font-size: 20px; padding: 6px 16px; }
 
-  /* Couvertures */
-  .carte-theme .contenu-theme,
+  /* Couverture : on réduit les paddings et les polices */
   .carte-couverture .contenu-theme {
     padding: 12px 10px 10px 16px;
   }
-  .carte-theme .titre-theme,
   .carte-couverture .titre-theme {
     font-size: clamp(11px, 4vw, 14px);
   }
-  .carte-theme .sous-titre-theme,
   .carte-couverture .sous-titre-theme { font-size: 9px; }
-  .carte-theme .auteur-theme,
   .carte-couverture .auteur-theme { font-size: 7px; }
-  .carte-theme .edition-nom,
   .carte-couverture .edition-nom { font-size: 6px; }
-  .carte-theme .edition-date,
   .carte-couverture .edition-date { font-size: 7px; }
 
-  .couverture-mini { width: 160px; height: 220px; }
-  .couverture-mini .contenu-couv { padding: 14px 12px 12px 16px; }
-  .couverture-mini .titre-couv { font-size: clamp(13px, 4vw, 18px); }
-  .couverture-mini .sous-titre-couv { font-size: 12px; }
-  .couverture-mini .edition-nom { font-size: 7px; }
-  .couverture-mini .edition-date { font-size: 8px; }
-
-  .couverture-vraie { width: 90px; height: 143px; }
-  .couverture-vraie .contenu-couv { padding: 8px 6px 6px 12px; }
-  .couverture-vraie .titre-couv { font-size: 10px; }
-  .couverture-vraie .sous-titre-couv { font-size: 7px; }
-  .couverture-vraie .auteur-couv { font-size: 5px; }
-  .couverture-vraie .edition-nom { font-size: 5px; }
-  .couverture-vraie .edition-date { font-size: 6px; }
+  .carte-couverture .badge-niveau {
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    padding: 10px 4px;
+  }
 
   .feuille-texte { padding: 20px 18px; }
   .feuille-texte .bandeau-titre h1 { font-size: 13pt; }
@@ -1859,7 +1772,6 @@ input::placeholder, textarea::placeholder {
     grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
     gap: 14px;
   }
-  .carte-theme { height: 240px; }
 
   .header-inner {
     flex-direction: column;
@@ -1870,10 +1782,9 @@ input::placeholder, textarea::placeholder {
   .header-nav { justify-content: center; }
 
   .grille-couvertures {
-    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 14px;
   }
-  .carte-couverture { height: 175px; }
 
   .presentation-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -1884,9 +1795,7 @@ input::placeholder, textarea::placeholder {
 
 @media (max-width: 550px) {
   body { font-size: 14px; }
-  .carte-theme .titre-theme,
   .carte-couverture .titre-theme { font-size: clamp(10px, 4.5vw, 13px); }
-  .carte-theme .sous-titre-theme,
   .carte-couverture .sous-titre-theme { font-size: 8px; }
   .presentation-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
@@ -1899,18 +1808,9 @@ input::placeholder, textarea::placeholder {
     grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
     gap: 10px;
   }
-  .carte-theme { height: 210px; }
-  .couverture-mini { width: 140px; height: 190px; }
-  .couverture-mini .titre-couv { font-size: 16px; }
+  .carte-couverture .badge-niveau {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    padding: 8px 3px;
+  }
 }
-
-.carte-couverture {
-  /* ... styles existants ... */
-  width: 100%;
-  max-width: 220px;           /* largeur max de la couverture */
-  aspect-ratio: 2 / 3;        /* ratio hauteur/largeur fixe (portrait) */
-  height: auto;
-  box-sizing: border-box;
-}
-
-.carte-couverture {
