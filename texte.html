@@ -1,4 +1,4 @@
-<!TEXTE html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -78,6 +78,7 @@
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/impression.js"></script>
+  <script src="/medit/couverture.js"></script>
 
   <script>
     var texteActuel = null;
@@ -1344,40 +1345,6 @@
       };
     }
 
-    function construireCouvertureHtml(theme, options) {
-      options = options || {};
-      var estActuel = !!options.actuel;
-      var lien = options.lien || ('/medit/thème.html?cat=' + encodeURIComponent(theme.titre));
-      var couleur = theme.couleur || '#2d6a4f';
-      var sousTitre = theme.sousTitre || '';
-      var auteur = theme.auteur || '';
-      var date = theme.date || '';
-      var niveau = theme.niveau || 0;
-      var dateFormatee = formatDateMoisAnnee(date);
-      var pourcentage = theme.pourcentage || 0;
-      var tag = estActuel ? 'div' : 'a';
-      var attrs = estActuel ? '' : ' href="' + lien + '" title="' + echapperHtml(theme.titre) + '"';
-      var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
-
-      var html = '';
-      html += '<' + tag + ' class="carte-couverture' + (estActuel ? ' actuelle' : '') + '" style="' + styleInline + '"' + attrs + '>';
-      html += '<span class="badge-niveau">Niv. ' + niveau + '</span>';
-      html += '<div class="contenu-theme">';
-      html += '<div class="titre-wrapper">';
-      if (auteur) html += '<span class="auteur-theme">' + echapperHtml(auteur) + '</span>';
-      html += '<span class="titre-theme">#' + echapperHtml(theme.titre) + '</span>';
-      if (sousTitre) html += '<span class="sous-titre-theme">' + echapperHtml(sousTitre) + '</span>';
-      html += '</div>';
-      html += '<div class="edition-info">';
-      html += '<span class="edition-nom">Qiraat Édition</span>';
-      if (dateFormatee) html += '<span class="edition-date">' + dateFormatee + '</span>';
-      html += '</div>';
-      html += '</div>';
-      html += '<div class="progression-theme"><div class="barre" style="width: ' + pourcentage + '%;"></div></div>';
-      html += '</' + tag + '>';
-      return html;
-    }
-
     function construireBlocAutresThemesMemeTheme(texte) {
       if (!texte.categorie) return '';
       var themeMeta = themesData[texte.categorie] || {};
@@ -1395,7 +1362,8 @@
             auteur: meta.auteur || '',
             date: meta.date || '',
             niveau: meta.niveau || 1,
-            pourcentage: 0
+            pourcentage: 0,
+            couverture: meta.couverture || ''
           });
         }
       }
@@ -1405,7 +1373,7 @@
       html += '<div class="bloc-bas-titre">Dans la même section « ' + echapperHtml(themeActuel) + ' »</div>';
       html += '<div class="bloc-bas-sous-titre">' + autresThemes.length + ' autre(s) thème(s) dans cette même section</div>';
       html += '<div class="grille-couvertures">';
-      autresThemes.forEach(function(l) { html += construireCouvertureHtml(l); });
+      autresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
       html += '</div></div>';
       return html;
     }
@@ -1426,7 +1394,8 @@
             auteur: meta.auteur || '',
             date: meta.date || '',
             niveau: meta.niveau || 1,
-            pourcentage: 0
+            pourcentage: 0,
+            couverture: meta.couverture || ''
           });
         }
       }
@@ -1437,7 +1406,7 @@
       html += '<div class="bloc-bas-titre">Thème des autres sections</div>';
       html += '<div class="bloc-bas-sous-titre">' + themesAutresThemes.length + ' thèmes(s) dans d\'autres sections</div>';
       html += '<div class="grille-couvertures">';
-      themesAutresThemes.forEach(function(l) { html += construireCouvertureHtml(l); });
+      themesAutresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
       html += '</div></div>';
       return html;
     }
@@ -1508,22 +1477,22 @@
         var sousTitre = themeInfo.sousTitre || '';
         var auteurTheme = themeInfo.auteur || '';
         var dateTheme = themeInfo.date || '';
-        var dateFormatee = formatDateMoisAnnee(dateTheme);
+        var couvertureTheme = themeInfo.couverture || '';
+
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Thème</div>';
-       html += '  <a class="encart-theme" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">';
-html += '    <div class="carte-couverture" style="background: ' + couleur + '; border-color: ' + couleur + ';">';
-html += '      <span class="badge-niveau">Niv. ' + niveau + '</span>';
-html += '      <div class="contenu-theme"><div class="titre-wrapper">';
-if (auteurTheme) html += '<span class="auteur-theme">' + echapperHtml(auteurTheme) + '</span>';
-html += '<span class="titre-theme">#' + echapperHtml(texte.categorie) + '</span>';
-if (sousTitre) html += '<span class="sous-titre-theme">' + echapperHtml(sousTitre) + '</span>';
-html += '      </div><div class="edition-info"><span class="edition-nom">Qiraat Édition</span>';
-if (dateFormatee) html += '<span class="edition-date">' + dateFormatee + '</span>';
-html += '      </div></div>';
-html += '    </div>';
-html += '    <div class="encart-texte"><div class="encart-label">Extrait du thème</div><div class="encart-nom-theme">' + echapperHtml(texte.categorie) + '</div><div class="encart-cta">Voir le thème →</div></div>';
-html += '  </a>';
+        html += '  <a class="encart-theme" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">';
+        html += construireCarteCouverture({
+          titre: texte.categorie,
+          couleur: couleur,
+          sousTitre: sousTitre,
+          auteur: auteurTheme,
+          date: dateTheme,
+          niveau: niveau,
+          couverture: couvertureTheme
+        }, { cliquable: false });
+        html += '    <div class="encart-texte"><div class="encart-label">Extrait du thème</div><div class="encart-nom-theme">' + echapperHtml(texte.categorie) + '</div><div class="encart-cta">Voir le thème →</div></div>';
+        html += '  </a>';
         html += '</div>';
       }
 
@@ -1578,7 +1547,8 @@ html += '  </a>';
                 date: l.date || '',
                 description: l.description || '',
                 auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0
+                niveau: parseInt(l.niveau) || 0,
+                couverture: l.couverture || ''
               };
             });
           }
