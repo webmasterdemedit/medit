@@ -1,397 +1,14 @@
-<!-- les-thèmes.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Les Thèmes - Qiraat</title>
+  <title>Thème - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
-  <style>
-    .page-themes {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px 30px 40px;
-    }
-
-    .page-themes h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-
-    .page-themes .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
-    }
-
-    .stats-ligne {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-bottom: 28px;
-      padding: 12px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-
-    .stat-item {
-      font-size: 14px;
-      color: var(--text-secondary);
-    }
-
-    .stat-item .nombre {
-      font-weight: 700;
-      font-size: 18px;
-      color: var(--text);
-      margin-left: 6px;
-    }
-
-    /* ===== LAYOUT AVEC SIDEBAR ===== */
-    .layout-themes {
-      display: flex;
-      gap: 28px;
-      align-items: flex-start;
-      margin-top: 10px;
-    }
-
-    .sidebar-themes {
-      flex: 0 0 200px;
-      position: sticky;
-      top: 20px;
-      border: 1px solid var(--border);
-      padding: 10px 0;
-    }
-
-    .sidebar-themes .sidebar-titre {
-      font-family: var(--font-sans);
-      font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 1.5px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-      padding: 6px 16px 10px;
-      border-bottom: 1px solid var(--border);
-      margin-bottom: 6px;
-    }
-
-    .sidebar-themes .theme-item {
-      display: block;
-      width: 100%;
-      text-align: left;
-      background: transparent;
-      border: none;
-      border-left: 2px solid transparent;
-      color: var(--text-secondary);
-      font-family: var(--font-sans);
-      font-size: 13px;
-      padding: 8px 16px;
-      cursor: pointer;
-      transition: all 0.15s;
-      box-sizing: border-box;
-    }
-
-    .sidebar-themes .theme-item:hover {
-      background: var(--bg-hover);
-      color: var(--text);
-    }
-
-    .sidebar-themes .theme-item.active {
-      border-left-color: var(--text);
-      color: var(--text);
-      background: var(--bg-hover);
-    }
-
-    .sidebar-themes .theme-item .compteur {
-      float: right;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .contenu-themes {
-      flex: 1;
-      min-width: 0;
-    }
-
-    /* ===== GRILLE ===== */
-    .grille-themes {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
-      gap: 20px;
-    }
-
-    .carte-theme {
-      position: relative;
-      border-radius: 0;
-      padding: 0;
-      height: 300px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      border: 1px solid var(--border);
-      overflow: hidden;
-      text-decoration: none;
-      color: #1a1a1a;
-      background: var(--bg);
-    }
-
-    .carte-theme:hover {
-      transform: translateY(-4px);
-      border-color: var(--text);
-    }
-
-    .carte-theme:active {
-      transform: scale(0.97);
-    }
-
-    .carte-theme .contenu-theme {
-      position: relative;
-      z-index: 2;
-      padding: 18px 16px;
-      width: 100%;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      height: 100%;
-      box-sizing: border-box;
-    }
-
-    .carte-theme .titre-wrapper {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      margin-top: 22px;
-    }
-
-    .carte-theme .auteur-theme {
-      font-size: 9px;
-      font-weight: 300;
-      letter-spacing: 1.6px;
-      text-transform: uppercase;
-      opacity: 0.6;
-      margin-bottom: 2px;
-      color: rgba(26, 26, 26, 0.5);
-    }
-
-    .carte-theme .titre-theme {
-      font-family: 'Georgia', serif;
-      font-size: 18px;
-      font-weight: 700;
-      letter-spacing: 0.3px;
-      margin-bottom: 0;
-      line-height: 1.2;
-      max-width: 90%;
-      color: #1a1a1a;
-      text-align: center;
-    }
-
-    .carte-theme .sous-titre-theme {
-      font-size: 11px;
-      font-weight: 500;
-      opacity: 0.8;
-      margin-top: 4px;
-      color: rgba(26, 26, 26, 0.8);
-      line-height: 1.3;
-      text-align: center;
-    }
-
-    .carte-theme .edition-info {
-      margin-top: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 2px;
-      padding-bottom: 8px;
-    }
-
-    .carte-theme .edition-nom {
-      font-weight: 700;
-      font-style: italic;
-      font-size: 9px;
-      letter-spacing: 1px;
-      opacity: 0.6;
-      text-transform: uppercase;
-      color: rgba(26, 26, 26, 0.6);
-    }
-
-    .carte-theme .edition-date {
-      font-size: 9px;
-      opacity: 1;
-      color: rgba(26, 26, 26, 0.7);
-      font-weight: 500;
-    }
-
-    .carte-theme .badge-niveau {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 3;
-      padding: 3px 10px;
-      font-size: 10px;
-      font-weight: 500;
-      letter-spacing: 0.5px;
-      color: rgba(26, 26, 26, 0.85);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      background: rgba(255, 255, 255, 0.70);
-    }
-
-    .carte-theme .progression-theme {
-      position: absolute;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      z-index: 3;
-      height: 3px;
-      background: rgba(255, 255, 255, 0.15);
-      overflow: hidden;
-    }
-
-    .carte-theme .progression-theme .barre {
-      height: 100%;
-      background: rgba(255, 255, 255, 0.60);
-      transition: width 0.6s ease;
-      width: 0%;
-    }
-
-    /* === VERROUILLÉ === */
-    .carte-theme.verrouille {
-      filter: grayscale(1) opacity(0.4);
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    .carte-theme.verrouille:hover {
-      transform: none;
-      border-color: var(--border);
-    }
-
-    /* === VIDE === */
-    .vide-themes {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-    }
-
-    .vide-themes .icone {
-      font-size: 48px;
-      display: block;
-      margin-bottom: 12px;
-      color: var(--text-secondary);
-    }
-
-    .vide-themes h2 {
-      font-size: 20px;
-      color: var(--text);
-      font-weight: 500;
-    }
-
-    .vide-themes p {
-      color: var(--text-secondary);
-      font-size: 14px;
-      margin-top: 4px;
-    }
-
-    .loader {
-      text-align: center;
-      padding: 40px 20px;
-    }
-
-    .spinner {
-      width: 36px;
-      height: 36px;
-      border: 3px solid var(--border);
-      border-top-color: var(--text);
-      border-radius: 50%;
-      animation: spin 0.8s linear infinite;
-      margin: 0 auto 10px;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
-
-    /* ===== RESPONSIVE ===== */
-    @media (max-width: 900px) {
-      .layout-themes { gap: 20px; }
-      .sidebar-themes { flex: 0 0 170px; }
-    }
-
-    @media (max-width: 700px) {
-      .page-themes { padding: 12px 16px 30px; }
-      .page-themes h1 { font-size: 22px; }
-
-      .layout-themes {
-        flex-direction: column;
-        gap: 16px;
-      }
-
-      .sidebar-themes {
-        position: static;
-        flex: none;
-        width: 100%;
-        display: flex;
-        flex-direction: row;
-        overflow-x: auto;
-        padding: 0;
-        border: none;
-        border-bottom: 1px solid var(--border);
-        box-sizing: border-box;
-      }
-
-      .sidebar-themes .sidebar-titre { display: none; }
-
-      .sidebar-themes .theme-item {
-        width: auto;
-        white-space: nowrap;
-        border-left: none;
-        border-bottom: 2px solid transparent;
-        padding: 8px 14px;
-      }
-
-      .sidebar-themes .theme-item.active {
-        border-left-color: transparent;
-        border-bottom-color: var(--text);
-      }
-
-      .sidebar-themes .theme-item .compteur {
-        margin-left: 6px;
-        float: none;
-      }
-
-      .grille-themes {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-        gap: 14px;
-      }
-      .carte-theme { height: 240px; }
-      .carte-theme .titre-theme { font-size: 15px; }
-      .carte-theme .sous-titre-theme { font-size: 10px; }
-      .carte-theme .auteur-theme { font-size: 8px; }
-      .carte-theme .badge-niveau { font-size: 9px; top: 8px; right: 8px; padding: 2px 8px; }
-      .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
-      .stat-item { font-size: 13px; }
-    }
-
-    @media (max-width: 400px) {
-      .grille-themes { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
-      .carte-theme { height: 210px; }
-      .carte-theme .titre-theme { font-size: 14px; }
-    }
-  </style>
 
   <script>
     var xhr = new XMLHttpRequest();
@@ -404,32 +21,18 @@
 </head>
 <body>
 
-  <div class="page page-themes">
+  <div class="page page-theme">
 
-    <h1>Tous les thèmes</h1>
-    <p class="sous-titre-page">Chaque thème regroupe des textes sur un même thème. Cliquez sur un thème pour commencer l'apprentissage.</p>
+    <a href="/medit/les-thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
 
-    <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Thèmes disponibles :</span>
-        <span class="nombre" id="totalThemes">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Textes total :</span>
-        <span class="nombre" id="totalTextes">0</span>
-      </div>
-      <div class="stat-item">
-        <span>Votre niveau :</span>
-        <span class="nombre" id="niveauEtudiant">0</span>
-      </div>
-    </div>
-
-    <div id="contenu">
-      <div class="loader" id="loader">
+    <div id="enteteTheme">
+      <div class="loader">
         <div class="spinner"></div>
-        <p>Chargement de vos thèmes...</p>
+        <p>Chargement du thème...</p>
       </div>
     </div>
+
+    <div id="contenuTextes"></div>
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
@@ -459,24 +62,32 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
+  <script src="/medit/impression.js"></script>
 
   <script>
     var toutesLesReponses = {};
     var textesData = [];
-    var themesData = {};       // { titreTheme: { theme, couleur, sousTitre, date, auteur, ... } }
     var niveauEtudiant = 0;
     var nomEtudiant = '';
+    var categorieActuelle = '';
+    var themesData = {};
 
-    // Thème actuellement sélectionné (null = "Tous")
-    var themeActif = null;
-    // Liste des thèmes déjà calculée (pour refiltrer sans tout recalculer)
-    var themesCalcules = [];
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
+    }
 
     function formatDate(dateStr) {
       if (!dateStr) return '';
       try {
         var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
                     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         return mois[date.getMonth()] + ' ' + date.getFullYear();
       } catch(e) {
@@ -484,386 +95,391 @@
       }
     }
 
-    // ============================================================
-    // Mise à jour de l'URL selon le thème actif
-    // ============================================================
-    function mettreAJourURL(theme) {
-      try {
-        var url = new URL(window.location.href);
-        if (theme === null || theme === '' || theme === '__SANS_THEME__') {
-          url.searchParams.delete('theme');
-        } else {
-          url.searchParams.set('theme', theme);
+    function ouvrirAnnotations(texteId, titre) {
+      var reponse = toutesLesReponses[texteId] || null;
+      var annotations = reponse ? reponse.annotations : '';
+
+      var modal = document.createElement('div');
+      modal.className = 'modal-overlay';
+      modal.id = 'modalAnnotations';
+      modal.onclick = function(e) {
+        if (e.target === this) fermerAnnotations();
+      };
+
+      var html = '<div class="modal-contenu">';
+      html += '<h3>' + titre + '</h3>';
+      html += '<div class="modal-sous-titre">Annotations</div>';
+
+      if (annotations && annotations.trim() !== '') {
+        var parts = annotations.split('|');
+        for (var i = 0; i < parts.length; i++) {
+          var kv = parts[i].split(':');
+          if (kv.length === 2) {
+            var slideNum = kv[0].replace('slide', '');
+            var texte = kv[1];
+            html += '<div class="modal-annotation">';
+            html += '<strong>Slide ' + slideNum + '</strong>';
+            html += texte;
+            html += '</div>';
+          }
         }
-        window.history.replaceState({}, '', url.toString());
-      } catch(e) {
-        console.warn('Impossible de mettre à jour l\'URL:', e);
+      } else {
+        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
       }
+
+      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
+      html += '</div>';
+
+      modal.innerHTML = html;
+      document.body.appendChild(modal);
     }
 
-    function chargerThemes() {
+    function fermerAnnotations() {
+      var modal = document.getElementById('modalAnnotations');
+      if (modal) modal.remove();
+    }
+
+    function chargerTheme() {
+      var params = new URLSearchParams(window.location.search);
+      categorieActuelle = params.get('cat') || '';
+
+      if (!categorieActuelle) {
+        document.getElementById('enteteTheme').innerHTML = `
+          <div class="vide-textes" style="margin-top:20px;">
+            <span class="icone">◈</span>
+            <h4>Aucune catégorie spécifiée</h4>
+            <p>Veuillez sélectionner un thème depuis la page d'accueil.</p>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+          </div>
+        `;
+        document.getElementById('contenuTextes').innerHTML = '';
+        return;
+      }
+
       var id = localStorage.getItem('etudiant_id');
       if (!id) {
         window.location.href = '/medit/index.html';
         return;
       }
-
       nomEtudiant = id;
-
-      // ✅ Lire le thème passé en paramètre URL
-      var paramsUrl = new URLSearchParams(window.location.search);
-      var themeUrl = paramsUrl.get('theme');
-      themeActif = themeUrl ? themeUrl : null;
 
       DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
-          textesData = data.tousLesTextes || data.textes || [];
+          textesData = data.textes || [];
 
-          // Construire themesData depuis data.themes (source de vérité)
           themesData = {};
           if (data.themes && Array.isArray(data.themes)) {
             data.themes.forEach(function(l) {
               themesData[l.titre] = {
-                theme: l.theme || '',
                 couleur: l.couleur || '#2d6a4f',
                 sousTitre: l.sousTitre || '',
                 date: l.date || '',
-                preRequis: l.preRequis || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0
+                pages: l.pages || '',
+                description: l.description || '',
+                auteur: l.auteur || ''
               };
             });
-            console.log('📚 ' + data.themes.length + ' thèmes chargés avec données');
           }
 
           toutesLesReponses = {};
           if (data.reponses) {
             data.reponses.forEach(function(r) {
-              toutesLesReponses[r.texteId] = r;
+              if (!toutesLesReponses[r.texteId]) {
+                toutesLesReponses[r.texteId] = [];
+              }
+              toutesLesReponses[r.texteId].push(r);
             });
           }
 
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-          afficherThemes();
+          afficherTheme();
         })
         .catch(function(error) {
           console.error('Erreur chargement:', error);
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || cache.tousLesTextes || [];
+            textesData = cache.textes || [];
             if (cache.themes && Array.isArray(cache.themes)) {
               themesData = {};
               cache.themes.forEach(function(l) {
                 themesData[l.titre] = {
-                  theme: l.theme || '',
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
-                  preRequis: l.preRequis || '',
-                  auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0
+                  pages: l.pages || '',
+                  description: l.description || '',
+                  auteur: l.auteur || ''
                 };
               });
             }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-            afficherThemes();
+            afficherTheme();
           } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-themes">
+            document.getElementById('enteteTheme').innerHTML = `
+              <div class="vide-textes" style="margin-top:20px;">
                 <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
+                <h4>Erreur de chargement</h4>
                 <p>Vérifiez votre connexion internet.</p>
-                <button onclick="DataManager.rafraichir(); location.reload();"
-                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);border-radius:0;cursor:pointer;color:var(--text);">
-                  Réessayer
-                </button>
+                <button onclick="location.reload();" style="margin-top:10px;padding:8px 20px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);">Réessayer</button>
               </div>
             `;
+            document.getElementById('contenuTextes').innerHTML = '';
           }
         });
     }
 
-    function afficherThemes() {
-      var container = document.getElementById('contenu');
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
-
-      // ============================================================
-      // 1. Construire les thèmes À PARTIR DE LA FEUILLE THÈMES
-      // ============================================================
-
-      var textesParCategorie = {};
-      textesData.forEach(function(ch) {
-        var cat = (ch.categorie || '').trim();
-        if (!cat) return;
-        if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
-        textesParCategorie[cat].push(ch);
+    function afficherTheme() {
+      var textesFiltres = textesData.filter(function(p) {
+        return (p.categorie || 'Sans catégorie') === categorieActuelle;
       });
 
-      var titresThemes = Object.keys(themesData);
-
-      themesCalcules = titresThemes.map(function(titre) {
-        var meta = themesData[titre];
-        var textesDuTheme = textesParCategorie[titre] || [];
-
-        var niveauMin = meta.niveau || 1;
-        var niveauMax = meta.niveau || 1;
-        if (textesDuTheme.length > 0) {
-          niveauMin = Infinity;
-          niveauMax = -Infinity;
-          textesDuTheme.forEach(function(ch) {
-            var n = parseInt(ch.niveau) || 1;
-            if (n < niveauMin) niveauMin = n;
-            if (n > niveauMax) niveauMax = n;
-          });
-        }
-
-        var disponible = false;
-        if (textesDuTheme.length === 0) {
-          disponible = true;
-        } else {
-          textesDuTheme.forEach(function(ch) {
-            if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
-          });
-        }
-
-        var validees = 0;
-        textesDuTheme.forEach(function(ch) {
-          var reponse = toutesLesReponses[ch.id];
-          if (reponse && reponse.valide === 'valide') validees++;
-        });
-        var pourcentage = textesDuTheme.length > 0
-          ? Math.round((validees / textesDuTheme.length) * 100)
-          : 0;
-
-        return {
-          nom: titre,
-          theme: (meta.theme || '').trim(),
-          niveauMin: niveauMin,
-          niveauMax: niveauMax,
-          textes: textesDuTheme.length,
-          textesListe: textesDuTheme,
-          disponible: disponible,
-          pourcentage: pourcentage,
-          couleur: meta.couleur || '#2d6a4f',
-          sousTitre: meta.sousTitre || '',
-          date: meta.date || '',
-          auteur: meta.auteur || ''
-        };
+      textesFiltres.sort(function(a, b) {
+        var numA = extraireNumeroTexte(a.titre);
+        var numB = extraireNumeroTexte(b.titre);
+        if (numA !== numB) return numA - numB;
+        return extraireTitreSansNumero(a.titre).localeCompare(
+          extraireTitreSansNumero(b.titre), 'fr', { sensitivity: 'base' }
+        );
       });
 
-      themesCalcules.sort(function(a, b) {
-        return a.niveauMin - b.niveauMin
-          || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-      });
-
-      // ============================================================
-      // 2. Stats globales
-      // ============================================================
-      var totalTextes = textesData.length;
-      document.getElementById('totalThemes').textContent = themesCalcules.length;
-      document.getElementById('totalTextes').textContent = totalTextes;
-
-      if (themesCalcules.length === 0) {
-        container.innerHTML = `
-          <div class="vide-themes">
+      if (textesFiltres.length === 0) {
+        document.getElementById('enteteTheme').innerHTML = `
+          <div class="vide-textes" style="margin-top:20px;">
             <span class="icone">◈</span>
-            <h2>Aucun thème disponible</h2>
-            <p>Aucun thème n'est configuré pour le moment.</p>
+            <h4>Aucun texte</h4>
+            <p>Ce thème ne contient pas encore de textes accessibles à votre niveau (${niveauEtudiant}).</p>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
+        document.getElementById('contenuTextes').innerHTML = '';
         return;
       }
 
-      // ============================================================
-      // 3. Construire la liste des thèmes
-      // ============================================================
-      var themes = [];
-      var themesVus = {};
-      var aDesSansTheme = false;
+      var niveauTheme = textesFiltres[0].niveau || 1;
+      var totalTextes = textesFiltres.length;
 
-      themesCalcules.forEach(function(l) {
-        var t = l.theme || '';
-        if (t === '') {
-          aDesSansTheme = true;
-          return;
-        }
-        if (!themesVus[t]) {
-          themesVus[t] = true;
-          themes.push(t);
+      var validees = 0;
+      textesFiltres.forEach(function(texte) {
+        var reponse = toutesLesReponses[texte.id];
+        if (reponse) {
+          var bonnes = parseInt(reponse.bonnes) || 0;
+          var total = parseInt(reponse.total) || 0;
+          if (total === 1 && bonnes === 1) validees++;
+          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
         }
       });
 
-      // ✅ Vérifier que le thème de l'URL existe bien
-      if (themeActif && themeActif !== '__SANS_THEME__') {
-        var themeExiste = themes.indexOf(themeActif) !== -1;
-        if (!themeExiste) {
-          themeActif = null;
-          mettreAJourURL(null);
-        }
-      }
+      var themeInfo = themesData[categorieActuelle] || {};
+      var couleur = themeInfo.couleur || '#2d6a4f';
+      var sousTitre = themeInfo.sousTitre || '';
+      var dateTheme = themeInfo.date || '';
+      var description = themeInfo.description || 'Ce thème explore les thèmes de ' + categorieActuelle + ' à travers ' + totalTextes + ' textes.';
+      var pages = themeInfo.pages || '';
+      var auteur = themeInfo.auteur || '';
 
-      // ============================================================
-      // 4. Construire le HTML : sidebar + grille
-      // ============================================================
-      var html = '<div class="layout-themes">';
+      var dateFormatee = formatDate(dateTheme);
+      var pourcentage = totalTextes > 0 ? Math.round((validees / totalTextes) * 100) : 0;
 
-      // --- Sidebar ---
-      html += '<aside class="sidebar-themes" id="sidebarThemes">';
-      html += '<div class="sidebar-titre">Sections</div>';
-
-      // Bouton "Tous"
-      var classeTous = (themeActif === null) ? ' active' : '';
-      html += '<button class="theme-item' + classeTous + '" data-theme="">'
-            + 'Tous'
-            + '<span class="compteur">' + themesCalcules.length + '</span>'
-            + '</button>';
-
-      // Boutons par thème
-      themes.forEach(function(t) {
-        var count = themesCalcules.filter(function(l) { return l.theme === t; }).length;
-        var classeActif = (themeActif === t) ? ' active' : '';
-        html += '<button class="theme-item' + classeActif + '" data-theme="' + escapeAttr(t) + '">'
-              + escapeHtml(t)
-              + '<span class="compteur">' + count + '</span>'
-              + '</button>';
-      });
-
-      // Bouton "Sans thème"
-      if (aDesSansTheme) {
-        var countSans = themesCalcules.filter(function(l) { return !l.theme; }).length;
-        var classeSans = (themeActif === '__SANS_THEME__') ? ' active' : '';
-        html += '<button class="theme-item' + classeSans + '" data-theme="__SANS_THEME__">'
-              + 'Sans thème'
-              + '<span class="compteur">' + countSans + '</span>'
-              + '</button>';
-      }
-
-      html += '</aside>';
-
-      // --- Contenu ---
-      html += '<div class="contenu-themes"><div class="grille-themes" id="grilleThemes"></div></div>';
-
-      html += '</div>';
-      container.innerHTML = html;
-
-      // ============================================================
-      // 5. Brancher les clics sur les onglets
-      // ============================================================
-      var boutons = container.querySelectorAll('.sidebar-themes .theme-item');
-      boutons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          boutons.forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-
-          var t = btn.getAttribute('data-theme');
-          if (t === '') themeActif = null;
-          else if (t === '__SANS_THEME__') themeActif = '__SANS_THEME__';
-          else themeActif = t;
-
-          // ✅ Mettre à jour l'URL
-          mettreAJourURL(themeActif);
-
-          rendreGrille();
-        });
-      });
-
-      // ============================================================
-      // 6. Rendu initial
-      // ============================================================
-      rendreGrille();
-    }
-
-    // === Rendu de la grille en fonction du thème actif ===
-    function rendreGrille() {
-      var grille = document.getElementById('grilleThemes');
-      if (!grille) return;
-
-      var liste = themesCalcules.filter(function(l) {
-        if (themeActif === null) return true;
-        if (themeActif === '__SANS_THEME__') return !l.theme;
-        return l.theme === themeActif;
-      });
-
-      if (liste.length === 0) {
-        grille.innerHTML = `
-          <div class="vide-themes">
-            <span class="icone">◈</span>
-            <h2>Aucun thème dans ce thème</h2>
-          </div>
-        `;
-        return;
-      }
-
-      var html = '';
-
-      liste.forEach(function(theme) {
-        var sousTitre = theme.sousTitre || '';
-        var date = theme.date || '';
-        var auteur = theme.auteur || '';
-
-        var disponible = theme.disponible;
-        var couleur = disponible ? (theme.couleur || '#2d6a4f') : '#666666';
-
-        var badgeTexte;
-        if (theme.niveauMin === theme.niveauMax) {
-          badgeTexte = 'Niveau ' + theme.niveauMin;
-        } else {
-          badgeTexte = 'Niveau ' + theme.niveauMin + ' et ' + theme.niveauMax;
-        }
-
-        var pourcentage = theme.pourcentage;
-        var dateFormatee = formatDate(date);
-        var classeVerrou = disponible ? '' : 'verrouille';
-
-        // ✅ MÊME LOGIQUE QUE THEME HTML : background + border-color avec !important
-        html += `
-          <div class="carte-theme ${classeVerrou}"
-               style="background: ${couleur} !important; border-color: ${couleur} !important;"
-               onclick="${disponible ? 'window.location.href=\'/medit/thème.html?cat=' + encodeURIComponent(theme.nom) + '\'' : ''}">
-            ${!disponible ? '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:30px;opacity:0.6;pointer-events:none;">🔒︎︎︎</div>' : ''}
-            <span class="badge-niveau">${badgeTexte}</span>
-            <div class="contenu-theme">
+      var enteteHtml = `
+        <div class="entete-theme">
+          <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
+            <span class="badge-niveau-couv">Niveau ${niveauTheme}</span>
+            <div class="contenu-couv">
               <div class="titre-wrapper">
-                ${auteur ? `<span class="auteur-theme">${escapeHtml(auteur)}</span>` : ''}
-                <span class="titre-theme">#${escapeHtml(theme.nom)}</span>
-                ${sousTitre ? `<span class="sous-titre-theme">${escapeHtml(sousTitre)}</span>` : ''}
+                <span class="titre-couv">#${categorieActuelle}</span>
+                ${sousTitre ? `<span class="sous-titre-couv">${sousTitre}</span>` : ''}
               </div>
               <div class="edition-info">
                 <span class="edition-nom">Qiraat Édition</span>
                 ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
               </div>
             </div>
-            <div class="progression-theme">
+            <div class="progression-couv">
               <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
+          <div class="description-theme">
+            <h2>#${categorieActuelle}</h2>
+            ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
+${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
+            <div class="texte-desc">
+              <p>${description}</p>
+            </div>
+            <div class="stats-theme">
+              <span class="stat-item">Textes : <span class="nombre">${totalTextes}</span></span>
+              <span class="stat-item">Validés : <span class="nombre">${validees}</span></span>
+              <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById('enteteTheme').innerHTML = enteteHtml;
+
+      afficherTextes(textesFiltres);
+    }
+
+    function afficherTextes(textes) {
+      var container = document.getElementById('contenuTextes');
+
+      if (textes.length === 0) {
+        container.innerHTML = `
+          <div class="vide-textes">
+            <span class="icone">🎬</span>
+            <h4>Aucun texte</h4>
+            <p>Ce thème ne contient pas encore de textes.</p>
+          </div>
         `;
-      });
+        return;
+      }
 
-      grille.innerHTML = html;
-    }
+      var html = '<div class="section-textes"><h3>Sommaire des textes</h3>';
 
-    // === Petits utilitaires ===
-    function escapeHtml(str) {
-      if (!str) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
-    }
+      for (var i = 0; i < textes.length; i++) {
+        var texte = textes[i];
+        var reponse = toutesLesReponses[texte.id];
 
-    function escapeAttr(str) {
-      return escapeHtml(str);
+        if (!reponse) {
+          for (var key in toutesLesReponses) {
+            if (toutesLesReponses[key].titre === texte.titre) {
+              reponse = toutesLesReponses[key];
+              break;
+            }
+          }
+        }
+
+        var numeroTexte = extraireNumeroTexte(texte.titre);
+        var titreAffiche = extraireTitreSansNumero(texte.titre);
+        var numeroHtml = (numeroTexte !== Infinity)
+          ? '<span class="numero-texte">' + numeroTexte + '</span>'
+          : '';
+
+        var dateValidation = '';
+        var retenir = '';
+        var estLu = false;
+        var estValide = false;
+
+        var reponses = toutesLesReponses[texte.id] || [];
+        if (reponses.length > 0) {
+          var toutesValides = true;
+          for (var j = 0; j < reponses.length; j++) {
+            if (reponses[j].valide !== 'valide') {
+              toutesValides = false;
+              break;
+            }
+            if (reponses[j].date) dateValidation = reponses[j].date;
+            if (reponses[j].retenir) retenir = reponses[j].retenir;
+          }
+          
+          if (toutesValides) {
+            estLu = true;
+            estValide = true;
+          }
+        }
+
+        var mots = texte.mots || 0;
+
+        var TYPES_EXERCICES = [
+          { prefix: 'quiz:',   label: 'QCM' },
+          { prefix: 'open:',   label: 'Ouverte' },
+          { prefix: 'ordre:',  label: 'Ordre' },
+          { prefix: 'carte:',  label: 'Carte' },
+          { prefix: 'relier:', label: 'Relier' },
+          { prefix: 'tt:',     label: 'Trous' },
+          { prefix: 'vf:',     label: 'VF' },
+          { prefix: 'copier:', label: 'Copier' }
+        ];
+
+        var ordreBlocs = texte.ordreBlocs || [];
+        var detailParts = [];
+        var nbExercices = 0;
+
+        if (ordreBlocs.length > 0) {
+          for (var t = 0; t < TYPES_EXERCICES.length; t++) {
+            var type = TYPES_EXERCICES[t];
+            var count = 0;
+            for (var ob = 0; ob < ordreBlocs.length; ob++) {
+              if (ordreBlocs[ob].indexOf(type.prefix) === 0) count++;
+            }
+            if (count > 0) {
+              nbExercices++;
+              detailParts.push(count + ' ' + type.label);
+            }
+          }
+        } else {
+          if (texte.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+          if (texte.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+        }
+
+        var detailExercices = detailParts.join(' · ');
+        var exercicesHtml =
+          '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' +
+          (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
+
+        var metaHtml = '';
+
+        if (estLu) {
+          // ... (à compléter si besoin)
+        } else {
+          metaHtml = exercicesHtml;
+        }
+        var dateHtml = '';
+        var dateLabelHtml = '';
+
+        if (estLu && dateValidation) {
+          var d = new Date(dateValidation);
+          if (!isNaN(d.getTime())) {
+            var dateStr = d.toLocaleDateString('fr-FR', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+            var heureStr = d.toLocaleTimeString('fr-FR', {
+              hour: '2-digit', minute: '2-digit'
+            });
+            dateLabelHtml = '<span class="date-label">Fait :</span>';
+            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
+          }
+        }
+
+        var retenirHtml = '';
+        if (estValide && retenir) {
+          retenirHtml = `
+            <div class="retenir-cadre">
+              <strong>À retenir</strong>
+              ${retenir}
+            </div>
+          `;
+        }
+
+        var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        var onClickAttr = 'onclick="window.location.href=\'/medit/texte.html?id=' + texte.id + '\'"';
+
+        html += `
+          <div class="carte-texte" ${onClickAttr}>
+            <div class="infos">
+              <div class="titre">${numeroHtml}${titreAffiche}</div>
+              <div class="meta">
+                <span class="niveau-badge">Niveau ${texte.niveau}</span>
+                ${metaHtml}
+                ${motsHtml}
+                ${retenirHtml}
+              </div>
+            </div>
+            <div class="statut">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+            
+          </div>
+        `;
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
     }
 
     function demarrer() {
-      chargerThemes();
+      chargerTheme();
     }
 
     if (document.readyState === 'loading') {
