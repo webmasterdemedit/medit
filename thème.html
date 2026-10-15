@@ -177,7 +177,8 @@
                 date: l.date || '',
                 pages: l.pages || '',
                 description: l.description || '',
-                auteur: l.auteur || ''
+                auteur: l.auteur || '',
+                niveau: parseInt(l.niveau) || 0
               };
             });
           }
@@ -209,7 +210,8 @@
                   date: l.date || '',
                   pages: l.pages || '',
                   description: l.description || '',
-                  auteur: l.auteur || ''
+                  auteur: l.auteur || '',
+                  niveau: parseInt(l.niveau) || 0
                 };
               });
             }
@@ -280,28 +282,33 @@
       var dateFormatee = formatDate(dateTheme);
       var pourcentage = totalTextes > 0 ? Math.round((validees / totalTextes) * 100) : 0;
 
+      // ✅ MÊME STRUCTURE QUE construireCouvertureHtml() de texte.html
+      // et que les cartes de les-thèmes.html
+      var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
+
       var enteteHtml = `
         <div class="entete-theme">
-          <div class="couverture-mini" style="background: ${couleur} !important; border-color: ${couleur} !important;">
-            <span class="badge-niveau-couv">Niveau ${niveauTheme}</span>
-            <div class="contenu-couv">
+          <div class="carte-couverture" style="${styleInline}">
+            <span class="badge-niveau">Niv. ${niveauTheme}</span>
+            <div class="contenu-theme">
               <div class="titre-wrapper">
-                <span class="titre-couv">#${categorieActuelle}</span>
-                ${sousTitre ? `<span class="sous-titre-couv">${sousTitre}</span>` : ''}
+                ${auteur ? `<span class="auteur-theme">${auteur}</span>` : ''}
+                <span class="titre-theme">#${categorieActuelle}</span>
+                ${sousTitre ? `<span class="sous-titre-theme">${sousTitre}</span>` : ''}
               </div>
               <div class="edition-info">
                 <span class="edition-nom">Qiraat Édition</span>
                 ${dateFormatee ? `<span class="edition-date">${dateFormatee}</span>` : ''}
               </div>
             </div>
-            <div class="progression-couv">
+            <div class="progression-theme">
               <div class="barre" style="width: ${pourcentage}%;"></div>
             </div>
           </div>
           <div class="description-theme">
             <h2>#${categorieActuelle}</h2>
             ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
-${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
+            ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
             <div class="texte-desc">
               <p>${description}</p>
             </div>
