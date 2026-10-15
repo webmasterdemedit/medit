@@ -38,6 +38,11 @@
   --lilas:         #9a8aab;
   --lilas-soft:    #e4dcec;
 
+  /* Jaune académique (parchemin) */
+  --jaune-academie:       #e8d9a8;
+  --jaune-academie-deep:  #d4c088;
+  --jaune-academie-soft:  #f2e9c8;
+
   --header-bg:     #5d7a5c;
   --header-text:   #fbf6ee;
   --header-muted:  #d4dfd3;
@@ -84,6 +89,10 @@
     --lilas:         #b3a3c2;
     --lilas-soft:    #302a3a;
 
+    --jaune-academie:       #5a4a20;
+    --jaune-academie-deep:  #3d3015;
+    --jaune-academie-soft:  #2e2615;
+
     --header-bg:     #24301f;
     --header-text:   #f0e9dc;
     --header-muted:  #b8ab96;
@@ -112,7 +121,7 @@ body * {
 }
 
 /* ============================================================
-   EXCEPTIONS : COUVERTURES (livret ancien, titre à gauche)
+   EXCEPTIONS : COUVERTURES (livret ancien + niveau vertical jaune)
    ============================================================ */
 
 .carte-theme,
@@ -123,9 +132,9 @@ body * {
   color: #1a1a1a;
   border-color: unset;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;        /* niveau à gauche, contenu à droite */
   align-items: stretch;
-  justify-content: space-between;
+  justify-content: flex-start;
   overflow: hidden;
   position: relative;
   box-sizing: border-box;
@@ -144,21 +153,78 @@ body * {
   border-color: transparent;
 }
 
-/* ===== CONTENEUR PRINCIPAL ===== */
+/* ===== BADGE NIVEAU : bande verticale jaune à gauche ===== */
+.carte-theme .badge-niveau,
+.carte-couverture .badge-niveau,
+.couverture-mini .badge-niveau-couv,
+.couverture-vraie .badge-niveau-couv {
+  position: relative;                 /* dans le flux, plus absolute */
+  order: 0;                            /* avant le contenu */
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jaune-academie) !important;
+  color: #3a2e10 !important;
+  border: none;
+  border-right: 1px solid rgba(90, 74, 32, 0.45);
+  border-radius: 0;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  padding: 14px 6px;                  /* gros espace qui se réduit via clamp */
+  /* Écriture verticale, de bas en haut */
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* Sur mobile : la bande se réduit */
+@media (max-width: 768px) {
+  .carte-theme .badge-niveau,
+  .carte-couverture .badge-niveau,
+  .couverture-mini .badge-niveau-couv,
+  .couverture-vraie .badge-niveau-couv {
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    padding: 10px 4px;
+  }
+}
+@media (max-width: 400px) {
+  .carte-theme .badge-niveau,
+  .carte-couverture .badge-niveau,
+  .couverture-mini .badge-niveau-couv,
+  .couverture-vraie .badge-niveau-couv {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    padding: 8px 3px;
+  }
+}
+
+/* ===== CONTENEUR PRINCIPAL (à droite de la bande niveau) ===== */
 .carte-theme .contenu-theme,
 .carte-couverture .contenu-theme,
 .couverture-mini .contenu-couv,
 .couverture-vraie .contenu-couv {
   position: relative;
   z-index: 2;
+  order: 1;
+  flex: 1 1 auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   align-items: stretch;
-  height: 100%;
-  width: 100%;
+  height: auto;
+  min-height: 100%;
+  width: auto;
   box-sizing: border-box;
-  padding: 16px 14px 12px 18px;   /* padding-left plus large pour le filet */
+  padding: 16px 14px 12px 18px;
   overflow: hidden;
   text-align: left;
 }
@@ -171,8 +237,8 @@ body * {
   content: "";
   position: absolute;
   left: 8px;
-  top: 0;            /* tout en haut */
-  bottom: 0;         /* tout en bas */
+  top: 0;
+  bottom: 0;
   width: 1.5px;
   background: rgba(26, 15, 8, 0.4);
 }
@@ -189,7 +255,7 @@ body * {
   gap: 4px;
   width: 100%;
   margin-top: 2px;
-  overflow: visible;   /* on laisse le titre respirer */
+  overflow: visible;
 }
 
 /* ===== AUTEUR ===== */
@@ -212,7 +278,7 @@ body * {
   text-overflow: ellipsis;
 }
 
-/* ===== TITRE : COMPLET (pas de line-clamp), taille fluide ===== */
+/* ===== TITRE : COMPLET, taille fluide ===== */
 .carte-theme .titre-theme,
 .carte-couverture .titre-theme,
 .couverture-mini .titre-couv,
@@ -222,7 +288,7 @@ body * {
   color: #1a1a1a !important;
   font-family: Georgia, 'Times New Roman', serif;
   font-weight: 700;
-  font-size: clamp(11px, 3.6vw, 17px);   /* ajuste selon la largeur, complet */
+  font-size: clamp(11px, 3.6vw, 17px);
   text-align: left;
   line-height: 1.15;
   letter-spacing: 0.2px;
@@ -286,7 +352,7 @@ body * {
   font-family: var(--font-sans);
   font-weight: 700;
   font-style: italic;
-  font-size: 6px;          /* réduit */
+  font-size: 6px;
   text-transform: uppercase;
   letter-spacing: 0.9px;
   text-align: left;
@@ -306,7 +372,7 @@ body * {
   color: rgba(26, 26, 26, 0.65) !important;
   font-family: var(--font-sans);
   font-weight: 500;
-  font-size: 7px;          /* réduit */
+  font-size: 7px;
   text-align: left;
   letter-spacing: 0.4px;
   line-height: 1.2;
@@ -314,28 +380,6 @@ body * {
   overflow: hidden;
   text-overflow: ellipsis;
   max-width: 100%;
-}
-
-/* ===== BADGE NIVEAU ===== */
-.carte-theme .badge-niveau,
-.carte-couverture .badge-niveau,
-.couverture-mini .badge-niveau-couv,
-.couverture-vraie .badge-niveau-couv {
-  position: absolute;
-  top: 8px;
-  right: 8px;
-  z-index: 3;
-  background: rgba(255, 255, 255, 0.92) !important;
-  color: #1a1a1a !important;
-  border: 1px solid rgba(26, 26, 26, 0.35);
-  border-radius: var(--radius-sm);
-  font-family: var(--font-sans);
-  font-weight: 600;
-  font-size: 9px;
-  padding: 2px 7px;
-  letter-spacing: 0.3px;
-  line-height: 1.2;
-  white-space: nowrap;
 }
 
 /* ===== PROGRESSION ===== */
@@ -1718,7 +1762,7 @@ input::placeholder, textarea::placeholder {
   .page-presentation h1,
   .page-theme h1 { font-size: 20px; padding: 6px 16px; }
 
-  /* Couvertures : tailles ajustées sur mobile */
+  /* Couvertures */
   .carte-theme .contenu-theme,
   .carte-couverture .contenu-theme {
     padding: 12px 10px 10px 16px;
@@ -1728,39 +1772,21 @@ input::placeholder, textarea::placeholder {
     font-size: clamp(11px, 4vw, 14px);
   }
   .carte-theme .sous-titre-theme,
-  .carte-couverture .sous-titre-theme {
-    font-size: 9px;
-  }
+  .carte-couverture .sous-titre-theme { font-size: 9px; }
   .carte-theme .auteur-theme,
-  .carte-couverture .auteur-theme {
-    font-size: 7px;
-  }
+  .carte-couverture .auteur-theme { font-size: 7px; }
   .carte-theme .edition-nom,
-  .carte-couverture .edition-nom {
-    font-size: 6px;
-  }
+  .carte-couverture .edition-nom { font-size: 6px; }
   .carte-theme .edition-date,
-  .carte-couverture .edition-date {
-    font-size: 7px;
-  }
-  .carte-theme .badge-niveau,
-  .carte-couverture .badge-niveau {
-    font-size: 8px;
-    padding: 1px 6px;
-    top: 6px;
-    right: 6px;
-  }
+  .carte-couverture .edition-date { font-size: 7px; }
 
-  /* Couverture mini (page thème) */
   .couverture-mini { width: 160px; height: 220px; }
   .couverture-mini .contenu-couv { padding: 14px 12px 12px 16px; }
   .couverture-mini .titre-couv { font-size: clamp(13px, 4vw, 18px); }
   .couverture-mini .sous-titre-couv { font-size: 12px; }
   .couverture-mini .edition-nom { font-size: 7px; }
   .couverture-mini .edition-date { font-size: 8px; }
-  .couverture-mini .badge-niveau-couv { font-size: 9px; }
 
-  /* Couverture vraie (côté texte) */
   .couverture-vraie { width: 90px; height: 143px; }
   .couverture-vraie .contenu-couv { padding: 8px 6px 6px 12px; }
   .couverture-vraie .titre-couv { font-size: 10px; }
@@ -1768,7 +1794,6 @@ input::placeholder, textarea::placeholder {
   .couverture-vraie .auteur-couv { font-size: 5px; }
   .couverture-vraie .edition-nom { font-size: 5px; }
   .couverture-vraie .edition-date { font-size: 6px; }
-  .couverture-vraie .badge-niveau-couv { font-size: 6px; padding: 1px 4px; top: 4px; right: 4px; }
 
   .feuille-texte { padding: 20px 18px; }
   .feuille-texte .bandeau-titre h1 { font-size: 13pt; }
