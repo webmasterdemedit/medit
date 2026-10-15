@@ -15,23 +15,19 @@
    VARIABLES - PALETTE PASTEL AFFIRMÉE
    ============================================================ */
 :root {
-  /* Fonds */
-  --bg:            #fbf6ee;   /* crème chaud */
-  --bg-hover:      #f3ecdf;   /* crème marqué */
-  --bg-active:     #e9dfc9;   /* crème soutenu */
-  --bg-paper:      #fffdf8;   /* papier chaud */
+  --bg:            #fbf6ee;
+  --bg-hover:      #f3ecdf;
+  --bg-active:     #e9dfc9;
+  --bg-paper:      #fffdf8;
 
-  /* Textes */
-  --text:          #2a2419;   /* brun encre */
-  --text-secondary:#5a4f3e;   /* brun moyen */
-  --text-muted:    #968a75;   /* brun clair */
+  --text:          #2a2419;
+  --text-secondary:#5a4f3e;
+  --text-muted:    #968a75;
 
-  /* Bordures */
   --border:        #e3d8c2;
   --border-hover:  #c9b998;
   --border-strong: #a8956f;
 
-  /* Accents pastel */
   --sauge:         #7d9a7c;
   --sauge-deep:    #5d7a5c;
   --sauge-soft:    #dfe9de;
@@ -42,17 +38,14 @@
   --lilas:         #9a8aab;
   --lilas-soft:    #e4dcec;
 
-  /* Couleurs de fond header/footer */
-  --header-bg:     #5d7a5c;   /* sauge profond */
-  --header-text:   #fbf6ee;   /* crème clair */
+  --header-bg:     #5d7a5c;
+  --header-text:   #fbf6ee;
   --header-muted:  #d4dfd3;
 
-  /* Polices */
   --font-serif:    Georgia, 'Times New Roman', serif;
   --font-arabic:   'Janna LT Bold', 'Traditional Arabic', serif;
   --font-sans:     -apple-system, 'Inter', 'Segoe UI', sans-serif;
 
-  /* Arrondis */
   --radius-sm: 4px;
   --radius-md: 8px;
   --radius-lg: 12px;
@@ -64,7 +57,7 @@
 }
 
 /* ============================================================
-   MODE SOMBRE - Pastel chaud, profond
+   MODE SOMBRE
    ============================================================ */
 @media (prefers-color-scheme: dark) {
   :root {
@@ -112,7 +105,6 @@ html, body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Reset global : tout hérite du thème */
 body * {
   background: transparent;
   color: inherit;
@@ -120,21 +112,28 @@ body * {
 }
 
 /* ============================================================
-   EXCEPTIONS : les couvertures gardent leur apparence propre
-   (le JS injecte la couleur du thème en inline, on ne l'écrase pas)
+   EXCEPTIONS : COUVERTURES (livret régulier)
    ============================================================ */
 
-/* Toutes les couvertures : fond injecté inline, texte sombre lisible */
+/* Parent : fond inline injecté par le JS, texte foncé */
 .carte-theme,
 .carte-couverture,
 .couverture-mini,
 .couverture-vraie {
-  background: unset;      /* laisse passer la couleur inline */
-  color: #1a1a1a;         /* texte foncé sur fond pastel clair */
-  border-color: unset;    /* laisse passer la couleur inline */
+  background: unset;
+  color: #1a1a1a;
+  border-color: unset;
+  /* Layout livret : contenu calé en haut et en bas */
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: space-between;
+  overflow: hidden;
+  position: relative;
+  box-sizing: border-box;
 }
 
-/* Tous les descendants d'une couverture : fond transparent (on voit la couleur du parent) */
+/* Tous les descendants : fond transparent, couleur héritée */
 .carte-theme *,
 .carte-couverture *,
 .couverture-mini *,
@@ -148,43 +147,122 @@ body * {
   border-color: transparent;
 }
 
-/* On restaure les styles des titres, sous-titres, auteurs, éditions */
+/* ===== CONTENEUR PRINCIPAL (padding régulier + flex column) ===== */
+.carte-theme .contenu-theme,
+.carte-couverture .contenu-theme,
+.couverture-mini .contenu-couv,
+.couverture-vraie .contenu-couv {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 14px 12px;
+  overflow: hidden;
+}
+
+/* ===== BLOC HAUT : auteur + titre + sous-titre ===== */
+.carte-theme .titre-wrapper,
+.carte-couverture .titre-wrapper,
+.couverture-mini .titre-wrapper,
+.couverture-vraie .titre-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 5px;
+  width: 100%;
+  margin-top: 6px;
+  overflow: hidden;
+}
+
+/* ===== AUTEUR ===== */
+.carte-theme .auteur-theme,
+.carte-couverture .auteur-theme,
+.couverture-mini .auteur-couv,
+.couverture-vraie .auteur-couv {
+  display: block;
+  color: rgba(26, 26, 26, 0.65) !important;
+  font-family: 'Roboto', sans-serif;
+  font-weight: 400;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1.4px;
+  text-align: center;
+  line-height: 1.2;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== TITRE (régulier, sur 1-3 lignes max) ===== */
 .carte-theme .titre-theme,
 .carte-couverture .titre-theme,
 .couverture-mini .titre-couv,
 .couverture-vraie .titre-couv {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   color: #1a1a1a !important;
   font-family: 'Georgia', serif;
   font-weight: 700;
+  font-size: 16px;
   text-align: center;
-  line-height: 1.2;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+  max-width: 100%;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin: 0;
 }
 
+/* ===== SOUS-TITRE (max 2 lignes) ===== */
 .carte-theme .sous-titre-theme,
 .carte-couverture .sous-titre-theme,
 .couverture-mini .sous-titre-couv,
 .couverture-vraie .sous-titre-couv {
-  display: block;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
   color: rgba(26, 26, 26, 0.85) !important;
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
+  font-size: 10px;
   text-align: center;
   line-height: 1.25;
+  letter-spacing: 0.1px;
+  max-width: 100%;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin: 2px 0 0 0;
 }
 
-.carte-theme .auteur-theme,
-.carte-couverture .auteur-theme,
-.couverture-vraie .auteur-couv {
-  display: block;
-  color: rgba(26, 26, 26, 0.6) !important;
-  font-family: 'Roboto', sans-serif;
-  font-weight: 300;
-  text-transform: uppercase;
-  letter-spacing: 1.4px;
-  text-align: center;
+/* ===== BLOC BAS : édition + date ===== */
+.carte-theme .edition-info,
+.carte-couverture .edition-info,
+.couverture-mini .edition-info,
+.couverture-vraie .edition-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 1px;
+  margin-top: auto;
+  padding-bottom: 2px;
+  width: 100%;
+  overflow: hidden;
 }
 
+/* ===== QIRAAT ÉDITION ===== */
 .carte-theme .edition-nom,
 .carte-couverture .edition-nom,
 .couverture-mini .edition-nom,
@@ -194,79 +272,77 @@ body * {
   font-family: 'Roboto', sans-serif;
   font-weight: 700;
   font-style: italic;
+  font-size: 8px;
   text-transform: uppercase;
-  letter-spacing: 1px;
+  letter-spacing: 0.8px;
   text-align: center;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
+/* ===== DATE (plus petite) ===== */
 .carte-theme .edition-date,
 .carte-couverture .edition-date,
 .couverture-mini .edition-date,
 .couverture-vraie .edition-date {
   display: block;
-  color: rgba(26, 26, 26, 0.75) !important;
+  color: rgba(26, 26, 26, 0.7) !important;
   font-family: 'Roboto', sans-serif;
   font-weight: 500;
+  font-size: 9px;
   text-align: center;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
 }
 
-/* Les wrappers doivent rester en flex column pour que le titre soit bien centré */
-.carte-theme .contenu-theme,
-.carte-couverture .contenu-theme,
-.couverture-mini .contenu-couv,
-.couverture-vraie .contenu-couv {
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  height: 100%;
-  width: 100%;
-  padding: inherit;
-  box-sizing: border-box;
-}
-
-.carte-theme .titre-wrapper,
-.carte-couverture .titre-wrapper,
-.couverture-mini .titre-wrapper,
-.couverture-vraie .titre-wrapper {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-
-.carte-theme .edition-info,
-.carte-couverture .edition-info,
-.couverture-mini .edition-info,
-.couverture-vraie .edition-info {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-  margin-top: auto;
-}
-
-/* Les badges gardent leur fond blanc opaque */
+/* ===== BADGE NIVEAU ===== */
 .carte-theme .badge-niveau,
 .carte-couverture .badge-niveau,
 .couverture-mini .badge-niveau-couv,
 .couverture-vraie .badge-niveau-couv {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
   background: rgba(255, 255, 255, 0.92) !important;
   color: #1a1a1a !important;
-  border: 1px solid rgba(26, 26, 26, 0.4);
-  border-radius: 4px;
+  border: 1px solid rgba(26, 26, 26, 0.35);
+  border-radius: var(--radius-sm);
+  font-family: 'Roboto', sans-serif;
   font-weight: 600;
+  font-size: 9px;
+  padding: 2px 7px;
+  letter-spacing: 0.3px;
+  line-height: 1.2;
+  white-space: nowrap;
 }
 
-/* La barre de progression garde son fond translucide blanc */
+/* ===== PROGRESSION ===== */
 .carte-theme .progression-theme,
 .carte-couverture .progression-theme,
 .couverture-mini .progression-couv {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
   background: rgba(255, 255, 255, 0.3) !important;
+  z-index: 3;
+  overflow: hidden;
 }
 .carte-theme .progression-theme .barre,
 .carte-couverture .progression-theme .barre,
 .couverture-mini .progression-couv .barre {
+  height: 100%;
   background: rgba(255, 255, 255, 0.9) !important;
+  transition: width 0.6s ease;
 }
 
 /* ============================================================
@@ -306,8 +382,7 @@ h1, h2, h3, h4, p,
 .page-themes h1,
 .page-programme h1,
 .page-presentation h1,
-.page-theme h1,
-.page-presentation h1 {
+.page-theme h1 {
   display: inline-block;
   background: var(--bg-paper);
   border: 2px solid var(--text);
@@ -322,7 +397,7 @@ h1, h2, h3, h4, p,
   box-shadow: 4px 4px 0 var(--sauge);
 }
 
-/* ===== TITRES DE SECTION ENCADRÉS (feuille texte, à retenir, note, popup) ===== */
+/* ===== TITRES DE SECTION ENCADRÉS ===== */
 .feuille-texte .bandeau-titre,
 .feuille-texte .titre-exercices,
 .bloc-a-retenir .bloc-a-retenir-titre,
@@ -345,7 +420,6 @@ h1, h2, h3, h4, p,
   margin-bottom: 16px;
 }
 
-/* Bandeau titre feuille texte : plus large, plus fort */
 .feuille-texte .bandeau-titre {
   border: 2px solid var(--text);
   border-left: 6px solid var(--sauge);
@@ -373,7 +447,6 @@ h1, h2, h3, h4, p,
   font-family: var(--font-sans);
 }
 
-/* Titre des catégories dans le tableau programme */
 .bloc-categorie-cell .titre-categorie-cell {
   font-family: var(--font-serif);
   font-weight: 700;
@@ -381,7 +454,6 @@ h1, h2, h3, h4, p,
   color: var(--text);
 }
 
-/* Titres de cartes thème/texte */
 .carte-texte .titre,
 .carte-post .titre {
   font-family: var(--font-serif);
@@ -414,7 +486,7 @@ h1, h2, h3, h4, p,
 }
 
 /* ============================================================
-   HEADER & FOOTER - Fond sauge profond
+   HEADER & FOOTER
    ============================================================ */
 .site-header {
   background: var(--header-bg);
@@ -478,7 +550,7 @@ h1, h2, h3, h4, p,
 }
 
 /* ============================================================
-   LIENS GÉNÉRAUX
+   LIENS
    ============================================================ */
 a {
   color: var(--text);
@@ -503,7 +575,7 @@ a:hover {
 }
 
 /* ============================================================
-   BOUTONS (unifiés, hardis)
+   BOUTONS
    ============================================================ */
 .btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer,
 .btn-ajout, .btn-export-all, .btn-categories, .carte-post .btn-lire,
@@ -550,7 +622,6 @@ a:hover {
   transform: translate(1px, 1px);
 }
 
-/* Bouton principal : sauge plein, ombre franche */
 .btn-envoyer-final,
 .popup-btn-envoyer-questions {
   background: var(--sauge);
@@ -579,7 +650,6 @@ a:hover {
   box-shadow: 2px 2px 0 var(--border);
 }
 
-/* États actifs */
 .btn-groupe .btn-brouillon.active,
 .feuille-texte .carte-choix button.actif,
 .feuille-texte .vf-btn.vf-ok,
@@ -590,7 +660,7 @@ a:hover {
 }
 
 /* ============================================================
-   BADGES - Pastel, pastilles douces
+   BADGES
    ============================================================ */
 .badge, .badge.valide, .badge.lu, .badge.a-faire, .badge.non-vu,
 .post-label,
@@ -600,10 +670,6 @@ a:hover {
 .carte-post .meta .badge-icone,
 .carte-texte .niveau-badge,
 .carte-texte .meta .badge-icone,
-.carte-theme .badge-niveau,
-.carte-couverture .badge-niveau,
-.couverture-mini .badge-niveau-couv,
-.couverture-vraie .badge-niveau-couv,
 .badge-statut {
   background: var(--sauge-soft);
   color: var(--text);
@@ -699,7 +765,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   CARTES GÉNÉRIQUES - Cadre net restauré
+   CARTES GÉNÉRIQUES
    ============================================================ */
 .carte-post,
 .carte-texte,
@@ -731,7 +797,6 @@ input::placeholder, textarea::placeholder {
   box-shadow: 3px 3px 0 var(--sauge-soft);
 }
 
-/* Stats ligne : fond pastel sauge */
 .stats-ligne,
 .stats-theme {
   background: var(--sauge-soft);
@@ -739,7 +804,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   ENCADRÉS DES THÈMES - Restaurés, couleurs par thème
+   ENCADRÉS DES THÈMES
    ============================================================ */
 .carte-theme,
 .carte-couverture,
@@ -761,30 +826,6 @@ input::placeholder, textarea::placeholder {
 
 .carte-theme.verrouille {
   filter: grayscale(0.8) opacity(0.45);
-}
-
-/* Progression bar */
-.carte-theme .progression-theme,
-.carte-couverture .progression-theme,
-.couverture-mini .progression-couv {
-  background: rgba(255, 255, 255, 0.3);
-}
-.carte-theme .progression-theme .barre,
-.carte-couverture .progression-theme .barre,
-.couverture-mini .progression-couv .barre {
-  background: rgba(255, 255, 255, 0.9);
-}
-
-/* Badges sur couvertures : contraste fort */
-.carte-theme .badge-niveau,
-.carte-couverture .badge-niveau,
-.couverture-mini .badge-niveau-couv,
-.couverture-vraie .badge-niveau-couv {
-  background: rgba(255, 255, 255, 0.92);
-  color: var(--text);
-  border: 1px solid var(--text);
-  border-radius: var(--radius-sm);
-  font-weight: 600;
 }
 
 /* ============================================================
@@ -876,7 +917,6 @@ input::placeholder, textarea::placeholder {
   border-radius: var(--radius-sm);
 }
 
-/* Exercices */
 .feuille-texte .exercices-zone {
   border-top: 2px solid var(--text);
   margin-top: 28px;
@@ -924,7 +964,6 @@ input::placeholder, textarea::placeholder {
   font-size: 1em;
 }
 
-/* Quiz */
 .feuille-texte .quiz-rep {
   border-radius: var(--radius-sm);
   padding: 6px 10px;
@@ -965,7 +1004,6 @@ input::placeholder, textarea::placeholder {
   font-style: italic;
 }
 
-/* Textes à trous */
 .feuille-texte .tt-input {
   background: transparent;
   border: none;
@@ -984,7 +1022,6 @@ input::placeholder, textarea::placeholder {
   color: var(--terracotta);
 }
 
-/* Vrai/Faux */
 .feuille-texte .vf-btn {
   background: var(--bg-paper);
   border: 2px solid var(--text);
@@ -1010,7 +1047,6 @@ input::placeholder, textarea::placeholder {
   color: var(--text);
 }
 
-/* Cartes */
 .feuille-texte .carte-btn-voir {
   background: var(--sauge-soft);
   border: 2px solid var(--sauge-deep);
@@ -1045,7 +1081,6 @@ input::placeholder, textarea::placeholder {
   border-color: var(--sauge-deep);
 }
 
-/* Relier */
 .feuille-texte .relier-item .point {
   border: 2px solid var(--border-strong);
   background: var(--bg-paper);
@@ -1064,7 +1099,6 @@ input::placeholder, textarea::placeholder {
   opacity: 0.55;
 }
 
-/* Ordre */
 .feuille-texte .ordre-item {
   background: var(--bg-paper);
   border: 1px solid var(--border-strong);
@@ -1092,7 +1126,6 @@ input::placeholder, textarea::placeholder {
   color: var(--text-muted);
 }
 
-/* Copier */
 .feuille-texte .copier-btn {
   background: var(--bg-paper);
   border: 2px solid var(--text);
@@ -1117,7 +1150,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   À RETENIR - Fond terracotta pastel, encadré
+   À RETENIR
    ============================================================ */
 .bloc-a-retenir {
   background: var(--terracotta-soft);
@@ -1158,7 +1191,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   NOTE GLOBALE (résultat)
+   NOTE GLOBALE
    ============================================================ */
 .bloc-note-globale {
   background: var(--bg-paper);
@@ -1319,7 +1352,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   PROGRAMME (tableau) - Cadres nets
+   PROGRAMME
    ============================================================ */
 .tableau-wrapper {
   overflow-x: auto;
@@ -1456,7 +1489,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   PRÉSENTATION (cartes) - Encadrées, hardi
+   PRÉSENTATION
    ============================================================ */
 .presentation-card {
   background: var(--bg-paper);
@@ -1503,7 +1536,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   THÈME (page) - description
+   THÈME (page)
    ============================================================ */
 .description-theme .pre-requis {
   color: var(--text-secondary);
@@ -1671,6 +1704,58 @@ input::placeholder, textarea::placeholder {
   .page-presentation h1,
   .page-theme h1 { font-size: 20px; padding: 6px 16px; }
 
+  /* Couvertures : tailles ajustées sur mobile */
+  .carte-theme .contenu-theme,
+  .carte-couverture .contenu-theme {
+    padding: 12px 10px;
+  }
+  .carte-theme .titre-theme,
+  .carte-couverture .titre-theme {
+    font-size: 14px;
+  }
+  .carte-theme .sous-titre-theme,
+  .carte-couverture .sous-titre-theme {
+    font-size: 9px;
+  }
+  .carte-theme .auteur-theme,
+  .carte-couverture .auteur-theme {
+    font-size: 7px;
+  }
+  .carte-theme .edition-nom,
+  .carte-couverture .edition-nom {
+    font-size: 7px;
+  }
+  .carte-theme .edition-date,
+  .carte-couverture .edition-date {
+    font-size: 8px;
+  }
+  .carte-theme .badge-niveau,
+  .carte-couverture .badge-niveau {
+    font-size: 8px;
+    padding: 1px 6px;
+    top: 6px;
+    right: 6px;
+  }
+
+  /* Couverture mini (page thème) */
+  .couverture-mini { width: 160px; height: 220px; }
+  .couverture-mini .contenu-couv { padding: 16px 14px; }
+  .couverture-mini .titre-couv { font-size: 18px; }
+  .couverture-mini .sous-titre-couv { font-size: 12px; }
+  .couverture-mini .edition-nom { font-size: 9px; }
+  .couverture-mini .edition-date { font-size: 8px; }
+  .couverture-mini .badge-niveau-couv { font-size: 9px; }
+
+  /* Couverture vraie (côté texte) */
+  .couverture-vraie { width: 90px; height: 143px; }
+  .couverture-vraie .contenu-couv { padding: 8px 8px; }
+  .couverture-vraie .titre-couv { font-size: 11px; }
+  .couverture-vraie .sous-titre-couv { font-size: 7px; }
+  .couverture-vraie .auteur-couv { font-size: 5px; }
+  .couverture-vraie .edition-nom { font-size: 5px; }
+  .couverture-vraie .edition-date { font-size: 6px; }
+  .couverture-vraie .badge-niveau-couv { font-size: 6px; padding: 1px 4px; top: 4px; right: 4px; }
+
   .feuille-texte { padding: 20px 18px; }
   .feuille-texte .bandeau-titre h1 { font-size: 13pt; }
   .feuille-texte .slide p { font-size: 12pt; }
@@ -1698,7 +1783,6 @@ input::placeholder, textarea::placeholder {
     gap: 20px;
     padding-bottom: 18px;
   }
-  .couverture-mini { width: 160px; height: 220px; }
   .description-theme { width: 100%; text-align: center; }
   .stats-theme { justify-content: center; gap: 16px; }
 
@@ -1751,7 +1835,6 @@ input::placeholder, textarea::placeholder {
     gap: 14px;
   }
   .carte-couverture { height: 175px; }
-  .couverture-vraie { width: 90px; height: 143px; }
 
   .presentation-grid {
     grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
@@ -1762,7 +1845,10 @@ input::placeholder, textarea::placeholder {
 
 @media (max-width: 550px) {
   body { font-size: 14px; }
-  .carte-theme .titre-theme { font-size: 14px; }
+  .carte-theme .titre-theme,
+  .carte-couverture .titre-theme { font-size: 13px; }
+  .carte-theme .sous-titre-theme,
+  .carte-couverture .sous-titre-theme { font-size: 8px; }
   .presentation-grid {
     grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
     gap: 12px;
@@ -1776,4 +1862,5 @@ input::placeholder, textarea::placeholder {
   }
   .carte-theme { height: 210px; }
   .couverture-mini { width: 140px; height: 190px; }
+  .couverture-mini .titre-couv { font-size: 16px; }
 }
