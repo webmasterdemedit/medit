@@ -125,8 +125,9 @@
     /* ===== GRILLE ===== */
     .grille-themes {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
       gap: 20px;
+      justify-items: center;
     }
 
     /* === VERROUILLÉ === */
@@ -232,7 +233,7 @@
       }
 
       .grille-themes {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
         gap: 14px;
       }
       .stats-ligne { padding: 10px 14px; gap: 12px; flex-wrap: wrap; }
@@ -240,8 +241,7 @@
     }
 
     @media (max-width: 400px) {
-      .grille-themes { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px;
-                     justify-items: center;   /* ← ajoutez ça si pas déjà fait */}
+      .grille-themes { grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; }
     }
   </style>
 
@@ -311,6 +311,7 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
+  <script src="/medit/couverture.js"></script>
 
   <script>
     // ===== VARIABLES GLOBALES =====
@@ -321,18 +322,6 @@
     window.nomEtudiant = '';
     window.themeActif = null;
     window.themesCalcules = [];
-
-    function formatDate(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-                    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
-        return mois[date.getMonth()] + ' ' + date.getFullYear();
-      } catch(e) {
-        return dateStr;
-      }
-    }
 
     function mettreAJourURL(theme) {
       try {
@@ -376,7 +365,8 @@
                 date: l.date || '',
                 preRequis: l.preRequis || '',
                 auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0
+                niveau: parseInt(l.niveau) || 0,
+                couverture: l.couverture || ''
               };
             });
           }
@@ -407,7 +397,8 @@
                   date: l.date || '',
                   preRequis: l.preRequis || '',
                   auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0
+                  niveau: parseInt(l.niveau) || 0,
+                  couverture: l.couverture || ''
                 };
               });
             }
@@ -490,12 +481,14 @@
           textes: textesDuTheme.length,
           textesListe: textesDuTheme,
           disponible: disponible,
+          verrouille: !disponible,
           pourcentage: pourcentage,
           couleur: meta.couleur || '#2d6a4f',
           sousTitre: meta.sousTitre || '',
           date: meta.date || '',
           auteur: meta.auteur || '',
-          niveau: meta.niveau || 1
+          niveau: meta.niveau || 1,
+          couverture: meta.couverture || ''
         };
       });
 
@@ -607,8 +600,7 @@
       rendreGrille();
     }
 
-    // === Rendu de la grille ===
-    // ✅ MÊME STRUCTURE QUE construireCouvertureHtml() de texte.html
+    // ✅ Rendu de la grille — utilise la fonction centralisée
     function rendreGrille() {
       var grille = document.getElementById('grilleThemes');
       if (!grille) return;
@@ -632,43 +624,10 @@
       var html = '';
 
       liste.forEach(function(theme) {
-        var sousTitre = theme.sousTitre || '';
-        var date = theme.date || '';
-        var auteur = theme.auteur || '';
-
-        var disponible = theme.disponible;
-        var couleur = disponible ? (theme.couleur || '#2d6a4f') : '#666666';
-        var dateFormatee = formatDate(date);
-        var pourcentage = theme.pourcentage;
-        var niveau = theme.niveau || 1;
-
-        // ✅ EXACTEMENT la même structure que construireCouvertureHtml() de texte.html
-        var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
-        var classeVerrou = disponible ? '' : ' verrouille';
-        var onclickAttr = disponible
-          ? 'onclick="window.location.href=\'/medit/thème.html?cat=' + encodeURIComponent(theme.nom) + '\'"'
-          : '';
-
-        html += '<a class="carte-couverture' + classeVerrou + '" style="' + styleInline + '" ' + onclickAttr + '>';
-
-        if (!disponible) {
-          html += '<div style="position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;font-size:30px;opacity:0.6;pointer-events:none;">🔒︎︎︎</div>';
-        }
-
-        html += '<span class="badge-niveau">Niv. ' + niveau + '</span>';
-        html += '<div class="contenu-theme">';
-        html += '<div class="titre-wrapper">';
-        if (auteur) html += '<span class="auteur-theme">' + escapeHtml(auteur) + '</span>';
-        html += '<span class="titre-theme">#' + escapeHtml(theme.nom) + '</span>';
-        if (sousTitre) html += '<span class="sous-titre-theme">' + escapeHtml(sousTitre) + '</span>';
-        html += '</div>';
-        html += '<div class="edition-info">';
-        html += '<span class="edition-nom">Qiraat Édition</span>';
-        if (dateFormatee) html += '<span class="edition-date">' + dateFormatee + '</span>';
-        html += '</div>';
-        html += '</div>';
-        html += '<div class="progression-theme"><div class="barre" style="width: ' + pourcentage + '%;"></div></div>';
-        html += '</a>';
+        html += construireCarteCouverture(theme, {
+          cliquable: theme.disponible,
+          lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
+        });
       });
 
       grille.innerHTML = html;
