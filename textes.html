@@ -12,7 +12,7 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ===== RÉUTILISE LES CLASSES DE page-themes ===== */
+    /* ===== PAGE BLOG — RÉUTILISE L'ESPRIT DE page-themes ===== */
     .page-blog {
       max-width: 1200px;
       margin: 0 auto;
@@ -35,16 +35,15 @@
       font-weight: 300;
     }
 
-    /* Réutilise .layout-themes, .sidebar-themes, .stats-ligne,
+    /* Réutilise .layout-themes, .sidebar-themes, .stats-ligne
        .grille-themes devient une liste verticale */
     .page-blog .grille-themes {
       display: flex;
       flex-direction: column;
       gap: 14px;
-      justify-items: stretch;
     }
 
-    /* ===== CARTE BLOG (réutilise l'esprit de .carte-texte) ===== */
+    /* ===== CARTE BLOG ===== */
     .carte-blog {
       display: flex;
       gap: 20px;
@@ -52,9 +51,10 @@
       background: var(--bg);
       border: 1px solid var(--border);
       cursor: pointer;
-      transition: all 0.15s;
+      transition: background 0.15s, border-color 0.15s;
       text-decoration: none;
       color: inherit;
+      box-sizing: border-box;
     }
 
     .carte-blog:hover {
@@ -73,6 +73,7 @@
       color: var(--text-muted);
       border-right: 1px solid var(--border);
       padding-right: 14px;
+      box-sizing: border-box;
     }
 
     .carte-blog .blog-corps {
@@ -92,7 +93,7 @@
     .carte-blog .blog-meta {
       display: flex;
       flex-wrap: wrap;
-      gap: 10px;
+      gap: 8px;
       align-items: center;
       font-size: 12px;
       color: var(--text-secondary);
@@ -137,8 +138,9 @@
       flex-direction: column;
       justify-content: center;
       gap: 4px;
-      padding-left: 10px;
+      padding-left: 14px;
       border-left: 1px solid var(--border);
+      box-sizing: border-box;
     }
 
     .carte-blog .blog-date .date-label {
@@ -233,6 +235,7 @@
         document.getElementById('footer-container').innerHTML = data;
       })
       .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
         document.getElementById('footer-container').innerHTML = `
           <footer class="site-footer">
             <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
@@ -254,9 +257,8 @@
     var niveauEtudiant = 0;
     var nomEtudiant = '';
     var themeActif = null;
-    var textesCalcules = [];
 
-    // ===== UTILITAIRES (repris de thème.html) =====
+    // ===== UTILITAIRES =====
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
       var match = titre.match(/^\s*(\d+)\s+/);
@@ -269,7 +271,7 @@
     }
 
     function escapeHtml(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -290,6 +292,37 @@
         }
         window.history.replaceState({}, '', url.toString());
       } catch(e) {}
+    }
+
+    // ===== DATE RELATIVE =====
+    function formatDateRelative(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+
+      var maintenant = new Date();
+      var diffMs = maintenant - d;
+      var diffJours = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffJours < 0) diffJours = 0;
+      if (diffJours === 0) return "Aujourd'hui";
+      if (diffJours === 1) return 'Hier';
+      if (diffJours < 7) return 'Il y a ' + diffJours + ' jours';
+      if (diffJours < 30) return 'Il y a ' + Math.floor(diffJours / 7) + ' sem.';
+      if (diffJours < 365) return 'Il y a ' + Math.floor(diffJours / 30) + ' mois';
+
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+    }
+
+    function formatDateComplete(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
     }
 
     // ===== CHARGEMENT =====
@@ -337,7 +370,19 @@
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || cache.tousLesTextes || [];
+            textesData = cache.tousLesTextes || cache.textes || [];
+            if (cache.themes && Array.isArray(cache.themes)) {
+              themesData = {};
+              cache.themes.forEach(function(l) {
+                themesData[l.titre] = {
+                  couleur: l.couleur || '#2d6a4f',
+                  sousTitre: l.sousTitre || '',
+                  date: l.date || '',
+                  auteur: l.auteur || '',
+                  niveau: parseInt(l.niveau) || 0
+                };
+              });
+            }
             if (cache.reponses) {
               cache.reponses.forEach(function(r) {
                 toutesLesReponses[r.texteId] = r;
@@ -352,6 +397,10 @@
                 <span class="icone">⚠</span>
                 <h2>Erreur de chargement</h2>
                 <p>Vérifiez votre connexion internet.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();"
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text);">
+                  Réessayer
+                </button>
               </div>
             `;
           }
@@ -363,16 +412,17 @@
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // 1. Filtrer les textes accessibles au niveau
+      // 1. Filtrer les textes accessibles au niveau de l'étudiant
       var accessibles = textesData.filter(function(t) {
         return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      // 2. Trier par date de publication (ou numéro) DESC
+      // 2. Trier par date d'ajout DESC (le plus récent en premier)
       accessibles.sort(function(a, b) {
-        var da = a.datePublication ? new Date(a.datePublication).getTime() : 0;
-        var db = b.datePublication ? new Date(b.datePublication).getTime() : 0;
+        var da = a.date ? new Date(a.date).getTime() : 0;
+        var db = b.date ? new Date(b.date).getTime() : 0;
         if (da !== db) return db - da;
+        // Fallback : numéro de texte décroissant
         return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
 
@@ -475,8 +525,8 @@
       var estValide = reponse && reponse.valide === 'valide';
       var dateValidation = reponse && reponse.date ? reponse.date : '';
 
-      // Date de publication
-      var datePublication = texte.datePublication || texte.date || '';
+      // Date d'ajout (publication)
+      var dateAjout = texte.date || '';
 
       // Badges exercices (repris de thème.html)
       var TYPES_EXERCICES = [
@@ -516,25 +566,15 @@
       var extrait = texte.description || texte.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
-      // Date formatée
+      // Date affichée : validation si fait, sinon date d'ajout relative
       var dateLabelHtml = '';
       var dateHtml = '';
+
       if (estValide && dateValidation) {
-        var d = new Date(dateValidation);
-        if (!isNaN(d.getTime())) {
-          var dateStr = d.toLocaleDateString('fr-FR', {
-            day: '2-digit', month: 'long', year: 'numeric'
-          });
-          dateLabelHtml = '<span class="date-label">Fait :</span>';
-          dateHtml = '<span class="date-validation">' + dateStr + '</span>';
-        }
-      } else if (datePublication) {
-        var dp = new Date(datePublication);
-        if (!isNaN(dp.getTime())) {
-          dateHtml = '<span class="date-validation">' + dp.toLocaleDateString('fr-FR', {
-            day: '2-digit', month: 'long', year: 'numeric'
-          }) + '</span>';
-        }
+        dateLabelHtml = '<span class="date-label">Fait :</span>';
+        dateHtml = '<span class="date-validation">' + formatDateComplete(dateValidation) + '</span>';
+      } else if (dateAjout) {
+        dateHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
       }
 
       var numeroHtml = (numero !== Infinity)
@@ -543,7 +583,7 @@
 
       return `
         <div class="carte-blog"
-             onclick="window.location.href='/medit/texte.html?id=${texte.id}'">
+             onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
           ${numeroHtml}
           <div class="blog-corps">
             <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
