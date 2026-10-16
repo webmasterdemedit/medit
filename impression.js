@@ -804,6 +804,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 .relier-point.relier-point-partage { border-radius: 0; }
 
+/* ============================================================ */
+/* BLOC COPIER — AUGMENTÉ (police + hauteur ligne)               */
+/* ============================================================ */
 .bloc-copier {
   margin-top: 4px;
   width: 100%;
@@ -813,14 +816,14 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-align: right;
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.2em;
-  line-height: 1;
+  font-size: 2.6em;                 /* ✅ AVANT 2.2em → police arabe plus grande */
+  line-height: 1.1;
   color: #1a1a1a;
-  padding: 2px 0 0;
-  word-spacing: 14px;
+  padding: 4px 0 0;
+  word-spacing: 16px;
   position: relative;
   display: block;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .copier-mots .copier-mot {
@@ -834,17 +837,18 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0.28em;
-  height: 1px;
-  background: #333 !important;
+  bottom: 0.30em;
+  height: 1.2px;                    /* ✅ ligne d'énoncé bien visible */
+  background: #000 !important;      /* ✅ NOIR franc (avant : #333 trop clair) */
   pointer-events: none;
 }
 
+/* ✅ LIGNE POINTILLÉE POUR ÉCRIRE — plus haute */
 .copier-ligne-pointillee {
   width: 100%;
-  height: 22px;
+  height: 38px;                     /* ✅ AVANT 22px → plus d'espace pour écrire */
   border-bottom: 1px dotted #5a4a3a;
-  margin-top: 2px;
+  margin-top: 4px;
 }
 
 .zone-memo {
