@@ -4,6 +4,7 @@
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
 // + Support sources [xxx] rendues en marge droite, sans crochets
+// + Support *italique* et **gras**
 // ============================================================
 
 // ============================================================
@@ -93,6 +94,40 @@ function rendreSources(texte) {
   var spanSource = '<span class="source-marge">' + contenuSource + '</span>';
 
   return avant + spanSource + phrase;
+}
+
+// ============================================================
+// ✅ RENDU DES CITATIONS "..." → « ... » en italique
+// ============================================================
+function rendreCitations(texte) {
+  if (!texte || texte.indexOf('"') === -1) return texte;
+  return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
+}
+
+// ============================================================
+// ✅ RENDU DES EMPHASES *italique* et **gras**
+// ============================================================
+function rendreEmphase(texte) {
+  if (!texte || texte.indexOf('*') === -1) return texte;
+
+  // **gras** (prioritaire)
+  texte = texte.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  // *italique*
+  texte = texte.replace(/\*([^*]+)\*/g, '<em>$1</em>');
+
+  return texte;
+}
+
+// ============================================================
+// ✅ PIPELINE COMPLET DE RENDU TEXTE
+// ============================================================
+function rendreTexte(texte) {
+  if (!texte) return texte;
+  var t = String(texte);
+  t = rendreSources(t);
+  t = rendreCitations(t);
+  t = rendreEmphase(t);
+  return t;
 }
 
 // ============================================================
@@ -271,14 +306,6 @@ function parserCopierPourImpression(copierTexte) {
     if (mots.length > 0) blocs.push({ mots: mots });
   });
   return blocs;
-}
-
-// ============================================================
-// ✅ RENDU DES CITATIONS "..." → « ... » en italique
-// ============================================================
-function rendreCitations(texte) {
-  if (!texte || texte.indexOf('"') === -1) return texte;
-  return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
 }
 
 // ============================================================
@@ -514,6 +541,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   color: #555;
   text-align: right;
   white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.bandeau-titre .niveau-encadre {
+  display: inline-block;
+  padding: 2px 8px;
+  border: 1px solid #555;
+  border-radius: 3px;
+  font-size: 9pt;
+  font-weight: 600;
+  color: #1a1a1a;
+  background: #fff;
+  line-height: 1.3;
 }
 
 /* ============================================================ */
@@ -597,6 +638,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* ============================================================ */
 .slide p em {
   font-style: italic;
+}
+.slide p strong {
+  font-weight: bold;
 }
 
 /* ============================================================ */
@@ -727,6 +771,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   font-size: 9.5pt;
   line-height: 1.35;
 }
+.exo-texte em,
+.exo-texte-vf em,
+.quiz-rep em,
+.tt-phrase-print em,
+.relier-ligne-item em {
+  font-style: italic;
+}
+.exo-texte strong,
+.exo-texte-vf strong,
+.quiz-rep strong,
+.tt-phrase-print strong,
+.relier-ligne-item strong {
+  font-weight: bold;
+}
 
 .quiz-reponses { margin-left: 24px; margin-top: 2px; }
 .quiz-rep { display:block; margin-bottom:1px; font-size:9.5pt; }
@@ -816,7 +874,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-align: right;
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.6em;                 /* ✅ AVANT 2.2em → police arabe plus grande */
+  font-size: 2.6em;
   line-height: 1.1;
   color: #1a1a1a;
   padding: 4px 0 0;
@@ -838,15 +896,14 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   left: 0;
   right: 0;
   bottom: 0.30em;
-  height: 1.2px;                    /* ✅ ligne d'énoncé bien visible */
-  background: #000 !important;      /* ✅ NOIR franc (avant : #333 trop clair) */
+  height: 1.2px;
+  background: #000 !important;
   pointer-events: none;
 }
 
-/* ✅ LIGNE POINTILLÉE POUR ÉCRIRE — plus haute */
 .copier-ligne-pointillee {
   width: 100%;
-  height: 38px;                     /* ✅ AVANT 22px → plus d'espace pour écrire */
+  height: 38px;
   border-bottom: 1px dotted #5a4a3a;
   margin-top: 4px;
 }
@@ -972,13 +1029,16 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 <div class="bandeau-titre">
   <div class="ligne-titre">
     <h1>${texte.titre || 'Lecture'}</h1>
-    <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
+    <div class="meta-droite">
+      ${texte.categorie ? texte.categorie + ' — ' : ''}
+      <span class="niveau-encadre">Niveau ${texte.niveau || 0}</span>
+    </div>
   </div>
 </div>
 
 ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
-${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + rendreEmphase(m) + '</span>'; }).join('') + '</div>' : ''}
 
 <div class="slides-zone">
 `;
@@ -1094,7 +1154,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
         paras.forEach(function(p) {
-          printHtml += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>';
+          printHtml += '<p>' + rendreTexte(p.trim()) + '</p>';
         });
         bufferTexte = '';
       }
@@ -1142,11 +1202,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + q.question + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreEmphase(q.question) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="quiz-reponses">';
       q.reponses.forEach(function(rep) {
-        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
+        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rendreEmphase(rep.texte) + '</span>';
       });
       printHtml += '</div></div>';
     } else if (bloc.type === 'open') {
@@ -1157,7 +1217,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreEmphase(bloc.data) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
 for (var ol = 0; ol < 5; ol++) {
@@ -1174,9 +1234,9 @@ printHtml += '</div></div>';
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
-      if (tt.avant) printHtml += tt.avant + ' ';
+      if (tt.avant) printHtml += rendreEmphase(tt.avant) + ' ';
       printHtml += '<span class="tt-trou"></span>';
-      if (tt.apres) printHtml += ' ' + tt.apres;
+      if (tt.apres) printHtml += ' ' + rendreEmphase(tt.apres);
       printHtml += '</span>';
       printHtml += '</div>';
       printHtml += '</div>';
@@ -1191,7 +1251,7 @@ printHtml += '</div></div>';
         }
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-        printHtml += '<span class="exo-texte-vf">' + question + '</span>';
+        printHtml += '<span class="exo-texte-vf">' + rendreEmphase(question) + '</span>';
         printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
         printHtml += '</div>';
@@ -1215,13 +1275,13 @@ printHtml += '</div></div>';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + consigne + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreEmphase(consigne) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="ordre-grille">';
       itemsMelanges.forEach(function(item, i) {
         printHtml += '<div class="ordre-cell-texte">';
         printHtml += '<span class="ordre-lettre">' + lettres[i] + '.</span> ';
-        printHtml += item;
+        printHtml += rendreEmphase(item);
         printHtml += '</div>';
         printHtml += '<div class="ordre-cell-pointille">n° ..........</div>';
       });
@@ -1236,7 +1296,7 @@ printHtml += '</div></div>';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + c.recto + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreEmphase(c.recto) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="carte-ligne-courte"></div>';
       printHtml += '</div>';
@@ -1249,7 +1309,7 @@ printHtml += '</div></div>';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreEmphase(relierData.consigne) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="relier-zone-lignes">';
       printHtml += '<div class="relier-lignes-grid">';
@@ -1257,7 +1317,7 @@ printHtml += '</div></div>';
       printHtml += '<div class="relier-col-lignes gauche">';
       for (var rg = 0; rg < relierData.paires.length; rg++) {
         printHtml += '<div class="relier-ligne-item">';
-        printHtml += '<span>' + relierData.paires[rg].gauche + '</span>';
+        printHtml += '<span>' + rendreEmphase(relierData.paires[rg].gauche) + '</span>';
         printHtml += '<span class="relier-point"></span>';
         printHtml += '</div>';
       }
@@ -1269,7 +1329,7 @@ printHtml += '</div></div>';
         var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
         printHtml += '<div class="relier-ligne-item">';
         printHtml += '<span class="' + classePoint + '"></span>';
-        printHtml += '<span>' + dItem.droite + '</span>';
+        printHtml += '<span>' + rendreEmphase(dItem.droite) + '</span>';
         printHtml += '</div>';
       }
       printHtml += '</div>';
@@ -1290,7 +1350,7 @@ printHtml += '</div></div>';
     printHtml += '<div class="titre-memo">À retenir</div>';
     printHtml += '<ul class="memo-liste">';
     aRetenirClean.forEach(function(phrase) {
-      printHtml += '<li>' + phrase + '</li>';
+      printHtml += '<li>' + rendreEmphase(phrase) + '</li>';
     });
     printHtml += '</ul></div>';
     printHtml += '</div>';
