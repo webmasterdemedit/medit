@@ -1,0 +1,580 @@
+<!-- derniers-textes.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Derniers textes publiés - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    /* ===== RÉUTILISE LES CLASSES DE page-themes ===== */
+    .page-blog {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px 30px 40px;
+    }
+
+    .page-blog h1 {
+      font-family: 'Georgia', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .page-blog .sous-titre-page {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    /* Réutilise .layout-themes, .sidebar-themes, .stats-ligne,
+       .grille-themes devient une liste verticale */
+    .page-blog .grille-themes {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+      justify-items: stretch;
+    }
+
+    /* ===== CARTE BLOG (réutilise l'esprit de .carte-texte) ===== */
+    .carte-blog {
+      display: flex;
+      gap: 20px;
+      padding: 18px 20px;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: all 0.15s;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .carte-blog:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-numero {
+      flex: 0 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      padding-right: 14px;
+    }
+
+    .carte-blog .blog-corps {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .carte-blog .blog-titre {
+      font-family: 'Georgia', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .carte-blog .blog-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-meta .badge-icone,
+    .carte-blog .blog-meta .niveau-badge,
+    .carte-blog .blog-meta .mots {
+      font-size: 11px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-extrait {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .carte-blog .blog-categorie {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .carte-blog .blog-date {
+      flex: 0 0 auto;
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding-left: 10px;
+      border-left: 1px solid var(--border);
+    }
+
+    .carte-blog .blog-date .date-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-date .date-validation {
+      color: var(--text);
+    }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .page-blog { padding: 12px 16px 30px; }
+      .page-blog h1 { font-size: 22px; }
+
+      .carte-blog {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .carte-blog .blog-numero {
+        flex: 0 0 36px;
+        font-size: 18px;
+        padding-right: 10px;
+      }
+
+      .carte-blog .blog-date {
+        flex: 1 0 100%;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 8px;
+        flex-direction: row;
+        gap: 8px;
+      }
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      document.write(xhr.responseText);
+    }
+  </script>
+</head>
+<body>
+
+  <div class="page page-blog">
+
+    <h1>Derniers textes publiés</h1>
+    <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Textes affichés :</span>
+        <span class="nombre" id="totalAffiches">0</span>
+      </div>
+      <div class="stat-item">
+        <span>Textes total :</span>
+        <span class="nombre" id="totalTextes">0</span>
+      </div>
+      <div class="stat-item">
+        <span>Votre niveau :</span>
+        <span class="nombre" id="niveauEtudiant">0</span>
+      </div>
+    </div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Chargement des textes...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    // ===== VARIABLES GLOBALES =====
+    var toutesLesReponses = {};
+    var textesData = [];
+    var themesData = {};
+    var niveauEtudiant = 0;
+    var nomEtudiant = '';
+    var themeActif = null;
+    var textesCalcules = [];
+
+    // ===== UTILITAIRES (repris de thème.html) =====
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function escapeAttr(str) { return escapeHtml(str); }
+
+    function mettreAJourURL(theme) {
+      try {
+        var url = new URL(window.location.href);
+        if (theme === null || theme === '') {
+          url.searchParams.delete('theme');
+        } else {
+          url.searchParams.set('theme', theme);
+        }
+        window.history.replaceState({}, '', url.toString());
+      } catch(e) {}
+    }
+
+    // ===== CHARGEMENT =====
+    function chargerTextes() {
+      var id = localStorage.getItem('etudiant_id');
+      if (!id) {
+        window.location.href = '/medit/index.html';
+        return;
+      }
+      nomEtudiant = id;
+
+      var paramsUrl = new URLSearchParams(window.location.search);
+      themeActif = paramsUrl.get('theme') || null;
+
+      DataManager.charger()
+        .then(function(data) {
+          niveauEtudiant = data.niveau || 0;
+          textesData = data.tousLesTextes || data.textes || [];
+
+          themesData = {};
+          if (data.themes && Array.isArray(data.themes)) {
+            data.themes.forEach(function(l) {
+              themesData[l.titre] = {
+                couleur: l.couleur || '#2d6a4f',
+                sousTitre: l.sousTitre || '',
+                date: l.date || '',
+                auteur: l.auteur || '',
+                niveau: parseInt(l.niveau) || 0
+              };
+            });
+          }
+
+          toutesLesReponses = {};
+          if (data.reponses) {
+            data.reponses.forEach(function(r) {
+              toutesLesReponses[r.texteId] = r;
+            });
+          }
+
+          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+          afficherBlog();
+        })
+        .catch(function(error) {
+          console.error('Erreur chargement:', error);
+          var cache = DataManager.getCacheForce(id);
+          if (cache) {
+            niveauEtudiant = cache.niveau || 0;
+            textesData = cache.textes || cache.tousLesTextes || [];
+            if (cache.reponses) {
+              cache.reponses.forEach(function(r) {
+                toutesLesReponses[r.texteId] = r;
+              });
+            }
+            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+            afficherBlog();
+          } else {
+            document.getElementById('loader').style.display = 'none';
+            document.getElementById('contenu').innerHTML = `
+              <div class="vide-themes">
+                <span class="icone">⚠</span>
+                <h2>Erreur de chargement</h2>
+                <p>Vérifiez votre connexion internet.</p>
+              </div>
+            `;
+          }
+        });
+    }
+
+    // ===== AFFICHAGE PRINCIPAL =====
+    function afficherBlog() {
+      var loader = document.getElementById('loader');
+      if (loader) loader.style.display = 'none';
+
+      // 1. Filtrer les textes accessibles au niveau
+      var accessibles = textesData.filter(function(t) {
+        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
+      });
+
+      // 2. Trier par date de publication (ou numéro) DESC
+      accessibles.sort(function(a, b) {
+        var da = a.datePublication ? new Date(a.datePublication).getTime() : 0;
+        var db = b.datePublication ? new Date(b.datePublication).getTime() : 0;
+        if (da !== db) return db - da;
+        return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
+      });
+
+      // 3. Extraire les catégories (thèmes) pour la sidebar
+      var categories = [];
+      var vues = {};
+      accessibles.forEach(function(t) {
+        var cat = (t.categorie || 'Sans catégorie').trim();
+        if (!vues[cat]) { vues[cat] = true; categories.push(cat); }
+      });
+      categories.sort(function(a, b) {
+        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+      });
+
+      if (themeActif && categories.indexOf(themeActif) === -1) {
+        themeActif = null;
+        mettreAJourURL(null);
+      }
+
+      // 4. Filtrer selon le thème actif
+      var liste = accessibles.filter(function(t) {
+        if (themeActif === null) return true;
+        return (t.categorie || 'Sans catégorie').trim() === themeActif;
+      });
+
+      // 5. Stats
+      document.getElementById('totalTextes').textContent = accessibles.length;
+      document.getElementById('totalAffiches').textContent = liste.length;
+
+      // 6. Construire HTML
+      var container = document.getElementById('contenu');
+      var html = '<div class="layout-themes">';
+
+      // --- SIDEBAR ---
+      html += '<aside class="sidebar-themes" id="sidebarThemes">';
+      html += '<div class="sidebar-titre">Thèmes</div>';
+
+      var classeTous = (themeActif === null) ? ' active' : '';
+      html += '<button class="theme-item' + classeTous + '" data-theme="">'
+            + 'Tous'
+            + '<span class="compteur">' + accessibles.length + '</span>'
+            + '</button>';
+
+      categories.forEach(function(cat) {
+        var count = accessibles.filter(function(t) {
+          return (t.categorie || 'Sans catégorie').trim() === cat;
+        }).length;
+        var classeActif = (themeActif === cat) ? ' active' : '';
+        html += '<button class="theme-item' + classeActif + '" data-theme="' + escapeAttr(cat) + '">'
+              + escapeHtml(cat)
+              + '<span class="compteur">' + count + '</span>'
+              + '</button>';
+      });
+
+      html += '</aside>';
+
+      // --- CONTENU BLOG ---
+      html += '<div class="contenu-themes">';
+      html += '<div class="grille-themes" id="listeBlog">';
+
+      if (liste.length === 0) {
+        html += `
+          <div class="vide-themes">
+            <span class="icone">◈</span>
+            <h2>Aucun texte dans ce thème</h2>
+          </div>
+        `;
+      } else {
+        liste.forEach(function(texte) {
+          html += construireCarteBlog(texte);
+        });
+      }
+
+      html += '</div></div></div>';
+      container.innerHTML = html;
+
+      // 7. Bind sidebar
+      var boutons = container.querySelectorAll('.sidebar-themes .theme-item');
+      boutons.forEach(function(btn) {
+        btn.addEventListener('click', function() {
+          boutons.forEach(function(b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          var t = btn.getAttribute('data-theme');
+          themeActif = t === '' ? null : t;
+          mettreAJourURL(themeActif);
+          afficherBlog();
+        });
+      });
+    }
+
+    // ===== CARTE BLOG =====
+    function construireCarteBlog(texte) {
+      var numero = extraireNumeroTexte(texte.titre);
+      var titreAffiche = extraireTitreSansNumero(texte.titre);
+      var categorie = (texte.categorie || 'Sans catégorie').trim();
+      var mots = texte.mots || 0;
+
+      // Réponse de l'étudiant
+      var reponse = toutesLesReponses[texte.id];
+      var estValide = reponse && reponse.valide === 'valide';
+      var dateValidation = reponse && reponse.date ? reponse.date : '';
+
+      // Date de publication
+      var datePublication = texte.datePublication || texte.date || '';
+
+      // Badges exercices (repris de thème.html)
+      var TYPES_EXERCICES = [
+        { prefix: 'quiz:',   label: 'QCM' },
+        { prefix: 'open:',   label: 'Ouverte' },
+        { prefix: 'ordre:',  label: 'Ordre' },
+        { prefix: 'carte:',  label: 'Carte' },
+        { prefix: 'relier:', label: 'Relier' },
+        { prefix: 'tt:',     label: 'Trous' },
+        { prefix: 'vf:',     label: 'VF' },
+        { prefix: 'copier:', label: 'Copier' }
+      ];
+
+      var ordreBlocs = texte.ordreBlocs || [];
+      var detailParts = [];
+      var nbExercices = 0;
+
+      if (ordreBlocs.length > 0) {
+        TYPES_EXERCICES.forEach(function(type) {
+          var count = 0;
+          ordreBlocs.forEach(function(ob) {
+            if (ob.indexOf(type.prefix) === 0) count++;
+          });
+          if (count > 0) {
+            nbExercices++;
+            detailParts.push(count + ' ' + type.label);
+          }
+        });
+      } else {
+        if (texte.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+        if (texte.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+      }
+
+      var detailExercices = detailParts.join(' · ');
+
+      // Extrait
+      var extrait = texte.description || texte.extrait || '';
+      if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
+
+      // Date formatée
+      var dateLabelHtml = '';
+      var dateHtml = '';
+      if (estValide && dateValidation) {
+        var d = new Date(dateValidation);
+        if (!isNaN(d.getTime())) {
+          var dateStr = d.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric'
+          });
+          dateLabelHtml = '<span class="date-label">Fait :</span>';
+          dateHtml = '<span class="date-validation">' + dateStr + '</span>';
+        }
+      } else if (datePublication) {
+        var dp = new Date(datePublication);
+        if (!isNaN(dp.getTime())) {
+          dateHtml = '<span class="date-validation">' + dp.toLocaleDateString('fr-FR', {
+            day: '2-digit', month: 'long', year: 'numeric'
+          }) + '</span>';
+        }
+      }
+
+      var numeroHtml = (numero !== Infinity)
+        ? '<div class="blog-numero">' + numero + '</div>'
+        : '<div class="blog-numero">◆</div>';
+
+      return `
+        <div class="carte-blog"
+             onclick="window.location.href='/medit/texte.html?id=${texte.id}'">
+          ${numeroHtml}
+          <div class="blog-corps">
+            <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
+            <div class="blog-meta">
+              <span class="niveau-badge">Niveau ${texte.niveau}</span>
+              ${nbExercices > 0 ? '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' : ''}
+              ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+              ${mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : ''}
+            </div>
+            ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
+            <span class="blog-categorie">#${escapeHtml(categorie)}</span>
+          </div>
+          <div class="blog-date">
+            ${dateLabelHtml}
+            ${dateHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== DÉMARRAGE =====
+    function demarrer() {
+      chargerTextes();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
