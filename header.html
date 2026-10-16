@@ -18,49 +18,55 @@
       <button onclick="window.deconnecter()" class="header-btn-deconnexion">Déconnexion</button>
     </nav>
   </div>
-
-  <!-- Bande jaune old school pastel -->
-  <div class="header-bande-jaune"></div>
 </header>
 
+<!-- Section bande jaune old school pastel, APRÈS le header -->
+<section class="bande-jaune-old-school"></section>
+
 <style>
-/* Bande jaune old school pastel en bas du header */
-.header-bande-jaune {
-  height: 8px;
+/* Bande jaune old school pastel — section autonome après le header */
+.bande-jaune-old-school {
+  display: block;
   width: 100%;
+  height: 14px;
   background: linear-gradient(
     to right,
     #f5e6a8 0%,
-    #f7e9b0 15%,
-    #f3dfa0 30%,
-    #f8ecb8 50%,
-    #f3dfa0 70%,
-    #f7e9b0 85%,
+    #f7e9b0 20%,
+    #f3dfa0 50%,
+    #f7e9b0 80%,
     #f5e6a8 100%
   );
   border-top: 1px solid #e8d48a;
   border-bottom: 1px solid #d9c47a;
   box-shadow: 
-    inset 0 1px 0 rgba(255, 255, 255, 0.5),
-    0 1px 2px rgba(0, 0, 0, 0.04);
+    inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    inset 0 -1px 0 rgba(180, 150, 70, 0.15),
+    0 1px 3px rgba(0, 0, 0, 0.05);
+  position: relative;
 }
 
-/* Optionnel : petite texture "old school" avec des points discrets */
-.header-bande-jaune::after {
+/* Texture "old school" discrète par-dessus */
+.bande-jaune-old-school::after {
   content: "";
-  display: block;
-  height: 100%;
+  position: absolute;
+  inset: 0;
   background-image: radial-gradient(
     circle,
-    rgba(200, 170, 80, 0.15) 1px,
+    rgba(190, 160, 70, 0.18) 1px,
     transparent 1px
   );
-  background-size: 6px 6px;
+  background-size: 5px 5px;
+  pointer-events: none;
+}
+
+/* Si le header est sticky/fixed, décale la bande pour qu'elle suive juste en dessous */
+.site-header + .bande-jaune-old-school {
+  margin-top: 0;
 }
 </style>
 
 <script>
-// Définir la fonction globalement
 window.deconnecter = function() {
   if (confirm('Se déconnecter ?')) {
     localStorage.removeItem('etudiant_id');
