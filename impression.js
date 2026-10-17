@@ -5,6 +5,10 @@
 // + Support images (img:nom:position:taille)
 // + Support sources [xxx] rendues en marge droite, sans crochets
 // + Support Vrai/Faux (compatible strings ET objets {question,reponse})
+// + Titre identique à texte.html (badge numéro + titre sans numéro)
+// + Note/Appréciation en haut, sous la ligne Nom/Date (sans cadre)
+// + Temps de lecture en haut (sobre)
+// + Image de couverture en petit avant le numéro
 // ============================================================
 
 // ============================================================
@@ -46,11 +50,60 @@ function imprimerTexte(texteId, titre, textesData) {
     return;
   }
 
+  // ✅ Récupérer la couverture du thème (comme texte.html)
+  var couvertureTheme = recupererCouvertureTheme(texte.categorie);
+
   chargerImagesTheme(texte.categorie).then(function(images) {
-    genererImpression(texte, contenu, images || {});
+    genererImpression(texte, contenu, images || {}, couvertureTheme);
   }).catch(function() {
-    genererImpression(texte, contenu, {});
+    genererImpression(texte, contenu, {}, couvertureTheme);
   });
+}
+
+// ============================================================
+// ✅ RÉCUPÉRER LA COUVERTURE DU THÈME
+// Essaie DataManager.getTousLesThemes() puis data.themes
+// ============================================================
+function recupererCouvertureTheme(categorie) {
+  if (!categorie) return '';
+
+  // 1) Via DataManager.getTousLesThemes()
+  try {
+    if (typeof DataManager !== 'undefined' && typeof DataManager.getTousLesThemes === 'function') {
+      var themes = DataManager.getTousLesThemes() || [];
+      for (var i = 0; i < themes.length; i++) {
+        if (themes[i].titre === categorie) {
+          return themes[i].couverture || '';
+        }
+      }
+    }
+  } catch (e) { /* ignore */ }
+
+  // 2) Via window.__themesData (si le script inline l'expose)
+  try {
+    if (typeof window !== 'undefined' && window.themesData && window.themesData[categorie]) {
+      return window.themesData[categorie].couverture || '';
+    }
+  } catch (e) { /* ignore */ }
+
+  return '';
+}
+
+// ============================================================
+// ✅ EXTRAIRE LE NUMÉRO DU TITRE
+// ============================================================
+function extraireNumeroTexte(titre) {
+  if (!titre) return Infinity;
+  var match = titre.match(/^\s*(\d+)\s+/);
+  return match ? parseInt(match[1], 10) : Infinity;
+}
+
+// ============================================================
+// ✅ EXTRAIRE LE TITRE SANS LE NUMÉRO
+// ============================================================
+function extraireTitreSansNumero(titre) {
+  if (!titre) return '';
+  return titre.replace(/^\s*\d+\s+/, '').trim();
 }
 
 // ============================================================
@@ -238,9 +291,6 @@ function parserTextesTrousPourImpression(ttTexte) {
   return resultats;
 }
 
-// ⚠️ ATTENTION : cette fonction est ÉCRASÉE par la version du script inline
-// de texte.html (qui retourne des objets {question, reponse}).
-// C'est pour cela que le rendu ci-dessous gère les deux formats.
 function parserVraiFauxPourImpression(vfTexte) {
   var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var questions = [];
@@ -286,8 +336,9 @@ function rendreCitations(texte) {
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
-function genererImpression(texte, contenu, imagesTheme) {
+function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   imagesTheme = imagesTheme || {};
+  couvertureTheme = couvertureTheme || '';
   var ordreBlocs = texte.ordreBlocs || [];
 
   var parts = contenu.split(' | ');
@@ -411,6 +462,12 @@ function genererImpression(texte, contenu, imagesTheme) {
     else if (bloc.type === 'copier') nbTotalQuestions++;
   });
 
+  // ✅ Calcul du temps de lecture (comme texte.html : ~14 mots/min)
+  var textePourCompter = '';
+  blocsOrdonnes.forEach(function(b) { if (b.type === 'slide') textePourCompter += ' ' + b.data; });
+  var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+  var tempsLecture = Math.max(1, Math.round(nbMots / 14));
+
   var aRetenirClean = (texte.aRetenir || [])
     .map(function(x) { return String(x).trim(); })
     .filter(function(x) { return x !== ''; });
@@ -451,6 +508,19 @@ function genererImpression(texte, contenu, imagesTheme) {
     ' - Niveau ' + (texte.niveau || 0);
   nomFichierPdf = nomFichierPdf.replace(/[\\/:*?"<>|]/g, '-');
 
+  // ✅ Préparation du titre comme dans texte.html
+  var numeroTexte = extraireNumeroTexte(texte.titre);
+  var titreAffiche = extraireTitreSansNumero(texte.titre);
+  var numeroHtml = (numeroTexte !== Infinity)
+    ? '<span class="numero-texte">' + numeroTexte + '</span>'
+    : '';
+
+  // ✅ Image de couverture (petite, avant le numéro)
+  var couvertureHtml = '';
+  if (couvertureTheme) {
+    couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
+  }
+
   var printHtml = `<!DOCTYPE html>
 <html>
 <head>
@@ -470,8 +540,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 .page { max-width:100%; }
 
+/* ============================================================ */
+/* ENCART ÉLÈVE (Nom / Date / Feuille n°)                        */
+/* ============================================================ */
 .entete-eleve {
-  margin-bottom: 10px;
+  margin-bottom: 6px;
   padding: 6px 10px;
   font-size: 9.5pt;
 }
@@ -485,6 +558,55 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
 /* ============================================================ */
+/* ✅ NOTE / APPRÉCIATION EN HAUT (sans cadre)                   */
+/* ============================================================ */
+.note-haut {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 30px;
+  padding: 2px 10px 8px;
+  margin-bottom: 8px;
+  font-size: 10pt;
+  color: #1a1a1a;
+}
+.note-haut .note-haut-gauche {
+  white-space: nowrap;
+}
+.note-haut .note-haut-gauche strong { font-weight: 600; }
+.note-haut .note-haut-droite {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 4px;
+}
+.note-haut .note-haut-droite strong { font-weight: 600; white-space: nowrap; }
+.note-haut .note-haut-droite .ligne-pointillee {
+  display: inline-block;
+  flex: 1;
+  border-bottom: 0.5px dotted #666;
+  height: 12px;
+}
+
+/* ============================================================ */
+/* ✅ TEMPS DE LECTURE (sobre, en haut)                          */
+/* ============================================================ */
+.temps-lecture-haut {
+  text-align: center;
+  font-size: 9pt;
+  color: #555;
+  font-style: italic;
+  margin-bottom: 8px;
+  letter-spacing: 0.3px;
+}
+.temps-lecture-haut::before {
+  content: "⏱ ";
+  font-style: normal;
+  color: #777;
+  margin-right: 3px;
+}
+
+/* ============================================================ */
 /* BANDEAU TITRE                                                 */
 /* ============================================================ */
 .bandeau-titre {
@@ -496,8 +618,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .bandeau-titre .ligne-titre {
   display: flex;
   flex-direction: row;
-  justify-content: space-between;
-  align-items: baseline;
+  justify-content: flex-start;
+  align-items: center;
   gap: 10px;
   text-align: left;
 }
@@ -510,12 +632,42 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-transform: uppercase;
   line-height: 1.15;
   margin: 0;
+  flex: 1;
 }
 .bandeau-titre .meta-droite {
   font-size: 9pt;
   color: #555;
   text-align: right;
   white-space: nowrap;
+}
+
+/* ✅ Image de couverture mini avant le numéro */
+.couverture-mini {
+  display: inline-block;
+  width: 38px;
+  height: 52px;
+  object-fit: cover;
+  border-radius: 2px;
+  border: 0.5px solid #ccc;
+  flex-shrink: 0;
+  vertical-align: middle;
+}
+
+/* ✅ Badge numéro du texte (comme dans texte.html) */
+.numero-texte {
+  display: inline-block;
+  background: #1a1a1a;
+  color: #ffffff;
+  font-family: 'Georgia', serif;
+  font-size: 13pt;
+  font-weight: bold;
+  line-height: 1;
+  padding: 4px 10px;
+  border-radius: 3px;
+  letter-spacing: 0.5px;
+  white-space: nowrap;
+  align-self: center;
+  flex-shrink: 0;
 }
 
 /* ============================================================ */
@@ -894,42 +1046,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   top: 4px;
 }
 
-.zone-note-finale {
-  margin-top: 14px;
-  padding: 7px 12px;
-  background: #fafaf7;
-  border: 0.5px solid #333;
-  border-radius: 3px;
-  page-break-inside: avoid;
-  break-inside: avoid;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 20px;
-  flex-wrap: wrap;
-}
-.zone-note-finale .note-ligne {
-  font-size: 10pt;
-  white-space: nowrap;
-  color: #1a1a1a;
-}
-.zone-note-finale .note-ligne strong { font-weight: 600; }
-.zone-note-finale .note-ligne-appreciation {
-  font-size: 10pt;
-  flex: 1;
-  display: flex;
-  align-items: baseline;
-  gap: 4px;
-  color: #1a1a1a;
-}
-.zone-note-finale .note-ligne-appreciation strong { font-weight: 600; }
-.zone-note-finale .note-ligne-appreciation .ligne-pointillee {
-  display: inline-block;
-  flex: 1;
-  border-bottom: 0.5px dotted #666;
-  height: 12px;
-}
-
 .pied-page {
   text-align: center;
   font-size: 8pt;
@@ -969,10 +1085,21 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   </div>
 </div>
 
-<!-- BANDEAU TITRE -->
+<!-- ✅ NOTE / APPRÉCIATION EN HAUT (sans cadre) -->
+<div class="note-haut">
+  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
+  <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
+</div>
+
+<!-- ✅ TEMPS DE LECTURE (sobre) -->
+<div class="temps-lecture-haut">Temps de lecture estimé : ${tempsLecture} min</div>
+
+<!-- BANDEAU TITRE (badge numéro + titre sans numéro + couverture mini) -->
 <div class="bandeau-titre">
   <div class="ligne-titre">
-    <h1>${texte.titre || 'Lecture'}</h1>
+    ${couvertureHtml}
+    ${numeroHtml}
+    <h1>${titreAffiche || 'Lecture'}</h1>
     <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
   </div>
 </div>
@@ -1186,7 +1313,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       hasExercice = true;
       bloc.data.forEach(function(item, idxVf) {
         exoNum++;
-        // ✅ CORRECTION : gérer string OU objet {question, reponse}
         var questionTexte = (item && typeof item === 'object') ? (item.question || '') : item;
         printHtml += '<div class="exo">';
         if (idxVf === 0) {
@@ -1304,11 +1430,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   } else {
     printHtml += '</div>';
   }
-
-  printHtml += '<div class="zone-note-finale">';
-  printHtml += '<div class="note-ligne"><strong>Note :</strong> ......... / ' + nbTotalQuestions + '</div>';
-  printHtml += '<div class="note-ligne-appreciation"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>';
-  printHtml += '</div>';
 
   printHtml += `
     <div class="pied-page">
