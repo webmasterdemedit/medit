@@ -4,6 +4,7 @@
 // Dépend de : DataManager (data-manager.js)
 // + Support images (img:nom:position:taille)
 // + Support sources [xxx] rendues en marge droite, sans crochets
+// + Support Vrai/Faux (compatible strings ET objets {question,reponse})
 // ============================================================
 
 // ============================================================
@@ -54,8 +55,6 @@ function imprimerTexte(texteId, titre, textesData) {
 
 // ============================================================
 // ✅ RENDU DES SOURCES [xxx]
-// - Supprime les crochets
-// - Si [xxx] est en fin de phrase, le déplace au début de cette phrase
 // ============================================================
 function rendreSources(texte) {
   if (!/\[[^\]]+\]/.test(texte)) return texte;
@@ -239,6 +238,9 @@ function parserTextesTrousPourImpression(ttTexte) {
   return resultats;
 }
 
+// ⚠️ ATTENTION : cette fonction est ÉCRASÉE par la version du script inline
+// de texte.html (qui retourne des objets {question, reponse}).
+// C'est pour cela que le rendu ci-dessous gère les deux formats.
 function parserVraiFauxPourImpression(vfTexte) {
   var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var questions = [];
@@ -440,7 +442,7 @@ function genererImpression(texte, contenu, imagesTheme) {
   var dateImpressionStr = dateImpression.toLocaleDateString('fr-FR', {
     day: '2-digit', month: 'long', year: 'numeric'
   });
-    var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
+  var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', {
     hour: '2-digit', minute: '2-digit'
   });
 
@@ -816,7 +818,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-align: right;
   direction: rtl;
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.6em;                 /* ✅ AVANT 2.2em → police arabe plus grande */
+  font-size: 2.6em;
   line-height: 1.1;
   color: #1a1a1a;
   padding: 4px 0 0;
@@ -838,15 +840,14 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   left: 0;
   right: 0;
   bottom: 0.30em;
-  height: 1.2px;                    /* ✅ ligne d'énoncé bien visible */
-  background: #000 !important;      /* ✅ NOIR franc (avant : #333 trop clair) */
+  height: 1.2px;
+  background: #000 !important;
   pointer-events: none;
 }
 
-/* ✅ LIGNE POINTILLÉE POUR ÉCRIRE — plus haute */
 .copier-ligne-pointillee {
   width: 100%;
-  height: 38px;                     /* ✅ AVANT 22px → plus d'espace pour écrire */
+  height: 38px;
   border-bottom: 1px dotted #5a4a3a;
   margin-top: 4px;
 }
@@ -1160,10 +1161,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
-for (var ol = 0; ol < 5; ol++) {
-  printHtml += '<div class="open-ligne"></div>';
-}
-printHtml += '</div></div>';
+      for (var ol = 0; ol < 5; ol++) {
+        printHtml += '<div class="open-ligne"></div>';
+      }
+      printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
       hasExercice = true;
@@ -1183,15 +1184,17 @@ printHtml += '</div></div>';
     } else if (bloc.type === 'vf') {
       ouvrirZoneExercices();
       hasExercice = true;
-      bloc.data.forEach(function(question, idxVf) {
+      bloc.data.forEach(function(item, idxVf) {
         exoNum++;
+        // ✅ CORRECTION : gérer string OU objet {question, reponse}
+        var questionTexte = (item && typeof item === 'object') ? (item.question || '') : item;
         printHtml += '<div class="exo">';
         if (idxVf === 0) {
           afficherConsigne(bloc);
         }
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-        printHtml += '<span class="exo-texte-vf">' + question + '</span>';
+        printHtml += '<span class="exo-texte-vf">' + questionTexte + '</span>';
         printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
         printHtml += '</div>';
