@@ -1,6 +1,5 @@
 // ============================================================
-// couverture.js — CARTE-COUVERTURE (format carré, style blog)
-// Une seule fonction : construireCarteCouverture(theme, options)
+// couverture.js — CARTE-COUVERTURE (rectangle large, couleur thème)
 // ============================================================
 
 (function() {
@@ -45,7 +44,8 @@
     if (estActuel)  classes += ' actuelle';
 
     var html = '';
-    html += '<' + tag + ' class="' + classes + '"' + attrs + '>';
+    // ✅ COULEUR DU THÈME en fond
+    html += '<' + tag + ' class="' + classes + '" style="background:' + couleur + '; border-color:' + couleur + ';"' + attrs + '>';
 
     if (verrouille) {
       html += '<div class="cadenas-verrou">🔒</div>';
@@ -57,27 +57,25 @@
 
     html += '<div class="contenu-theme">';
 
-    // Image (cercle) en haut
+    // Image (cercle) à gauche
     if (showImage) {
       html += '<div class="couverture-image"><img src="' + _escapeHtml(couverture) + '" alt="" loading="lazy"></div>';
     }
 
-    // Auteur
+    // Bloc texte à droite
+    html += '<div class="texte-theme">';
     if (auteur) {
       html += '<span class="auteur-theme">' + _escapeHtml(auteur) + '</span>';
     }
-
-    // Titre
     html += '<span class="titre-theme">#' + _escapeHtml(titre) + '</span>';
-
-    // Sous-titre
     if (sousTitre) {
       html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
     }
+    html += '</div>';
 
     html += '</div>';
 
-    // Barre de progression en bas
+    // Progression en bas
     html += '<div class="progression-theme"><div class="barre" style="width: ' + pourcentage + '%;"></div></div>';
 
     html += '</' + tag + '>';
