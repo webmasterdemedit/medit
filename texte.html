@@ -170,6 +170,21 @@
       } catch(e) { return ''; }
     }
 
+    /* ✅ NOUVEAU : formatage de la date de modification (colonne H) */
+    function formatDateModifComplete(dateStr) {
+      if (!dateStr) return '';
+      try {
+        var d = new Date(dateStr);
+        if (isNaN(d.getTime())) return '';
+        var jour    = String(d.getDate()).padStart(2, '0');
+        var mois    = String(d.getMonth() + 1).padStart(2, '0');
+        var annee   = d.getFullYear();
+        var heures  = String(d.getHours()).padStart(2, '0');
+        var minutes = String(d.getMinutes()).padStart(2, '0');
+        return jour + '/' + mois + '/' + annee + ' à ' + heures + ':' + minutes;
+      } catch(e) { return ''; }
+    }
+
     function normaliserComparaison(str) {
       return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     }
@@ -1434,8 +1449,16 @@
       return html;
     }
 
+    /* ✅ MODIFIÉ : ajout de la ligne "Modifié le ... à ..." au-dessus du bouton Imprimer */
     function construireBlocActions(texte) {
+      var dateModifFormatee = formatDateModifComplete(texte.dateModif);
       var html = '<div class="bloc-actions-texte">';
+      if (dateModifFormatee) {
+        html += '<div class="bloc-modif-info">'
+              + '<span class="modif-label">Modifié le </span>'
+              + '<span class="modif-valeur">' + echapperHtml(dateModifFormatee) + '</span>'
+              + '</div>';
+      }
       html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
       html += '</div>';
       return html;
@@ -1513,11 +1536,19 @@
 
     function construireZoneBasseMobile(texte) { return construireZoneLaterale(texte); }
 
-    function construireBlocNoteGlobale() {
+    /* ✅ MODIFIÉ : ajout de la ligne "Modifié le ... à ..." au-dessus des boutons Envoyer / Revoir */
+    function construireBlocNoteGlobale(texte) {
+      var dateModifFormatee = texte ? formatDateModifComplete(texte.dateModif) : '';
       var html = '<div class="bloc-note-globale" id="blocNoteGlobale">';
       html += '  <div class="note-titre">Résultat</div>';
       html += '  <div class="note-lignes" id="noteLignes"></div>';
       html += '  <div class="note-totale"><span>Total</span><span class="note-valeur" id="noteTotalValeur">0 / 0</span></div>';
+      if (dateModifFormatee) {
+        html += '  <div class="bloc-modif-info">'
+              + '<span class="modif-label">Modifié le </span>'
+              + '<span class="modif-valeur">' + echapperHtml(dateModifFormatee) + '</span>'
+              + '</div>';
+      }
       html += '  <div class="note-actions">';
       html += '    <button class="btn-revoir" id="btnRevoir" onclick="relireEtRefaire()" style="display:none;">Relire le texte et refaire les questions</button>';
       html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses(false)">📤 Envoyer mes réponses</button>';
@@ -1571,7 +1602,7 @@
 
       var contenuHtml = construireHtmlTexte(texte, imagesTheme);
       var blocARetenirHtml = construireBlocARetenir(texte);
-      var blocNoteGlobale = construireBlocNoteGlobale();
+      var blocNoteGlobale = construireBlocNoteGlobale(texte);
       var zoneBasHtml = construireZoneBasTexte(texte);
 
       container.innerHTML = '<div class="feuille-texte">' + contenuHtml + '</div>' + blocARetenirHtml + blocNoteGlobale + zoneBasHtml;
