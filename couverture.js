@@ -1,6 +1,6 @@
 // ============================================================
 // couverture.js — CARTE-COUVERTURE PAYSAGE MINIMALE
-// Contenu : titre, sous-titre, image, progression
+// Contenu : titre, sous-titre, image, progression, nombre de textes
 // ============================================================
 
 (function() {
@@ -26,6 +26,9 @@
     var pourcentage = theme.pourcentage || 0;
     var couverture  = theme.couverture || '';
     var verrouille  = theme.verrouille || theme.disponible === false;
+    var nombreTextes = (theme.nombreTextes !== undefined && theme.nombreTextes !== null)
+      ? parseInt(theme.nombreTextes, 10) || 0
+      : 0;
 
     var estActuel   = !!options.actuel;
     var cliquable   = options.cliquable !== false;
@@ -55,7 +58,7 @@
       html += '<div class="couverture-image"><img src="' + couverture + '" alt="" loading="lazy"></div>';
     }
 
-    // Texte à droite : titre + sous-titre
+    // Texte à droite : titre + sous-titre + nombre de textes
     html += '<div class="contenu-theme">';
     html += '<div class="titre-wrapper">';
     html += '<span class="titre-theme">#' + _escapeHtml(titre) + '</span>';
@@ -63,6 +66,12 @@
       html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
     }
     html += '</div>';
+
+    // Nombre de textes — jaune visible, grand, quasi pleine largeur
+    html += '<div class="nombre-textes">';
+    html += nombreTextes + (nombreTextes > 1 ? ' textes' : ' texte');
+    html += '</div>';
+
     html += '</div>';
 
     // Progression
