@@ -12,9 +12,9 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ===== PAGE BLOG — RÉUTILISE L'ESPRIT DE page-themes ===== */
+    /* ===== PAGE BLOG ===== */
     .page-blog {
-      max-width: 1200px;
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
@@ -35,8 +35,7 @@
       font-weight: 300;
     }
 
-    /* Réutilise .layout-themes, .sidebar-themes, .stats-ligne
-       .grille-themes devient une liste verticale */
+    /* Liste verticale de cartes */
     .page-blog .grille-themes {
       display: flex;
       flex-direction: column;
@@ -256,7 +255,6 @@
     var themesData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
-    var themeActif = null;
 
     // ===== UTILITAIRES =====
     function extraireNumeroTexte(titre) {
@@ -281,18 +279,6 @@
     }
 
     function escapeAttr(str) { return escapeHtml(str); }
-
-    function mettreAJourURL(theme) {
-      try {
-        var url = new URL(window.location.href);
-        if (theme === null || theme === '') {
-          url.searchParams.delete('theme');
-        } else {
-          url.searchParams.set('theme', theme);
-        }
-        window.history.replaceState({}, '', url.toString());
-      } catch(e) {}
-    }
 
     // ===== DATE RELATIVE =====
     function formatDateRelative(dateStr) {
@@ -333,9 +319,6 @@
         return;
       }
       nomEtudiant = id;
-
-      var paramsUrl = new URLSearchParams(window.location.search);
-      themeActif = paramsUrl.get('theme') || null;
 
       DataManager.charger()
         .then(function(data) {
@@ -417,100 +400,37 @@
         return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      // 2. Trier par date d'ajout DESC (le plus récent en premier)
+      // 2. Trier par date d'ajout DESC
       accessibles.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
         if (da !== db) return db - da;
-        // Fallback : numéro de texte décroissant
         return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
 
-      // 3. Extraire les catégories (thèmes) pour la sidebar
-      var categories = [];
-      var vues = {};
-      accessibles.forEach(function(t) {
-        var cat = (t.categorie || 'Sans catégorie').trim();
-        if (!vues[cat]) { vues[cat] = true; categories.push(cat); }
-      });
-      categories.sort(function(a, b) {
-        return a.localeCompare(b, 'fr', { sensitivity: 'base' });
-      });
-
-      if (themeActif && categories.indexOf(themeActif) === -1) {
-        themeActif = null;
-        mettreAJourURL(null);
-      }
-
-      // 4. Filtrer selon le thème actif
-      var liste = accessibles.filter(function(t) {
-        if (themeActif === null) return true;
-        return (t.categorie || 'Sans catégorie').trim() === themeActif;
-      });
-
-      // 5. Stats
+      // 3. Stats
       document.getElementById('totalTextes').textContent = accessibles.length;
-      document.getElementById('totalAffiches').textContent = liste.length;
+      document.getElementById('totalAffiches').textContent = accessibles.length;
 
-      // 6. Construire HTML
+      // 4. Construire HTML (sans sidebar)
       var container = document.getElementById('contenu');
-      var html = '<div class="layout-themes">';
+      var html = '<div class="grille-themes" id="listeBlog">';
 
-      // --- SIDEBAR ---
-      html += '<aside class="sidebar-themes" id="sidebarThemes">';
-      html += '<div class="sidebar-titre">Thèmes</div>';
-
-      var classeTous = (themeActif === null) ? ' active' : '';
-      html += '<button class="theme-item' + classeTous + '" data-theme="">'
-            + 'Tous'
-            + '<span class="compteur">' + accessibles.length + '</span>'
-            + '</button>';
-
-      categories.forEach(function(cat) {
-        var count = accessibles.filter(function(t) {
-          return (t.categorie || 'Sans catégorie').trim() === cat;
-        }).length;
-        var classeActif = (themeActif === cat) ? ' active' : '';
-        html += '<button class="theme-item' + classeActif + '" data-theme="' + escapeAttr(cat) + '">'
-              + escapeHtml(cat)
-              + '<span class="compteur">' + count + '</span>'
-              + '</button>';
-      });
-
-      html += '</aside>';
-
-      // --- CONTENU BLOG ---
-      html += '<div class="contenu-themes">';
-      html += '<div class="grille-themes" id="listeBlog">';
-
-      if (liste.length === 0) {
+      if (accessibles.length === 0) {
         html += `
           <div class="vide-themes">
             <span class="icone">◈</span>
-            <h2>Aucun texte dans ce thème</h2>
+            <h2>Aucun texte disponible</h2>
           </div>
         `;
       } else {
-        liste.forEach(function(texte) {
+        accessibles.forEach(function(texte) {
           html += construireCarteBlog(texte);
         });
       }
 
-      html += '</div></div></div>';
+      html += '</div>';
       container.innerHTML = html;
-
-      // 7. Bind sidebar
-      var boutons = container.querySelectorAll('.sidebar-themes .theme-item');
-      boutons.forEach(function(btn) {
-        btn.addEventListener('click', function() {
-          boutons.forEach(function(b) { b.classList.remove('active'); });
-          btn.classList.add('active');
-          var t = btn.getAttribute('data-theme');
-          themeActif = t === '' ? null : t;
-          mettreAJourURL(themeActif);
-          afficherBlog();
-        });
-      });
     }
 
     // ===== CARTE BLOG =====
@@ -520,15 +440,12 @@
       var categorie = (texte.categorie || 'Sans catégorie').trim();
       var mots = texte.mots || 0;
 
-      // Réponse de l'étudiant
       var reponse = toutesLesReponses[texte.id];
       var estValide = reponse && reponse.valide === 'valide';
       var dateValidation = reponse && reponse.date ? reponse.date : '';
 
-      // Date d'ajout (publication)
       var dateAjout = texte.date || '';
 
-      // Badges exercices (repris de thème.html)
       var TYPES_EXERCICES = [
         { prefix: 'quiz:',   label: 'QCM' },
         { prefix: 'open:',   label: 'Ouverte' },
@@ -562,11 +479,9 @@
 
       var detailExercices = detailParts.join(' · ');
 
-      // Extrait
       var extrait = texte.description || texte.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
-      // Date affichée : validation si fait, sinon date d'ajout relative
       var dateLabelHtml = '';
       var dateHtml = '';
 
