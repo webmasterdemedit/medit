@@ -1,1621 +1,1931 @@
-<!DOCTYPE html>
-<html lang="fr">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="theme-color" content="#2d6a4f" />
-  <title>Texte - Qiraat</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="/medit/structure.css" />
-  <link rel="stylesheet" href="/medit/theme.css" />
-
-  <script>
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', '/medit/header.html', false);
-    xhr.send();
-    if (xhr.status === 200) { document.write(xhr.responseText); }
-  </script>
-</head>
-<body>
-
-  <div class="page page-texte">
-    <div class="fil-ariane" id="filAriane"></div>
-    <a href="/medit/présentation.html" class="btn-retour">← Retour aux textes</a>
-    <div id="texteContainer" class="colonne-principale">
-      <div class="loader"><div class="spinner"></div><p>Chargement du texte...</p></div>
-    </div>
-    <aside class="colonne-laterale" id="colonneLaterale"></aside>
-    <div class="zone-basse-mobile" id="zoneBasseMobile"></div>
-    <div class="zone-bas-page" id="zoneBasPage"></div>
-    <div class="devise">
-      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
-    </div>
-  </div>
-
-  <div id="popupResultatOverlay" class="popup-resultat-overlay">
-    <div class="popup-resultat">
-      <div class="popup-titre">Résultat</div>
-      <div class="popup-note-lignes" id="popupNoteLignes"></div>
-      <div class="popup-note-totale">
-        <span>Total</span>
-        <span id="popupNoteTotal">0 / 0</span>
-      </div>
-      <div class="popup-questions-zone" id="popupQuestionsZone">
-        <div class="popup-questions-titre">Questions</div>
-        <div id="popupQuestionsListe"></div>
-        <div class="popup-actions">
-          <button class="popup-btn-envoyer-questions" id="popupBtnEnvoyerQuestions" onclick="envoyerQuestions()">Envoyer mes réponses aux questions</button>
-          <button class="popup-btn-fermer" onclick="fermerPopupResultat()">Fermer</button>
-        </div>
-        <div class="popup-envoi-statut" id="popupEnvoiStatut"></div>
-      </div>
-      <div class="popup-actions" id="popupActionsSansQuestions" style="display:none;">
-        <span></span>
-        <button class="popup-btn-fermer" onclick="fermerPopupResultat()">Fermer</button>
-      </div>
-    </div>
-  </div>
-
-  <div id="footer-container"></div>
-
-  <script>
-    fetch('/medit/footer.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) { document.getElementById('footer-container').innerHTML = data; })
-      .catch(function(error) {
-        console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = `
-          <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-          </footer>
-        `;
-      });
-  </script>
-
-  <script src="/medit/config.js"></script>
-  <script src="/medit/auth.js"></script>
-  <script src="/medit/data-manager.js"></script>
-  <script src="/medit/impression.js"></script>
-  <script src="/medit/couverture.js"></script>
-
-  <script>
-    var texteActuel = null;
-    var textesData = [];
-    var imagesTheme = {};
-    var themesData = {};
-
-    var reponsesTexte = {
-      quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {},
-      questionOuverte: ''
-    };
-
-    var envoiEffectue = false;
-    var envoiQuestionsEffectue = false;
-
-    var exoNumParType = {
-      quiz: {}, vf: {}, tt: {}, relier: {}, carte: {}, ordre: {}, copier: {}
-    };
-
-    var questionsOuvertes = [];
-
-    function echapperHtml(str) {
-      if (!str) return '';
-      return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-    }
-
-    function extraireNumeroTexte(titre) {
-      if (!titre) return Infinity;
-      var match = titre.match(/^\s*(\d+)\s+/);
-      return match ? parseInt(match[1], 10) : Infinity;
-    }
-
-    function extraireTitreSansNumero(titre) {
-      if (!titre) return '';
-      return titre.replace(/^\s*\d+\s+/, '').trim();
-    }
-
-    function rendreSources(texte) {
-      if (!/\[[^\]]+\]/.test(texte)) return texte;
-      var matchSource = texte.match(/\[([^\]]+)\]\.?/);
-      if (!matchSource) return texte;
-      var contenuSource = matchSource[1].trim();
-      var texteSansSource = texte.replace(/\[[^\]]+\]\.?/, '').trim();
-      var texteAvant = texteSansSource;
-      var idxDernierePonctuation = -1;
-      for (var i = texteAvant.length - 1; i >= 0; i--) {
-        var c = texteAvant.charAt(i);
-        if (c === '.' || c === '!' || c === '?') { idxDernierePonctuation = i; break; }
-      }
-      var idxDebutPhrase = 0;
-      if (idxDernierePonctuation !== -1) {
-        for (var j = idxDernierePonctuation - 1; j >= 0; j--) {
-          var c2 = texteAvant.charAt(j);
-          if (c2 === '.' || c2 === '!' || c2 === '?') { idxDebutPhrase = j + 1; break; }
-        }
-      }
-      var avant = texteAvant.substring(0, idxDebutPhrase);
-      var phrase = texteAvant.substring(idxDebutPhrase);
-      return avant + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
-    }
-
-    function rendreCitations(texte) {
-      if (!texte || texte.indexOf('"') === -1) return texte;
-      return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
-    }
-
-    function trierAlphabetique(arr) {
-      return arr.slice().sort(function(a, b) {
-        return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
-      });
-    }
-
-    function formatDateLongue(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-      } catch(e) { return ''; }
-    }
-
-    function formatDateMoisAnnee(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        var mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-        return mois[d.getMonth()] + ' ' + d.getFullYear();
-      } catch(e) { return ''; }
-    }
-
-    function formatDateModifComplete(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        var jour    = String(d.getDate()).padStart(2, '0');
-        var mois    = String(d.getMonth() + 1).padStart(2, '0');
-        var annee   = d.getFullYear();
-        var heures  = String(d.getHours()).padStart(2, '0');
-        var minutes = String(d.getMinutes()).padStart(2, '0');
-        return jour + '/' + mois + '/' + annee + ' à ' + heures + ':' + minutes;
-      } catch(e) { return ''; }
-    }
-
-    function normaliserComparaison(str) {
-      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    }
-
-    function trouverTexte(texteId, textesDataParam) {
-      if (textesDataParam && textesDataParam.length > 0) {
-        for (var i = 0; i < textesDataParam.length; i++) {
-          if (String(textesDataParam[i].id) === String(texteId)) return textesDataParam[i];
-        }
-      }
-      var tous = DataManager.getTousLesTextes();
-      for (var j = 0; j < tous.length; j++) {
-        if (String(tous[j].id) === String(texteId)) return tous[j];
-      }
-      return null;
-    }
-
-    function parserQuizsPourImpression(quizTexte) {
-      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var quizs = [];
-      var currentQuiz = null;
-      var lettres = ['A','B','C','D','E','F'];
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i];
-        if (ligne.match(/^q:/i)) {
-          if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
-          currentQuiz = { question: ligne.replace(/^q:\s*/i, '').trim() || 'Question', reponses: [] };
-        } else if (currentQuiz) {
-          var isCorrect = false;
-          var texteRep = ligne;
-          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) { isCorrect = true; texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim(); }
-          else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) { texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim(); }
-          if (texteRep) currentQuiz.reponses.push({ texte: texteRep || 'Réponse', lettre: lettres[currentQuiz.reponses.length] || '?', correcte: isCorrect });
-        }
-      }
-      if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
-      return quizs;
-    }
-
-    function parserOrdrePourImpression(ordreTexte) {
-      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var elements = [];
-      var consigne = 'Remettre dans l\'ordre';
-      for (var i = 0; i < lignes.length; i++) {
-        var ligne = lignes[i];
-        var match = ligne.match(/^(\d+)\s+(.+)/);
-        if (match) elements.push(match[2]);
-        else if (elements.length === 0 && ligne.length > 0) consigne = ligne.replace(/^o:\s*/i, '').trim() || consigne;
-      }
-      return { elements: elements, consigne: consigne };
-    }
-
-    function parserCartesPourImpression(carteTexte) {
-      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var cartes = [];
-      var current = null;
-      for (var i = 0; i < lignes.length; i++) {
-        var l = lignes[i];
-        if (l.toLowerCase().startsWith('r:')) {
-          if (current) cartes.push(current);
-          current = { recto: l.replace(/^r:\s*/i, '').trim(), verso: '' };
-        } else if (l.toLowerCase().startsWith('v:') && current) {
-          current.verso = l.replace(/^v:\s*/i, '').trim();
-        }
-      }
-      if (current) cartes.push(current);
-      return cartes;
-    }
-
-    function parserRelierPourImpression(relierTexte) {
-      var lignes = relierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      if (lignes.length === 0) return null;
-      var consigne = lignes[0].replace(/^l:\s*/i, '').trim() || 'Relie les éléments';
-      var paires = [];
-      for (var i = 1; i < lignes.length; i++) {
-        var idx = lignes[i].indexOf('-');
-        if (idx === -1) continue;
-        var gauche = lignes[i].substring(0, idx).trim();
-        var droite = lignes[i].substring(idx + 1).trim();
-        if (gauche && droite) paires.push({ gauche: gauche, droite: droite });
-      }
-      if (paires.length === 0) return null;
-      var compteParDroite = {};
-      paires.forEach(function(p) { compteParDroite[p.droite] = (compteParDroite[p.droite] || 0) + 1; });
-      var droitesUniques = [];
-      var dejaVues = {};
-      paires.forEach(function(p) {
-        if (!dejaVues[p.droite]) {
-          dejaVues[p.droite] = true;
-          droitesUniques.push({ droite: p.droite, partagee: compteParDroite[p.droite] > 1 });
-        }
-      });
-      for (var j = droitesUniques.length - 1; j > 0; j--) {
-        var k = Math.floor(Math.random() * (j + 1));
-        var tmp = droitesUniques[j]; droitesUniques[j] = droitesUniques[k]; droitesUniques[k] = tmp;
-      }
-      return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
-    }
-
-    function parserTextesTrousPourImpression(ttTexte) {
-      var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var resultats = [];
-      lignes.forEach(function(ligne) {
-        if (!/^tt:/i.test(ligne)) return;
-        var contenu = ligne.replace(/^tt:\s*/i, '').trim();
-        var match = contenu.match(/\/([^\/]+)\//);
-        if (!match) return;
-        var mot = match[1].trim();
-        var idx = contenu.indexOf('/' + mot + '/');
-        var avant = contenu.substring(0, idx).trim();
-        var apres = contenu.substring(idx + mot.length + 2).trim();
-        resultats.push({ avant: avant, mot: mot, apres: apres });
-      });
-      return resultats;
-    }
-
-    function parserVraiFauxPourImpression(vfTexte) {
-      var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var questions = [];
-      lignes.forEach(function(ligne) {
-        if (!/^vf:/i.test(ligne)) return;
-        var contenu = ligne.replace(/^vf:\s*/i, '').trim();
-        var match = contenu.match(/\(([vf])\)\s*$/i);
-        if (!match) return;
-        var reponse = match[1].toLowerCase();
-        var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
-        if (question === '') return;
-        questions.push({ question: question, reponse: reponse });
-      });
-      return questions;
-    }
-
-    function parserCopierPourImpression(copierTexte) {
-      if (!copierTexte) return [];
-      var lignes = copierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
-      var blocs = [];
-      lignes.forEach(function(ligne) {
-        var contenu = ligne.replace(/^c:\s*/i, '').trim();
-        if (!contenu) return;
-        var mots = contenu.split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m !== ''; });
-        if (mots.length > 0) blocs.push({ mots: mots });
-      });
-      return blocs;
-    }
-
-    function construireExercicesPourFeuille(blocsOrdonnes) {
-      var html = '';
-      var exoNum = 0;
-      var hasExercice = false;
-      var quizCounter = 0;
-      var ttCounter = 0;
-      var carteCounter = 0;
-      var vfCounter = 0;
-      var relierCounter = 0;
-      var ordreCounter = 0;
-      var copierCounter = 0;
-
-      function typeLogique(t) { if (t === 'carte') return 'open'; return t; }
-
-      var consignesBase = {
-        quiz:   { sing: 'Cochez la bonne réponse :',  plur: 'Cochez la bonne réponse :' },
-        open:   { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
-        tt:     { sing: 'Complétez la phrase :',      plur: 'Complétez les phrases :' },
-        vf:     { sing: 'Cochez Vrai ou Faux :',      plur: 'Cochez Vrai ou Faux :' },
-        ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
-        relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' },
-        copier: { sing: 'Recopiez :',                 plur: 'Recopiez :' }
-      };
-
-      var iGroupe = 0;
-      while (iGroupe < blocsOrdonnes.length) {
-        var blocCourant = blocsOrdonnes[iGroupe];
-        var typeCourant = typeLogique(blocCourant.type);
-        if (typeCourant === 'slide') { iGroupe++; continue; }
-        var nbConsecutifs = 1;
-        var jGroupe = iGroupe + 1;
-        while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) { nbConsecutifs++; jGroupe++; }
-        if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
-        var base = consignesBase[typeCourant];
-        if (base) {
-          var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
-          blocCourant._consigne = consigneFinale;
-          for (var kGroupe = iGroupe + 1; kGroupe < jGroupe; kGroupe++) blocsOrdonnes[kGroupe]._consigne = '';
-        }
-        iGroupe = jGroupe;
-      }
-
-      function afficherConsigne(bloc) { if (bloc._consigne) html += '<div class="consigne-exo">' + bloc._consigne + '</div>'; }
-
-      blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type === 'slide') return;
-
-        if (bloc.type === 'copier') {
-          hasExercice = true;
-          exoNum++;
-          var copierIdx = copierCounter++;
-          exoNumParType.copier[copierIdx] = exoNum;
-          var mots = bloc.data.mots;
-          html += '<div class="exo" data-copier-idx="' + copierIdx + '">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">';
-          html += '<div class="bloc-copier">';
-          html += '<div class="copier-mots">';
-          for (var cm = 0; cm < mots.length; cm++) html += '<span class="copier-mot">' + mots[cm] + '</span>';
-          html += '</div>';
-          html += '<div class="copier-ligne-pointillee"></div>';
-          html += '</div>';
-          html += '</span>';
-          html += '</div>';
-          html += '<div class="copier-actions">';
-          html += '<button class="copier-btn" data-copier-idx="' + copierIdx + '" onclick="marquerCopie(this)">J\'ai recopié</button>';
-          html += '</div>';
-          html += '</div>';
-          return;
-        }
-
-        if (bloc.type === 'quiz') {
-          hasExercice = true;
-          exoNum++;
-          var q = bloc.data;
-          var quizIdx = quizCounter++;
-          exoNumParType.quiz[quizIdx] = exoNum;
-          html += '<div class="exo">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + q.question + '</span>';
-          html += '</div>';
-          html += '<div class="quiz-reponses" data-quiz-idx="' + quizIdx + '">';
-          q.reponses.forEach(function(rep, ri) {
-            html += '<span class="quiz-rep interactive" data-quiz-idx="' + quizIdx + '" data-rep-idx="' + ri + '" data-correct="' + (rep.correcte ? '1' : '0') + '" onclick="repondreQuiz(this)">';
-            html += '<span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte;
-            html += '</span>';
-          });
-          html += '</div>';
-          html += '<div class="quiz-feedback-exo" id="quizFeedbackExo-' + quizIdx + '"></div>';
-          html += '</div>';
-          return;
-        }
-
-        if (bloc.type === 'open') {
-          hasExercice = true;
-          exoNum++;
-          questionsOuvertes.push({ texte: bloc.data, reponse: '' });
-          return;
-        }
-
-        if (bloc.type === 'tt') {
-          hasExercice = true;
-          exoNum++;
-          var tt = bloc.data;
-          var ttIdx = ttCounter++;
-          exoNumParType.tt[ttIdx] = exoNum;
-          html += '<div class="exo">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="tt-phrase-print">';
-          if (tt.avant) html += tt.avant + ' ';
-          html += '<input type="text" class="tt-input" id="ttInput-' + ttIdx + '" data-mot="' + echapperHtml(tt.mot) + '" onkeydown="if(event.key===\'Enter\'){validerTT(' + ttIdx + ');return false;}" onblur="validerTT(' + ttIdx + ')">';
-          if (tt.apres) html += ' ' + tt.apres;
-          html += '</span>';
-          html += '</div>';
-          html += '<div class="tt-feedback" id="ttFeedback-' + ttIdx + '"></div>';
-          html += '</div>';
-          return;
-        }
-
-        if (bloc.type === 'vf') {
-          hasExercice = true;
-          bloc.data.forEach(function(item, idxVf) {
-            exoNum++;
-            var vfIdx = vfCounter++;
-            exoNumParType.vf[vfIdx] = exoNum;
-            html += '<div class="exo">';
-            if (idxVf === 0) afficherConsigne(bloc);
-            html += '<div class="exo-ligne vf-ligne">';
-            html += '<span class="exo-num-inline">' + exoNum + '</span>';
-            html += '<span class="exo-texte-vf">' + item.question + '</span>';
-            html += '<span class="vf-cases">';
-            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="v" data-correct="' + (item.reponse === 'v' ? '1' : '0') + '" onclick="repondreVF(this)">VRAI</button>';
-            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="f" data-correct="' + (item.reponse === 'f' ? '1' : '0') + '" onclick="repondreVF(this)">FAUX</button>';
-            html += '</span>';
-            html += '</div>';
-            html += '<div class="vf-feedback" id="vfFeedback-' + vfIdx + '"></div>';
-            html += '</div>';
-          });
-          return;
-        }
-
-        if (bloc.type === 'ordre') {
-          hasExercice = true;
-          var ordreData = bloc.data;
-          var items = ordreData.elements || [];
-          var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
-          var itemsMelanges = items.slice();
-          for (var m = itemsMelanges.length - 1; m > 0; m--) {
-            var k = Math.floor(Math.random() * (m + 1));
-            var tmp = itemsMelanges[m]; itemsMelanges[m] = itemsMelanges[k]; itemsMelanges[k] = tmp;
-          }
-          exoNum++;
-          var ordreIdx = ordreCounter++;
-          exoNumParType.ordre[ordreIdx] = exoNum;
-
-          html += '<div class="exo ordre-exo" data-ordre-idx="' + ordreIdx + '">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + consigne + '</span>';
-          html += '</div>';
-          html += '<div class="ordre-grille" id="ordreGrille-' + ordreIdx + '" data-ordre-idx="' + ordreIdx + '">';
-          itemsMelanges.forEach(function(item, i) {
-            html += '<div class="ordre-item" draggable="true" data-ordre-idx="' + ordreIdx + '" data-original="' + i + '">';
-            html += '<span class="ordre-grip">⋮⋮</span>';
-            html += '<span class="ordre-num">' + (i + 1) + '</span>';
-            html += '<span class="ordre-texte">' + item + '</span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '<div class="ordre-actions">';
-          html += '<button class="ordre-btn-valider" id="ordreBtnValider-' + ordreIdx + '" onclick="validerOrdre(' + ordreIdx + ')">Valider l\'ordre</button>';
-          html += '</div>';
-          html += '<div class="ordre-resultat" id="ordreResultat-' + ordreIdx + '"></div>';
-          html += '</div>';
-          return;
-        }
-
-        if (bloc.type === 'carte') {
-          hasExercice = true;
-          exoNum++;
-          var c = bloc.data;
-          var carteIdx = carteCounter++;
-          exoNumParType.carte[carteIdx] = exoNum;
-          html += '<div class="exo">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + c.recto + '</span>';
-          html += '</div>';
-          html += '<div class="carte-actions">';
-          html += '<button class="carte-btn-voir" data-carte-idx="' + carteIdx + '" onclick="voirCarteReponse(this)">Voir la réponse</button>';
-          html += '</div>';
-          html += '<div class="carte-reponse-cachee" id="carteRep-' + carteIdx + '">' + echapperHtml(c.verso) + '</div>';
-          html += '<div class="carte-choix" id="carteChoix-' + carteIdx + '">';
-          html += '<button class="trouve" data-carte-idx="' + carteIdx + '" data-choix="trouve" onclick="carteTrouvePasTrouve(this)">✓ J\'ai trouvé</button>';
-          html += '<button class="pas-trouve" data-carte-idx="' + carteIdx + '" data-choix="pas-trouve" onclick="carteTrouvePasTrouve(this)">✗ Pas trouvé</button>';
-          html += '</div>';
-          html += '</div>';
-          return;
-        }
-
-        if (bloc.type === 'relier') {
-          hasExercice = true;
-          var relierData = bloc.data;
-          var relierIdx = relierCounter++;
-          exoNum++;
-          exoNumParType.relier[relierIdx] = exoNum;
-          var paires = relierData.paires || [];
-          var droitesMelangees = relierData.droitesMelangees || [];
-          html += '<div class="exo relier-exo" data-relier-idx="' + relierIdx + '">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + relierData.consigne + '</span>';
-          html += '</div>';
-          html += '<div class="relier-zone" id="relierZone-' + relierIdx + '">';
-          html += '<div class="relier-grid">';
-          html += '<div class="relier-colonne gauche">';
-          paires.forEach(function(p, i) {
-            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="gauche" data-idx="' + i + '" onclick="selectionnerRelier(' + relierIdx + ', \'gauche\', ' + i + ')">';
-            html += '<span class="texte">' + p.gauche + '</span>';
-            html += '<span class="point"></span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '<div class="relier-colonne droite">';
-          droitesMelangees.forEach(function(d, i) {
-            var classePoint = d.partagee ? 'point point-partage' : 'point';
-            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="droite" data-idx="' + i + '" data-droite-texte="' + echapperHtml(d.droite) + '" onclick="selectionnerRelier(' + relierIdx + ', \'droite\', ' + i + ')">';
-            html += '<span class="' + classePoint + '"></span>';
-            html += '<span class="texte">' + d.droite + '</span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '</div>';
-          html += '</div>';
-          html += '<div class="relier-resultat" id="relierResultat-' + relierIdx + '"></div>';
-          html += '</div>';
-          return;
-        }
-      });
-
-      if (!hasExercice) return '';
-
-      return '<div class="exercices-zone">' +
-               '<div class="titre-exercices">QUIZ</div>' +
-               html +
-             '</div>';
-    }
-
-    function repondreQuiz(el) {
-      var quizIdx = el.getAttribute('data-quiz-idx');
-      var repIdx = el.getAttribute('data-rep-idx');
-      var correct = el.getAttribute('data-correct') === '1';
-      if (reponsesTexte.quiz[quizIdx]) return;
-      reponsesTexte.quiz[quizIdx] = { choix: repIdx, correct: correct };
-      var parent = el.parentElement;
-      var reps = parent.querySelectorAll('.quiz-rep');
-      reps.forEach(function(r) { r.classList.remove('interactive'); r.style.pointerEvents = 'none'; });
-      el.classList.add(correct ? 'correct' : 'incorrect');
-      var feedback = document.getElementById('quizFeedbackExo-' + quizIdx);
-      if (feedback) {
-        if (correct) feedback.textContent = 'Bonne réponse.';
-        else {
-          var bonne = parent.querySelector('.quiz-rep[data-correct="1"]');
-          var texteBonne = bonne ? bonne.textContent.trim() : '';
-          feedback.textContent = 'La bonne réponse était : ' + texteBonne;
-          if (bonne) bonne.classList.add('correct');
-        }
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function repondreVF(btn) {
-      var vfIdx = btn.getAttribute('data-vf-idx');
-      var choix = btn.getAttribute('data-choix');
-      var correct = btn.getAttribute('data-correct') === '1';
-      if (reponsesTexte.vf[vfIdx]) return;
-      reponsesTexte.vf[vfIdx] = { choix: choix, correct: correct };
-      var parent = btn.parentElement;
-      var boutons = parent.querySelectorAll('.vf-btn');
-      boutons.forEach(function(b) { b.disabled = true; });
-      btn.classList.add(correct ? 'vf-ok' : 'vf-ko');
-      if (!correct) {
-        boutons.forEach(function(b) { if (b.getAttribute('data-correct') === '1') b.classList.add('vf-ok'); });
-      }
-      var feedback = document.getElementById('vfFeedback-' + vfIdx);
-      if (feedback) feedback.textContent = correct ? 'Correct.' : 'Incorrect.';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function validerTT(ttIdx) {
-      var input = document.getElementById('ttInput-' + ttIdx);
-      if (!input || reponsesTexte.tt[ttIdx]) return;
-      var saisi = input.value.trim();
-      if (saisi === '') return;
-      var motAttendu = input.getAttribute('data-mot') || '';
-      var correct = normaliserComparaison(saisi) === normaliserComparaison(motAttendu);
-      reponsesTexte.tt[ttIdx] = { saisi: saisi, correct: correct };
-      input.classList.add(correct ? 'tt-ok' : 'tt-ko');
-      input.disabled = true;
-      var feedback = document.getElementById('ttFeedback-' + ttIdx);
-      if (feedback) feedback.textContent = correct ? 'Bonne réponse.' : 'La bonne réponse était : « ' + motAttendu + ' »';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function voirCarteReponse(btn) {
-      var carteIdx = btn.getAttribute('data-carte-idx');
-      var rep = document.getElementById('carteRep-' + carteIdx);
-      var choix = document.getElementById('carteChoix-' + carteIdx);
-      if (rep) rep.classList.add('visible');
-      if (choix) choix.classList.add('visible');
-      btn.style.display = 'none';
-    }
-
-    function carteTrouvePasTrouve(btn) {
-      var carteIdx = btn.getAttribute('data-carte-idx');
-      var choix = btn.getAttribute('data-choix');
-      if (reponsesTexte.cartes[carteIdx] !== undefined) return;
-      reponsesTexte.cartes[carteIdx] = (choix === 'trouve');
-      var parent = btn.parentElement;
-      var boutons = parent.querySelectorAll('button');
-      boutons.forEach(function(b) { b.disabled = true; });
-      btn.classList.add('actif');
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function marquerCopie(btn) {
-      var copierIdx = btn.getAttribute('data-copier-idx');
-      if (reponsesTexte.copier[copierIdx] !== undefined) return;
-      reponsesTexte.copier[copierIdx] = true;
-      btn.classList.add('actif');
-      btn.disabled = true;
-      btn.textContent = '✓ Recopié';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    var relierState = {};
-
-    function initRelierState(relierIdx) {
-      if (!relierState[relierIdx]) relierState[relierIdx] = { associations: {}, selection: null, mapPaires: null };
-      return relierState[relierIdx];
-    }
-
-    function setRelierPaires(relierIdx, mapPaires) {
-      var st = initRelierState(relierIdx);
-      st.mapPaires = mapPaires;
-    }
-
-    function selectionnerRelier(relierIdx, cote, idx) {
-      var st = initRelierState(relierIdx);
-      if (st.valide) return;
-      var exoEl = document.querySelector('.relier-exo[data-relier-idx="' + relierIdx + '"]');
-      if (!exoEl) return;
-      var item = exoEl.querySelector('.relier-item[data-cote="' + cote + '"][data-idx="' + idx + '"]');
-      if (!item) return;
-      if (item.classList.contains('associe')) return;
-      var sel = st.selection;
-      if (!sel) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      if (sel.cote === cote) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      var gaucheIdx = sel.cote === 'gauche' ? sel.idx : idx;
-      var droiteIdx = sel.cote === 'droite' ? sel.idx : idx;
-      var droiteEl = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
-      if (droiteEl && droiteEl.classList.contains('associe')) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      var gaucheEl = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
-      st.associations[gaucheIdx] = droiteIdx;
-      if (gaucheEl) { gaucheEl.classList.remove('selectionne'); gaucheEl.classList.add('associe'); }
-      if (droiteEl) { droiteEl.classList.remove('selectionne'); droiteEl.classList.add('associe'); }
-      st.selection = null;
-      var totalPaires = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]').length;
-      var nbAssociees = Object.keys(st.associations).length;
-      if (nbAssociees >= totalPaires) validerRelier(relierIdx);
-    }
-
-    function validerRelier(relierIdx) {
-      var exoEl = document.querySelector('.relier-exo[data-relier-idx="' + relierIdx + '"]');
-      if (!exoEl) return;
-      var st = initRelierState(relierIdx);
-      var mapPaires = st.mapPaires;
-      if (!mapPaires) return;
-      var itemsGauche = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]');
-      var total = itemsGauche.length;
-      var bonnes = 0;
-      exoEl.querySelectorAll('.relier-item.erreur').forEach(function(el) { el.classList.remove('erreur'); });
-      for (var gIdx in st.associations) {
-        var dIdx = st.associations[gIdx];
-        var texteGauche = itemsGauche[parseInt(gIdx)].querySelector('.texte').textContent.trim();
-        var itemDroite = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
-        var texteDroite = itemDroite ? itemDroite.getAttribute('data-droite-texte') : '';
-        var bonne = (mapPaires[texteGauche] === texteDroite);
-        if (bonne) bonnes++;
-        else {
-          var elG = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gIdx + '"]');
-          var elD = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
-          if (elG) elG.classList.add('erreur');
-          if (elD) elD.classList.add('erreur');
-        }
-      }
-      var resultat = document.getElementById('relierResultat-' + relierIdx);
-      var correct = (bonnes === total);
-      reponsesTexte.relier[relierIdx] = { valide: correct, bonnes: bonnes, total: total };
-      if (correct) {
-        st.valide = true;
-        if (resultat) resultat.textContent = 'Toutes les associations sont correctes.';
-      } else {
-        if (resultat) resultat.textContent = bonnes + '/' + total + ' associations correctes. Réessayez.';
-        setTimeout(function() {
-          exoEl.querySelectorAll('.relier-item.erreur').forEach(function(el) { el.classList.remove('erreur'); });
-          st.associations = {};
-          st.selection = null;
-          exoEl.querySelectorAll('.relier-item.associe, .relier-item.selectionne').forEach(function(el) { el.classList.remove('associe', 'selectionne'); });
-          if (resultat) resultat.textContent = '';
-        }, 1500);
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    var ordreState = {};
-
-    function initOrdreState(ordreIdx) {
-      if (!ordreState[ordreIdx]) ordreState[ordreIdx] = { valide: false, ordreInitial: null };
-      return ordreState[ordreIdx];
-    }
-
-    function initDragAndDropOrdre() {
-      var grilles = document.querySelectorAll('.ordre-grille');
-      grilles.forEach(function(grille) {
-        var ordreIdx = grille.getAttribute('data-ordre-idx');
-        var st = initOrdreState(ordreIdx);
-        var items = grille.querySelectorAll('.ordre-item');
-        var ordre = [];
-        items.forEach(function(it) { ordre.push(it.querySelector('.ordre-texte').textContent.trim()); });
-        st.ordreInitial = ordre;
-
-        items.forEach(function(item) {
-          item.addEventListener('dragstart', function(e) {
-            if (st.valide) { e.preventDefault(); return; }
-            item.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', '');
-          });
-          item.addEventListener('dragend', function() {
-            item.classList.remove('dragging');
-            grille.querySelectorAll('.ordre-item').forEach(function(el) { el.classList.remove('drag-over'); });
-          });
-          item.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            e.dataTransfer.dropEffect = 'move';
-          });
-          item.addEventListener('dragenter', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            if (!item.classList.contains('dragging')) item.classList.add('drag-over');
-          });
-          item.addEventListener('dragleave', function() {
-            item.classList.remove('drag-over');
-          });
-          item.addEventListener('drop', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            item.classList.remove('drag-over');
-            var dragging = grille.querySelector('.ordre-item.dragging');
-            if (!dragging || dragging === item) return;
-            var allItems = Array.from(grille.querySelectorAll('.ordre-item'));
-            var dragIdx = allItems.indexOf(dragging);
-            var dropIdx = allItems.indexOf(item);
-            if (dragIdx < dropIdx) grille.insertBefore(dragging, item.nextSibling);
-            else grille.insertBefore(dragging, item);
-            renumOrdre(grille);
-            var res = document.getElementById('ordreResultat-' + ordreIdx);
-            if (res) res.textContent = '';
-          });
-        });
-      });
-    }
-
-    function renumOrdre(grille) {
-      var items = grille.querySelectorAll('.ordre-item');
-      items.forEach(function(el, idx) {
-        var num = el.querySelector('.ordre-num');
-        if (num) num.textContent = (idx + 1);
-      });
-    }
-
-    function validerOrdre(ordreIdx) {
-      var grille = document.getElementById('ordreGrille-' + ordreIdx);
-      if (!grille) return;
-      var st = initOrdreState(ordreIdx);
-      if (st.valide) return;
-
-      var items = grille.querySelectorAll('.ordre-item');
-      var ordreActuel = [];
-      items.forEach(function(it) { ordreActuel.push(it.querySelector('.ordre-texte').textContent.trim()); });
-
-      var ordreCorrect = [];
-      var itemsAll = grille.querySelectorAll('.ordre-item');
-      var positionsOriginales = [];
-      itemsAll.forEach(function(it) {
-        positionsOriginales.push({ texte: it.querySelector('.ordre-texte').textContent.trim(), original: parseInt(it.getAttribute('data-original')) });
-      });
-      positionsOriginales.sort(function(a, b) { return a.original - b.original; });
-      positionsOriginales.forEach(function(p) { ordreCorrect.push(p.texte); });
-
-      var bonnes = 0;
-      for (var i = 0; i < ordreActuel.length; i++) {
-        if (ordreActuel[i] === ordreCorrect[i]) bonnes++;
-      }
-      var correct = (bonnes === ordreActuel.length);
-      var resultat = document.getElementById('ordreResultat-' + ordreIdx);
-      var btnValider = document.getElementById('ordreBtnValider-' + ordreIdx);
-
-      reponsesTexte.ordre[ordreIdx] = { valide: correct, bonnes: bonnes, total: ordreActuel.length };
-
-      if (correct) {
-        st.valide = true;
-        if (resultat) resultat.textContent = 'Tous les éléments sont bien placés.';
-        if (btnValider) btnValider.disabled = true;
-        grille.querySelectorAll('.ordre-item').forEach(function(it) { it.setAttribute('draggable', 'false'); it.style.cursor = 'default'; });
-      } else {
-        if (resultat) resultat.textContent = bonnes + '/' + ordreActuel.length + ' bien placés. Réessayez.';
-        setTimeout(function() {
-          if (resultat) resultat.textContent = '';
-        }, 1500);
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function calculerNote() {
-      var note = {
-        quiz:   { bonnes: 0, total: Object.keys(reponsesTexte.quiz).length },
-        vf:     { bonnes: 0, total: Object.keys(reponsesTexte.vf).length },
-        tt:     { bonnes: 0, total: Object.keys(reponsesTexte.tt).length },
-        cartes: { bonnes: 0, total: Object.keys(reponsesTexte.cartes).length },
-        relier: { bonnes: 0, total: 0 },
-        ordre:  { bonnes: 0, total: 0 },
-        copier: { bonnes: 0, total: Object.keys(reponsesTexte.copier).length },
-        total:  { bonnes: 0, total: 0 }
-      };
-
-      Object.keys(reponsesTexte.quiz).forEach(function(k) { if (reponsesTexte.quiz[k].correct) note.quiz.bonnes++; });
-      Object.keys(reponsesTexte.vf).forEach(function(k) { if (reponsesTexte.vf[k].correct) note.vf.bonnes++; });
-      Object.keys(reponsesTexte.tt).forEach(function(k) { if (reponsesTexte.tt[k].correct) note.tt.bonnes++; });
-      Object.keys(reponsesTexte.cartes).forEach(function(k) { if (reponsesTexte.cartes[k] === true) note.cartes.bonnes++; });
-      Object.keys(reponsesTexte.copier).forEach(function(k) { if (reponsesTexte.copier[k] === true) note.copier.bonnes++; });
-      Object.keys(reponsesTexte.relier).forEach(function(k) {
-        var r = reponsesTexte.relier[k];
-        note.relier.total += r.total;
-        note.relier.bonnes += r.bonnes;
-      });
-      Object.keys(reponsesTexte.ordre).forEach(function(k) {
-        var r = reponsesTexte.ordre[k];
-        note.ordre.total += r.total;
-        note.ordre.bonnes += r.bonnes;
-      });
-
-      note.total.bonnes = note.quiz.bonnes + note.vf.bonnes + note.tt.bonnes + note.cartes.bonnes + note.relier.bonnes + note.ordre.bonnes + note.copier.bonnes;
-      note.total.total  = note.quiz.total  + note.vf.total  + note.tt.total  + note.cartes.total  + note.relier.total  + note.ordre.total  + note.copier.total;
-
-      return note;
-    }
-
-    function majNoteGlobale() {
-      var note = calculerNote();
-      var lignes = [];
-      if (note.quiz.total > 0)   lignes.push({ label: 'Quiz',           b: note.quiz.bonnes,   t: note.quiz.total });
-      if (note.vf.total > 0)     lignes.push({ label: 'Vrai / Faux',    b: note.vf.bonnes,     t: note.vf.total });
-      if (note.tt.total > 0)     lignes.push({ label: 'Textes à trous', b: note.tt.bonnes,     t: note.tt.total });
-      if (note.cartes.total > 0) lignes.push({ label: 'Cartes',         b: note.cartes.bonnes, t: note.cartes.total });
-      if (note.relier.total > 0) lignes.push({ label: 'Relier',         b: note.relier.bonnes, t: note.relier.total });
-      if (note.ordre.total > 0)  lignes.push({ label: 'Ordre',          b: note.ordre.bonnes,  t: note.ordre.total });
-      if (note.copier.total > 0) lignes.push({ label: 'Copier',         b: note.copier.bonnes, t: note.copier.total });
-
-      var html = '';
-      if (lignes.length === 0) {
-        html = '<div class="note-ligne"><span class="note-label">Aucune réponse pour le moment.</span></div>';
-      } else {
-        lignes.forEach(function(l) {
-          html += '<div class="note-ligne"><span class="note-label">' + l.label + '</span><span class="note-valeur">' + l.b + ' / ' + l.t + '</span></div>';
-        });
-      }
-      var el = document.getElementById('noteLignes');
-      if (el) el.innerHTML = html;
-      var totalEl = document.getElementById('noteTotalValeur');
-      if (totalEl) totalEl.textContent = note.total.bonnes + ' / ' + note.total.total;
-
-      var btnRevoir = document.getElementById('btnRevoir');
-      if (btnRevoir && note.total.total > 0) {
-        var pct = (note.total.bonnes / note.total.total) * 100;
-        btnRevoir.style.display = (pct < 60) ? 'inline-block' : 'none';
-      }
-    }
-
-    var popupOuverte = false;
-
-    function verifierQuizTermine() {
-      if (popupOuverte) return;
-      var totalExos = Object.keys(exoNumParType.quiz).length
-                    + Object.keys(exoNumParType.vf).length
-                    + Object.keys(exoNumParType.tt).length
-                    + Object.keys(exoNumParType.carte).length
-                    + Object.keys(exoNumParType.relier).length
-                    + Object.keys(exoNumParType.ordre).length
-                    + Object.keys(exoNumParType.copier).length;
-      if (totalExos === 0) return;
-
-      var faits = Object.keys(reponsesTexte.quiz).length
-                + Object.keys(reponsesTexte.vf).length
-                + Object.keys(reponsesTexte.tt).length
-                + Object.keys(reponsesTexte.cartes).length
-                + Object.keys(reponsesTexte.relier).length
-                + Object.keys(reponsesTexte.ordre).length
-                + Object.keys(reponsesTexte.copier).length;
-
-      if (faits >= totalExos) {
-        if (!envoiEffectue) envoyerToutesReponses(true);
-        ouvrirPopupResultat();
-      }
-    }
-
-    function ouvrirPopupResultat() {
-      popupOuverte = true;
-      var note = calculerNote();
-      var html = '';
-      var lignes = [];
-      if (note.quiz.total > 0)   lignes.push({ label: 'Quiz',           b: note.quiz.bonnes,   t: note.quiz.total });
-      if (note.vf.total > 0)     lignes.push({ label: 'Vrai / Faux',    b: note.vf.bonnes,     t: note.vf.total });
-      if (note.tt.total > 0)     lignes.push({ label: 'Textes à trous', b: note.tt.bonnes,     t: note.tt.total });
-      if (note.cartes.total > 0) lignes.push({ label: 'Cartes',         b: note.cartes.bonnes, t: note.cartes.total });
-      if (note.relier.total > 0) lignes.push({ label: 'Relier',         b: note.relier.bonnes, t: note.relier.total });
-      if (note.ordre.total > 0)  lignes.push({ label: 'Ordre',          b: note.ordre.bonnes,  t: note.ordre.total });
-      if (note.copier.total > 0) lignes.push({ label: 'Copier',         b: note.copier.bonnes, t: note.copier.total });
-
-      lignes.forEach(function(l) {
-        html += '<div class="popup-note-ligne"><span class="note-label">' + l.label + '</span><span class="note-valeur">' + l.b + ' / ' + l.t + '</span></div>';
-      });
-      document.getElementById('popupNoteLignes').innerHTML = html;
-      document.getElementById('popupNoteTotal').textContent = note.total.bonnes + ' / ' + note.total.total;
-
-      var pct = note.total.total > 0 ? (note.total.bonnes / note.total.total) * 100 : 0;
-      var zoneQuestions = document.getElementById('popupQuestionsZone');
-      var zoneSansQuestions = document.getElementById('popupActionsSansQuestions');
-
-      if (pct >= 60 && questionsOuvertes.length > 0) {
-        zoneQuestions.style.display = 'block';
-        zoneSansQuestions.style.display = 'none';
-        var listeHtml = '';
-        document.getElementById('popupBtnEnvoyerQuestions').style.display = 'inline-block';
-        questionsOuvertes.forEach(function(q, i) {
-          listeHtml += '<div class="popup-question-bloc">';
-          listeHtml += '<div class="popup-question-label">Question ' + (i + 1) + '. ' + q.texte + '</div>';
-          listeHtml += '<textarea class="popup-question-textarea" id="popupQuestionRep-' + i + '" placeholder="Écrivez votre réponse ici..." oninput="majReponseQuestion(' + i + ', this.value)"></textarea>';
-          listeHtml += '</div>';
-        });
-        document.getElementById('popupQuestionsListe').innerHTML = listeHtml;
-      } else {
-        zoneQuestions.style.display = 'none';
-        zoneSansQuestions.style.display = 'flex';
-      }
-
-      document.getElementById('popupResultatOverlay').classList.add('visible');
-    }
-
-    function fermerPopupResultat() {
-      document.getElementById('popupResultatOverlay').classList.remove('visible');
-      popupOuverte = false;
-    }
-
-    function majReponseQuestion(i, valeur) {
-      if (questionsOuvertes[i]) questionsOuvertes[i].reponse = valeur;
-    }
-
-    function envoyerQuestions() {
-      if (envoiQuestionsEffectue) return;
-      var btn = document.getElementById('popupBtnEnvoyerQuestions');
-      var statut = document.getElementById('popupEnvoiStatut');
-      if (!btn || !statut) return;
-
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var texteId = texteActuel ? texteActuel.id : '';
-
-      var toutesReponses = [];
-      questionsOuvertes.forEach(function(q, i) {
-        toutesReponses.push('Q' + (i + 1) + ': ' + (q.reponse || ''));
-      });
-      var texteFinal = toutesReponses.join('\n\n');
-
-      if (texteFinal.trim() === '' || questionsOuvertes.length === 0) {
-        btn.disabled = true;
-        statut.textContent = 'Aucune réponse à envoyer.';
-        return;
-      }
-
-      btn.disabled = true;
-      btn.textContent = '⏳ Envoi en cours...';
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      fetch(base + '?action=saveReponseOuverte' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&texteId=' + encodeURIComponent(texteId) +
-        '&reponseOuverte=' + encodeURIComponent(texteFinal))
-        .then(function(r) { return r.json(); })
-        .then(function() {
-          envoiQuestionsEffectue = true;
-          btn.textContent = '✓ Réponses envoyées';
-          statut.textContent = 'Vos réponses ont bien été enregistrées.';
-        })
-        .catch(function() {
-          btn.disabled = false;
-          btn.textContent = 'Réessayer';
-          statut.textContent = 'Erreur d\'envoi. Vérifiez la connexion.';
-        });
-    }
-
-    function envoyerToutesReponses(silencieux) {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
-      var texteId = texteActuel ? texteActuel.id : '';
-      var titre = texteActuel ? texteActuel.titre : '';
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      var choixQcmArr = [];
-      var quizTotal = 0, quizBonnes = 0;
-      Object.keys(reponsesTexte.quiz).forEach(function(k) {
-        quizTotal++;
-        var r = reponsesTexte.quiz[k];
-        if (r.correct) quizBonnes++;
-        choixQcmArr.push((r.correct ? 'V' : 'F') + ':' + (parseInt(r.choix) + 1));
-      });
-      var choixQcm = choixQcmArr.join('|');
-
-      var vfTotal = 0, vfBonnes = 0;
-      Object.keys(reponsesTexte.vf).forEach(function(k) { vfTotal++; if (reponsesTexte.vf[k].correct) vfBonnes++; });
-
-      var ttTotal = 0, ttBonnes = 0;
-      Object.keys(reponsesTexte.tt).forEach(function(k) { ttTotal++; if (reponsesTexte.tt[k].correct) ttBonnes++; });
-
-      var cartesTotal = 0, cartesBonnes = 0, cartesStr = [];
-      Object.keys(reponsesTexte.cartes).forEach(function(k) {
-        cartesTotal++;
-        if (reponsesTexte.cartes[k] === true) cartesBonnes++;
-        cartesStr.push(reponsesTexte.cartes[k] ? '1' : '0');
-      });
-
-      var relierTotal = 0, relierBonnes = 0;
-      Object.keys(reponsesTexte.relier).forEach(function(k) {
-        var r = reponsesTexte.relier[k];
-        relierTotal += r.total;
-        relierBonnes += r.bonnes;
-      });
-
-      var ordreTotal = 0, ordreBonnes = 0;
-      Object.keys(reponsesTexte.ordre).forEach(function(k) {
-        var r = reponsesTexte.ordre[k];
-        ordreTotal += r.total;
-        ordreBonnes += r.bonnes;
-      });
-
-      var promesses = [];
-      if (quizTotal > 0) promesses.push(fetch(base + '?action=saveQuiz&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&choixQcm=' + encodeURIComponent(choixQcm) + '&bonnes=' + quizBonnes + '&total=' + quizTotal).then(function(r){return r.json();}));
-      if (vfTotal > 0) promesses.push(fetch(base + '?action=saveVraiFaux&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&bonnes=' + vfBonnes + '&total=' + vfTotal).then(function(r){return r.json();}));
-      if (ttTotal > 0) promesses.push(fetch(base + '?action=saveTexteTrous&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&bonnes=' + ttBonnes + '&total=' + ttTotal).then(function(r){return r.json();}));
-      if (cartesTotal > 0) promesses.push(fetch(base + '?action=saveCarte&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&cartes=' + encodeURIComponent(cartesStr.join(',')) + '&bonnes=' + cartesBonnes + '&total=' + cartesTotal).then(function(r){return r.json();}));
-      if (relierTotal > 0) promesses.push(fetch(base + '?action=saveRelier&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&bonnes=' + relierBonnes + '&total=' + relierTotal).then(function(r){return r.json();}));
-      if (ordreTotal > 0) promesses.push(fetch(base + '?action=saveOrdre&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&bonnes=' + ordreBonnes + '&total=' + ordreTotal).then(function(r){return r.json();}));
-
-      if (promesses.length === 0) return Promise.resolve();
-      return Promise.all(promesses).then(function() { envoiEffectue = true; }).catch(function(){});
-    }
-
-    function relireEtRefaire() {
-      reponsesTexte = { quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {}, questionOuverte: '' };
-      questionsOuvertes = [];
-      relierState = {};
-      ordreState = {};
-      exoNumParType = { quiz: {}, vf: {}, tt: {}, relier: {}, carte: {}, ordre: {}, copier: {} };
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(function() { window.location.reload(); }, 300);
-    }
-
-    function construireHtmlTexte(texte, imagesTheme) {
-      imagesTheme = imagesTheme || {};
-      var contenu = texte.contenu || '';
-      if (!contenu) return '<p><em>Texte vide.</em></p>';
-
-      var ordreBlocs = texte.ordreBlocs || [];
-      var parts = contenu.split(' | ');
-
-      var slidesArray = [];
-      var quizTexte = '', openTexte = '', ordreTexte = '', carteTexte = '', relierTexte = '', ttTexte = '', vfTexte = '', copierTexte = '';
-
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
-        else if (part.startsWith('qs:')) openTexte = openTexte ? openTexte + '\n\n' + part : part;
-        else if (part.startsWith('o:')) ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
-        else if (part.startsWith('r:')) carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
-        else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
-        else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
-        else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-        else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
-        else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subSlides.forEach(function(sub) { slidesArray.push(sub.trim()); });
-          }
-        }
-      });
-
-      var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
-      var opensParsed = [];
-      if (openTexte) {
-        openTexte.split('\n\n').forEach(function(bloc) {
-          var t = bloc.replace(/^qs:\s*/i, '').trim();
-          if (t) opensParsed.push(t);
-        });
-      }
-      var ordresParsed = [];
-      if (ordreTexte) {
-        ordreTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserOrdrePourImpression(bloc);
-          if (p && p.elements.length > 0) ordresParsed.push(p);
-        });
-      }
-      var cartesParsed = carteTexte ? parserCartesPourImpression(carteTexte) : [];
-      var reliersParsed = [];
-      if (relierTexte) {
-        relierTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserRelierPourImpression(bloc);
-          if (p && p.paires.length > 0) reliersParsed.push(p);
-        });
-      }
-      var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
-      var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
-      var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
-
-      var blocsOrdonnes = [];
-      if (ordreBlocs.length > 0) {
-        ordreBlocs.forEach(function(item) {
-          var p = item.split(':');
-          var type = p[0];
-          var idx = p.length > 1 ? parseInt(p[1]) : 0;
-          if (type === 'slide' && slidesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
-          else if (type === 'quiz' && quizsParsed[idx]) blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
-          else if (type === 'open' && opensParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
-          else if (type === 'ordre' && ordresParsed[idx]) blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
-          else if (type === 'carte' && cartesParsed[idx]) blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
-          else if (type === 'relier' && reliersParsed[idx]) blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
-          else if (type === 'tt' && ttsParsed[idx]) blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-          else if (type === 'vf' && vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-          else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
-        });
-      } else {
-        slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
-        quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
-        opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
-        ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
-        if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-        ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
-        cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
-        reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
-        copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
-      }
-
-      var textePourCompter = '';
-      blocsOrdonnes.forEach(function(b) { if (b.type === 'slide') textePourCompter += ' ' + b.data; });
-      var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-      var tempsLecture = Math.max(1, Math.round(nbMots / 14));
-      texte._nbMots = nbMots;
-      texte._tempsLecture = tempsLecture;
-
-      window._relierPaires = {};
-      var relierCountPourStockage = 0;
-      blocsOrdonnes.forEach(function(b) {
-        if (b.type === 'relier') {
-          var map = {};
-          (b.data.paires || []).forEach(function(p) { map[p.gauche] = p.droite; });
-          window._relierPaires[relierCountPourStockage] = map;
-          relierCountPourStockage++;
-        }
-      });
-
-      var numeroTexte = extraireNumeroTexte(texte.titre);
-      var titreAffiche = extraireTitreSansNumero(texte.titre);
-      var numeroHtml = (numeroTexte !== Infinity)
-        ? '<span class="numero-texte">' + numeroTexte + '</span>'
-        : '';
-
-      var html = '';
-      html += '<div class="bandeau-titre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
-
-      html += '<div class="slides-zone">';
-      blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type !== 'slide') return;
-        html += '<div class="slide">';
-        var lignesSlide = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
-        var bufferTexte = '';
-
-        function flushTexte() {
-          if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-          var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
-          paras.forEach(function(p) { html += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>'; });
-          bufferTexte = '';
-        }
-
-        lignesSlide.forEach(function(l) {
-          var trimmed = l.trim();
-          var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
-          if (imgMatch) {
-            flushTexte();
-            var nomImg = imgMatch[1];
-            var opt1 = (imgMatch[2] || '').toLowerCase();
-            var opt2 = (imgMatch[3] || '').toLowerCase();
-            var position = 'centre', taille = 'moyen';
-            [opt1, opt2].forEach(function(o) {
-              if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
-              else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
-            });
-            var url = imagesTheme[nomImg];
-            if (!url) html += '<div class="img-manquante">[image manquante : ' + echapperHtml(nomImg) + ']</div>';
-            else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
-            return;
-          }
-          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
-        });
-        flushTexte();
-        html += '</div>';
-      });
-      html += '</div>';
-
-      html += construireExercicesPourFeuille(blocsOrdonnes);
-      return html;
-    }
-
-    function construireBlocARetenir(texte) {
-      var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      if (aRetenirClean.length === 0) return '';
-      var html = '<div class="bloc-a-retenir"><div class="bloc-a-retenir-titre">À retenir</div><ul class="bloc-a-retenir-liste">';
-      aRetenirClean.forEach(function(phrase) { html += '<li>' + echapperHtml(phrase) + '</li>'; });
-      html += '</ul></div>';
-      return html;
-    }
-
-    function arabiserDans(container) {
-      if (!container) return;
-      var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-      var noeuds = [];
-      var n;
-      while ((n = walker.nextNode())) { if (/[\u0600-\u06FF]/.test(n.nodeValue || '')) noeuds.push(n); }
-      noeuds.forEach(function(texteNode) {
-        var parent = texteNode.parentNode;
-        if (!parent) return;
-        if (parent.classList && parent.classList.contains('arabe')) return;
-        if (parent.classList && parent.classList.contains('copier-mot')) return;
-        var txt = texteNode.nodeValue;
-        var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
-        var parts = txt.split(regex);
-        var frag = document.createDocumentFragment();
-        parts.forEach(function(part) {
-          if (part === '') return;
-          if (/[\u0600-\u06FF]/.test(part)) {
-            var span = document.createElement('span');
-            span.className = 'arabe';
-            span.setAttribute('lang', 'ar');
-            span.textContent = part;
-            frag.appendChild(span);
-          } else frag.appendChild(document.createTextNode(part));
-        });
-        parent.replaceChild(frag, texteNode);
-      });
-    }
-
-    function afficherFilAriane(texte) {
-      var html = '';
-      html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
-      html += '<a href="/medit/présentation.html">Tous les textes</a>';
-      if (texte.categorie) html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
-      html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
-      var el = document.getElementById('filAriane');
-      if (el) el.innerHTML = html;
-    }
-
-    function construireNavDansTheme(texte) {
-      if (!texte.categorie) return {};
-      var memeTheme = textesData.filter(function(c) { return (c.categorie || '') === (texte.categorie || ''); });
-      memeTheme = trierAlphabetique(memeTheme);
-      var indexActuel = -1;
-      for (var i = 0; i < memeTheme.length; i++) if (String(memeTheme[i].id) === String(texte.id)) { indexActuel = i; break; }
-      return {
-        liste: memeTheme,
-        index: indexActuel,
-        precedent: indexActuel > 0 ? memeTheme[indexActuel - 1] : null,
-        suivant: indexActuel !== -1 && indexActuel < memeTheme.length - 1 ? memeTheme[indexActuel + 1] : null
-      };
-    }
-
-    function construireBlocAutresThemesMemeTheme(texte) {
-      if (!texte.categorie) return '';
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-      if (!themeActuel) return '';
-      var autresThemes = [];
-      for (var titre in themesData) {
-        if (titre === texte.categorie) continue;
-        var meta = themesData[titre];
-        if ((meta.theme || '').trim() === themeActuel) {
-          autresThemes.push({
-            titre: titre,
-            couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '',
-            auteur: meta.auteur || '',
-            date: meta.date || '',
-            niveau: meta.niveau || 1,
-            pourcentage: 0,
-            couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (autresThemes.length === 0) return '';
-      autresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Dans la même section « ' + echapperHtml(themeActuel) + ' »</div>';
-      html += '<div class="bloc-bas-sous-titre">' + autresThemes.length + ' autre(s) thème(s) dans cette même section</div>';
-      html += '<div class="grille-couvertures">';
-      autresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocThemes(texte) {
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-
-      var themesAutresThemes = [];
-      for (var titre in themesData) {
-        var meta = themesData[titre];
-        var t = (meta.theme || '').trim() || 'Sans thème';
-        if (t !== themeActuel) {
-          themesAutresThemes.push({
-            titre: titre,
-            couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '',
-            auteur: meta.auteur || '',
-            date: meta.date || '',
-            niveau: meta.niveau || 1,
-            pourcentage: 0,
-            couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (themesAutresThemes.length === 0) return '';
-      themesAutresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Thème des autres sections</div>';
-      html += '<div class="bloc-bas-sous-titre">' + themesAutresThemes.length + ' thèmes(s) dans d\'autres sections</div>';
-      html += '<div class="grille-couvertures">';
-      themesAutresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireZoneBasPage(texte) {
-      return construireBlocAutresThemesMemeTheme(texte) + construireBlocThemes(texte);
-    }
-
-    function construireZoneBasTexte(texte) {
-      var nav = construireNavDansTheme(texte);
-      var html = '<div class="zone-bas-texte"><div class="nav-bas-texte">';
-      if (nav.precedent) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
-        html += '<span class="nav-label">← Précédent</span><span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder"><span class="nav-label">← Précédent</span><span class="nav-titre">Début du texte</span></div>';
-      }
-      if (nav.suivant) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.suivant.id) + '" class="nav-suivant">';
-        html += '<span class="nav-label">Suivant →</span><span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder nav-suivant"><span class="nav-label">Suivant →</span><span class="nav-titre">Fin du texte</span></div>';
-      }
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocActions(texte) {
-      var html = '<div class="bloc-actions-texte">';
-      html += '<button class="btn-action-lateral btn-imprimer" style="border:1px solid var(--border);border-radius:0;box-shadow:none;" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
-      html += '</div>';
-      return html;
-    }
-
-    function construireZoneLaterale(texte) {
-      var nav = construireNavDansTheme(texte);
-      var themeInfo = themesData[texte.categorie] || {};
-      var html = '';
-      html += construireBlocActions(texte);
-      var niveau = texte.niveau || 0;
-      var tempsLecture = texte._tempsLecture || 1;
-      var dateEcrit = formatDateLongue(texte.date);
-      var dateModif = formatDateModifComplete(texte.dateModif);
-
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre"><span class="icone"></span> Informations</div>';
-      html += '  <div class="bloc-meta-texte">';
-      html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Niveau</span><span class="meta-valeur">' + niveau + '</span></div>';
-      html += '    <div class="meta-ligne"><span class="meta-icone">⏱</span><span class="meta-label">Temps de lecture</span><span class="meta-valeur">' + tempsLecture + ' min</span></div>';
-      if (dateEcrit) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Écrit le</span><span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span></div>';
-      if (dateModif) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Modifié le</span><span class="meta-valeur">' + echapperHtml(dateModif) + '</span></div>';
-      html += '  </div>';
-      html += '</div>';
-
-      var vocabClean = texte._vocabClean || [];
-      if (vocabClean.length > 0) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">✎</span> Vocabulaire <span class="compteur">' + vocabClean.length + '</span></div>';
-        html += '  <div class="bloc-vocabulaire">';
-        vocabClean.forEach(function(mot) {
-          var motClean = mot.replace(/\s*=\s*/g, ' : ');
-          html += '<div class="vocab-mot">' + echapperHtml(motClean) + '</div>';
-        });
-        html += '  </div>';
-        html += '</div>';
-      }
-
-      if (texte.categorie) {
-        var couleur = themeInfo.couleur || '#2d6a4f';
-        var auteurTheme = themeInfo.auteur || '';
-        var dateTheme = themeInfo.date || '';
-        var couvertureTheme = themeInfo.couverture || '';
-
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">📖</span> Thème</div>';
-        html += '  <a class="encart-theme" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">';
-        html += construireCarteCouverture({
-          titre: texte.categorie,
-          couleur: couleur,
-          sousTitre: '',
-          auteur: auteurTheme,
-          date: dateTheme,
-          niveau: niveau,
-          couverture: couvertureTheme
-        }, { cliquable: false });
-        html += '    <div class="encart-texte"><div class="encart-label">Extrait du thème</div><div class="encart-nom-theme">' + echapperHtml(texte.categorie) + '</div><div class="encart-cta">Voir le thème →</div></div>';
-        html += '  </a>';
-        html += '</div>';
-      }
-
-      if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">🕮</span> Les sujets dans ce thème <span class="compteur">(' + nav.liste.length + ')</span></div>';
-        html += '  <div class="liste-textes">';
-        nav.liste.forEach(function(c) {
-          var estActuel = String(c.id) === String(texte.id);
-          if (estActuel) html += '<div class="item-texte actuel"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">●</span></div>';
-          else html += '<a class="item-texte" href="/medit/texte.html?id=' + encodeURIComponent(c.id) + '"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">→</span></a>';
-        });
-        html += '  </div></div>';
-      }
-
-      return html;
-    }
-
-    function construireZoneBasseMobile(texte) { return construireZoneLaterale(texte); }
-
-    function construireBlocNoteGlobale(texte) {
-      var html = '<div class="bloc-note-globale" id="blocNoteGlobale">';
-      html += '  <div class="note-titre">Résultat</div>';
-      html += '  <div class="note-lignes" id="noteLignes"></div>';
-      html += '  <div class="note-totale"><span>Total</span><span class="note-valeur" id="noteTotalValeur">0 / 0</span></div>';
-      html += '  <div class="note-actions">';
-      html += '    <button class="btn-revoir" id="btnRevoir" onclick="relireEtRefaire()" style="display:none;">Relire le texte et refaire les questions</button>';
-      html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses(false)">Envoyer mes réponses</button>';
-      html += '  </div>';
-      html += '  <div class="envoi-statut" id="envoiStatut"></div>';
-      html += '</div>';
-      return html;
-    }
-
-    function chargerTexte() {
-      var params = new URLSearchParams(window.location.search);
-      var texteId = params.get('id');
-      if (!texteId) { afficherErreur('Aucun texte spécifié.'); return; }
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) { window.location.href = '/medit/index.html'; return; }
-
-      DataManager.charger()
-        .then(function(data) {
-          textesData = data.tousLesTextes || data.textes || [];
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                theme: l.theme || '',
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                description: l.description || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
-              };
-            });
-          }
-          texteActuel = trouverTexte(texteId, textesData);
-          if (!texteActuel) { afficherErreur('Texte introuvable.'); return; }
-          if (texteActuel.categorie && typeof chargerImagesTheme === 'function') {
-            chargerImagesTheme(texteActuel.categorie)
-              .then(function(images) { imagesTheme = images || {}; afficherTexte(texteActuel); })
-              .catch(function() { imagesTheme = {}; afficherTexte(texteActuel); });
-          } else afficherTexte(texteActuel);
-        })
-        .catch(function() { afficherErreur('Erreur de chargement.'); });
-    }
-
-    function afficherTexte(texte) {
-      var container = document.getElementById('texteContainer');
-      var colonneLaterale = document.getElementById('colonneLaterale');
-      var zoneBasseMobile = document.getElementById('zoneBasseMobile');
-      var zoneBasPage = document.getElementById('zoneBasPage');
-
-      var contenuHtml = construireHtmlTexte(texte, imagesTheme);
-      var blocARetenirHtml = construireBlocARetenir(texte);
-      var blocNoteGlobale = construireBlocNoteGlobale(texte);
-      var zoneBasHtml = construireZoneBasTexte(texte);
-
-      container.innerHTML = '<div class="feuille-texte">' + contenuHtml + '</div>' + blocARetenirHtml + blocNoteGlobale + zoneBasHtml;
-
-      colonneLaterale.innerHTML = construireZoneLaterale(texte);
-      zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
-      zoneBasPage.innerHTML = construireZoneBasPage(texte);
-
-      arabiserDans(container);
-      afficherFilAriane(texte);
-      document.title = texte.titre + ' - Qiraat';
-
-      if (window._relierPaires) {
-        Object.keys(window._relierPaires).forEach(function(relierIdx) { setRelierPaires(parseInt(relierIdx), window._relierPaires[relierIdx]); });
-      }
-
-      majNoteGlobale();
-      initDragAndDropOrdre();
-    }
-
-    function afficherErreur(message) {
-      document.getElementById('texteContainer').innerHTML = `
-        <div class="vide-texte">
-          <span class="icone">◈</span>
-          <h2>${message}</h2>
-          <p>Vérifiez le lien ou retournez aux textes.</p>
-          <a href="/medit/présentation.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour aux textes</a>
-        </div>
-      `;
-    }
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
-    else chargerTexte();
-  </script>
-
-</body>
-</html>
+/* ============================================================
+   THEME OLIVE - Uniformisé
+   Une seule classe de couverture : .carte-couverture
+   ============================================================ */
+
+@font-face {
+    font-family: 'Janna LT Bold';
+    src: url('fonts/Janna LT Bold.ttf') format('truetype');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
+/* ============================================================
+   VARIABLES - PALETTE PASTEL AFFIRMÉE
+   ============================================================ */
+:root {
+  --bg:            #fbf6ee;
+  --bg-hover:      #f3ecdf;
+  --bg-active:     #e9dfc9;
+  --bg-paper:      #fffdf8;
+
+  --text:          #2a2419;
+  --text-secondary:#5a4f3e;
+  --text-muted:    #968a75;
+
+  --border:        #e3d8c2;
+  --border-hover:  #c9b998;
+  --border-strong: #a8956f;
+
+  --sauge:         #7d9a7c;
+  --sauge-deep:    #5d7a5c;
+  --sauge-soft:    #dfe9de;
+  --terracotta:    #c08862;
+  --terracotta-soft:#f0dcc8;
+  --bleu:          #7d96ad;
+  --bleu-soft:     #d6e0e9;
+  --lilas:         #9a8aab;
+  --lilas-soft:    #e4dcec;
+
+  --jaune-academie:       #e8d9a8;
+  --jaune-academie-deep:  #d4c088;
+  --jaune-academie-soft:  #f2e9c8;
+
+  --header-bg:     #5d7a5c;
+  --header-text:   #fbf6ee;
+  --header-muted:  #d4dfd3;
+
+  --font-serif:    Georgia, 'Times New Roman', serif;
+  --font-arabic:   'Janna LT Bold', 'Traditional Arabic', serif;
+  --font-sans:     -apple-system, 'Inter', 'Segoe UI', sans-serif;
+
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+}
+
+[lang="ar"], 
+[dir="rtl"] {
+    font-family: var(--font-arabic) !important;
+}
+
+/* ============================================================
+   MODE SOMBRE
+   ============================================================ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:            #1a1714;
+    --bg-hover:      #232019;
+    --bg-active:     #2e2a20;
+    --bg-paper:      #221e18;
+
+    --text:          #f0e9dc;
+    --text-secondary:#b8ab96;
+    --text-muted:    #857a68;
+
+    --border:        #363024;
+    --border-hover:  #4f4634;
+    --border-strong: #6e6244;
+
+    --sauge:         #8fab8e;
+    --sauge-deep:    #6d8a6c;
+    --sauge-soft:    #2a3529;
+    --terracotta:    #d4a07a;
+    --terracotta-soft:#3d2d20;
+    --bleu:          #97aec3;
+    --bleu-soft:     #26303a;
+    --lilas:         #b3a3c2;
+    --lilas-soft:    #302a3a;
+
+    --jaune-academie:       #5a4a20;
+    --jaune-academie-deep:  #3d3015;
+    --jaune-academie-soft:  #2e2615;
+
+    --header-bg:     #24301f;
+    --header-text:   #f0e9dc;
+    --header-muted:  #b8ab96;
+  }
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
+html, body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-size: 18px;
+  line-height: 1.75;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body * {
+  background: transparent;
+  color: inherit;
+  border-color: var(--border);
+}
+
+/* ============================================================
+   COUVERTURE UNIQUE - utilisée partout
+   (les-thèmes.html, theme.html, texte.html)
+   ============================================================ */
+
+.carte-couverture {
+  position: relative;
+  width: 100%;
+  max-width: 220px;
+  aspect-ratio: 2 / 3;
+  height: auto;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;        /* niveau à gauche, contenu à droite */
+  align-items: stretch;
+  justify-content: flex-start;
+  overflow: hidden;
+  cursor: pointer;
+  text-decoration: none;
+  color: #1a1a1a;
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  margin: 0 auto;
+  box-shadow: 4px 4px 0 var(--border-strong);
+  transition: all 0.25s ease;
+}
+
+.carte-couverture:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--text);
+}
+
+.carte-couverture.verrouille {
+  filter: grayscale(0.8) opacity(0.45);
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Enfants : pas de fond, couleurs héritées */
+.carte-couverture *,
+.carte-couverture .contenu-theme,
+.carte-couverture .contenu-theme * {
+  background: transparent;
+  color: inherit;
+  border-color: transparent;
+}
+
+/* ===== BADGE NIVEAU : bande verticale jaune à gauche ===== */
+.carte-couverture .badge-niveau {
+  position: relative;
+  order: 0;
+  flex: 0 0 auto;
+  align-self: stretch;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--jaune-academie) !important;
+  color: #3a2e10 !important;
+  border: none;
+  border-right: 1px solid rgba(90, 74, 32, 0.45);
+  border-radius: 0;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 11px;
+  letter-spacing: 1.2px;
+  line-height: 1;
+  text-transform: uppercase;
+  text-align: center;
+  white-space: nowrap;
+  padding: 14px 6px;
+  writing-mode: vertical-rl;
+  transform: rotate(180deg);
+}
+
+/* ===== CONTENEUR PRINCIPAL (à droite de la bande niveau) ===== */
+.carte-couverture .contenu-theme {
+  position: relative;
+  z-index: 2;
+  order: 1;
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: stretch;
+  height: auto;
+  min-height: 100%;
+  width: auto;
+  box-sizing: border-box;
+  padding: 16px 14px 12px 18px;
+  overflow: hidden;
+  text-align: left;
+}
+
+/* Filet vertical décoratif */
+.carte-couverture .contenu-theme::before {
+  content: "";
+  position: absolute;
+  left: 8px;
+  top: 0;
+  bottom: 0;
+  width: 1.5px;
+  background: rgba(26, 15, 8, 0.4);
+}
+
+/* ===== BLOC HAUT ===== */
+.carte-couverture .titre-wrapper {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
+  gap: 4px;
+  width: 100%;
+  margin-top: 2px;
+  overflow: visible;
+}
+
+/* ===== AUTEUR ===== */
+.carte-couverture .auteur-theme {
+  display: block;
+  color: rgba(26, 26, 26, 0.7) !important;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1.6px;
+  text-align: left;
+  line-height: 1.2;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ===== TITRE ===== */
+.carte-couverture .titre-theme {
+  display: block;
+  overflow: visible;
+  color: #1a1a1a !important;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: clamp(11px, 3.6vw, 17px);
+  text-align: left;
+  line-height: 1.15;
+  letter-spacing: 0.2px;
+  max-width: 100%;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin: 0;
+  padding-bottom: 5px;
+  border-bottom: 1px solid rgba(26, 15, 8, 0.4);
+  width: 100%;
+}
+
+/* ===== SOUS-TITRE ===== */
+.carte-couverture .sous-titre-theme {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  color: rgba(26, 26, 26, 0.85) !important;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 10px;
+  text-align: left;
+  line-height: 1.25;
+  letter-spacing: 0.1px;
+  max-width: 100%;
+  word-break: break-word;
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  margin: 2px 0 0 0;
+}
+
+/* ===== BLOC BAS ===== */
+.carte-couverture .edition-info {
+  display: flex;
+  flex-direction: column;
+  align-items: center;          /* ← centré horizontalement */
+  justify-content: flex-end;
+  gap: 1px;
+  margin-top: auto;
+  padding-bottom: 2px;
+  width: 100%;
+  overflow: hidden;
+  text-align: center;           /* ← centré aussi */
+}
+.carte-couverture .edition-nom {
+  display: block;
+  color: rgba(26, 26, 26, 0.55) !important;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-style: italic;
+  font-size: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.9px;
+  text-align: center;           /* ← était "left" → "center" */
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.carte-couverture .edition-date {
+  display: block;
+  color: rgba(26, 26, 26, 0.65) !important;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 7px;
+  text-align: center;           /* ← était "left" → "center" */
+  letter-spacing: 0.4px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+/* ===== PROGRESSION ===== */
+.carte-couverture .progression-theme {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3) !important;
+  z-index: 3;
+  overflow: hidden;
+}
+.carte-couverture .progression-theme .barre {
+  height: 100%;
+  background: rgba(255, 255, 255, 0.9) !important;
+  transition: width 0.6s ease;
+}
+
+/* ============================================================
+   TYPOGRAPHIE
+   ============================================================ */
+h1, h2, h3, h4, p,
+.titre,
+.hero .logo,
+.presentation-titre,
+.methode-titre,
+.carte-post .titre,
+.modal-content h2,
+.header-admin h1,
+.page-themes h1,
+.page-programme h1,
+.page-presentation h1,
+.page-theme h1,
+.section-textes h3,
+.description-theme h2,
+.bloc-section .bloc-titre,
+.zone-bas-page .bloc-bas-titre,
+.presentation-section .presentation-titre,
+.methode-section .methode-titre,
+.bloc-a-retenir .bloc-a-retenir-titre,
+.bloc-note-globale .note-titre,
+.popup-resultat .popup-titre,
+.popup-resultat .popup-questions-titre,
+.bloc-categorie-cell .titre-categorie-cell,
+.tableau-programme thead th,
+.tableau-programme tbody th.theme-cell,
+.header-logo a {
+  color: var(--text);
+  font-family: var(--font-serif);
+}
+
+/* Titres de page encadrés */
+.page-themes h1,
+.page-programme h1,
+.page-presentation h1,
+.page-theme h1 {
+  display: inline-block;
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-sm);
+  padding: 8px 22px;
+  font-size: 26px;
+  font-weight: 700;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 8px;
+  box-shadow: 4px 4px 0 var(--sauge);
+}
+
+/* Titres de section encadrés */
+.feuille-texte .bandeau-titre,
+.feuille-texte .titre-exercices,
+.bloc-a-retenir .bloc-a-retenir-titre,
+.bloc-note-globale .note-titre,
+.popup-resultat .popup-titre,
+.popup-resultat .popup-questions-titre,
+.bloc-section .bloc-titre,
+.zone-bas-page .bloc-bas-titre {
+  display: block;
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-left: 5px solid var(--sauge);
+  border-radius: var(--radius-sm);
+  padding: 10px 18px;
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.feuille-texte .bandeau-titre {
+  border: 2px solid var(--text);
+  border-left: 6px solid var(--sauge);
+  box-shadow: 3px 3px 0 var(--sauge);
+  padding: 12px 20px;
+  margin-bottom: 16px;
+}
+
+.feuille-texte .bandeau-titre h1 {
+  color: var(--text);
+  font-size: 1.15em;
+  font-weight: 700;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.feuille-texte .bandeau-titre .numero-texte {
+  background: var(--text);
+  color: var(--bg-paper);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  padding: 4px 10px;
+  font-family: var(--font-sans);
+}
+
+.bloc-categorie-cell .titre-categorie-cell {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  color: var(--text);
+}
+
+.carte-texte .titre,
+.carte-post .titre {
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text);
+}
+
+.meta, .badge, .post-label, .tab-btn, .stat-item,
+.footer-copy, .description, .sous-titre,
+.ordre-badge, .methode-num, .page-num,
+.sous-titre-page, .fil-ariane,
+.bloc-meta-texte, .bloc-meta-texte *,
+.barre-recherche, .compteur-resultats,
+.envoi-statut, .popup-envoi-statut,
+.feuille-texte .consigne-exo,
+.feuille-texte .exo-num-inline,
+.feuille-texte .quiz-feedback-exo,
+.feuille-texte .tt-feedback,
+.feuille-texte .vf-feedback,
+.feuille-texte .ordre-resultat,
+.feuille-texte .relier-resultat,
+.feuille-texte .carte-btn-voir,
+.feuille-texte .ordre-btn-valider,
+.feuille-texte .copier-btn,
+.feuille-texte .vf-btn,
+.feuille-texte .open-textarea,
+.feuille-texte .tt-input {
+  font-family: var(--font-sans);
+}
+
+/* ============================================================
+   HEADER & FOOTER
+   ============================================================ */
+.site-header {
+  background: var(--header-bg);
+  color: var(--header-text);
+  border-bottom: 3px solid var(--text);
+}
+
+.site-header a,
+.site-header .header-link,
+.site-header .header-btn-compte,
+.site-header .header-btn-deconnexion,
+.site-header .header-logo a {
+  color: var(--header-text) !important;
+  border-color: rgba(255,255,255,0.3);
+}
+
+.site-header .header-link {
+  border-bottom: 2px solid transparent;
+  padding-bottom: 2px;
+}
+.site-header .header-link:hover {
+  border-bottom-color: var(--header-text);
+}
+
+.site-header .header-btn-compte,
+.site-header .header-btn-deconnexion {
+  background: transparent;
+  color: var(--header-text);
+  border: 1px solid rgba(255,255,255,0.4);
+  border-radius: var(--radius-md);
+  padding: 6px 16px;
+}
+.site-header .header-btn-compte:hover,
+.site-header .header-btn-deconnexion:hover {
+  background: rgba(255,255,255,0.12);
+  border-color: var(--header-text);
+}
+
+.site-header .header-sous-titre {
+  color: var(--header-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+.site-footer {
+  background: var(--header-bg);
+  color: var(--header-text);
+  border-top: 3px solid var(--text);
+  padding: 28px 20px 18px;
+}
+
+.site-footer .footer-devise {
+  color: var(--header-text);
+  font-style: italic;
+  font-family: var(--font-serif);
+}
+.site-footer .footer-copy {
+  color: var(--header-muted);
+  font-family: var(--font-sans);
+  font-size: 12px;
+}
+
+/* ============================================================
+   LIENS
+   ============================================================ */
+a {
+  color: var(--text);
+  text-decoration: none;
+  transition: color 0.18s ease, border-color 0.18s ease;
+}
+a:hover {
+  color: var(--sauge-deep);
+}
+
+.fil-ariane a {
+  color: var(--text-secondary);
+  border-bottom: 1px solid transparent;
+}
+.fil-ariane a:hover {
+  color: var(--text);
+  border-bottom-color: var(--sauge);
+}
+.fil-ariane .sep,
+.fil-ariane .current {
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   BOUTONS
+   ============================================================ */
+.btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer,
+.btn-ajout, .btn-export-all, .btn-categories, .carte-post .btn-lire,
+.btn-composer, .btn-add, .btn-groupe .btn, .btn-retour, .btn-footer,
+.filtre-cat-btn, .resultat-actions button, .btn-add-section,
+.btn-action-lateral, .modal-contenu .modal-close,
+.popup-resultat .popup-btn-fermer,
+.bloc-note-globale .btn-revoir,
+.feuille-texte .carte-btn-voir,
+.feuille-texte .ordre-btn-valider,
+.feuille-texte .copier-btn,
+.feuille-texte .vf-btn,
+.feuille-texte .carte-choix button {
+  background: var(--bg-paper);
+  color: var(--text);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 500;
+  padding: 9px 20px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  box-shadow: 2px 2px 0 var(--border-strong);
+}
+
+.btn-entrer:hover, .btn-submit:hover, .btn-nav:hover,
+.btn-primary:hover, .btn-fermer:hover, .btn-ajout:hover,
+.btn-export-all:hover, .btn-categories:hover, .carte-post .btn-lire:hover,
+.btn-composer:hover, .btn-add:hover, .btn-groupe .btn:hover,
+.btn-retour:hover, .btn-footer:hover, .filtre-cat-btn:hover,
+.resultat-actions button:hover, .btn-add-section:hover,
+.btn-action-lateral:hover, .modal-contenu .modal-close:hover,
+.popup-resultat .popup-btn-fermer:hover,
+.bloc-note-globale .btn-revoir:hover,
+.feuille-texte .carte-btn-voir:hover,
+.feuille-texte .ordre-btn-valider:hover:not(:disabled),
+.feuille-texte .copier-btn:hover:not(:disabled),
+.feuille-texte .vf-btn:hover:not(:disabled),
+.feuille-texte .carte-choix button:hover:not(:disabled) {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  border-color: var(--sauge-deep);
+  box-shadow: 1px 1px 0 var(--sauge-deep);
+  transform: translate(1px, 1px);
+}
+
+.btn-envoyer-final,
+.popup-btn-envoyer-questions {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  border: 2px solid var(--sauge-deep);
+  border-radius: var(--radius-md);
+  font-family: var(--font-sans);
+  font-weight: 600;
+  padding: 12px 28px;
+  cursor: pointer;
+  box-shadow: 3px 3px 0 var(--text);
+  transition: all 0.15s ease;
+  letter-spacing: 0.3px;
+}
+.btn-envoyer-final:hover:not(:disabled),
+.popup-btn-envoyer-questions:hover:not(:disabled) {
+  background: var(--sauge-deep);
+  color: var(--bg-paper);
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0 var(--text);
+}
+.btn-envoyer-final:disabled,
+.popup-btn-envoyer-questions:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: 2px 2px 0 var(--border);
+}
+
+.btn-groupe .btn-brouillon.active,
+.feuille-texte .carte-choix button.actif,
+.feuille-texte .vf-btn.vf-ok,
+.feuille-texte .copier-btn.actif {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  border-color: var(--sauge-deep);
+}
+
+/* ============================================================
+   BADGES
+   ============================================================ */
+.badge, .badge.valide, .badge.lu, .badge.a-faire, .badge.non-vu,
+.post-label,
+.carte-post .meta .badge,
+.carte-post .meta .info-badge,
+.carte-post .meta .niveau-badge,
+.carte-post .meta .badge-icone,
+.carte-texte .niveau-badge,
+.carte-texte .meta .badge-icone,
+.badge-statut {
+  background: var(--sauge-soft);
+  color: var(--text);
+  border: 1px solid var(--sauge);
+  border-radius: 999px;
+  padding: 3px 12px;
+  font-family: var(--font-sans);
+  font-size: 0.78em;
+  letter-spacing: 0.2px;
+  font-weight: 500;
+}
+
+.badge-statut.valide {
+  background: var(--sauge-soft);
+  color: var(--sauge-deep);
+  border-color: var(--sauge);
+}
+
+/* ============================================================
+   FILTRES & ONGLETS
+   ============================================================ */
+.filtre-cat-btn, .tab-btn {
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: var(--text-secondary);
+  padding: 8px 0;
+  margin-right: 24px;
+  border-radius: 0;
+  cursor: pointer;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  transition: all 0.18s ease;
+}
+.filtre-cat-btn:hover, .tab-btn:hover {
+  color: var(--text);
+}
+.filtre-cat-btn.active, .tab-btn.active {
+  color: var(--text);
+  border-bottom-color: var(--sauge);
+}
+.tabs-container {
+  border-bottom: 1px solid var(--border);
+}
+
+/* ============================================================
+   MODALES
+   ============================================================ */
+.modal-overlay {
+  background: rgba(42, 36, 25, 0.4);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.modal-content,
+.modal-contenu,
+.popup-resultat {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-lg);
+  box-shadow: 6px 6px 0 var(--sauge) !important;
+}
+
+/* ============================================================
+   FORMULAIRES
+   ============================================================ */
+input, textarea, select, .search-bar input,
+.barre-recherche input[type="text"],
+.feuille-texte .open-textarea,
+.feuille-texte .tt-input,
+.popup-resultat .popup-question-textarea {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  font-family: var(--font-sans);
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+input:focus, textarea:focus, select:focus,
+.search-bar input:focus,
+.barre-recherche input[type="text"]:focus,
+.feuille-texte .open-textarea:focus,
+.feuille-texte .tt-input:focus,
+.popup-resultat .popup-question-textarea:focus {
+  border-color: var(--sauge);
+  box-shadow: 0 0 0 4px var(--sauge-soft);
+  outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+  color: var(--text-muted);
+}
+
+/* ============================================================
+   CARTES GÉNÉRIQUES
+   ============================================================ */
+.carte-post,
+.carte-texte,
+.section-block,
+.bloc-section,
+.colonne-laterale .bloc-section,
+.zone-basse-mobile .bloc-section,
+.bloc-categorie-cell,
+.bloc-a-retenir,
+.bloc-note-globale,
+.presentation-card,
+.methode-card,
+.encart-theme,
+.bloc-meta-texte .meta-ligne,
+.stats-ligne,
+.stats-theme {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-md);
+}
+
+.carte-post:hover,
+.carte-texte:hover,
+.presentation-card:hover,
+.methode-card:hover,
+.encart-theme:hover,
+.bloc-categorie-cell .entete-categorie-cell:hover {
+  border-color: var(--text);
+  box-shadow: 3px 3px 0 var(--sauge-soft);
+}
+
+.stats-ligne,
+.stats-theme {
+  background: var(--sauge-soft);
+  border-color: var(--sauge);
+}
+
+/* ============================================================
+   SIDEBAR LES-THÈMES
+   ============================================================ */
+.sidebar-themes {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  padding: 12px 8px;
+  box-shadow: 4px 4px 0 var(--sauge-soft);
+}
+.sidebar-themes .sidebar-titre {
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  padding: 6px 12px 10px;
+  border-bottom: 1px solid var(--border-strong);
+  margin-bottom: 6px;
+}
+.sidebar-themes .theme-item {
+  background: transparent;
+  border: none;
+  border-left: 3px solid transparent;
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  text-align: left;
+  width: 100%;
+  box-sizing: border-box;
+}
+.sidebar-themes .theme-item:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.sidebar-themes .theme-item.active {
+  background: var(--sauge-soft);
+  border-left-color: var(--sauge-deep);
+  color: var(--text);
+  font-weight: 700;
+}
+.sidebar-themes .theme-item .compteur {
+  color: var(--text-muted);
+  font-size: 11px;
+  float: right;
+}
+
+/* ============================================================
+   FEUILLE TEXTE
+   ============================================================ */
+.feuille-texte {
+  background: var(--bg-paper);
+  color: var(--text);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  font-family: Georgia, 'Times New Roman', Times, serif;
+  padding: 32px 36px;
+  box-shadow: 5px 5px 0 var(--sauge-soft);
+}
+
+.feuille-texte .arabe,
+.feuille-texte [lang="ar"] {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', serif !important;
+  color: var(--text);
+}
+
+.feuille-texte .slide p {
+  color: var(--text);
+}
+
+.feuille-texte .slide p .source-marge {
+  color: var(--text-secondary);
+  font-weight: 700;
+  font-family: var(--font-serif);
+}
+
+.feuille-texte .img-manquante {
+  border: 1px dashed var(--border-hover);
+  color: var(--text-muted);
+  background: var(--bg-hover);
+  border-radius: var(--radius-sm);
+}
+
+.feuille-texte .exercices-zone {
+  border-top: 2px solid var(--text);
+  margin-top: 28px;
+  padding-top: 24px;
+}
+
+.feuille-texte .exo {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--sauge);
+  border-radius: var(--radius-sm);
+  padding: 14px 16px;
+  margin-bottom: 14px;
+}
+
+.feuille-texte .consigne-exo {
+  color: var(--text);
+  background: var(--sauge-soft);
+  border-left: 4px solid var(--sauge-deep);
+  border-radius: var(--radius-sm);
+  padding: 5px 14px;
+  font-size: 0.82em;
+  letter-spacing: 0.8px;
+  margin-bottom: 10px;
+  text-transform: uppercase;
+  font-weight: 700;
+}
+.feuille-texte .consigne-exo::before {
+  content: "◆ ";
+  color: var(--sauge-deep);
+  font-size: 0.85em;
+}
+
+.feuille-texte .exo-num-inline {
+  background: var(--text);
+  color: var(--bg-paper);
+  border: none;
+  border-radius: 50%;
+  font-weight: 700;
+  font-size: 0.85em;
+}
+
+.feuille-texte .exo-texte {
+  color: var(--text);
+  font-size: 1em;
+}
+
+.feuille-texte .quiz-rep {
+  border-radius: var(--radius-sm);
+  padding: 6px 10px;
+  color: var(--text);
+}
+.feuille-texte .quiz-rep.interactive:hover {
+  background: var(--bg-active);
+}
+.feuille-texte .quiz-rep.correct {
+  background: var(--sauge-soft);
+  border-left: 4px solid var(--sauge-deep);
+  padding-left: 10px;
+}
+.feuille-texte .quiz-rep.incorrect {
+  background: var(--terracotta-soft);
+  border-left: 4px solid var(--terracotta);
+  padding-left: 10px;
+  text-decoration: none;
+  opacity: 0.9;
+}
+.feuille-texte .quiz-case {
+  border: 2px solid var(--border-strong);
+  background: var(--bg-paper);
+  border-radius: 3px;
+}
+.feuille-texte .quiz-rep.correct .quiz-case,
+.feuille-texte .quiz-rep.revelee .quiz-case {
+  background: var(--sauge);
+  border-color: var(--sauge-deep);
+}
+
+.feuille-texte .quiz-feedback-exo,
+.feuille-texte .tt-feedback,
+.feuille-texte .vf-feedback,
+.feuille-texte .ordre-resultat,
+.feuille-texte .relier-resultat {
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+.feuille-texte .tt-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid var(--sauge);
+  border-radius: 0;
+  color: var(--text);
+  padding: 2px 6px;
+}
+.feuille-texte .tt-input.tt-ok {
+  border-bottom-color: var(--sauge-deep);
+  color: var(--sauge-deep);
+  font-weight: 700;
+}
+.feuille-texte .tt-input.tt-ko {
+  border-bottom-color: var(--terracotta);
+  color: var(--terracotta);
+}
+
+.feuille-texte .vf-btn {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  box-shadow: 2px 2px 0 var(--border-strong);
+}
+.feuille-texte .vf-btn:hover:not(:disabled) {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  border-color: var(--sauge-deep);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--sauge-deep);
+}
+.feuille-texte .vf-btn.vf-ok {
+  background: var(--sauge);
+  border-color: var(--sauge-deep);
+  color: var(--bg-paper);
+}
+.feuille-texte .vf-btn.vf-ko {
+  background: var(--terracotta-soft);
+  border-color: var(--terracotta);
+  color: var(--text);
+}
+
+.feuille-texte .carte-btn-voir {
+  background: var(--sauge-soft);
+  border: 2px solid var(--sauge-deep);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  box-shadow: 2px 2px 0 var(--sauge-deep);
+}
+.feuille-texte .carte-btn-voir:hover {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--sauge-deep);
+}
+.feuille-texte .carte-reponse-cachee {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-left: 4px solid var(--terracotta);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  padding: 10px 14px;
+}
+.feuille-texte .carte-choix button {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  box-shadow: 2px 2px 0 var(--border-strong);
+}
+.feuille-texte .carte-choix button.actif {
+  background: var(--sauge);
+  color: var(--bg-paper);
+  border-color: var(--sauge-deep);
+}
+
+.feuille-texte .relier-item .point {
+  border: 2px solid var(--border-strong);
+  background: var(--bg-paper);
+  border-radius: 50%;
+}
+.feuille-texte .relier-item.selectionne .point {
+  background: var(--sauge);
+  border-color: var(--sauge-deep);
+  transform: scale(1.4);
+}
+.feuille-texte .relier-item.erreur .point {
+  border-color: var(--terracotta);
+  background: var(--terracotta);
+}
+.feuille-texte .relier-item.associe {
+  opacity: 0.55;
+}
+
+.feuille-texte .ordre-item {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  transition: all 0.18s ease;
+}
+.feuille-texte .ordre-item:hover {
+  background: var(--bg-hover);
+}
+.feuille-texte .ordre-item.dragging {
+  opacity: 0.4;
+}
+.feuille-texte .ordre-item.drag-over {
+  border-color: var(--sauge);
+  background: var(--sauge-soft);
+}
+.feuille-texte .ordre-item .ordre-num {
+  border: none;
+  background: var(--text);
+  color: var(--bg-paper);
+  border-radius: 50%;
+  font-weight: 700;
+}
+.feuille-texte .ordre-item .ordre-grip {
+  color: var(--text-muted);
+}
+
+.feuille-texte .copier-btn {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  box-shadow: 2px 2px 0 var(--border-strong);
+}
+.feuille-texte .copier-btn.actif {
+  background: var(--sauge);
+  border-color: var(--sauge-deep);
+  color: var(--bg-paper);
+}
+.feuille-texte .copier-mots {
+  color: var(--text);
+  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+}
+.feuille-texte .copier-mots::after {
+  background: var(--border-strong);
+}
+.feuille-texte .copier-ligne-pointillee {
+  border-bottom: 1px dotted var(--border-hover);
+}
+
+/* ============================================================
+   À RETENIR
+   ============================================================ */
+.bloc-a-retenir {
+  background: var(--terracotta-soft);
+  border: 2px solid var(--terracotta);
+  border-radius: var(--radius-md);
+  padding: 24px 28px;
+  margin-top: 32px;
+  box-shadow: 5px 5px 0 var(--text);
+}
+.bloc-a-retenir .bloc-a-retenir-titre {
+  background: var(--bg-paper);
+  border: 1px solid var(--terracotta);
+  border-left: 6px solid var(--terracotta);
+  color: var(--text);
+  margin-bottom: 16px;
+}
+.bloc-a-retenir .bloc-a-retenir-liste {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.bloc-a-retenir .bloc-a-retenir-liste li {
+  color: var(--text);
+  padding: 10px 0 10px 26px;
+  position: relative;
+  border-bottom: 1px dashed var(--terracotta);
+}
+.bloc-a-retenir .bloc-a-retenir-liste li:last-child {
+  border-bottom: none;
+}
+.bloc-a-retenir .bloc-a-retenir-liste li::before {
+  content: "◆";
+  position: absolute;
+  left: 4px;
+  top: 12px;
+  color: var(--terracotta);
+  font-size: 0.7em;
+}
+
+/* ============================================================
+   NOTE GLOBALE
+   ============================================================ */
+.bloc-note-globale {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  padding: 28px 32px;
+  margin-top: 36px;
+  box-shadow: 5px 5px 0 var(--sauge);
+}
+.bloc-note-globale .note-titre {
+  background: var(--sauge-soft);
+  border: 1px solid var(--sauge);
+  border-left: 6px solid var(--sauge-deep);
+  color: var(--text);
+  margin-bottom: 18px;
+}
+.bloc-note-globale .note-ligne {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-strong);
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+.bloc-note-globale .note-ligne:last-child {
+  border-bottom: none;
+}
+.bloc-note-globale .note-ligne .note-valeur {
+  color: var(--text);
+  font-weight: 700;
+}
+.bloc-note-globale .note-totale {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 6px;
+  margin-top: 10px;
+  border-top: 3px solid var(--sauge-deep);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1.15em;
+}
+.bloc-note-globale .note-actions {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-strong);
+}
+.bloc-note-globale .envoi-statut {
+  margin-top: 12px;
+  min-height: 18px;
+  text-align: right;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   POPUP RÉSULTAT
+   ============================================================ */
+.popup-resultat-overlay {
+  background: rgba(42, 36, 25, 0.5);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+.popup-resultat {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-lg);
+  padding: 36px 40px 30px;
+  font-family: var(--font-serif);
+  color: var(--text);
+  box-shadow: 8px 8px 0 var(--sauge) !important;
+}
+.popup-resultat .popup-titre {
+  background: var(--sauge-soft);
+  border: 1px solid var(--sauge);
+  border-left: 6px solid var(--sauge-deep);
+  color: var(--text);
+  margin-bottom: 22px;
+  text-align: center;
+}
+.popup-resultat .popup-note-ligne {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-strong);
+  font-family: var(--font-sans);
+  color: var(--text-secondary);
+}
+.popup-resultat .popup-note-ligne:last-child {
+  border-bottom: none;
+}
+.popup-resultat .popup-note-ligne .note-valeur {
+  color: var(--text);
+  font-weight: 700;
+}
+.popup-resultat .popup-note-totale {
+  display: flex;
+  justify-content: space-between;
+  padding: 14px 0 6px;
+  margin-top: 10px;
+  border-top: 3px solid var(--sauge-deep);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  color: var(--text);
+  font-size: 1.15em;
+}
+.popup-resultat .popup-questions-zone {
+  margin-top: 26px;
+  padding-top: 22px;
+  border-top: 1px solid var(--border-strong);
+}
+.popup-resultat .popup-questions-titre {
+  background: var(--bg-hover);
+  border: 1px solid var(--border-strong);
+  border-left: 5px solid var(--terracotta);
+  color: var(--text);
+  text-align: center;
+  margin-bottom: 16px;
+}
+.popup-resultat .popup-question-label {
+  font-style: italic;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+.popup-resultat .popup-question-textarea {
+  min-height: 90px;
+  resize: vertical;
+  width: 100%;
+  font-family: var(--font-sans);
+}
+.popup-resultat .popup-questions-aucune {
+  font-style: italic;
+  color: var(--text-muted);
+  text-align: center;
+  padding: 12px 0;
+}
+.popup-resultat .popup-actions {
+  margin-top: 26px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border-strong);
+}
+.popup-resultat .popup-envoi-statut {
+  margin-top: 10px;
+  min-height: 16px;
+  text-align: right;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  font-style: italic;
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   PROGRAMME
+   ============================================================ */
+.tableau-wrapper {
+  overflow-x: auto;
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  background: var(--bg-paper);
+  box-shadow: 5px 5px 0 var(--sauge-soft);
+}
+.tableau-programme {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 800px;
+  font-family: var(--font-sans);
+}
+.tableau-programme th,
+.tableau-programme td {
+  border: 1px solid var(--border-strong);
+  vertical-align: top;
+  padding: 0;
+}
+.tableau-programme thead th {
+  background: var(--sauge-deep);
+  color: var(--bg-paper);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  text-align: center;
+  padding: 14px 16px;
+  letter-spacing: 0.5px;
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+.tableau-programme thead th.coin {
+  text-align: left;
+  background: var(--text);
+  color: var(--bg-paper);
+  min-width: 160px;
+}
+.tableau-programme tbody th.theme-cell {
+  background: var(--sauge-soft);
+  color: var(--text);
+  font-family: var(--font-serif);
+  font-weight: 700;
+  text-align: left;
+  padding: 14px 16px;
+  position: sticky;
+  left: 0;
+  z-index: 1;
+  min-width: 160px;
+  border-right: 2px solid var(--sauge-deep);
+}
+.tableau-programme tbody th.theme-cell .theme-compteur {
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 11px;
+  font-weight: 400;
+}
+.cellule-programme {
+  padding: 10px !important;
+  min-width: 260px;
+  background: var(--bg-paper);
+}
+.cellule-programme .vide-cell {
+  color: var(--text-muted);
+  text-align: center;
+  opacity: 0.6;
+}
+
+.bloc-categorie-cell {
+  background: var(--bg-paper);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.bloc-categorie-cell:last-child {
+  margin-bottom: 0;
+}
+.bloc-categorie-cell .entete-categorie-cell {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px;
+  background: var(--bg-hover);
+  color: var(--text);
+  text-decoration: none;
+  border-bottom: 1px solid var(--border-strong);
+  transition: background 0.18s ease;
+}
+.bloc-categorie-cell .entete-categorie-cell:hover {
+  background: var(--sauge-soft);
+}
+.bloc-categorie-cell .barre-couleur {
+  flex-shrink: 0;
+  width: 4px;
+  height: 22px;
+  border-radius: 2px;
+}
+.bloc-categorie-cell .compteur-textes {
+  flex-shrink: 0;
+  color: var(--text-muted);
+  font-family: var(--font-sans);
+  font-size: 10px;
+  padding: 2px 8px;
+  background: var(--bg-paper);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+.bloc-categorie-cell .liste-textes-cell {
+  list-style: none;
+  padding: 6px 0;
+  margin: 0;
+}
+.bloc-categorie-cell .liste-textes-cell a {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  text-decoration: none;
+  transition: all 0.18s ease;
+}
+.bloc-categorie-cell .liste-textes-cell a:hover {
+  background: var(--bg-hover);
+  color: var(--text);
+}
+.bloc-categorie-cell .liste-textes-cell a::before {
+  content: "▸";
+  color: var(--sauge-deep);
+  font-size: 10px;
+  flex-shrink: 0;
+}
+
+/* ============================================================
+   PRÉSENTATION
+   ============================================================ */
+.presentation-card {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  transition: all 0.25s ease;
+  box-shadow: 4px 4px 0 var(--sauge-soft);
+}
+.presentation-card:hover {
+  border-color: var(--sauge-deep);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--sauge);
+}
+.presentation-card .presentation-icon {
+  color: var(--sauge-deep);
+}
+.presentation-card h3 {
+  color: var(--text);
+}
+.presentation-card p {
+  color: var(--text-secondary);
+}
+.methode-card {
+  background: var(--bg-paper);
+  border: 2px solid var(--text);
+  border-radius: var(--radius-md);
+  transition: all 0.25s ease;
+  box-shadow: 4px 4px 0 var(--terracotta-soft);
+}
+.methode-card:hover {
+  border-color: var(--terracotta);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--terracotta);
+}
+.methode-card .methode-num {
+  color: var(--terracotta);
+  opacity: 0.85;
+}
+.methode-card h3 {
+  color: var(--text);
+}
+.methode-card p {
+  color: var(--text-secondary);
+}
+
+/* ============================================================
+   THÈME (page)
+   ============================================================ */
+.description-theme .pre-requis {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.description-theme .pre-requis strong {
+  color: var(--text);
+}
+.description-theme .texte-desc {
+  color: var(--text-secondary);
+}
+.stats-theme {
+  background: var(--sauge-soft);
+  border: 1px solid var(--sauge);
+  border-radius: var(--radius-md);
+  padding: 12px 18px;
+}
+.stats-theme .stat-item {
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+}
+.stats-theme .stat-item .nombre {
+  color: var(--text);
+  font-weight: 700;
+}
+
+/* ============================================================
+   DEVISE
+   ============================================================ */
+.devise {
+  color: var(--text-secondary);
+  font-family: var(--font-serif);
+  font-style: italic;
+  border-top: 1px solid var(--border);
+  padding-top: 24px;
+  margin-top: 40px;
+  text-align: center;
+}
+
+/* ============================================================
+   VIDES & LOADER
+   ============================================================ */
+.vide, .vide-texte, .vide-themes, .vide-textes, .vide-global {
+  background: var(--bg-hover);
+  border: 2px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  text-align: center;
+  padding: 60px 20px;
+}
+.vide .icone, .vide-texte .icone, .vide-themes .icone,
+.vide-textes .icone, .vide-global .icone {
+  color: var(--sauge-deep);
+}
+.vide h2, .vide-texte h2, .vide-themes h2,
+.vide-textes h4, .vide-global h2 {
+  color: var(--text);
+}
+.vide p, .vide-texte p, .vide-themes p,
+.vide-textes p, .vide-global p {
+  color: var(--text-secondary);
+}
+.loader {
+  text-align: center;
+  color: var(--text-secondary);
+}
+.spinner {
+  border: 3px solid var(--border-strong);
+  border-top-color: var(--sauge);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ============================================================
+   TABLEAUX ARRONDIS
+   ============================================================ */
+.tableau-slide {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 10px;
+  margin: 16px 0;
+}
+.tableau-slide td {
+  background: var(--sauge-soft);
+  padding: 16px 20px;
+  text-align: center;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--sauge);
+}
+
+/* ============================================================
+   ARABE
+   ============================================================ */
+[lang="ar"], [dir="rtl"],
+[lang="ar"] *, [dir="rtl"] * {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Arial', serif !important;
+  direction: rtl !important;
+  unicode-bidi: embed !important;
+}
+[lang="ar"], [dir="rtl"] {
+  text-align: center !important;
+}
+
+/* ============================================================
+   FIX HEADER
+   ============================================================ */
+.header-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 100%;
+  margin: 0;
+  padding: 14px 28px;
+  box-sizing: border-box;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  flex: 0 0 auto;
+  margin: 0;
+  padding: 0;
+}
+.header-logo {
+  margin: 0;
+  padding: 0;
+}
+.header-logo a {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  margin: 0;
+  padding: 0;
+}
+.header-nav {
+  display: flex;
+  align-items: center;
+  gap: 22px;
+  margin-left: auto;
+}
+.header-sous-titre {
+  display: block;
+  font-size: 12px;
+  margin-left: 40px;
+  margin-top: -4px;
+  font-weight: normal;
+  font-family: var(--font-sans);
+}
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 900px) {
+  .layout-themes { gap: 20px; }
+  .sidebar-themes { flex: 0 0 170px; }
+}
+
+@media (max-width: 768px) {
+  body { font-size: 16px; }
+
+  .page-themes h1,
+  .page-programme h1,
+  .page-presentation h1,
+  .page-theme h1 { font-size: 20px; padding: 6px 16px; }
+
+  /* Couverture : on réduit les paddings et les polices */
+  .carte-couverture .contenu-theme {
+    padding: 12px 10px 10px 16px;
+  }
+  .carte-couverture .titre-theme {
+    font-size: clamp(11px, 4vw, 14px);
+  }
+  .carte-couverture .sous-titre-theme { font-size: 9px; }
+  .carte-couverture .auteur-theme { font-size: 7px; }
+  .carte-couverture .edition-nom { font-size: 6px; }
+  .carte-couverture .edition-date { font-size: 7px; }
+
+  .carte-couverture .badge-niveau {
+    font-size: 9px;
+    letter-spacing: 0.8px;
+    padding: 10px 4px;
+  }
+
+  .feuille-texte { padding: 20px 18px; }
+  .feuille-texte .bandeau-titre h1 { font-size: 13pt; }
+  .feuille-texte .slide p { font-size: 12pt; }
+
+  .tableau-programme tbody th.theme-cell {
+    font-size: 14px;
+    min-width: 130px;
+    padding: 10px 12px;
+  }
+  .tableau-programme thead th.coin { min-width: 130px; }
+  .cellule-programme { min-width: 220px; padding: 8px !important; }
+
+  .carte-texte {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 6px;
+  }
+  .carte-texte .statut {
+    text-align: left;
+    min-width: unset;
+  }
+  .entete-theme {
+    flex-direction: column;
+    align-items: center;
+    gap: 20px;
+    padding-bottom: 18px;
+  }
+  .description-theme { width: 100%; text-align: center; }
+  .stats-theme { justify-content: center; gap: 16px; }
+
+  .sidebar-themes {
+    position: static;
+    flex: none;
+    width: 100%;
+    display: flex;
+    flex-direction: row;
+    overflow-x: auto;
+    padding: 4px;
+    border-radius: var(--radius-md);
+  }
+  .sidebar-themes .sidebar-titre { display: none; }
+  .sidebar-themes .theme-item {
+    width: auto;
+    white-space: nowrap;
+    padding: 8px 14px;
+    border-left: none;
+    border-bottom: 3px solid transparent;
+  }
+  .sidebar-themes .theme-item.active {
+    border-left: none;
+    border-bottom-color: var(--sauge-deep);
+  }
+  .sidebar-themes .theme-item .compteur {
+    margin-left: 6px;
+    float: none;
+  }
+  .layout-themes {
+    flex-direction: column;
+    gap: 16px;
+  }
+  .grille-themes {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 14px;
+  }
+
+  .header-inner {
+    flex-direction: column;
+    text-align: center;
+    padding: 12px 16px;
+  }
+  .header-left { justify-content: center; }
+  .header-nav { justify-content: center; }
+
+  .grille-couvertures {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 14px;
+  }
+
+  .presentation-grid {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 16px;
+  }
+  .methode-grid { grid-template-columns: 1fr; gap: 16px; }
+}
+
+@media (max-width: 550px) {
+  body { font-size: 14px; }
+  .carte-couverture .titre-theme { font-size: clamp(10px, 4.5vw, 13px); }
+  .carte-couverture .sous-titre-theme { font-size: 8px; }
+  .presentation-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 12px;
+  }
+}
+
+@media (max-width: 400px) {
+  .grille-themes {
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+  }
+  .carte-couverture .badge-niveau {
+    font-size: 8px;
+    letter-spacing: 0.5px;
+    padding: 8px 3px;
+  }
+}
+
+/* ============================================================
+   FORCER LES MÊMES PROPORTIONS DANS LES GRILLES DE COUVERTURES
+   ============================================================ */
+.grille-couvertures {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+  gap: 20px !important;
+  justify-items: center !important;
+}
+
+.grille-couvertures .carte-couverture {
+  width: 100% !important;
+  max-width: 220px !important;
+  aspect-ratio: 2 / 3 !important;
+  height: auto !important;
+  margin: 0 auto !important;
+}
+
+/* ============================================================
+   IMAGE DE COUVERTURE — centrée, cercle, bordure blanche
+   ============================================================ */
+/* ============================================================
+   IMAGE DE COUVERTURE — fond jaune académie nuancé
+   ============================================================ */
+/* ============================================================
+   IMAGE DE COUVERTURE — cercle unique, teinte jaune académie
+   ============================================================ */
+.carte-couverture .couverture-image {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  width: 100px !important;
+  height: 100px !important;
+  min-width: 100px !important;
+  min-height: 100px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
+  border-radius: 50% !important;
+  border: 3px solid #ffffff !important;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  margin: 45px auto 30px auto !important;   /* ← 30px d'espace FIXE en dessous */
+  padding: 0 !important;
+  overflow: hidden !important;
+  box-sizing: border-box !important;
+  background: transparent !important;
+}
+
+.carte-couverture .couverture-image img {
+  display: block !important;
+ width: 100px !important;           /* ← taille du cercle */
+  height: 100px !important;
+  min-width: 100px !important;
+  min-height: 100px !important;
+  max-width: 100px !important;
+  max-height: 100px !important;
+  border-radius: 50% !important;
+  object-fit: cover !important;
+  object-position: center !important;
+  border: none !important;              /* ← plus de bordure sur l'image */
+  box-shadow: none !important;          /* ← plus d'ombre sur l'image */
+  box-sizing: border-box !important;
+  margin: 0 !important;                 /* ← plus de marge */
+  padding: 0 !important;
+  filter: sepia(100%) hue-rotate(5deg) saturate(60%) brightness(1.05) !important;
+}
+
+@media (max-width: 768px) {
+  .carte-couverture .couverture-image {
+    width: 60px !important;
+    height: 60px !important;
+    min-width: 60px !important;
+    min-height: 60px !important;
+    max-width: 60px !important;
+    max-height: 60px !important;
+    border-width: 2.5px !important;
+    margin-top: 40px !important;
+  }
+}
+
+@media (max-width: 400px) {
+  .carte-couverture .couverture-image {
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    min-height: 50px !important;
+    max-width: 50px !important;
+    max-height: 50px !important;
+    border-width: 2px !important;
+    margin-top: 30px !important;
+  }
+}
+
+/* ============================================================
+   CADENAS DE VERROUILLAGE
+   ============================================================ */
+.carte-couverture .cadenas-verrou {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 5;
+  font-size: 30px;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+
+
+.nav-bas-texte a,
+.nav-bas-texte .nav-placeholder {
+  border: 1px solid var(--border);
+  padding: 12px 16px;
+  text-decoration: none;
+  display: block;
+}
