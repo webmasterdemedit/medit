@@ -1,6 +1,6 @@
 // ============================================================
 // couverture.js — CARTE-COUVERTURE PAYSAGE MINIMALE
-// Contenu : titre, sous-titre, image, progression, nombre de textes
+// Contenu : titre, sous-titre, image, progression
 // ============================================================
 
 (function() {
@@ -26,14 +26,6 @@
     var pourcentage = theme.pourcentage || 0;
     var couverture  = theme.couverture || '';
     var verrouille  = theme.verrouille || theme.disponible === false;
-
-    // nombre de textes — on accepte plusieurs noms de propriété
-    var nombreTextes =
-      (theme.nombreTextes !== undefined && theme.nombreTextes !== null) ? parseInt(theme.nombreTextes, 10) :
-      (theme.nbTextes     !== undefined && theme.nbTextes     !== null) ? parseInt(theme.nbTextes, 10) :
-      (theme.nbTextesTotal!== undefined && theme.nbTextesTotal!== null) ? parseInt(theme.nbTextesTotal, 10) :
-      0;
-    if (isNaN(nombreTextes)) nombreTextes = 0;
 
     var estActuel   = !!options.actuel;
     var cliquable   = options.cliquable !== false;
@@ -63,7 +55,7 @@
       html += '<div class="couverture-image"><img src="' + couverture + '" alt="" loading="lazy"></div>';
     }
 
-    // Texte à droite : titre + sous-titre + nombre de textes
+    // Texte à droite : titre + sous-titre
     html += '<div class="contenu-theme">';
     html += '<div class="titre-wrapper">';
     html += '<span class="titre-theme">#' + _escapeHtml(titre) + '</span>';
@@ -71,12 +63,6 @@
       html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
     }
     html += '</div>';
-
-    // Nombre de textes — TEXTE jaune, grand, quasi pleine largeur
-    html += '<div class="nombre-textes">';
-    html += nombreTextes + (nombreTextes > 1 ? ' textes' : ' texte');
-    html += '</div>';
-
     html += '</div>';
 
     // Progression
