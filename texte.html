@@ -45,7 +45,7 @@
         <div class="popup-questions-titre">Questions</div>
         <div id="popupQuestionsListe"></div>
         <div class="popup-actions">
-          <button class="popup-btn-envoyer-questions" id="popupBtnEnvoyerQuestions" onclick="envoyerQuestions()">📤 Envoyer mes réponses aux questions</button>
+          <button class="popup-btn-envoyer-questions" id="popupBtnEnvoyerQuestions" onclick="envoyerQuestions()">Envoyer mes réponses aux questions</button>
           <button class="popup-btn-fermer" onclick="fermerPopupResultat()">Fermer</button>
         </div>
         <div class="popup-envoi-statut" id="popupEnvoiStatut"></div>
@@ -170,7 +170,6 @@
       } catch(e) { return ''; }
     }
 
-    /* ✅ NOUVEAU : formatage de la date de modification (colonne H) */
     function formatDateModifComplete(dateStr) {
       if (!dateStr) return '';
       try {
@@ -1073,7 +1072,7 @@
         })
         .catch(function() {
           btn.disabled = false;
-          btn.textContent = '📤 Réessayer';
+          btn.textContent = 'Réessayer';
           statut.textContent = 'Erreur d\'envoi. Vérifiez la connexion.';
         });
     }
@@ -1449,17 +1448,9 @@
       return html;
     }
 
-    /* ✅ MODIFIÉ : ajout de la ligne "Modifié le ... à ..." au-dessus du bouton Imprimer */
     function construireBlocActions(texte) {
-      var dateModifFormatee = formatDateModifComplete(texte.dateModif);
       var html = '<div class="bloc-actions-texte">';
-      if (dateModifFormatee) {
-        html += '<div class="bloc-modif-info">'
-              + '<span class="modif-label">Modifié le </span>'
-              + '<span class="modif-valeur">' + echapperHtml(dateModifFormatee) + '</span>'
-              + '</div>';
-      }
-      html += '<button class="btn-action-lateral btn-imprimer" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
+      html += '<button class="btn-action-lateral btn-imprimer" style="border:1px solid var(--border);border-radius:0;box-shadow:none;" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
       html += '</div>';
       return html;
     }
@@ -1472,6 +1463,7 @@
       var niveau = texte.niveau || 0;
       var tempsLecture = texte._tempsLecture || 1;
       var dateEcrit = formatDateLongue(texte.date);
+      var dateModif = formatDateModifComplete(texte.dateModif);
 
       html += '<div class="bloc-section">';
       html += '  <div class="bloc-titre"><span class="icone"></span> Informations</div>';
@@ -1479,6 +1471,7 @@
       html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Niveau</span><span class="meta-valeur">' + niveau + '</span></div>';
       html += '    <div class="meta-ligne"><span class="meta-icone">⏱</span><span class="meta-label">Temps de lecture</span><span class="meta-valeur">' + tempsLecture + ' min</span></div>';
       if (dateEcrit) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Écrit le</span><span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span></div>';
+      if (dateModif) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Modifié le</span><span class="meta-valeur">' + echapperHtml(dateModif) + '</span></div>';
       html += '  </div>';
       html += '</div>';
 
@@ -1536,22 +1529,14 @@
 
     function construireZoneBasseMobile(texte) { return construireZoneLaterale(texte); }
 
-    /* ✅ MODIFIÉ : ajout de la ligne "Modifié le ... à ..." au-dessus des boutons Envoyer / Revoir */
     function construireBlocNoteGlobale(texte) {
-      var dateModifFormatee = texte ? formatDateModifComplete(texte.dateModif) : '';
       var html = '<div class="bloc-note-globale" id="blocNoteGlobale">';
       html += '  <div class="note-titre">Résultat</div>';
       html += '  <div class="note-lignes" id="noteLignes"></div>';
       html += '  <div class="note-totale"><span>Total</span><span class="note-valeur" id="noteTotalValeur">0 / 0</span></div>';
-      if (dateModifFormatee) {
-        html += '  <div class="bloc-modif-info">'
-              + '<span class="modif-label">Modifié le </span>'
-              + '<span class="modif-valeur">' + echapperHtml(dateModifFormatee) + '</span>'
-              + '</div>';
-      }
       html += '  <div class="note-actions">';
       html += '    <button class="btn-revoir" id="btnRevoir" onclick="relireEtRefaire()" style="display:none;">Relire le texte et refaire les questions</button>';
-      html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses(false)">📤 Envoyer mes réponses</button>';
+      html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses(false)">Envoyer mes réponses</button>';
       html += '  </div>';
       html += '  <div class="envoi-statut" id="envoiStatut"></div>';
       html += '</div>';
