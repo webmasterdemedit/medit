@@ -781,9 +781,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   float: right;
   margin: 6px 0 8px 14px;
 }
-.print-img-petit  { max-width: 150px; }
-.print-img-moyen  { max-width: 220px; }
-.print-img-grand  { max-width: 320px; }
+.print-img-petit  { max-width: 100px; }
+.print-img-moyen  { max-width: 170px; }
+.print-img-grand  { max-width: 220px; }
 
 .img-manquante {
   display: block;
