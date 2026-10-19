@@ -9,7 +9,7 @@
 var CLE_CACHE      = 'qiraat_data_v1';
 var CLE_TIMESTAMP  = 'qiraat_data_ts';
 var CLE_NOM        = 'qiraat_data_nom';
-var CLE_IMAGES     = 'qiraat_images_'; // suffixé par nom du thème
+var CLE_IMAGES     = 'qiraat_images_v2_'; // ← v2 : les anciens caches v1 sont ignorés
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
 var PERF_NAV = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || performance.navigation || {};
