@@ -26,9 +26,14 @@
     var pourcentage = theme.pourcentage || 0;
     var couverture  = theme.couverture || '';
     var verrouille  = theme.verrouille || theme.disponible === false;
-    var nombreTextes = (theme.nombreTextes !== undefined && theme.nombreTextes !== null)
-      ? parseInt(theme.nombreTextes, 10) || 0
-      : 0;
+
+    // nombre de textes — on accepte plusieurs noms de propriété
+    var nombreTextes =
+      (theme.nombreTextes !== undefined && theme.nombreTextes !== null) ? parseInt(theme.nombreTextes, 10) :
+      (theme.nbTextes     !== undefined && theme.nbTextes     !== null) ? parseInt(theme.nbTextes, 10) :
+      (theme.nbTextesTotal!== undefined && theme.nbTextesTotal!== null) ? parseInt(theme.nbTextesTotal, 10) :
+      0;
+    if (isNaN(nombreTextes)) nombreTextes = 0;
 
     var estActuel   = !!options.actuel;
     var cliquable   = options.cliquable !== false;
@@ -67,7 +72,7 @@
     }
     html += '</div>';
 
-    // Nombre de textes — jaune visible, grand, quasi pleine largeur
+    // Nombre de textes — TEXTE jaune, grand, quasi pleine largeur
     html += '<div class="nombre-textes">';
     html += nombreTextes + (nombreTextes > 1 ? ' textes' : ' texte');
     html += '</div>';
