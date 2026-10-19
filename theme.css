@@ -1,5 +1,6 @@
 /* ============================================================
-   THEME N&B ABSOLU — structure Olive, palette noir & blanc
+   THEME DOUX — structure Olive + rendu Noir & Blanc Absolu
+   Aucune bande noire, images en couleur, tout plat et fin
    ============================================================ */
 
 @font-face {
@@ -11,7 +12,7 @@
 }
 
 /* ============================================================
-   VARIABLES — PALETTE NOIR & BLANC ABSOLU
+   VARIABLES — PALETTE NOIR & BLANC ABSOLU (douce)
    ============================================================ */
 :root {
   --bg:            #ffffff;
@@ -25,10 +26,9 @@
 
   --border:        #cccccc;
   --border-hover:  #aaaaaa;
-  --border-strong: #aaaaaa;
+  --border-strong: #cccccc;   /* ← plus de trait fort, tout fin */
 
-  /* Les anciennes couleurs deviennent des nuances de gris */
-  --sauge:         #e8e8e8;
+  --sauge:         #f5f5f5;
   --sauge-deep:    #111111;
   --sauge-soft:    #f5f5f5;
   --terracotta:    #aaaaaa;
@@ -38,9 +38,9 @@
   --lilas:         #777777;
   --lilas-soft:    #f5f5f5;
 
-  --jaune-academie:       #111111;
-  --jaune-academie-deep:  #111111;
-  --jaune-academie-soft:  #e8e8e8;
+  --jaune-academie:       #f5f5f5;
+  --jaune-academie-deep:  #e8e8e8;
+  --jaune-academie-soft:  #f5f5f5;
 
   --header-bg:     #ffffff;
   --header-text:   #111111;
@@ -50,9 +50,9 @@
   --font-arabic:   'Janna LT Bold', 'Traditional Arabic', serif;
   --font-sans:     -apple-system, 'Inter', 'Segoe UI', sans-serif;
 
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  --radius-sm: 0;
+  --radius-md: 0;
+  --radius-lg: 0;
 }
 
 [lang="ar"], 
@@ -76,7 +76,7 @@
 
     --border:        #3d3d3d;
     --border-hover:  #555555;
-    --border-strong: #555555;
+    --border-strong: #3d3d3d;
 
     --sauge:         #2a2a2a;
     --sauge-deep:    #e8e8e8;
@@ -88,9 +88,9 @@
     --lilas:         #777777;
     --lilas-soft:    #2a2a2a;
 
-    --jaune-academie:       #e8e8e8;
-    --jaune-academie-deep:  #e8e8e8;
-    --jaune-academie-soft:  #333333;
+    --jaune-academie:       #2a2a2a;
+    --jaune-academie-deep:  #333333;
+    --jaune-academie-soft:  #2a2a2a;
 
     --header-bg:     #1a1a1a;
     --header-text:   #e8e8e8;
@@ -120,7 +120,7 @@ body * {
 }
 
 /* ============================================================
-   COUVERTURE UNIQUE
+   COUVERTURE UNIQUE — douce, plate, sans bande noire
    ============================================================ */
 .carte-couverture {
   position: relative;
@@ -136,21 +136,22 @@ body * {
   overflow: hidden;
   cursor: pointer;
   text-decoration: none;
-  color: #1a1a1a;
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  color: var(--text);
+  border: 1px solid var(--border);      /* ← filet fin, plus de 2px noir */
+  border-radius: 0;
   margin: 0 auto;
-  box-shadow: 4px 4px 0 var(--border-strong);
-  transition: all 0.25s ease;
+  box-shadow: none;                      /* ← plus d'ombre décalée */
+  transition: border-color 0.2s ease;
 }
 
 .carte-couverture:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--text);
+  transform: none;                       /* ← plus de décalage */
+  box-shadow: none;
+  border-color: var(--border-hover);
 }
 
 .carte-couverture.verrouille {
-  filter: grayscale(1) opacity(0.45);
+  filter: opacity(0.45);
   cursor: not-allowed;
   pointer-events: none;
 }
@@ -163,7 +164,7 @@ body * {
   border-color: transparent;
 }
 
-/* ===== BADGE NIVEAU : bande verticale à gauche ===== */
+/* ===== BADGE NIVEAU : plus de bande noire, simple mention discrète ===== */
 .carte-couverture .badge-niveau {
   position: relative;
   order: 0;
@@ -172,21 +173,21 @@ body * {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--text) !important;
-  color: var(--bg) !important;
+  background: transparent !important;       /* ← plus de fond noir */
+  color: var(--text-muted) !important;      /* ← texte discret */
   border: none;
-  border-right: 1px solid var(--border-strong);
+  border-right: 1px solid var(--border);    /* ← simple filet */
   border-radius: 0;
-  font-family: var(--font-serif);
-  font-weight: 700;
-  font-style: italic;
-  font-size: 11px;
-  letter-spacing: 1.2px;
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-style: normal;
+  font-size: 9px;
+  letter-spacing: 1px;
   line-height: 1;
   text-transform: uppercase;
   text-align: center;
   white-space: nowrap;
-  padding: 14px 6px;
+  padding: 12px 5px;
   writing-mode: vertical-rl;
   transform: rotate(180deg);
 }
@@ -216,8 +217,8 @@ body * {
   left: 8px;
   top: 0;
   bottom: 0;
-  width: 1.5px;
-  background: var(--border-strong);
+  width: 1px;
+  background: var(--border);
 }
 
 /* ===== BLOC HAUT ===== */
@@ -237,7 +238,7 @@ body * {
   display: block;
   color: var(--text-muted) !important;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
   font-size: 8px;
   text-transform: uppercase;
   letter-spacing: 1.6px;
@@ -266,7 +267,7 @@ body * {
   -webkit-hyphens: auto;
   margin: 0;
   padding-bottom: 5px;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border);   /* ← filet fin */
   width: 100%;
 }
 
@@ -278,7 +279,7 @@ body * {
   overflow: hidden;
   color: var(--text-secondary) !important;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
   font-size: 10px;
   text-align: left;
   line-height: 1.25;
@@ -307,7 +308,7 @@ body * {
   display: block;
   color: var(--text-muted) !important;
   font-family: var(--font-sans);
-  font-weight: 700;
+  font-weight: 500;
   font-style: italic;
   font-size: 6px;
   text-transform: uppercase;
@@ -324,7 +325,7 @@ body * {
   display: block;
   color: var(--text-secondary) !important;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
   font-size: 7px;
   text-align: center;
   letter-spacing: 0.4px;
@@ -341,7 +342,7 @@ body * {
   bottom: 0;
   left: 0;
   right: 0;
-  height: 3px;
+  height: 2px;
   background: var(--border) !important;
   z-index: 3;
   overflow: hidden;
@@ -385,15 +386,15 @@ h1, h2, h3, h4, p,
   font-family: var(--font-serif);
 }
 
-/* Titres de page encadrés */
+/* Titres de page — encadrés fins */
 .page-themes h1,
 .page-programme h1,
 .page-presentation h1,
 .page-theme h1 {
   display: inline-block;
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
   padding: 8px 22px;
   font-size: 26px;
   font-weight: 700;
@@ -401,10 +402,10 @@ h1, h2, h3, h4, p,
   text-transform: uppercase;
   color: var(--text);
   margin-bottom: 8px;
-  box-shadow: 4px 4px 0 var(--border-strong);
+  box-shadow: none;                  /* ← plus d'ombre */
 }
 
-/* Titres de section encadrés */
+/* Titres de section — filet fin à gauche */
 .feuille-texte .bandeau-titre,
 .feuille-texte .titre-exercices,
 .bloc-a-retenir .bloc-a-retenir-titre,
@@ -415,9 +416,9 @@ h1, h2, h3, h4, p,
 .zone-bas-page .bloc-bas-titre {
   display: block;
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
-  border-left: 5px solid var(--text);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);   /* ← filet fin, pas 5px */
+  border-radius: 0;
   padding: 10px 18px;
   font-family: var(--font-serif);
   font-weight: 700;
@@ -428,9 +429,9 @@ h1, h2, h3, h4, p,
 }
 
 .feuille-texte .bandeau-titre {
-  border: 2px solid var(--text);
-  border-left: 6px solid var(--text);
-  box-shadow: 3px 3px 0 var(--border-strong);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
+  box-shadow: none;
   padding: 12px 20px;
   margin-bottom: 16px;
 }
@@ -448,7 +449,7 @@ h1, h2, h3, h4, p,
   background: var(--text);
   color: var(--bg);
   border: none;
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   font-weight: 700;
   padding: 4px 10px;
   font-family: var(--font-sans);
@@ -492,12 +493,13 @@ h1, h2, h3, h4, p,
 }
 
 /* ============================================================
-   HEADER & FOOTER
+   HEADER & FOOTER — filets fins, plus de trait épais noir
    ============================================================ */
 .site-header {
   background: var(--header-bg);
   color: var(--header-text);
-  border-bottom: 3px solid var(--text);
+  border-bottom: 1px solid var(--border);   /* ← 1px, plus 3px noir */
+  box-shadow: none;
 }
 
 .site-header a,
@@ -510,11 +512,11 @@ h1, h2, h3, h4, p,
 }
 
 .site-header .header-link {
-  border-bottom: 2px solid transparent;
+  border-bottom: 1px solid transparent;
   padding-bottom: 2px;
 }
 .site-header .header-link:hover {
-  border-bottom-color: var(--header-text);
+  border-bottom-color: var(--text);
 }
 
 .site-header .header-btn-compte,
@@ -522,7 +524,7 @@ h1, h2, h3, h4, p,
   background: transparent;
   color: var(--header-text);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   padding: 6px 16px;
 }
 .site-header .header-btn-compte:hover,
@@ -540,7 +542,7 @@ h1, h2, h3, h4, p,
 .site-footer {
   background: var(--header-bg);
   color: var(--header-text);
-  border-top: 3px solid var(--text);
+  border-top: 1px solid var(--border);      /* ← 1px, plus 3px noir */
   padding: 28px 20px 18px;
 }
 
@@ -581,7 +583,7 @@ a:hover {
 }
 
 /* ============================================================
-   BOUTONS
+   BOUTONS — plats, fins, sans ombre
    ============================================================ */
 .btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer,
 .btn-ajout, .btn-export-all, .btn-categories, .carte-post .btn-lire,
@@ -595,16 +597,16 @@ a:hover {
 .feuille-texte .copier-btn,
 .feuille-texte .vf-btn,
 .feuille-texte .carte-choix button {
-  background: var(--bg-paper);
-  color: var(--text);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border);
+  border-radius: 0;
   font-family: var(--font-sans);
-  font-weight: 500;
-  padding: 9px 20px;
+  font-weight: 400;
+  padding: 8px 18px;
   cursor: pointer;
   transition: all 0.15s ease;
-  box-shadow: 2px 2px 0 var(--border-strong);
+  box-shadow: none;                  /* ← plus d'ombre */
 }
 
 .btn-entrer:hover, .btn-submit:hover, .btn-nav:hover,
@@ -621,48 +623,49 @@ a:hover {
 .feuille-texte .copier-btn:hover:not(:disabled),
 .feuille-texte .vf-btn:hover:not(:disabled),
 .feuille-texte .carte-choix button:hover:not(:disabled) {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
-  box-shadow: 1px 1px 0 var(--border-hover);
-  transform: translate(1px, 1px);
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--border-hover);
+  box-shadow: none;
+  transform: none;                   /* ← plus de décalage */
 }
 
 .btn-envoyer-final,
 .popup-btn-envoyer-questions {
-  background: var(--text);
-  color: var(--bg);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border-hover);
+  border-radius: 0;
   font-family: var(--font-sans);
-  font-weight: 600;
-  padding: 12px 28px;
+  font-weight: 500;
+  padding: 11px 26px;
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--border-strong);
+  box-shadow: none;
   transition: all 0.15s ease;
   letter-spacing: 0.3px;
 }
 .btn-envoyer-final:hover:not(:disabled),
 .popup-btn-envoyer-questions:hover:not(:disabled) {
-  background: var(--text-secondary);
-  color: var(--bg);
-  transform: translate(2px, 2px);
-  box-shadow: 1px 1px 0 var(--border-hover);
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--text);
+  transform: none;
+  box-shadow: none;
 }
 .btn-envoyer-final:disabled,
 .popup-btn-envoyer-questions:disabled {
   opacity: 0.5;
   cursor: default;
-  box-shadow: 2px 2px 0 var(--border);
+  box-shadow: none;
 }
 
 .btn-groupe .btn-brouillon.active,
 .feuille-texte .carte-choix button.actif,
 .feuille-texte .vf-btn.vf-ok,
 .feuille-texte .copier-btn.actif {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
+  background: var(--bg-active);
+  color: var(--text);
+  border-color: var(--border-hover);
 }
 
 /* ============================================================
@@ -685,7 +688,7 @@ a:hover {
   font-family: var(--font-sans);
   font-size: 0.78em;
   letter-spacing: 0.2px;
-  font-weight: 500;
+  font-weight: 400;
 }
 
 .badge-statut.valide {
@@ -700,14 +703,14 @@ a:hover {
 .filtre-cat-btn, .tab-btn {
   background: transparent;
   border: none;
-  border-bottom: 3px solid transparent;
+  border-bottom: 1px solid transparent;
   color: var(--text-secondary);
   padding: 8px 0;
   margin-right: 24px;
   border-radius: 0;
   cursor: pointer;
   font-family: var(--font-sans);
-  font-weight: 500;
+  font-weight: 400;
   transition: all 0.18s ease;
 }
 .filtre-cat-btn:hover, .tab-btn:hover {
@@ -722,10 +725,10 @@ a:hover {
 }
 
 /* ============================================================
-   MODALES
+   MODALES — plates
    ============================================================ */
 .modal-overlay {
-  background: rgba(0, 0, 0, 0.35);
+  background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
@@ -733,9 +736,9 @@ a:hover {
 .modal-contenu,
 .popup-resultat {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-lg);
-  box-shadow: 6px 6px 0 var(--border-strong) !important;
+  border: 1px solid var(--border-hover);
+  border-radius: 0;
+  box-shadow: none !important;
 }
 
 /* ============================================================
@@ -747,9 +750,9 @@ input, textarea, select, .search-bar input,
 .feuille-texte .tt-input,
 .popup-resultat .popup-question-textarea {
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   color: var(--text);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   padding: 10px 14px;
   font-family: var(--font-sans);
   transition: border-color 0.18s ease, box-shadow 0.18s ease;
@@ -762,7 +765,7 @@ input:focus, textarea:focus, select:focus,
 .feuille-texte .tt-input:focus,
 .popup-resultat .popup-question-textarea:focus {
   border-color: var(--text);
-  box-shadow: 0 0 0 4px var(--bg-active);
+  box-shadow: 0 0 0 3px var(--bg-hover);
   outline: none;
 }
 
@@ -771,7 +774,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   CARTES GÉNÉRIQUES
+   CARTES GÉNÉRIQUES — plates
    ============================================================ */
 .carte-post,
 .carte-texte,
@@ -789,8 +792,8 @@ input::placeholder, textarea::placeholder {
 .stats-ligne,
 .stats-theme {
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
 }
 
 .carte-post:hover,
@@ -799,8 +802,8 @@ input::placeholder, textarea::placeholder {
 .methode-card:hover,
 .encart-theme:hover,
 .bloc-categorie-cell .entete-categorie-cell:hover {
-  border-color: var(--text);
-  box-shadow: 3px 3px 0 var(--bg-active);
+  border-color: var(--border-hover);
+  box-shadow: none;
 }
 
 .stats-ligne,
@@ -810,35 +813,35 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   SIDEBAR LES-THÈMES
+   SIDEBAR LES-THÈMES — plate
    ============================================================ */
 .sidebar-themes {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
   padding: 12px 8px;
-  box-shadow: 4px 4px 0 var(--bg-active);
+  box-shadow: none;
 }
 .sidebar-themes .sidebar-titre {
   color: var(--text-muted);
   font-family: var(--font-sans);
   font-size: 11px;
-  font-weight: 700;
+  font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
   padding: 6px 12px 10px;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 6px;
 }
 .sidebar-themes .theme-item {
   background: transparent;
   border: none;
-  border-left: 3px solid transparent;
-  border-radius: var(--radius-sm);
+  border-left: 2px solid transparent;
+  border-radius: 0;
   color: var(--text-secondary);
   font-family: var(--font-sans);
   font-size: 13px;
-  font-weight: 500;
+  font-weight: 400;
   padding: 8px 12px;
   cursor: pointer;
   transition: all 0.15s ease;
@@ -851,10 +854,10 @@ input::placeholder, textarea::placeholder {
   color: var(--text);
 }
 .sidebar-themes .theme-item.active {
-  background: var(--bg-active);
+  background: var(--bg-hover);
   border-left-color: var(--text);
   color: var(--text);
-  font-weight: 700;
+  font-weight: 500;
 }
 .sidebar-themes .theme-item .compteur {
   color: var(--text-muted);
@@ -863,16 +866,16 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   FEUILLE TEXTE
+   FEUILLE TEXTE — plate
    ============================================================ */
 .feuille-texte {
   background: var(--bg-paper);
   color: var(--text);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
   font-family: Georgia, 'Times New Roman', Times, serif;
   padding: 32px 36px;
-  box-shadow: 5px 5px 0 var(--bg-active);
+  box-shadow: none;
 }
 
 .feuille-texte .arabe,
@@ -895,20 +898,20 @@ input::placeholder, textarea::placeholder {
   border: 1px dashed var(--border-hover);
   color: var(--text-muted);
   background: var(--bg-hover);
-  border-radius: var(--radius-sm);
+  border-radius: 0;
 }
 
 .feuille-texte .exercices-zone {
-  border-top: 2px solid var(--text);
+  border-top: 1px solid var(--border);
   margin-top: 28px;
   padding-top: 24px;
 }
 
 .feuille-texte .exo {
   background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
-  border-left: 4px solid var(--text);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
+  border-radius: 0;
   padding: 14px 16px;
   margin-bottom: 14px;
 }
@@ -916,14 +919,14 @@ input::placeholder, textarea::placeholder {
 .feuille-texte .consigne-exo {
   color: var(--text);
   background: var(--bg-active);
-  border-left: 4px solid var(--text);
-  border-radius: var(--radius-sm);
+  border-left: 2px solid var(--text);
+  border-radius: 0;
   padding: 5px 14px;
   font-size: 0.82em;
   letter-spacing: 0.8px;
   margin-bottom: 10px;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: 600;
 }
 .feuille-texte .consigne-exo::before {
   content: "◆ ";
@@ -946,7 +949,7 @@ input::placeholder, textarea::placeholder {
 }
 
 .feuille-texte .quiz-rep {
-  border-radius: var(--radius-sm);
+  border-radius: 0;
   padding: 6px 10px;
   color: var(--text);
 }
@@ -955,20 +958,20 @@ input::placeholder, textarea::placeholder {
 }
 .feuille-texte .quiz-rep.correct {
   background: var(--bg-active);
-  border-left: 4px solid var(--text);
+  border-left: 2px solid var(--text);
   padding-left: 10px;
 }
 .feuille-texte .quiz-rep.incorrect {
   background: var(--bg-hover);
-  border-left: 4px solid var(--border-hover);
+  border-left: 2px solid var(--border-hover);
   padding-left: 10px;
   text-decoration: none;
   opacity: 0.9;
 }
 .feuille-texte .quiz-case {
-  border: 2px solid var(--border-strong);
+  border: 1px solid var(--border-hover);
   background: var(--bg-paper);
-  border-radius: 3px;
+  border-radius: 0;
 }
 .feuille-texte .quiz-rep.correct .quiz-case,
 .feuille-texte .quiz-rep.revelee .quiz-case {
@@ -988,7 +991,7 @@ input::placeholder, textarea::placeholder {
 .feuille-texte .tt-input {
   background: transparent;
   border: none;
-  border-bottom: 2px solid var(--text);
+  border-bottom: 1px solid var(--text);
   border-radius: 0;
   color: var(--text);
   padding: 2px 6px;
@@ -996,7 +999,7 @@ input::placeholder, textarea::placeholder {
 .feuille-texte .tt-input.tt-ok {
   border-bottom-color: var(--text);
   color: var(--text);
-  font-weight: 700;
+  font-weight: 600;
 }
 .feuille-texte .tt-input.tt-ko {
   border-bottom-color: var(--border-hover);
@@ -1004,23 +1007,23 @@ input::placeholder, textarea::placeholder {
 }
 
 .feuille-texte .vf-btn {
-  background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  box-shadow: 2px 2px 0 var(--border-strong);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 .feuille-texte .vf-btn:hover:not(:disabled) {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 var(--border-hover);
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--border-hover);
+  transform: none;
+  box-shadow: none;
 }
 .feuille-texte .vf-btn.vf-ok {
-  background: var(--text);
-  border-color: var(--text);
-  color: var(--bg);
+  background: var(--bg-active);
+  border-color: var(--border-hover);
+  color: var(--text);
 }
 .feuille-texte .vf-btn.vf-ko {
   background: var(--bg-hover);
@@ -1029,48 +1032,49 @@ input::placeholder, textarea::placeholder {
 }
 
 .feuille-texte .carte-btn-voir {
-  background: var(--bg-hover);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  box-shadow: 2px 2px 0 var(--border-strong);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 .feuille-texte .carte-btn-voir:hover {
-  background: var(--text);
-  color: var(--bg);
-  transform: translate(1px, 1px);
-  box-shadow: 1px 1px 0 var(--border-hover);
+  background: var(--bg-hover);
+  color: var(--text);
+  border-color: var(--border-hover);
+  transform: none;
+  box-shadow: none;
 }
 .feuille-texte .carte-reponse-cachee {
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
-  border-left: 4px solid var(--text);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
+  border-radius: 0;
   color: var(--text);
   padding: 10px 14px;
 }
 .feuille-texte .carte-choix button {
-  background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  box-shadow: 2px 2px 0 var(--border-strong);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 .feuille-texte .carte-choix button.actif {
-  background: var(--text);
-  color: var(--bg);
-  border-color: var(--text);
+  background: var(--bg-active);
+  color: var(--text);
+  border-color: var(--border-hover);
 }
 
 .feuille-texte .relier-item .point {
-  border: 2px solid var(--border-strong);
+  border: 1px solid var(--border-hover);
   background: var(--bg-paper);
   border-radius: 50%;
 }
 .feuille-texte .relier-item.selectionne .point {
   background: var(--text);
   border-color: var(--text);
-  transform: scale(1.4);
+  transform: scale(1.2);
 }
 .feuille-texte .relier-item.erreur .point {
   border-color: var(--text);
@@ -1082,8 +1086,8 @@ input::placeholder, textarea::placeholder {
 
 .feuille-texte .ordre-item {
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
   transition: all 0.18s ease;
 }
 .feuille-texte .ordre-item:hover {
@@ -1108,43 +1112,43 @@ input::placeholder, textarea::placeholder {
 }
 
 .feuille-texte .copier-btn {
-  background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-sm);
-  color: var(--text);
-  box-shadow: 2px 2px 0 var(--border-strong);
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 0;
+  color: var(--text-secondary);
+  box-shadow: none;
 }
 .feuille-texte .copier-btn.actif {
-  background: var(--text);
-  border-color: var(--text);
-  color: var(--bg);
+  background: var(--bg-active);
+  border-color: var(--border-hover);
+  color: var(--text);
 }
 .feuille-texte .copier-mots {
   color: var(--text);
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
 }
 .feuille-texte .copier-mots::after {
-  background: var(--border-strong);
+  background: var(--border-hover);
 }
 .feuille-texte .copier-ligne-pointillee {
   border-bottom: 1px dotted var(--border-hover);
 }
 
 /* ============================================================
-   À RETENIR
+   À RETENIR — plate
    ============================================================ */
 .bloc-a-retenir {
   background: var(--bg-hover);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
   padding: 24px 28px;
   margin-top: 32px;
-  box-shadow: 5px 5px 0 var(--border-strong);
+  box-shadow: none;
 }
 .bloc-a-retenir .bloc-a-retenir-titre {
   background: var(--bg-paper);
-  border: 1px solid var(--text);
-  border-left: 6px solid var(--text);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
   color: var(--text);
   margin-bottom: 16px;
 }
@@ -1172,20 +1176,20 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   NOTE GLOBALE
+   NOTE GLOBALE — plate
    ============================================================ */
 .bloc-note-globale {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
   padding: 28px 32px;
   margin-top: 36px;
-  box-shadow: 5px 5px 0 var(--border-strong);
+  box-shadow: none;
 }
 .bloc-note-globale .note-titre {
   background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
-  border-left: 6px solid var(--text);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
   color: var(--text);
   margin-bottom: 18px;
 }
@@ -1194,7 +1198,7 @@ input::placeholder, textarea::placeholder {
   justify-content: space-between;
   align-items: baseline;
   padding: 8px 0;
-  border-bottom: 1px dashed var(--border-strong);
+  border-bottom: 1px dashed var(--border-hover);
   font-family: var(--font-sans);
   color: var(--text-secondary);
 }
@@ -1210,7 +1214,7 @@ input::placeholder, textarea::placeholder {
   justify-content: space-between;
   padding: 14px 0 6px;
   margin-top: 10px;
-  border-top: 3px solid var(--text);
+  border-top: 2px solid var(--text);
   font-family: var(--font-serif);
   font-weight: 700;
   color: var(--text);
@@ -1223,7 +1227,7 @@ input::placeholder, textarea::placeholder {
   flex-wrap: wrap;
   margin-top: 22px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
 }
 .bloc-note-globale .envoi-statut {
   margin-top: 12px;
@@ -1236,26 +1240,26 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   POPUP RÉSULTAT
+   POPUP RÉSULTAT — plate
    ============================================================ */
 .popup-resultat-overlay {
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.2);
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
 }
 .popup-resultat {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-hover);
+  border-radius: 0;
   padding: 36px 40px 30px;
   font-family: var(--font-serif);
   color: var(--text);
-  box-shadow: 8px 8px 0 var(--border-strong) !important;
+  box-shadow: none !important;
 }
 .popup-resultat .popup-titre {
   background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
-  border-left: 6px solid var(--text);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
   color: var(--text);
   margin-bottom: 22px;
   text-align: center;
@@ -1265,7 +1269,7 @@ input::placeholder, textarea::placeholder {
   justify-content: space-between;
   align-items: baseline;
   padding: 8px 0;
-  border-bottom: 1px dashed var(--border-strong);
+  border-bottom: 1px dashed var(--border-hover);
   font-family: var(--font-sans);
   color: var(--text-secondary);
 }
@@ -1281,7 +1285,7 @@ input::placeholder, textarea::placeholder {
   justify-content: space-between;
   padding: 14px 0 6px;
   margin-top: 10px;
-  border-top: 3px solid var(--text);
+  border-top: 2px solid var(--text);
   font-family: var(--font-serif);
   font-weight: 700;
   color: var(--text);
@@ -1290,12 +1294,12 @@ input::placeholder, textarea::placeholder {
 .popup-resultat .popup-questions-zone {
   margin-top: 26px;
   padding-top: 22px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
 }
 .popup-resultat .popup-questions-titre {
   background: var(--bg-hover);
-  border: 1px solid var(--border-strong);
-  border-left: 5px solid var(--text);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--text);
   color: var(--text);
   text-align: center;
   margin-bottom: 16px;
@@ -1320,7 +1324,7 @@ input::placeholder, textarea::placeholder {
 .popup-resultat .popup-actions {
   margin-top: 26px;
   padding-top: 20px;
-  border-top: 1px solid var(--border-strong);
+  border-top: 1px solid var(--border);
 }
 .popup-resultat .popup-envoi-statut {
   margin-top: 10px;
@@ -1333,14 +1337,14 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   PROGRAMME
+   PROGRAMME — plate
    ============================================================ */
 .tableau-wrapper {
   overflow-x: auto;
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+  border-radius: 0;
   background: var(--bg-paper);
-  box-shadow: 5px 5px 0 var(--bg-active);
+  box-shadow: none;
 }
 .tableau-programme {
   width: 100%;
@@ -1350,13 +1354,13 @@ input::placeholder, textarea::placeholder {
 }
 .tableau-programme th,
 .tableau-programme td {
-  border: 1px solid var(--border-strong);
+  border: 1px solid var(--border);
   vertical-align: top;
   padding: 0;
 }
 .tableau-programme thead th {
-  background: var(--text);
-  color: var(--bg);
+  background: var(--bg-hover);
+  color: var(--text);
   font-family: var(--font-serif);
   font-weight: 700;
   text-align: center;
@@ -1368,8 +1372,8 @@ input::placeholder, textarea::placeholder {
 }
 .tableau-programme thead th.coin {
   text-align: left;
-  background: var(--text);
-  color: var(--bg);
+  background: var(--bg-active);
+  color: var(--text);
   min-width: 160px;
 }
 .tableau-programme tbody th.theme-cell {
@@ -1383,7 +1387,7 @@ input::placeholder, textarea::placeholder {
   left: 0;
   z-index: 1;
   min-width: 160px;
-  border-right: 2px solid var(--text);
+  border-right: 1px solid var(--border-hover);
 }
 .tableau-programme tbody th.theme-cell .theme-compteur {
   color: var(--text-muted);
@@ -1404,8 +1408,8 @@ input::placeholder, textarea::placeholder {
 
 .bloc-categorie-cell {
   background: var(--bg-paper);
-  border: 1px solid var(--border-strong);
-  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  border-radius: 0;
   overflow: hidden;
   margin-bottom: 12px;
 }
@@ -1420,7 +1424,7 @@ input::placeholder, textarea::placeholder {
   background: var(--bg-hover);
   color: var(--text);
   text-decoration: none;
-  border-bottom: 1px solid var(--border-strong);
+  border-bottom: 1px solid var(--border);
   transition: background 0.18s ease;
 }
 .bloc-categorie-cell .entete-categorie-cell:hover {
@@ -1428,9 +1432,9 @@ input::placeholder, textarea::placeholder {
 }
 .bloc-categorie-cell .barre-couleur {
   flex-shrink: 0;
-  width: 4px;
+  width: 3px;
   height: 22px;
-  border-radius: 2px;
+  border-radius: 0;
   background: var(--text);
 }
 .bloc-categorie-cell .compteur-textes {
@@ -1465,25 +1469,25 @@ input::placeholder, textarea::placeholder {
 }
 .bloc-categorie-cell .liste-textes-cell a::before {
   content: "▸";
-  color: var(--text);
+  color: var(--text-muted);
   font-size: 10px;
   flex-shrink: 0;
 }
 
 /* ============================================================
-   PRÉSENTATION
+   PRÉSENTATION — plates
    ============================================================ */
 .presentation-card {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
-  transition: all 0.25s ease;
-  box-shadow: 4px 4px 0 var(--bg-active);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  transition: border-color 0.2s ease;
+  box-shadow: none;
 }
 .presentation-card:hover {
-  border-color: var(--text);
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--border-strong);
+  border-color: var(--border-hover);
+  transform: none;
+  box-shadow: none;
 }
 .presentation-card .presentation-icon {
   color: var(--text);
@@ -1496,15 +1500,15 @@ input::placeholder, textarea::placeholder {
 }
 .methode-card {
   background: var(--bg-paper);
-  border: 2px solid var(--text);
-  border-radius: var(--radius-md);
-  transition: all 0.25s ease;
-  box-shadow: 4px 4px 0 var(--bg-active);
+  border: 1px solid var(--border);
+  border-radius: 0;
+  transition: border-color 0.2s ease;
+  box-shadow: none;
 }
 .methode-card:hover {
-  border-color: var(--text);
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--border-strong);
+  border-color: var(--border-hover);
+  transform: none;
+  box-shadow: none;
 }
 .methode-card .methode-num {
   color: var(--text-secondary);
@@ -1518,7 +1522,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   THÈME (page)
+   THÈME (page) — plate
    ============================================================ */
 .description-theme .pre-requis {
   color: var(--text-secondary);
@@ -1533,7 +1537,7 @@ input::placeholder, textarea::placeholder {
 .stats-theme {
   background: var(--bg-hover);
   border: 1px solid var(--border);
-  border-radius: var(--radius-md);
+  border-radius: 0;
   padding: 12px 18px;
 }
 .stats-theme .stat-item {
@@ -1563,14 +1567,14 @@ input::placeholder, textarea::placeholder {
    ============================================================ */
 .vide, .vide-texte, .vide-themes, .vide-textes, .vide-global {
   background: var(--bg-hover);
-  border: 2px dashed var(--border-strong);
-  border-radius: var(--radius-md);
+  border: 1px dashed var(--border-hover);
+  border-radius: 0;
   text-align: center;
   padding: 60px 20px;
 }
 .vide .icone, .vide-texte .icone, .vide-themes .icone,
 .vide-textes .icone, .vide-global .icone {
-  color: var(--text);
+  color: var(--text-secondary);
 }
 .vide h2, .vide-texte h2, .vide-themes h2,
 .vide-textes h4, .vide-global h2 {
@@ -1585,7 +1589,7 @@ input::placeholder, textarea::placeholder {
   color: var(--text-secondary);
 }
 .spinner {
-  border: 3px solid var(--border-strong);
+  border: 2px solid var(--border);
   border-top-color: var(--text);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
@@ -1595,7 +1599,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   TABLEAUX ARRONDIS
+   TABLEAUX ARRONDIS → plats
    ============================================================ */
 .tableau-slide {
   width: 100%;
@@ -1607,7 +1611,7 @@ input::placeholder, textarea::placeholder {
   background: var(--bg-hover);
   padding: 16px 20px;
   text-align: center;
-  border-radius: var(--radius-md);
+  border-radius: 0;
   border: 1px solid var(--border);
 }
 
@@ -1698,8 +1702,8 @@ input::placeholder, textarea::placeholder {
   .carte-couverture .edition-date { font-size: 7px; }
 
   .carte-couverture .badge-niveau {
-    font-size: 9px;
-    letter-spacing: 0.8px;
+    font-size: 8px;
+    letter-spacing: 0.6px;
     padding: 10px 4px;
   }
 
@@ -1741,7 +1745,7 @@ input::placeholder, textarea::placeholder {
     flex-direction: row;
     overflow-x: auto;
     padding: 4px;
-    border-radius: var(--radius-md);
+    border-radius: 0;
   }
   .sidebar-themes .sidebar-titre { display: none; }
   .sidebar-themes .theme-item {
@@ -1749,7 +1753,7 @@ input::placeholder, textarea::placeholder {
     white-space: nowrap;
     padding: 8px 14px;
     border-left: none;
-    border-bottom: 3px solid transparent;
+    border-bottom: 2px solid transparent;
   }
   .sidebar-themes .theme-item.active {
     border-left: none;
@@ -1804,14 +1808,14 @@ input::placeholder, textarea::placeholder {
     gap: 10px;
   }
   .carte-couverture .badge-niveau {
-    font-size: 8px;
-    letter-spacing: 0.5px;
+    font-size: 7px;
+    letter-spacing: 0.4px;
     padding: 8px 3px;
   }
 }
 
 /* ============================================================
-   FORCER LES MÊMES PROPORTIONS DANS LES GRILLES DE COUVERTURES
+   GRILLES DE COUVERTURES — proportions conservées
    ============================================================ */
 .grille-couvertures {
   display: grid !important;
@@ -1829,7 +1833,7 @@ input::placeholder, textarea::placeholder {
 }
 
 /* ============================================================
-   IMAGE DE COUVERTURE — cercle unique, monochrome
+   IMAGE DE COUVERTURE — cercle, COULEURS CONSERVÉES
    ============================================================ */
 .carte-couverture .couverture-image {
   display: flex !important;
@@ -1842,8 +1846,8 @@ input::placeholder, textarea::placeholder {
   max-width: 100px !important;
   max-height: 100px !important;
   border-radius: 50% !important;
-  border: 3px solid #ffffff !important;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15) !important;
+  border: 1px solid var(--border) !important;   /* ← filet fin, plus 3px blanc */
+  box-shadow: none !important;                   /* ← plus d'ombre */
   margin: 45px auto 30px auto !important;
   padding: 0 !important;
   overflow: hidden !important;
@@ -1867,7 +1871,7 @@ input::placeholder, textarea::placeholder {
   box-sizing: border-box !important;
   margin: 0 !important;
   padding: 0 !important;
-  filter: grayscale(1) contrast(1.05) !important;
+  filter: none !important;        /* ← COULEURS D'ORIGINE CONSERVÉES */
 }
 
 @media (max-width: 768px) {
@@ -1878,7 +1882,6 @@ input::placeholder, textarea::placeholder {
     min-height: 60px !important;
     max-width: 60px !important;
     max-height: 60px !important;
-    border-width: 2.5px !important;
     margin-top: 40px !important;
   }
 }
@@ -1891,7 +1894,6 @@ input::placeholder, textarea::placeholder {
     min-height: 50px !important;
     max-width: 50px !important;
     max-height: 50px !important;
-    border-width: 2px !important;
     margin-top: 30px !important;
   }
 }
