@@ -1001,17 +1001,22 @@
       var zoneQuestions = document.getElementById('popupQuestionsZone');
       var zoneSansQuestions = document.getElementById('popupActionsSansQuestions');
 
-      if (pct >= 60 && questionsOuvertes.length > 0) {
+      if (pct >= 60) {
         zoneQuestions.style.display = 'block';
         zoneSansQuestions.style.display = 'none';
         var listeHtml = '';
-        document.getElementById('popupBtnEnvoyerQuestions').style.display = 'inline-block';
-        questionsOuvertes.forEach(function(q, i) {
-          listeHtml += '<div class="popup-question-bloc">';
-          listeHtml += '<div class="popup-question-label">Question ' + (i + 1) + '. ' + q.texte + '</div>';
-          listeHtml += '<textarea class="popup-question-textarea" id="popupQuestionRep-' + i + '" placeholder="Écrivez votre réponse ici..." oninput="majReponseQuestion(' + i + ', this.value)"></textarea>';
-          listeHtml += '</div>';
-        });
+        if (questionsOuvertes.length === 0) {
+          listeHtml = '<div class="popup-questions-aucune">Aucune question pour le moment.</div>';
+          document.getElementById('popupBtnEnvoyerQuestions').style.display = 'none';
+        } else {
+          document.getElementById('popupBtnEnvoyerQuestions').style.display = 'inline-block';
+          questionsOuvertes.forEach(function(q, i) {
+            listeHtml += '<div class="popup-question-bloc">';
+            listeHtml += '<div class="popup-question-label">Question ' + (i + 1) + '. ' + q.texte + '</div>';
+            listeHtml += '<textarea class="popup-question-textarea" id="popupQuestionRep-' + i + '" placeholder="Écrivez votre réponse ici..." oninput="majReponseQuestion(' + i + ', this.value)"></textarea>';
+            listeHtml += '</div>';
+          });
+        }
         document.getElementById('popupQuestionsListe').innerHTML = listeHtml;
       } else {
         zoneQuestions.style.display = 'none';
@@ -1485,6 +1490,7 @@
 
       if (texte.categorie) {
         var couleur = themeInfo.couleur || '#2d6a4f';
+        var sousTitre = themeInfo.sousTitre || '';
         var auteurTheme = themeInfo.auteur || '';
         var dateTheme = themeInfo.date || '';
         var couvertureTheme = themeInfo.couverture || '';
@@ -1495,7 +1501,7 @@
         html += construireCarteCouverture({
           titre: texte.categorie,
           couleur: couleur,
-          sousTitre: '',
+          sousTitre: sousTitre,
           auteur: auteurTheme,
           date: dateTheme,
           niveau: niveau,
@@ -1508,7 +1514,7 @@
 
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">🕮</span> Les sujets dans ce thème <span class="compteur">(' + nav.liste.length + ')</span></div>';
+        html += '  <div class="bloc-titre"><span class="icone">🕮</span> Les sujets dans ce thème<span class="compteur">' + nav.liste.length + '</span></div>';
         html += '  <div class="liste-textes">';
         nav.liste.forEach(function(c) {
           var estActuel = String(c.id) === String(texte.id);
