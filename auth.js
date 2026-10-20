@@ -7,7 +7,7 @@ window.deconnecter = function() {
     localStorage.removeItem('etudiant_id');
     localStorage.removeItem('etudiant_nom');
     localStorage.removeItem('etudiant_niveau');
-    window.location.href = '/index.html';
+    window.location.href = '/medit/index.html';
   }
 };
 
