@@ -31,7 +31,7 @@
     var cliquable   = options.cliquable !== false;
     var showImage   = options.showImage !== false;
 
-    var lien = options.lien || ('/medit/thème.html?cat=' + encodeURIComponent(titre));
+    var lien = options.lien || ('/thème.html?cat=' + encodeURIComponent(titre));
 
     var tag = (estActuel || !cliquable) ? 'div' : 'a';
     var attrs = '';
