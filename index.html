@@ -97,7 +97,14 @@
         </a>
       </div>
 
+      <!-- ✅ AJOUT : accès libre aux textes pour les non-connectés -->
+      <div style="margin-top:10px;font-size:14px;color:#94a3b8;">
+        <a onclick="explorerSansCompte()" style="color:#2d6a4f;font-weight:500;cursor:pointer;text-decoration:underline;">
+          Explorer les textes sans compte
+        </a>
+      </div>
 
+    </div>
 
   </div>
 
@@ -364,6 +371,9 @@
             localStorage.setItem('etudiant_id', etudiantId);
             localStorage.setItem('etudiant_niveau', data.niveau || 0);
 
+            // ✅ On supprime la session invitée puisqu'on devient un vrai compte
+            try { localStorage.removeItem('qiraat_session_invite'); } catch(e) {}
+
             msg.textContent = '✓ Connecté';
             msg.className = 'message success';
 
@@ -371,7 +381,7 @@
             fetch(urlComplet)
               .then(function(r) { return r.json(); })
               .then(function(d) {
-                if (d.success) {
+                if (d.success && DataManager.setCache) {
                   DataManager.setCache(etudiantId, d);
                   console.log('✅ Données préchargées pour', etudiantId);
                 }
@@ -471,11 +481,29 @@
       }
     }
 
+    // ===== ✅ ACCÈS LIBRE SANS COMPTE =====
+    function explorerSansCompte() {
+      // Crée une session invitée persistante si absente
+      // (fonction définie dans data-manager.js)
+      if (typeof getSessionInvite === 'function') {
+        getSessionInvite();
+      } else {
+        // Fallback si data-manager.js n'est pas encore chargé
+        var sid = localStorage.getItem('qiraat_session_invite');
+        if (!sid) {
+          sid = 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+          localStorage.setItem('qiraat_session_invite', sid);
+        }
+      }
+      window.location.href = '/medit/chapitres.html';
+    }
+
     // ===== INIT =====
     function demarrer() {
       var id = localStorage.getItem('etudiant_id');
       if (id) {
         window.location.href = '/medit/présentation.html';
+        return;
       }
       chargerDisciplinesEtNiveaux();
     }
