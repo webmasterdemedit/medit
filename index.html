@@ -52,8 +52,52 @@
       font-family: var(--font-sans);
       font-size: 14px;
       color: var(--text-muted);
-      margin: 0 auto 32px;
+      margin: 0 auto 28px;
       max-width: 600px;
+    }
+
+    /* ===== FORMATS (e-learning / papier) ===== */
+    .accueil-formats {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+      margin: 0 auto 32px;
+      flex-wrap: wrap;
+    }
+
+    .accueil-format {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 130px;
+      height: 100px;
+      padding: 14px;
+      background: var(--bg-paper);
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+      transition: border-color 0.15s ease, background 0.15s ease;
+    }
+
+    .accueil-format:hover {
+      border-color: var(--border-hover);
+      background: var(--bg-hover);
+    }
+
+    .accueil-format-emoji {
+      font-size: 28px;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .accueil-format-label {
+      font-family: var(--font-sans);
+      font-size: 12px;
+      font-weight: 500;
+      letter-spacing: 1.2px;
+      text-transform: uppercase;
+      color: var(--text-secondary);
     }
 
     .accueil-hero .accueil-actions {
@@ -266,6 +310,8 @@
       .accueil-hero { padding: 40px 16px 36px; margin-bottom: 36px; }
       .accueil-hero .accueil-titre { font-size: 44px; letter-spacing: 2px; }
       .accueil-hero .accueil-sous-titre { font-size: 16px; }
+      .accueil-format { width: 110px; height: 90px; }
+      .accueil-format-emoji { font-size: 24px; }
       .accueil-btn-principal,
       .accueil-btn-secondaire { padding: 12px 24px; font-size: 14px; width: 100%; max-width: 300px; }
       .accueil-actions { flex-direction: column; align-items: center; }
@@ -311,8 +357,21 @@
         Une collection complète de textes pour apprendre l'Islam et la langue arabe.
       </p>
       <p class="accueil-desc">
-        Textes et exercices interactifs disponible en ligne ainsi que la version papier.
+        Textes et exercices interactifs disponibles en ligne ainsi que la version papier.
       </p>
+
+      <!-- Formats disponibles -->
+      <div class="accueil-formats">
+        <div class="accueil-format">
+          <span class="accueil-format-emoji">🖥️</span>
+          <span class="accueil-format-label">E-learning</span>
+        </div>
+        <div class="accueil-format">
+          <span class="accueil-format-emoji">⎙</span>
+          <span class="accueil-format-label">Papier</span>
+        </div>
+      </div>
+
       <div class="accueil-actions">
         <a href="/medit/les-textes.html" class="accueil-btn-principal">Explorer les textes</a>
         <button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>
@@ -762,7 +821,6 @@
     function afficherDerniersTextes(textes) {
       var container = document.getElementById('accueilDerniersTextes');
 
-      // Trier par date DESC, ne garder que les 3 plus récents
       var recents = textes.slice().sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
@@ -809,7 +867,6 @@
         return;
       }
 
-      // Prendre les 4 premiers thèmes (ou moins)
       var selection = themes.slice(0, 4);
 
       var html = '';
@@ -837,7 +894,6 @@
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
-      // Pas de redirection pour les connectés : tout le monde reste sur l'accueil
       chargerDisciplinesEtNiveaux();
       chargerAccueil();
     }
