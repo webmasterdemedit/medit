@@ -1,4 +1,3 @@
-// ============================================================
 // data-manager.js
 // - Navigation normale  → cache
 // - Reload (F5 / Ctrl+R / Ctrl+Shift+R) → Sheet
