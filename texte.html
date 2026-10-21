@@ -1041,7 +1041,10 @@
       var statut = document.getElementById('popupEnvoiStatut');
       if (!btn || !statut) return;
 
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      // ✅ MODIFIÉ : getIdUtilisateur() au lieu de 'anonyme'
+      var nom = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'anonyme');
       var texteId = texteActuel ? texteActuel.id : '';
 
       var toutesReponses = [];
@@ -1078,7 +1081,10 @@
     }
 
     function envoyerToutesReponses(silencieux) {
-      var nom = localStorage.getItem('etudiant_id') || 'anonyme';
+      // ✅ MODIFIÉ : getIdUtilisateur() au lieu de 'anonyme'
+      var nom = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'anonyme');
       var texteId = texteActuel ? texteActuel.id : '';
       var titre = texteActuel ? texteActuel.titre : '';
       var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
@@ -1543,12 +1549,15 @@
       return html;
     }
 
+    // ============================================================
+    // ✅ CHARGEMENT DU TEXTE (CORRIGÉ : plus de verrou invité)
+    // ============================================================
     function chargerTexte() {
       var params = new URLSearchParams(window.location.search);
       var texteId = params.get('id');
       if (!texteId) { afficherErreur('Aucun texte spécifié.'); return; }
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) { window.location.href = '/medit/index.html'; return; }
+
+      // ✅ Plus de redirection : invité OU connecté, on continue
 
       DataManager.charger()
         .then(function(data) {
@@ -1568,15 +1577,41 @@
               };
             });
           }
+
           texteActuel = trouverTexte(texteId, textesData);
-          if (!texteActuel) { afficherErreur('Texte introuvable.'); return; }
-          if (texteActuel.categorie && typeof chargerImagesTheme === 'function') {
-            chargerImagesTheme(texteActuel.categorie)
-              .then(function(images) { imagesTheme = images || {}; afficherTexte(texteActuel); })
-              .catch(function() { imagesTheme = {}; afficherTexte(texteActuel); });
-          } else afficherTexte(texteActuel);
+
+          // ✅ Si le texte n'a pas de contenu (cas invité), on le récupère
+          if (!texteActuel || !texteActuel.contenu) {
+            return DataManager.getTexteAsync(texteId).then(function(texteComplet) {
+              texteActuel = texteComplet;
+              var dejaPresent = false;
+              for (var i = 0; i < textesData.length; i++) {
+                if (String(textesData[i].id) === String(texteComplet.id)) {
+                  textesData[i] = Object.assign({}, textesData[i], texteComplet);
+                  texteActuel = textesData[i];
+                  dejaPresent = true;
+                  break;
+                }
+              }
+              if (!dejaPresent) textesData.push(texteComplet);
+              return texteActuel;
+            });
+          }
+          return texteActuel;
         })
-        .catch(function() { afficherErreur('Erreur de chargement.'); });
+        .then(function(texte) {
+          if (!texte) { afficherErreur('Texte introuvable.'); return; }
+          texteActuel = texte;
+          if (texte.categorie && typeof chargerImagesTheme === 'function') {
+            chargerImagesTheme(texte.categorie)
+              .then(function(images) { imagesTheme = images || {}; afficherTexte(texte); })
+              .catch(function() { imagesTheme = {}; afficherTexte(texte); });
+          } else afficherTexte(texte);
+        })
+        .catch(function(err) {
+          console.error(err);
+          afficherErreur('Erreur de chargement.');
+        });
     }
 
     function afficherTexte(texte) {
