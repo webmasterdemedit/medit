@@ -93,8 +93,10 @@
     }
 
     function chargerProgramme() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) { window.location.href = '/medit/index.html'; return; }
+      // ✅ Plus de redirection : visiteur ou connecté, on continue
+      var id = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'invite');
 
       DataManager.charger()
         .then(function(data) {
