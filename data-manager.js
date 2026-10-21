@@ -3,13 +3,15 @@
 // - Navigation normale  → cache
 // - Reload (F5 / Ctrl+R / Ctrl+Shift+R) → Sheet
 // - Images → cache conservé
+// - MODE INVITÉ : accès aux textes + quiz sans compte
 // ============================================================
 
 // Clés de cache
-var CLE_CACHE      = 'qiraat_data_v1';
-var CLE_TIMESTAMP  = 'qiraat_data_ts';
-var CLE_NOM        = 'qiraat_data_nom';
-var CLE_IMAGES     = 'qiraat_images_v2_'; // ← v2 : les anciens caches v1 sont ignorés
+var CLE_CACHE          = 'qiraat_data_v1';
+var CLE_TIMESTAMP      = 'qiraat_data_ts';
+var CLE_NOM            = 'qiraat_data_nom';
+var CLE_IMAGES         = 'qiraat_images_v2_'; // ← v2 : les anciens caches v1 sont ignorés
+var CLE_SESSION_INVITE = 'qiraat_session_invite';
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
 var PERF_NAV = (performance.getEntriesByType && performance.getEntriesByType('navigation')[0]) || performance.navigation || {};
@@ -19,16 +21,40 @@ if (EST_RELOAD) {
     try { localStorage.setItem(CLE_TIMESTAMP, '0'); } catch(e) {}
 }
 
+// ============================================================
+// MODE INVITÉ : identifiant persistant pour les non-connectés
+// ============================================================
+function genererSessionInvite() {
+    return 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+}
+
+function getSessionInvite() {
+    var sid = localStorage.getItem(CLE_SESSION_INVITE);
+    if (!sid) {
+        sid = genererSessionInvite();
+        localStorage.setItem(CLE_SESSION_INVITE, sid);
+    }
+    return sid;
+}
+
+// Retourne l'identifiant à utiliser pour TOUTE action (chargement ou sauvegarde)
+// - connecté → etudiant_id
+// - invité   → session invite
+function getIdUtilisateur() {
+    return localStorage.getItem('etudiant_id') || getSessionInvite();
+}
+
+function estConnecte() {
+    return !!localStorage.getItem('etudiant_id');
+}
+
 var DataManager = {
 
     // ============================================================
     // CHARGER
     // ============================================================
     charger: function(forceRefresh) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) {
-            return Promise.reject('Non connecté');
-        }
+        var id = getIdUtilisateur();   // ← ne rejette plus jamais
 
         if (EST_RELOAD || forceRefresh) {
             console.log('🔄 Reload détecté → chargement depuis le Sheet');
@@ -56,8 +82,14 @@ var DataManager = {
     // APPEL API SHEET
     // ============================================================
     _fetchDepuisSheet: function(id) {
-        var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
         var self = this;
+
+        // Si invité → actions publiques (pas de compte requis)
+        if (!estConnecte()) {
+            return this._fetchInvite();
+        }
+
+        var url = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(id);
 
         return fetch(url)
             .then(function(r) { return r.json(); })
@@ -96,6 +128,68 @@ var DataManager = {
                 console.error('❌ Erreur:', error);
                 throw error;
             });
+    },
+
+    // ============================================================
+    // CHARGEMENT PUBLIC (invités) : textes + thèmes, sans niveau
+    // ============================================================
+    _fetchInvite: function() {
+        var self = this;
+        var urlTextes = CONFIG.SCRIPT_URL + '?action=getTextesTous';
+        var urlThemes = CONFIG.SCRIPT_URL + '?action=getThemes';
+
+        return Promise.all([
+            fetch(urlTextes).then(function(r) { return r.json(); }),
+            fetch(urlThemes).then(function(r) { return r.json(); })
+        ]).then(function(results) {
+            var textesData = results[0];
+            var themesData = results[1];
+
+            var textes = (textesData.textes || []);
+
+            // Invité : on affiche TOUS les textes (pas de filtre par niveau)
+            var data = {
+                niveau: 999,                 // → tous les textes visibles
+                description: '',
+                mdp: '',
+                contact: '',
+                dateInscription: '',
+                messagePerso: '',
+                disciplines: '',
+                themes: themesData.themes || [],
+                textes: textes,
+                tousLesTextes: textes,
+                textesComplets: {},          // chargés à la demande via getTexteAsync
+                reponses: [],
+                historique: []
+            };
+
+            self._dernierChargement = data;
+            self._dernierNom = getIdUtilisateur();
+            // Pas de cache localStorage pour les invités (identité volatile)
+            return data;
+        });
+    },
+
+    // ============================================================
+    // GETTER ASYNCHRONE d'un texte complet (utile aux invités)
+    // ============================================================
+    getTexteAsync: function(texteId) {
+        if (this._dernierChargement && this._dernierChargement.textesComplets &&
+            this._dernierChargement.textesComplets[texteId]) {
+            return Promise.resolve(this._dernierChargement.textesComplets[texteId]);
+        }
+        var url = CONFIG.SCRIPT_URL + '?action=getTexte&id=' + encodeURIComponent(texteId);
+        var self = this;
+        return fetch(url).then(function(r) { return r.json(); }).then(function(data) {
+            if (data.success && data.texte) {
+                if (self._dernierChargement) {
+                    self._dernierChargement.textesComplets[texteId] = data.texte;
+                }
+                return data.texte;
+            }
+            throw new Error(data.message || 'Texte introuvable');
+        });
     },
 
     // ============================================================
@@ -230,11 +324,10 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDES
+    // SAUVEGARDES  (invité ou connecté : toujours envoyé)
     // ============================================================
     sauvegarderOrdre: function(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
             '&nom=' + encodeURIComponent(id) +
@@ -253,8 +346,7 @@ var DataManager = {
     },
 
     sauvegarderCarte: function(texteId, titre, cartes, bonnes, total, tempsPasse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
             '&nom=' + encodeURIComponent(id) +
@@ -273,8 +365,7 @@ var DataManager = {
     },
 
     sauvegarderAnnotation: function(texteId, slide, annotation) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
             '&nom=' + encodeURIComponent(id) +
@@ -290,8 +381,7 @@ var DataManager = {
     },
 
     sauvegarderReponseOuverte: function(texteId, reponse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
             '&nom=' + encodeURIComponent(id) +
@@ -306,8 +396,7 @@ var DataManager = {
     },
 
     sauvegarderQuiz: function(texteId, titre, choixQcm, bonnes, total, tempsPasse) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
             '&nom=' + encodeURIComponent(id) +
@@ -326,8 +415,7 @@ var DataManager = {
     },
 
     sauvegarderLecture: function(texteId, titre) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
             '&nom=' + encodeURIComponent(id) +
@@ -342,8 +430,7 @@ var DataManager = {
     },
 
     marquerRevise: function(texteId, revise) {
-        var id = localStorage.getItem('etudiant_id');
-        if (!id) return Promise.reject('Non connecté');
+        var id = getIdUtilisateur();
 
         var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
             '&nom=' + encodeURIComponent(id) +
@@ -468,4 +555,7 @@ function getAnnotations(texteId) {
 }
 function getReviseStatus(texteId) {
     return DataManager.getReviseStatus(texteId);
+}
+function getTexteAsync(texteId) {
+    return DataManager.getTexteAsync(texteId);
 }
