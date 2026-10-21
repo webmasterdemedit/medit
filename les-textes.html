@@ -312,15 +312,14 @@
     }
 
     // ===== CHARGEMENT =====
-    function chargerTextes() {
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
-      nomEtudiant = id;
+   function chargerTextes() {
+  // ✅ Plus de redirection : visiteur ou connecté, on continue
+  var id = (typeof getIdUtilisateur === 'function')
+    ? getIdUtilisateur()
+    : (localStorage.getItem('etudiant_id') || 'invite');
+  nomEtudiant = id;
 
-      DataManager.charger()
+  DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
           textesData = data.tousLesTextes || data.textes || [];
