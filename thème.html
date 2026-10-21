@@ -88,7 +88,7 @@
       if (!dateStr) return '';
       try {
         var date = new Date(dateStr);
-        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin', 
+        var mois = ['Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
                     'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre'];
         return mois[date.getMonth()] + ' ' + date.getFullYear();
       } catch(e) {
@@ -157,17 +157,16 @@
         return;
       }
 
-      var id = localStorage.getItem('etudiant_id');
-      if (!id) {
-        window.location.href = '/medit/index.html';
-        return;
-      }
+      // ✅ Plus de redirection : visiteur ou connecté, on continue
+      var id = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'invite');
       nomEtudiant = id;
 
       DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
-          textesData = data.textes || [];
+          textesData = data.tousLesTextes || data.textes || [];
 
           themesData = {};
           if (data.themes && Array.isArray(data.themes)) {
@@ -202,7 +201,7 @@
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || [];
+            textesData = cache.tousLesTextes || cache.textes || [];
             if (cache.themes && Array.isArray(cache.themes)) {
               themesData = {};
               cache.themes.forEach(function(l) {
@@ -376,7 +375,7 @@
             if (reponses[j].date) dateValidation = reponses[j].date;
             if (reponses[j].retenir) retenir = reponses[j].retenir;
           }
-          
+
           if (toutesValides) {
             estLu = true;
             estValide = true;
@@ -475,7 +474,7 @@
               ${dateLabelHtml}
               ${dateHtml}
             </div>
-            
+
           </div>
         `;
       }
