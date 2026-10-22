@@ -247,11 +247,50 @@
     function rendreCitations(texte) {
       if (!texte) return texte;
       if (texte.indexOf('"') === -1 && texte.indexOf('“') === -1 && texte.indexOf('”') === -1 && texte.indexOf('«') === -1) return texte;
-      // 1. Guillemets droits / anglais, autorise les \n dans la citation
       texte = texte.replace(/["“]([\s\S]+?)["”]/g, '<em>« $1 »</em>');
-      // 2. Guillemets français déjà présents : on met juste en italique
       texte = texte.replace(/«\s*([\s\S]+?)\s*»/g, '<em>« $1 »</em>');
       return texte;
+    }
+
+    // Regroupe les lignes d'une citation multi-lignes dans un même bloc.
+    // Chaque autre ligne non vide devient un bloc séparé.
+    function decouperEnBlocsTexte(buffer) {
+      var lignes = buffer.split('\n');
+      var blocs = [];
+      var courant = '';
+      var dansCitation = false;
+
+      function compterGuillemets(ligne) {
+        var droits   = (ligne.match(/"/g) || []).length;
+        var anglais  = (ligne.match(/[“”]/g) || []).length;
+        var francais = (ligne.match(/«/g) || []).length;
+        return droits + anglais + francais;
+      }
+
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i].trim();
+        if (ligne === '') {
+          if (!dansCitation && courant.trim() !== '') {
+            blocs.push(courant.trim());
+            courant = '';
+          }
+          continue;
+        }
+
+        courant = courant === '' ? ligne : courant + '\n' + ligne;
+
+        if (compterGuillemets(ligne) % 2 === 1) {
+          dansCitation = !dansCitation;
+        }
+
+        if (!dansCitation) {
+          if (courant.trim() !== '') blocs.push(courant.trim());
+          courant = '';
+        }
+      }
+
+      if (courant.trim() !== '') blocs.push(courant.trim());
+      return blocs;
     }
 
     function trierAlphabetique(arr) {
@@ -1361,69 +1400,43 @@
         var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-        // Regroupe les lignes d'une citation multi-lignes dans un même bloc.
-// Chaque autre ligne non vide devient un bloc séparé.
-function decouperEnBlocsTexte(buffer) {
-  var lignes = buffer.split('\n');
-  var blocs = [];
-  var courant = '';
-  var dansCitation = false;   // true si on est entre guillemets ouverts et fermés
-  var guillemetOuvrant = null;
+        function flushParagraphe() {
+          if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+          var blocs = decouperEnBlocsTexte(bufferTexte);
+          blocs.forEach(function(bloc) {
+            html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+          });
+          bufferTexte = '';
+        }
 
-  function detecterGuillemets(ligne) {
-    // Retourne { ouvre: bool, ferme: bool } selon les paires présentes dans la ligne
-    var ouvreDroit   = (ligne.match(/"/g) || []).length;
-    var ouvreAnglais = (ligne.match(/[“”]/g) || []).length;
-    var ouvreFrancais = (ligne.match(/«/g) || []).length;
-    var fermeFrancais = (ligne.match(/»/g) || []).length;
-    return {
-      ouvre: ouvreDroit + ouvreAnglais + ouvreFrancais,
-      ferme: ouvreDroit + ouvreAnglais + fermeFrancais
-    };
-  }
+        lignesPara.forEach(function(l) {
+          var trimmed = l.trim();
+          var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
+          if (imgMatch) {
+            flushParagraphe();
+            var nomImg = imgMatch[1];
+            var opt1 = (imgMatch[2] || '').toLowerCase();
+            var opt2 = (imgMatch[3] || '').toLowerCase();
+            var position = 'centre', taille = 'moyen';
+            [opt1, opt2].forEach(function(o) {
+              if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
+              else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
+            });
+            var url = imagesTheme[nomImg];
+            if (!url) html += '<div class="img-manquante">[image manquante : ' + echapperHtml(nomImg) + ']</div>';
+            else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
+            return;
+          }
+          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
+        });
+        flushParagraphe();
+        html += '</div>';
+      });
+      html += '</div>';
 
-  for (var i = 0; i < lignes.length; i++) {
-    var ligne = lignes[i].trim();
-    if (ligne === '') {
-      // Ligne vide : on ferme le bloc courant (hors citation)
-      if (!dansCitation && courant.trim() !== '') {
-        blocs.push(courant.trim());
-        courant = '';
-      }
-      continue;
+      html += construireExercicesPourFeuille(blocsOrdonnes);
+      return html;
     }
-
-    if (courant === '') {
-      courant = ligne;
-    } else {
-      courant += '\n' + ligne;
-    }
-
-    // Compte les guillemets dans la ligne pour savoir si on entre/sort d'une citation
-    var compte = detecterGuillemets(ligne);
-    if (compte.ouvre % 2 === 1) {
-      dansCitation = !dansCitation;
-    }
-
-    // Si on n'est pas dans une citation, on ferme le bloc à chaque ligne
-    if (!dansCitation) {
-      if (courant.trim() !== '') blocs.push(courant.trim());
-      courant = '';
-    }
-  }
-
-  if (courant.trim() !== '') blocs.push(courant.trim());
-  return blocs;
-}
-
-function flushParagraphe() {
-  if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-  var blocs = decouperEnBlocsTexte(bufferTexte);
-  blocs.forEach(function(bloc) {
-    html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
-  });
-  bufferTexte = '';
-}
 
     function construireBlocARetenir(texte) {
       var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
