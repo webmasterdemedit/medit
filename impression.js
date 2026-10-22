@@ -9,6 +9,7 @@
 // + Note/Appréciation en haut, sous la ligne Nom/Date (sans cadre)
 // + Temps de lecture en haut (sobre)
 // + Image de couverture en petit avant le numéro
+// + Classes .paragraphe / .texte-zone (remplace .slide)
 // ============================================================
 
 // ============================================================
@@ -50,7 +51,6 @@ function imprimerTexte(texteId, titre, textesData) {
     return;
   }
 
-  // ✅ Récupérer la couverture du thème (comme texte.html)
   var couvertureTheme = recupererCouvertureTheme(texte.categorie);
 
   chargerImagesTheme(texte.categorie).then(function(images) {
@@ -62,12 +62,10 @@ function imprimerTexte(texteId, titre, textesData) {
 
 // ============================================================
 // ✅ RÉCUPÉRER LA COUVERTURE DU THÈME
-// Essaie DataManager.getTousLesThemes() puis data.themes
 // ============================================================
 function recupererCouvertureTheme(categorie) {
   if (!categorie) return '';
 
-  // 1) Via DataManager.getTousLesThemes()
   try {
     if (typeof DataManager !== 'undefined' && typeof DataManager.getTousLesThemes === 'function') {
       var themes = DataManager.getTousLesThemes() || [];
@@ -79,7 +77,6 @@ function recupererCouvertureTheme(categorie) {
     }
   } catch (e) { /* ignore */ }
 
-  // 2) Via window.__themesData (si le script inline l'expose)
   try {
     if (typeof window !== 'undefined' && window.themesData && window.themesData[categorie]) {
       return window.themesData[categorie].couverture || '';
@@ -343,7 +340,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 
   var parts = contenu.split(' | ');
 
-  var slidesArray = [];
+  var paragraphesArray = [];
   var quizTexte = '';
   var openTexte = '';
   var ordreTexte = '';
@@ -375,9 +372,9 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     } else {
       var cleanText = part.replace(/\r\n/g, '\n').trim();
       if (cleanText) {
-        var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-        subSlides.forEach(function(sub) {
-          slidesArray.push(sub.trim());
+        var subParas = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+        subParas.forEach(function(sub) {
+          paragraphesArray.push(sub.trim());
         });
       }
     }
@@ -418,8 +415,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
       var type = p[0];
       var idx = p.length > 1 ? parseInt(p[1]) : 0;
 
-      if (type === 'slide' && slidesArray[idx] !== undefined) {
-        blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
+      if (type === 'paragraphe' && paragraphesArray[idx] !== undefined) {
+        blocsOrdonnes.push({ type: 'paragraphe', data: paragraphesArray[idx] });
+      } else if (type === 'slide' && paragraphesArray[idx] !== undefined) {
+        // compatibilité ancien format
+        blocsOrdonnes.push({ type: 'paragraphe', data: paragraphesArray[idx] });
       } else if (type === 'quiz' && quizsParsed[idx]) {
         blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
       } else if (type === 'open' && opensParsed[idx] !== undefined) {
@@ -439,7 +439,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
       }
     });
   } else {
-    slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
+    paragraphesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'paragraphe', data: s }); });
     quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
     opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
     ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
@@ -462,9 +462,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     else if (bloc.type === 'copier') nbTotalQuestions++;
   });
 
-  // ✅ Calcul du temps de lecture (comme texte.html : ~14 mots/min)
   var textePourCompter = '';
-  blocsOrdonnes.forEach(function(b) { if (b.type === 'slide') textePourCompter += ' ' + b.data; });
+  blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
   var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
   var tempsLecture = Math.max(1, Math.round(nbMots / 14));
 
@@ -508,14 +507,12 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     ' - Niveau ' + (texte.niveau || 0);
   nomFichierPdf = nomFichierPdf.replace(/[\\/:*?"<>|]/g, '-');
 
-  // ✅ Préparation du titre comme dans texte.html
   var numeroTexte = extraireNumeroTexte(texte.titre);
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity)
     ? '<span class="numero-texte">' + numeroTexte + '</span>'
     : '';
 
-  // ✅ Image de couverture (petite, avant le numéro)
   var couvertureHtml = '';
   if (couvertureTheme) {
     couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
@@ -558,7 +555,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
 /* ============================================================ */
-/* ✅ NOTE / APPRÉCIATION EN HAUT (sans cadre)                   */
+/* NOTE / APPRÉCIATION EN HAUT (sans cadre)                      */
 /* ============================================================ */
 .note-haut {
   display: flex;
@@ -589,7 +586,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* ✅ TEMPS DE LECTURE (sobre, en haut)                          */
+/* TEMPS DE LECTURE (sobre, en haut)                             */
 /* ============================================================ */
 .temps-lecture-haut {
   text-align: center;
@@ -641,7 +638,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   white-space: nowrap;
 }
 
-/* ✅ Image de couverture mini avant le numéro */
 .couverture-mini {
   display: inline-block;
   width: 38px;
@@ -653,7 +649,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   vertical-align: middle;
 }
 
-/* ✅ Badge numéro du texte (comme dans texte.html) */
 .numero-texte {
   display: inline-block;
   background: #1a1a1a;
@@ -716,19 +711,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* SLIDES                                                        */
+/* PARAGRAPHES (anciennement .slide)                             */
 /* ============================================================ */
-.slides-zone {
+.texte-zone {
   margin-top: 16px;
   margin-bottom: 20px;
 }
-.slide { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
-.slide p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
+.paragraphe { margin-bottom: 8px; break-inside: auto; page-break-inside: auto; }
+.paragraphe p { font-size: 14.3pt; margin-bottom: 4px; text-align: justify; text-indent: 1.2em; }
 
 /* ============================================================ */
 /* SOURCES [xxx] — bloc flottant en marge droite                 */
 /* ============================================================ */
-.slide p .source-marge {
+.paragraphe p .source-marge,
+.texte-zone p .source-marge {
   float: right;
   display: inline-block;
   margin: 6px 0 6px 16px;
@@ -749,14 +745,15 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 /* ============================================================ */
 /* CITATIONS "..." → « ... » italique                            */
 /* ============================================================ */
-.slide p em {
+.paragraphe p em,
+.texte-zone p em {
   font-style: italic;
 }
 
 /* ============================================================ */
-/* IMAGES DANS LES SLIDES                                        */
+/* IMAGES DANS LES PARAGRAPHES                                   */
 /* ============================================================ */
-.slide::after {
+.paragraphe::after {
   content: "";
   display: table;
   clear: both;
@@ -1085,13 +1082,13 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   </div>
 </div>
 
-<!-- ✅ NOTE / APPRÉCIATION EN HAUT (sans cadre) -->
+<!-- NOTE / APPRÉCIATION EN HAUT (sans cadre) -->
 <div class="note-haut">
   <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>
 
-<!-- ✅ TEMPS DE LECTURE (sobre) -->
+<!-- TEMPS DE LECTURE (sobre) -->
 <div class="temps-lecture-haut">Temps de lecture estimé : ${tempsLecture} min</div>
 
 <!-- BANDEAU TITRE (badge numéro + titre sans numéro + couverture mini) -->
@@ -1108,20 +1105,20 @@ ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) {
 
 ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 
-<div class="slides-zone">
+<div class="texte-zone">
 `;
 
   var exoNum = 0;
   var hasExercice = false;
   var zoneExercicesOuverte = false;
-  var slidesZoneFermee = false;
+  var texteZoneFermee = false;
 
   function ouvrirZoneExercices() {
-    if (!slidesZoneFermee) {
+    if (!texteZoneFermee) {
       printHtml += '</div>';
       printHtml += '<div class="corps-2col">';
       printHtml += '<div class="titre-questions">Exercices</div>';
-      slidesZoneFermee = true;
+      texteZoneFermee = true;
     }
     if (!zoneExercicesOuverte) {
       printHtml += '<div class="zone-exercices">';
@@ -1148,7 +1145,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   while (iGroupe < blocsOrdonnes.length) {
     var blocCourant = blocsOrdonnes[iGroupe];
     var typeCourant = typeLogique(blocCourant.type);
-    if (typeCourant === 'slide') {
+    if (typeCourant === 'paragraphe') {
       iGroupe++;
       continue;
     }
@@ -1213,9 +1210,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       return;
     }
 
-    if (bloc.type === 'slide') {
-      printHtml += '<div class="slide">';
-      var lignesSlide = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
+    if (bloc.type === 'paragraphe') {
+      printHtml += '<div class="paragraphe">';
+      var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
       var bufferTexte = '';
 
       function flushTexteImpression() {
@@ -1227,7 +1224,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         bufferTexte = '';
       }
 
-      lignesSlide.forEach(function(l) {
+      lignesPara.forEach(function(l) {
         var trimmed = l.trim();
 
         var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
@@ -1425,7 +1422,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
-  if (slidesZoneFermee) {
+  if (texteZoneFermee) {
     printHtml += '</div>';
   } else {
     printHtml += '</div>';
