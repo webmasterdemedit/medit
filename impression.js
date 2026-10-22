@@ -100,6 +100,41 @@ function rendreCitations(texte) {
   return texte;
 }
 
+// Regroupe les lignes d'une citation multi-lignes dans un même bloc.
+// Chaque autre ligne non vide devient un bloc séparé.
+function decouperEnBlocsTexte(buffer) {
+  var lignes = buffer.split('\n');
+  var blocs = [];
+  var courant = '';
+  var dansCitation = false;
+
+  function compterGuillemets(ligne) {
+    var droits   = (ligne.match(/"/g) || []).length;
+    var anglais  = (ligne.match(/[“”]/g) || []).length;
+    var francais = (ligne.match(/«/g) || []).length;
+    return droits + anglais + francais;
+  }
+
+  for (var i = 0; i < lignes.length; i++) {
+    var ligne = lignes[i].trim();
+    if (ligne === '') {
+      if (!dansCitation && courant.trim() !== '') {
+        blocs.push(courant.trim());
+        courant = '';
+      }
+      continue;
+    }
+    courant = courant === '' ? ligne : courant + '\n' + ligne;
+    if (compterGuillemets(ligne) % 2 === 1) dansCitation = !dansCitation;
+    if (!dansCitation) {
+      if (courant.trim() !== '') blocs.push(courant.trim());
+      courant = '';
+    }
+  }
+  if (courant.trim() !== '') blocs.push(courant.trim());
+  return blocs;
+}
+
 function parserQuizsPourImpression(quizTexte) {
   var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var quizs = [];
@@ -470,7 +505,10 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 .paragraphe p em,
-.texte-zone p em { font-style: italic; }
+.texte-zone p em {
+  font-style: italic;
+  white-space: pre-line;
+}
 
 .paragraphe::after { content: ""; display: table; clear: both; }
 
@@ -596,7 +634,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   function ouvrirZoneExercices() {
     if (!texteZoneFermee) {
-      printHtml += '</div>'; // ferme .texte-zone
+      printHtml += '</div>';
       printHtml += '<div class="corps-2col">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       texteZoneFermee = true;
@@ -678,7 +716,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
       function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-        printHtml += '<p>' + rendreSources(rendreCitations(bufferTexte.trim())) + '</p>';
+        var blocs = decouperEnBlocsTexte(bufferTexte);
+        blocs.forEach(function(bloc) {
+          printHtml += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+        });
         bufferTexte = '';
       }
 
@@ -827,9 +868,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
   });
 
-  if (zoneExercicesOuverte) printHtml += '</div>'; // ferme .zone-exercices
-  if (texteZoneFermee) printHtml += '</div>';      // ferme .corps-2col
-  else printHtml += '</div>';                       // ferme .texte-zone
+  if (zoneExercicesOuverte) printHtml += '</div>';
+  if (texteZoneFermee) printHtml += '</div>';
+  else printHtml += '</div>';
 
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
