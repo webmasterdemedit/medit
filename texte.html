@@ -50,7 +50,6 @@
     </div>
 
     <style>
-      /* Conteneur principal : pleine largeur du parent, jamais de débordement */
       .barre-action-texte {
         display: flex;
         align-items: stretch;
@@ -61,8 +60,6 @@
         max-width: 100%;
         box-sizing: border-box;
       }
-
-      /* Bouton retour : ne rétrécit pas, ne grandit pas */
       .barre-action-texte .btn-retour {
         display: inline-flex;
         align-items: center;
@@ -71,8 +68,6 @@
         flex: 0 0 auto;
         white-space: nowrap;
       }
-
-      /* Bloc partage : poussé à droite, peut rétrécir */
       .partage-social {
         display: flex;
         align-items: stretch;
@@ -82,8 +77,6 @@
         min-width: 0;
         max-width: 100%;
       }
-
-      /* Chaque carré : même hauteur que le bouton retour, peut rétrécir */
       .partage-btn {
         display: inline-flex;
         align-items: center;
@@ -120,20 +113,13 @@
         .partage-btn svg { width: 13px; height: 13px; }
         .partage-social { gap: 1px; }
       }
-
-      /* En dessous de 460px : 2 lignes propres, partage aligné à droite */
       @media (max-width: 460px) {
-        .barre-action-texte {
-          flex-wrap: wrap;
-        }
+        .barre-action-texte { flex-wrap: wrap; }
         .partage-social {
           flex-basis: 100%;
           justify-content: flex-end;
         }
-        .partage-btn {
-          aspect-ratio: 1 / 1;
-          padding: 0 4px;
-        }
+        .partage-btn { aspect-ratio: 1 / 1; padding: 0 4px; }
         .partage-btn svg { width: 15px; height: 15px; }
         .partage-social { gap: 3px; }
       }
@@ -204,8 +190,7 @@
     var themesData = {};
 
     var reponsesTexte = {
-      quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {},
-      questionOuverte: ''
+      quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {}
     };
 
     var envoiEffectue = false;
@@ -239,27 +224,34 @@
       if (!matchSource) return texte;
       var contenuSource = matchSource[1].trim();
       var texteSansSource = texte.replace(/\[[^\]]+\]\.?/, '').trim();
-      var texteAvant = texteSansSource;
-      var idxDernierePonctuation = -1;
-      for (var i = texteAvant.length - 1; i >= 0; i--) {
-        var c = texteAvant.charAt(i);
-        if (c === '.' || c === '!' || c === '?') { idxDernierePonctuation = i; break; }
-      }
+      var idxDerniere = Math.max(
+        texteSansSource.lastIndexOf('.'),
+        texteSansSource.lastIndexOf('!'),
+        texteSansSource.lastIndexOf('?')
+      );
       var idxDebutPhrase = 0;
-      if (idxDernierePonctuation !== -1) {
-        for (var j = idxDernierePonctuation - 1; j >= 0; j--) {
-          var c2 = texteAvant.charAt(j);
-          if (c2 === '.' || c2 === '!' || c2 === '?') { idxDebutPhrase = j + 1; break; }
-        }
+      if (idxDerniere !== -1) {
+        var avant = texteSansSource.substring(0, idxDerniere);
+        var idxPrec = Math.max(
+          avant.lastIndexOf('.'),
+          avant.lastIndexOf('!'),
+          avant.lastIndexOf('?')
+        );
+        idxDebutPhrase = idxPrec + 1;
       }
-      var avant = texteAvant.substring(0, idxDebutPhrase);
-      var phrase = texteAvant.substring(idxDebutPhrase);
-      return avant + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
+      var avantPhrase = texteSansSource.substring(0, idxDebutPhrase);
+      var phrase = texteSansSource.substring(idxDebutPhrase);
+      return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
     }
 
     function rendreCitations(texte) {
-      if (!texte || texte.indexOf('"') === -1) return texte;
-      return texte.replace(/["“]([^"”]+)["”]/g, '<em>« $1 »</em>');
+      if (!texte) return texte;
+      if (texte.indexOf('"') === -1 && texte.indexOf('“') === -1 && texte.indexOf('”') === -1 && texte.indexOf('«') === -1) return texte;
+      // 1. Guillemets droits / anglais, autorise les \n dans la citation
+      texte = texte.replace(/["“]([\s\S]+?)["”]/g, '<em>« $1 »</em>');
+      // 2. Guillemets français déjà présents : on met juste en italique
+      texte = texte.replace(/«\s*([\s\S]+?)\s*»/g, '<em>« $1 »</em>');
+      return texte;
     }
 
     function trierAlphabetique(arr) {
@@ -274,16 +266,6 @@
         var d = new Date(dateStr);
         if (isNaN(d.getTime())) return '';
         return d.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' });
-      } catch(e) { return ''; }
-    }
-
-    function formatDateMoisAnnee(dateStr) {
-      if (!dateStr) return '';
-      try {
-        var d = new Date(dateStr);
-        if (isNaN(d.getTime())) return '';
-        var mois = ['Janvier','Février','Mars','Avril','Mai','Juin','Juillet','Août','Septembre','Octobre','Novembre','Décembre'];
-        return mois[d.getMonth()] + ' ' + d.getFullYear();
       } catch(e) { return ''; }
     }
 
@@ -318,7 +300,7 @@
       return null;
     }
 
-    function parserQuizsPourImpression(quizTexte) {
+    function parserQuizs(quizTexte) {
       var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var quizs = [];
       var currentQuiz = null;
@@ -340,7 +322,7 @@
       return quizs;
     }
 
-    function parserOrdrePourImpression(ordreTexte) {
+    function parserOrdre(ordreTexte) {
       var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var elements = [];
       var consigne = 'Remettre dans l\'ordre';
@@ -353,7 +335,7 @@
       return { elements: elements, consigne: consigne };
     }
 
-    function parserCartesPourImpression(carteTexte) {
+    function parserCartes(carteTexte) {
       var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var cartes = [];
       var current = null;
@@ -370,7 +352,7 @@
       return cartes;
     }
 
-    function parserRelierPourImpression(relierTexte) {
+    function parserRelier(relierTexte) {
       var lignes = relierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       if (lignes.length === 0) return null;
       var consigne = lignes[0].replace(/^l:\s*/i, '').trim() || 'Relie les éléments';
@@ -400,7 +382,7 @@
       return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
     }
 
-    function parserTextesTrousPourImpression(ttTexte) {
+    function parserTextesTrous(ttTexte) {
       var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var resultats = [];
       lignes.forEach(function(ligne) {
@@ -417,7 +399,7 @@
       return resultats;
     }
 
-    function parserVraiFauxPourImpression(vfTexte) {
+    function parserVraiFaux(vfTexte) {
       var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var questions = [];
       lignes.forEach(function(ligne) {
@@ -433,7 +415,7 @@
       return questions;
     }
 
-    function parserCopierPourImpression(copierTexte) {
+    function parserCopier(copierTexte) {
       if (!copierTexte) return [];
       var lignes = copierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
       var blocs = [];
@@ -458,8 +440,6 @@
       var ordreCounter = 0;
       var copierCounter = 0;
 
-      function typeLogique(t) { if (t === 'carte') return 'open'; return t; }
-
       var consignesBase = {
         quiz:   { sing: 'Cochez la bonne réponse :',  plur: 'Cochez la bonne réponse :' },
         open:   { sing: 'Répondez à la question :',   plur: 'Répondez aux questions :' },
@@ -473,11 +453,11 @@
       var iGroupe = 0;
       while (iGroupe < blocsOrdonnes.length) {
         var blocCourant = blocsOrdonnes[iGroupe];
-        var typeCourant = typeLogique(blocCourant.type);
-        if (typeCourant === 'slide') { iGroupe++; continue; }
+        var typeCourant = blocCourant.type;
+        if (typeCourant === 'texte') { iGroupe++; continue; }
         var nbConsecutifs = 1;
         var jGroupe = iGroupe + 1;
-        while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) { nbConsecutifs++; jGroupe++; }
+        while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === typeCourant) { nbConsecutifs++; jGroupe++; }
         if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
         var base = consignesBase[typeCourant];
         if (base) {
@@ -491,7 +471,7 @@
       function afficherConsigne(bloc) { if (bloc._consigne) html += '<div class="consigne-exo">' + bloc._consigne + '</div>'; }
 
       blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type === 'slide') return;
+        if (bloc.type === 'texte') return;
 
         if (bloc.type === 'copier') {
           hasExercice = true;
@@ -970,9 +950,8 @@
       items.forEach(function(it) { ordreActuel.push(it.querySelector('.ordre-texte').textContent.trim()); });
 
       var ordreCorrect = [];
-      var itemsAll = grille.querySelectorAll('.ordre-item');
       var positionsOriginales = [];
-      itemsAll.forEach(function(it) {
+      items.forEach(function(it) {
         positionsOriginales.push({ texte: it.querySelector('.ordre-texte').textContent.trim(), original: parseInt(it.getAttribute('data-original')) });
       });
       positionsOriginales.sort(function(a, b) { return a.original - b.original; });
@@ -1254,7 +1233,7 @@
     }
 
     function relireEtRefaire() {
-      reponsesTexte = { quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {}, questionOuverte: '' };
+      reponsesTexte = { quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {} };
       questionsOuvertes = [];
       relierState = {};
       ordreState = {};
@@ -1271,7 +1250,7 @@
       var ordreBlocs = texte.ordreBlocs || [];
       var parts = contenu.split(' | ');
 
-      var slidesArray = [];
+      var paragraphesArray = [];
       var quizTexte = '', openTexte = '', ordreTexte = '', carteTexte = '', relierTexte = '', ttTexte = '', vfTexte = '', copierTexte = '';
 
       parts.forEach(function(part) {
@@ -1287,13 +1266,13 @@
         else {
           var cleanText = part.replace(/\r\n/g, '\n').trim();
           if (cleanText) {
-            var subSlides = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subSlides.forEach(function(sub) { slidesArray.push(sub.trim()); });
+            var subParas = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
+            subParas.forEach(function(sub) { paragraphesArray.push(sub.trim()); });
           }
         }
       });
 
-      var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
+      var quizsParsed = quizTexte ? parserQuizs(quizTexte) : [];
       var opensParsed = [];
       if (openTexte) {
         openTexte.split('\n\n').forEach(function(bloc) {
@@ -1304,21 +1283,21 @@
       var ordresParsed = [];
       if (ordreTexte) {
         ordreTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserOrdrePourImpression(bloc);
+          var p = parserOrdre(bloc);
           if (p && p.elements.length > 0) ordresParsed.push(p);
         });
       }
-      var cartesParsed = carteTexte ? parserCartesPourImpression(carteTexte) : [];
+      var cartesParsed = carteTexte ? parserCartes(carteTexte) : [];
       var reliersParsed = [];
       if (relierTexte) {
         relierTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserRelierPourImpression(bloc);
+          var p = parserRelier(bloc);
           if (p && p.paires.length > 0) reliersParsed.push(p);
         });
       }
-      var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
-      var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
-      var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
+      var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
+      var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
+      var copiersParsed = copierTexte ? parserCopier(copierTexte) : [];
 
       var blocsOrdonnes = [];
       if (ordreBlocs.length > 0) {
@@ -1326,7 +1305,7 @@
           var p = item.split(':');
           var type = p[0];
           var idx = p.length > 1 ? parseInt(p[1]) : 0;
-          if (type === 'slide' && slidesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'slide', data: slidesArray[idx] });
+          if (type === 'texte' && paragraphesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'texte', data: paragraphesArray[idx] });
           else if (type === 'quiz' && quizsParsed[idx]) blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
           else if (type === 'open' && opensParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
           else if (type === 'ordre' && ordresParsed[idx]) blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
@@ -1337,7 +1316,7 @@
           else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
         });
       } else {
-        slidesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'slide', data: s }); });
+        paragraphesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'texte', data: s }); });
         quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
         opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
         ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
@@ -1349,7 +1328,7 @@
       }
 
       var textePourCompter = '';
-      blocsOrdonnes.forEach(function(b) { if (b.type === 'slide') textePourCompter += ' ' + b.data; });
+      blocsOrdonnes.forEach(function(b) { if (b.type === 'texte') textePourCompter += ' ' + b.data; });
       var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
       var tempsLecture = Math.max(1, Math.round(nbMots / 14));
       texte._nbMots = nbMots;
@@ -1375,25 +1354,25 @@
       var html = '';
       html += '<div class="bandeau-titre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
 
-      html += '<div class="slides-zone">';
+      html += '<div class="texte-zone">';
       blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type !== 'slide') return;
-        html += '<div class="slide">';
-        var lignesSlide = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
+        if (bloc.type !== 'texte') return;
+        html += '<div class="paragraphe">';
+        var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-        function flushTexte() {
+        function flushParagraphe() {
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-          var paras = bufferTexte.split('\n').filter(function(p) { return p.trim() !== ''; });
-          paras.forEach(function(p) { html += '<p>' + rendreSources(rendreCitations(p.trim())) + '</p>'; });
+          var para = bufferTexte.trim();
+          html += '<p>' + rendreSources(rendreCitations(para)) + '</p>';
           bufferTexte = '';
         }
 
-        lignesSlide.forEach(function(l) {
+        lignesPara.forEach(function(l) {
           var trimmed = l.trim();
           var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
           if (imgMatch) {
-            flushTexte();
+            flushParagraphe();
             var nomImg = imgMatch[1];
             var opt1 = (imgMatch[2] || '').toLowerCase();
             var opt2 = (imgMatch[3] || '').toLowerCase();
@@ -1409,7 +1388,7 @@
           }
           bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
         });
-        flushTexte();
+        flushParagraphe();
         html += '</div>';
       });
       html += '</div>';
