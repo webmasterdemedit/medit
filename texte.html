@@ -1362,11 +1362,15 @@
         var bufferTexte = '';
 
         function flushParagraphe() {
-          if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-          var para = bufferTexte.trim();
-          html += '<p>' + rendreSources(rendreCitations(para)) + '</p>';
-          bufferTexte = '';
-        }
+  if (!bufferTexte.trim()) { bufferTexte = ''; return; }
+  var lignesPara = bufferTexte.split('\n').filter(function(l) { return l.trim() !== ''; });
+  lignesPara.forEach(function(ligne) {
+    var trimmed = ligne.trim();
+    if (!trimmed) return;
+    html += '<p>' + rendreSources(rendreCitations(trimmed)) + '</p>';
+  });
+  bufferTexte = '';
+}
 
         lignesPara.forEach(function(l) {
           var trimmed = l.trim();
