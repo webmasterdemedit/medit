@@ -779,7 +779,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
-          printHtml += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+          printHtml += '<p>' + appliquerGrasItalique(rendreSources(rendreCitations(bloc))) + '</p>';
         });
         bufferTexte = '';
       }
