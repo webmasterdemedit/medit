@@ -35,6 +35,62 @@
       font-weight: 300;
     }
 
+    /* ===== BARRE DE TRI ===== */
+    .barre-tri {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tri-groupe {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .tri-groupe label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .tri-groupe select {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .tri-groupe select:hover,
+    .tri-groupe select:focus {
+      border-color: var(--text-secondary);
+    }
+
+    .tri-reset {
+      font-size: 12px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .tri-reset:hover {
+      color: var(--text);
+      border-color: var(--text-secondary);
+    }
+
     /* Liste verticale de cartes */
     .page-blog .grille-themes {
       display: flex;
@@ -45,8 +101,8 @@
     /* ===== CARTE BLOG ===== */
     .carte-blog {
       display: flex;
-      gap: 20px;
-      padding: 18px 20px;
+      gap: 0;
+      padding: 0;
       background: var(--bg);
       border: 1px solid var(--border);
       cursor: pointer;
@@ -54,11 +110,52 @@
       text-decoration: none;
       color: inherit;
       box-sizing: border-box;
+      overflow: hidden;
     }
 
     .carte-blog:hover {
       background: var(--bg-hover);
       border-color: var(--text-secondary);
+    }
+
+    /* Encadré couverture à gauche */
+    .carte-blog .blog-couverture {
+      flex: 0 0 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+    }
+
+    .carte-blog .blog-couverture img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .carte-blog .blog-couverture .couverture-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Contenu principal */
+    .carte-blog .blog-centre {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-width: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
     }
 
     .carte-blog .blog-numero {
@@ -156,7 +253,11 @@
       .page-blog { padding: 12px 16px 30px; }
       .page-blog h1 { font-size: 22px; }
 
-      .carte-blog {
+      .carte-blog .blog-couverture {
+        flex: 0 0 64px;
+      }
+
+      .carte-blog .blog-centre {
         flex-wrap: wrap;
         gap: 12px;
         padding: 14px;
@@ -197,19 +298,27 @@
     <h1>Derniers textes publiés</h1>
     <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
 
-    <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Textes affichés :</span>
-        <span class="nombre" id="totalAffiches">0</span>
+    <!-- ===== BARRE DE TRI ===== -->
+    <div class="barre-tri" id="barreTri">
+      <div class="tri-groupe">
+        <label for="triTheme">Thème</label>
+        <select id="triTheme" onchange="appliquerTri()">
+          <option value="">Tous</option>
+        </select>
       </div>
-      <div class="stat-item">
-        <span>Textes total :</span>
-        <span class="nombre" id="totalTextes">0</span>
+      <div class="tri-groupe">
+        <label for="triTag">Tag</label>
+        <select id="triTag" onchange="appliquerTri()">
+          <option value="">Tous</option>
+        </select>
       </div>
-      <div class="stat-item">
-        <span>Votre niveau :</span>
-        <span class="nombre" id="niveauEtudiant">0</span>
+      <div class="tri-groupe">
+        <label for="triAnnee">Année</label>
+        <select id="triAnnee" onchange="appliquerTri()">
+          <option value="">Toutes</option>
+        </select>
       </div>
+      <button class="tri-reset" onclick="reinitialiserTri()">Réinitialiser</button>
     </div>
 
     <div id="contenu">
@@ -278,9 +387,10 @@
         .replace(/'/g, '&#39;');
     }
 
-    function escapeAttr(str) { return escapeHtml(str); }
+    function normaliserComparaison(str) {
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
 
-    // ===== DATE RELATIVE =====
     function formatDateRelative(dateStr) {
       if (!dateStr) return '';
       var d = new Date(dateStr);
@@ -311,15 +421,21 @@
       });
     }
 
-    // ===== CHARGEMENT =====
-   function chargerTextes() {
-  // ✅ Plus de redirection : visiteur ou connecté, on continue
-  var id = (typeof getIdUtilisateur === 'function')
-    ? getIdUtilisateur()
-    : (localStorage.getItem('etudiant_id') || 'invite');
-  nomEtudiant = id;
+    function anneeDe(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      return String(d.getFullYear());
+    }
 
-  DataManager.charger()
+    // ===== CHARGEMENT =====
+    function chargerTextes() {
+      var id = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'invite');
+      nomEtudiant = id;
+
+      DataManager.charger()
         .then(function(data) {
           niveauEtudiant = data.niveau || 0;
           textesData = data.tousLesTextes || data.textes || [];
@@ -332,7 +448,8 @@
                 sousTitre: l.sousTitre || '',
                 date: l.date || '',
                 auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0
+                niveau: parseInt(l.niveau) || 0,
+                couverture: l.couverture || ''
               };
             });
           }
@@ -344,7 +461,7 @@
             });
           }
 
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+          initialiserFiltres();
           afficherBlog();
         })
         .catch(function(error) {
@@ -361,7 +478,8 @@
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
                   auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0
+                  niveau: parseInt(l.niveau) || 0,
+                  couverture: l.couverture || ''
                 };
               });
             }
@@ -370,7 +488,7 @@
                 toutesLesReponses[r.texteId] = r;
               });
             }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+            initialiserFiltres();
             afficherBlog();
           } else {
             document.getElementById('loader').style.display = 'none';
@@ -389,17 +507,110 @@
         });
     }
 
+    // ===== FILTRES =====
+    function initialiserFiltres() {
+      var accessibles = textesData.filter(function(t) {
+        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
+      });
+
+      // Thèmes distincts
+      var themes = {};
+      accessibles.forEach(function(t) {
+        var cat = (t.categorie || '').trim();
+        if (cat) themes[normaliserComparaison(cat)] = cat;
+      });
+      var selTheme = document.getElementById('triTheme');
+      Object.keys(themes).sort(function(a, b) {
+        return themes[a].localeCompare(themes[b], 'fr', { sensitivity: 'base' });
+      }).forEach(function(k) {
+        var opt = document.createElement('option');
+        opt.value = themes[k];
+        opt.textContent = themes[k];
+        selTheme.appendChild(opt);
+      });
+
+      // Tags distincts
+      var tagsMap = {};
+      accessibles.forEach(function(t) {
+        (t.tags || []).forEach(function(tag) {
+          var brut = String(tag).trim();
+          if (brut) tagsMap[normaliserComparaison(brut)] = brut;
+        });
+      });
+      var selTag = document.getElementById('triTag');
+      Object.keys(tagsMap).sort(function(a, b) {
+        return tagsMap[a].localeCompare(tagsMap[b], 'fr', { sensitivity: 'base' });
+      }).forEach(function(k) {
+        var opt = document.createElement('option');
+        opt.value = tagsMap[k];
+        opt.textContent = '#' + tagsMap[k];
+        selTag.appendChild(opt);
+      });
+
+      // Années distinctes (DESC)
+      var annees = {};
+      accessibles.forEach(function(t) {
+        var a = anneeDe(t.date);
+        if (a) annees[a] = true;
+      });
+      var selAnnee = document.getElementById('triAnnee');
+      Object.keys(annees).sort(function(a, b) { return b - a; }).forEach(function(a) {
+        var opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        selAnnee.appendChild(opt);
+      });
+    }
+
+    function appliquerTri() { afficherBlog(); }
+
+    function reinitialiserTri() {
+      document.getElementById('triTheme').value = '';
+      document.getElementById('triTag').value = '';
+      document.getElementById('triAnnee').value = '';
+      afficherBlog();
+    }
+
     // ===== AFFICHAGE PRINCIPAL =====
     function afficherBlog() {
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // 1. Filtrer les textes accessibles au niveau de l'étudiant
+      var filtreTheme = document.getElementById('triTheme').value;
+      var filtreTag = document.getElementById('triTag').value;
+      var filtreAnnee = document.getElementById('triAnnee').value;
+
+      // 1. Filtrer par niveau
       var accessibles = textesData.filter(function(t) {
         return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      // 2. Trier par date d'ajout DESC
+      // 2. Filtrer thème
+      if (filtreTheme) {
+        var cibleTheme = normaliserComparaison(filtreTheme);
+        accessibles = accessibles.filter(function(t) {
+          return normaliserComparaison(t.categorie || '') === cibleTheme;
+        });
+      }
+
+      // 3. Filtrer tag
+      if (filtreTag) {
+        var cibleTag = normaliserComparaison(filtreTag);
+        accessibles = accessibles.filter(function(t) {
+          return (t.tags || []).some(function(x) {
+            return normaliserComparaison(x) === cibleTag;
+          });
+        });
+      }
+
+      // 4. Filtrer année
+      if (filtreAnnee) {
+        accessibles = accessibles.filter(function(t) {
+          return anneeDe(t.date) === filtreAnnee;
+        });
+      }
+
+      // 5. Trier par date d'ajout DESC
       accessibles.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
@@ -407,11 +618,7 @@
         return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
 
-      // 3. Stats
-      document.getElementById('totalTextes').textContent = accessibles.length;
-      document.getElementById('totalAffiches').textContent = accessibles.length;
-
-      // 4. Construire HTML (sans sidebar)
+      // 6. Construire HTML
       var container = document.getElementById('contenu');
       var html = '<div class="grille-themes" id="listeBlog">';
 
@@ -442,7 +649,6 @@
       var reponse = toutesLesReponses[texte.id];
       var estValide = reponse && reponse.valide === 'valide';
       var dateValidation = reponse && reponse.date ? reponse.date : '';
-
       var dateAjout = texte.date || '';
 
       var TYPES_EXERCICES = [
@@ -477,7 +683,6 @@
       }
 
       var detailExercices = detailParts.join(' · ');
-
       var extrait = texte.description || texte.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
@@ -495,24 +700,39 @@
         ? '<div class="blog-numero">' + numero + '</div>'
         : '<div class="blog-numero">◆</div>';
 
+      // Encadré couverture à gauche
+      var themeMeta = themesData[texte.categorie] || {};
+      var couleurTheme = themeMeta.couleur || '#2d6a4f';
+      var couvertureTheme = themeMeta.couverture || '';
+      var couvertureHtml = '';
+      if (couvertureTheme) {
+        couvertureHtml = '<div class="blog-couverture"><img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy"></div>';
+      } else {
+        couvertureHtml = '<div class="blog-couverture" style="background:' + couleurTheme + ';">' +
+                         '<div class="couverture-fallback">◆</div></div>';
+      }
+
       return `
         <div class="carte-blog"
              onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
-          ${numeroHtml}
-          <div class="blog-corps">
-            <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
-            <div class="blog-meta">
-              <span class="niveau-badge">Niveau ${texte.niveau}</span>
-              ${nbExercices > 0 ? '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' : ''}
-              ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
-              ${mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : ''}
+          ${couvertureHtml}
+          <div class="blog-centre">
+            ${numeroHtml}
+            <div class="blog-corps">
+              <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
+              <div class="blog-meta">
+                <span class="niveau-badge">Niveau ${texte.niveau}</span>
+                ${nbExercices > 0 ? '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' : ''}
+                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+                ${mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : ''}
+              </div>
+              ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
+              <span class="blog-categorie">#${escapeHtml(categorie)}</span>
             </div>
-            ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
-            <span class="blog-categorie">#${escapeHtml(categorie)}</span>
-          </div>
-          <div class="blog-date">
-            ${dateLabelHtml}
-            ${dateHtml}
+            <div class="blog-date">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
           </div>
         </div>
       `;
