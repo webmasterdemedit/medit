@@ -463,7 +463,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .note-haut .note-haut-gauche strong { font-weight: 600; }
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite strong { font-weight: 600; white-space: nowrap; }
-.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #666; height: 12px; }
+.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #999; height: 12px; }
 
 /* TEMPS DE LECTURE */
 .temps-lecture-haut { text-align: center; font-size: 9pt; color: #555; font-style: italic; margin-bottom: 6px; letter-spacing: 0.3px; }
