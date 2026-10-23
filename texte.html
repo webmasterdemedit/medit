@@ -1628,6 +1628,21 @@
         html += '  </div>';
         html += '</div>';
       }
+      // APRÈS le bloc Informations et AVANT le bloc Thème
+var tagsClean = (texte.tags || [])
+  .map(function(t) { return String(t).trim(); })
+  .filter(function(t) { return t !== ''; });
+
+if (tagsClean.length > 0) {
+  html += '<div class="bloc-section">';
+  html += '  <div class="bloc-titre"><span class="icone">#</span> Tags <span class="compteur">' + tagsClean.length + '</span></div>';
+  html += '  <div class="bloc-tags">';
+  tagsClean.forEach(function(tag) {
+    html += '<span class="tag-item">#' + echapperHtml(tag) + '</span>';
+  });
+  html += '  </div>';
+  html += '</div>';
+}
 
       if (texte.categorie) {
         var couleur = themeInfo.couleur || '#2d6a4f';
