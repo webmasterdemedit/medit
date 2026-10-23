@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Tag - Qiraat</title>
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="fil-ariane" id="filAriane"></div>
+    <div class="barre-action-texte">
+      <a href="/medit/présentation.html" class="btn-retour">← Retour aux textes</a>
+    </div>
+    <div class="colonne-principale" id="contenu">
+      <div class="loader"><div class="spinner"></div><p>Chargement...</p></div>
+    </div>
+  </div>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script>
+    function echapperHtml(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+    function chargerTag() {
+      var params = new URLSearchParams(window.location.search);
+      var tag = (params.get('tag') || '').trim();
+      var conteneur = document.getElementById('contenu');
+
+      if (!tag) {
+        conteneur.innerHTML = '<p>Aucun tag spécifié.</p>';
+        return;
+      }
+
+      document.getElementById('filAriane').innerHTML =
+        '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>' +
+        '<a href="/medit/présentation.html">Tous les textes</a>' +
+        '<span class="sep">›</span><span class="current">#' + echapperHtml(tag) + '</span>';
+      document.title = '#' + tag + ' - Qiraat';
+
+      DataManager.charger().then(function(data) {
+        var textes = data.tousLesTextes || data.textes || [];
+        var cible = tag.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+
+        var trouves = textes.filter(function(t) {
+          var liste = t.tags || [];
+          return liste.some(function(x) {
+            return String(x).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '') === cible;
+          });
+        });
+
+        trouves.sort(function(a, b) {
+          return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
+        });
+
+        var html = '<div class="bandeau-titre"><h1>Textes tagués « #' + echapperHtml(tag) + ' »</h1></div>';
+        html += '<p style="margin-bottom:16px;color:var(--text-secondary);">' + trouves.length + ' texte(s) trouvé(s)</p>';
+
+        if (trouves.length === 0) {
+          html += '<p><em>Aucun texte ne porte ce tag.</em></p>';
+        } else {
+          html += '<div class="liste-textes">';
+          trouves.forEach(function(t) {
+            html += '<a class="item-texte" href="/medit/texte.html?id=' + encodeURIComponent(t.id) + '">';
+            html += '<span class="item-titre">' + echapperHtml(t.titre) + '</span>';
+            if (t.categorie) html += '<span style="font-size:.8em;color:var(--text-secondary);margin-left:8px;">— ' + echapperHtml(t.categorie) + '</span>';
+            html += '<span class="item-marqueur">→</span></a>';
+          });
+          html += '</div>';
+        }
+        conteneur.innerHTML = html;
+      }).catch(function(e) {
+        conteneur.innerHTML = '<p>Erreur de chargement.</p>';
+        console.error(e);
+      });
+    }
+
+    chargerTag();
+  </script>
+</body>
+</html>
