@@ -451,7 +451,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* CADRE GLOBAL - angles droits (conservé)                       */
+/* CADRE GLOBAL - angles droits                                  */
 /* ============================================================ */
 .page {
   max-width:100%;
@@ -459,7 +459,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 0;
   padding: 0;
   background: #fff;
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* ENCART ÉLÈVE */
@@ -560,7 +560,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 /* ============================================================ */
 /* ENCADRÉ QUESTIONS - angles droits, imbriqué dans le grand    */
-/* + forcé sur la page 2                                        */
 /* ============================================================ */
 .encadre-questions {
   margin: 10px 12px 12px;
@@ -568,10 +567,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 0;
   padding: 0;
   background: #fff;
-  page-break-before: always;
-  break-before: page;
-  page-break-inside: auto;
-  break-inside: auto;
 }
 
 .encadre-questions .titre-questions {
@@ -587,8 +582,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-bottom: 1.5px solid #1a1a1a;
   background: #f2f2f2;
   border-radius: 0;
-  page-break-after: avoid;
-  break-after: avoid;
 }
 
 .encadre-questions .corps-2col { column-count: 2; column-gap: 14px; column-rule: 1px solid #e0dccf; font-size: 10pt; line-height: 1.3; padding: 10px 12px; }
@@ -598,7 +591,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .exo { margin-bottom:9px; padding-bottom:7px; border-bottom: 0.5px dotted #ddd; break-inside: avoid; page-break-inside: avoid; }
 .exo:last-child { border-bottom: none; margin-bottom: 4px; padding-bottom: 0; }
 
-.consigne-exo { font-size: 8.5pt; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; margin-top: 2px; padding: 2px 8px; background: #f5f5f5; border-left: 2.5px solid #888; border-radius: 2px; page-break-after: avoid; break-after: avoid; }
+.consigne-exo { font-size: 8.5pt; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; margin-top: 2px; padding: 2px 8px; background: #f5f5f5; border-left: 2.5px solid #888; border-radius: 2px; }
 .consigne-exo::before { content: "◆ "; color: #888; font-size: 7pt; margin-right: 2px; }
 
 .exo-ligne { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
@@ -656,8 +649,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .pied-page .pied-centre { font-style: italic; color: #555; }
 .pied-page .pied-ecrit { font-style: italic; font-size: 7.5pt; color: #999; }
 .pied-page .imprime-le { font-style: italic; font-size: 7.5pt; color: #999; }
-
-.saut-page { page-break-before: always; break-before: page; height: 0; }
 </style>
 </head>
 <body>
@@ -705,8 +696,6 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
       printHtml += '</div>';          // ferme .texte-zone
       printHtml += '</div>';          // ferme .corps-contenu
       printHtml += '</div>';          // ferme .cadre-contenu
-      // Saut de page explicite garanti avant les exercices
-      printHtml += '<div class="saut-page"></div>';
       printHtml += '<div class="encadre-questions">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       texteZoneFermee = true;
