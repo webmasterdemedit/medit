@@ -1475,15 +1475,27 @@
     }
 
     function afficherFilAriane(texte) {
-      var html = '';
-      html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
-      html += '<a href="/medit/présentation.html">Tous les textes</a>';
-      if (texte.categorie) html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
-      html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
-      var el = document.getElementById('filAriane');
-      if (el) el.innerHTML = html;
-    }
+  var html = '';
+  html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
+  html += '<a href="/medit/présentation.html">Tous les textes</a>';
 
+  var themeMeta = themesData[texte.categorie] || {};
+  var section = (themeMeta.theme || '').trim();
+
+  if (section) {
+    // Lien vers la page qui liste les livrets de cette section
+    html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
+  }
+
+  if (texte.categorie) {
+    html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
+  }
+
+  html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
+
+  var el = document.getElementById('filAriane');
+  if (el) el.innerHTML = html;
+}
     function construireNavDansTheme(texte) {
       if (!texte.categorie) return {};
       var memeTheme = textesData.filter(function(c) { return (c.categorie || '') === (texte.categorie || ''); });
