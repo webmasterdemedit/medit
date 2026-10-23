@@ -481,7 +481,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* BANDEAU TITRE (horizontal, dans le cadre contenu) */
-.bandeau-titre { background: #f2f2f2; border-bottom: 1.5px solid #1a1a1a; padding: 10px 14px 9px; margin: 0; }
+.bandeau-titre { background: #f2f2f2; border-bottom: 1px solid #1a1a1a; padding: 10px 14px 9px; margin: 0; }
 .bandeau-titre .ligne-titre { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; text-align: left; }
 .bandeau-titre h1 { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0; flex: 1; }
 .bandeau-titre .meta-droite { font-size: 9pt; color: #555; text-align: right; white-space: nowrap; }
