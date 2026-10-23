@@ -451,10 +451,12 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* PAGE GLOBALE - plus de grand cadre (bordure supprimée)        */
+/* CADRE GLOBAL - angles droits (conservé)                       */
 /* ============================================================ */
 .page {
   max-width:100%;
+  border: 2px solid #1a1a1a;
+  border-radius: 0;
   padding: 0;
   background: #fff;
   overflow: visible;
@@ -479,7 +481,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .temps-lecture-haut::before { content: "⏱ "; font-style: normal; color: #777; margin-right: 3px; }
 
 /* ============================================================ */
-/* CADRE CONTENU - angles arrondis (cadre interne, conservé)     */
+/* CADRE CONTENU - angles arrondis                               */
 /* ============================================================ */
 .cadre-contenu {
   margin: 8px 12px 10px;
