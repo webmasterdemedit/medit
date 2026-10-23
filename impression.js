@@ -65,7 +65,18 @@ function extraireTitreSansNumero(titre) {
   if (!titre) return '';
   return titre.replace(/^\s*\d+\s+/, '').trim();
 }
-
+// Transforme *italique*, **gras**, ***gras italique*** en balises HTML.
+// L'ordre importe : *** avant ** avant *.
+function appliquerGrasItalique(texte) {
+  if (!texte || texte.indexOf('*') === -1) return texte;
+  // ***gras italique***
+  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // **gras**
+  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+  // *italique*  (évite de matcher s'il reste des ** orphelins)
+  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  return texte;
+}
 function rendreSources(texte) {
   if (!/\[[^\]]+\]/.test(texte)) return texte;
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
