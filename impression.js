@@ -65,7 +65,18 @@ function extraireTitreSansNumero(titre) {
   if (!titre) return '';
   return titre.replace(/^\s*\d+\s+/, '').trim();
 }
-
+// Transforme *italique*, **gras**, ***gras italique*** en balises HTML.
+// L'ordre importe : *** avant ** avant *.
+function appliquerGrasItalique(texte) {
+  if (!texte || texte.indexOf('*') === -1) return texte;
+  // ***gras italique***
+  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  // **gras**
+  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+  // *italique*  (évite de matcher s'il reste des ** orphelins)
+  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  return texte;
+}
 function rendreSources(texte) {
   if (!/\[[^\]]+\]/.test(texte)) return texte;
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
@@ -440,17 +451,13 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 }
 
 /* ============================================================ */
-/* CADRE GLOBAL - angles droits                                  */
+/* PAGE GLOBALE - plus de grand cadre (bordure supprimée)        */
 /* ============================================================ */
 .page {
   max-width:100%;
-  border: 2px solid #1a1a1a;
-  border-radius: 0;
   padding: 0;
   background: #fff;
-  overflow: hidden;
-  break-inside: avoid;
-  page-break-inside: avoid;
+  overflow: visible;
 }
 
 /* ENCART ÉLÈVE */
@@ -465,14 +472,14 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .note-haut .note-haut-gauche strong { font-weight: 600; }
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite strong { font-weight: 600; white-space: nowrap; }
-.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #aaa; height: 12px; }
+.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #999; height: 12px; }
 
 /* TEMPS DE LECTURE */
 .temps-lecture-haut { text-align: center; font-size: 9pt; color: #555; font-style: italic; margin-bottom: 6px; letter-spacing: 0.3px; }
 .temps-lecture-haut::before { content: "⏱ "; font-style: normal; color: #777; margin-right: 3px; }
 
 /* ============================================================ */
-/* CADRE CONTENU - angles arrondis, tient sur une page           */
+/* CADRE CONTENU - angles arrondis (cadre interne, conservé)     */
 /* ============================================================ */
 .cadre-contenu {
   margin: 8px 12px 10px;
@@ -480,21 +487,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 14px;
   overflow: hidden;
   background: #fff;
-  break-inside: avoid;
-  page-break-inside: avoid;
 }
 
 /* BANDEAU TITRE (horizontal, dans le cadre contenu) */
-.bandeau-titre { background: #f2f2f2; padding: 10px 14px 9px; margin: 0; position: relative; }
-.bandeau-titre::after {
-  content: "";
-  position: absolute;
-  left: 14px;
-  right: 14px;
-  bottom: 0;
-  height: 1px;
-  background: #1a1a1a;
-}
+/* CORRECTION : plus de border-bottom, le cadre entoure déjà */
+.bandeau-titre { background: #f2f2f2; padding: 10px 14px 9px; margin: 0; }
 .bandeau-titre .ligne-titre { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; text-align: left; }
 .bandeau-titre h1 { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0; flex: 1; }
 .bandeau-titre .meta-droite { font-size: 9pt; color: #555; text-align: right; white-space: nowrap; }
@@ -561,7 +558,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .img-manquante { display: block; padding: 8px; border: 1px dashed #999; color: #666; font-size: 9pt; text-align: center; margin: 8px 0; }
 
 /* ============================================================ */
-/* ENCADRÉ QUESTIONS - angles droits, tient sur une page         */
+/* ENCADRÉ QUESTIONS - angles droits, imbriqué dans le grand    */
+/* CORRECTION : plus de page-break-before (le .saut-page suffit) */
 /* ============================================================ */
 .encadre-questions {
   margin: 10px 12px 12px;
@@ -569,10 +567,11 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   border-radius: 0;
   padding: 0;
   background: #fff;
-  break-inside: avoid;
-  page-break-inside: avoid;
+  page-break-inside: auto;
+  break-inside: auto;
 }
 
+/* CORRECTION : plus de border-bottom (le cadre l'entoure déjà) */
 .encadre-questions .titre-questions {
   font-family: 'Georgia', serif;
   font-size: 13pt;
@@ -583,9 +582,10 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   text-align: center;
   margin: 0;
   padding: 8px 12px 6px;
-  border-bottom: 1.5px solid #1a1a1a;
   background: #f2f2f2;
   border-radius: 0;
+  page-break-after: avoid;
+  break-after: avoid;
 }
 
 .encadre-questions .corps-2col { column-count: 2; column-gap: 14px; column-rule: 1px solid #e0dccf; font-size: 10pt; line-height: 1.3; padding: 10px 12px; }
@@ -595,7 +595,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .exo { margin-bottom:9px; padding-bottom:7px; border-bottom: 0.5px dotted #ddd; break-inside: avoid; page-break-inside: avoid; }
 .exo:last-child { border-bottom: none; margin-bottom: 4px; padding-bottom: 0; }
 
-.consigne-exo { font-size: 8.5pt; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; margin-top: 2px; padding: 2px 8px; background: #f5f5f5; border-left: 2.5px solid #888; border-radius: 2px; }
+.consigne-exo { font-size: 8.5pt; font-weight: 600; color: #333; text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 3px; margin-top: 2px; padding: 2px 8px; background: #f5f5f5; border-left: 2.5px solid #888; border-radius: 2px; page-break-after: avoid; break-after: avoid; }
 .consigne-exo::before { content: "◆ "; color: #888; font-size: 7pt; margin-right: 2px; }
 
 .exo-ligne { display: flex; align-items: baseline; gap: 6px; margin-top: 2px; }
@@ -649,10 +649,12 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .zone-memo .memo-liste li { font-size:9.5pt; margin-bottom:2px; padding-left:13px; position:relative; line-height: 1.35; }
 .zone-memo .memo-liste li::before { content: "●"; position: absolute; left: 0; color: #999; font-size: 6pt; top: 4px; }
 
-.pied-page { text-align: center; font-size: 8pt; color: #666; margin: 0 12px 8px; padding-top: 5px; border-top: 0.5px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 14px; break-inside: avoid; page-break-inside: avoid; }
+.pied-page { text-align: center; font-size: 8pt; color: #666; margin: 0 12px 8px; padding-top: 5px; border-top: 0.5px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 14px; }
 .pied-page .pied-centre { font-style: italic; color: #555; }
 .pied-page .pied-ecrit { font-style: italic; font-size: 7.5pt; color: #999; }
 .pied-page .imprime-le { font-style: italic; font-size: 7.5pt; color: #999; }
+
+.saut-page { page-break-before: always; break-before: page; height: 0; }
 </style>
 </head>
 <body>
@@ -700,6 +702,8 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
       printHtml += '</div>';          // ferme .texte-zone
       printHtml += '</div>';          // ferme .corps-contenu
       printHtml += '</div>';          // ferme .cadre-contenu
+      // Saut de page explicite garanti avant les exercices
+      printHtml += '<div class="saut-page"></div>';
       printHtml += '<div class="encadre-questions">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       texteZoneFermee = true;
@@ -783,7 +787,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
-          printHtml += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+          printHtml += '<p>' + appliquerGrasItalique(rendreSources(rendreCitations(bloc))) + '</p>';
         });
         bufferTexte = '';
       }
