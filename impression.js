@@ -65,18 +65,7 @@ function extraireTitreSansNumero(titre) {
   if (!titre) return '';
   return titre.replace(/^\s*\d+\s+/, '').trim();
 }
-// Transforme *italique*, **gras**, ***gras italique*** en balises HTML.
-// L'ordre importe : *** avant ** avant *.
-function appliquerGrasItalique(texte) {
-  if (!texte || texte.indexOf('*') === -1) return texte;
-  // ***gras italique***
-  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  // **gras**
-  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-  // *italique*  (évite de matcher s'il reste des ** orphelins)
-  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
-  return texte;
-}
+
 function rendreSources(texte) {
   if (!/\[[^\]]+\]/.test(texte)) return texte;
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
@@ -450,49 +439,28 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
   vertical-align: middle;
 }
 
-/* ============================================================ */
-/* CADRE GLOBAL - angles droits                                  */
-/* ============================================================ */
-.page {
-  max-width:100%;
-  border: 2px solid #1a1a1a;
-  border-radius: 0;
-  padding: 0;
-  background: #fff;
-  overflow: hidden;
-}
+.page { max-width:100%; }
 
 /* ENCART ÉLÈVE */
-.entete-eleve { margin-bottom: 6px; padding: 8px 12px 4px; font-size: 9.5pt; }
+.entete-eleve { margin-bottom: 6px; padding: 6px 10px; font-size: 9.5pt; }
 .entete-eleve .ligne-eleve { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .entete-eleve span { white-space: nowrap; }
 .entete-eleve strong { font-weight: 600; color: #3a2e22; }
 
 /* NOTE / APPRÉCIATION */
-.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 2px 12px 8px; margin-bottom: 4px; font-size: 10pt; color: #1a1a1a; }
+.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 2px 10px 8px; margin-bottom: 8px; font-size: 10pt; color: #1a1a1a; }
 .note-haut .note-haut-gauche { white-space: nowrap; }
 .note-haut .note-haut-gauche strong { font-weight: 600; }
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite strong { font-weight: 600; white-space: nowrap; }
-.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #999; height: 12px; }
+.note-haut .note-haut-droite .ligne-pointillee { display: inline-block; flex: 1; border-bottom: 0.5px dotted #666; height: 12px; }
 
 /* TEMPS DE LECTURE */
-.temps-lecture-haut { text-align: center; font-size: 9pt; color: #555; font-style: italic; margin-bottom: 6px; letter-spacing: 0.3px; }
+.temps-lecture-haut { text-align: center; font-size: 9pt; color: #555; font-style: italic; margin-bottom: 8px; letter-spacing: 0.3px; }
 .temps-lecture-haut::before { content: "⏱ "; font-style: normal; color: #777; margin-right: 3px; }
 
-/* ============================================================ */
-/* CADRE CONTENU - angles arrondis                               */
-/* ============================================================ */
-.cadre-contenu {
-  margin: 8px 12px 10px;
-  border: 1.5px solid #1a1a1a;
-  border-radius: 14px;
-  overflow: hidden;
-  background: #fff;
-}
-
-/* BANDEAU TITRE (horizontal, dans le cadre contenu) */
-.bandeau-titre { background: #f2f2f2; border-bottom: 1px solid #1a1a1a; padding: 10px 14px 9px; margin: 0; }
+/* BANDEAU TITRE */
+.bandeau-titre { background: #f2f2f2; border-radius: 3px; padding: 10px 14px 9px; margin-bottom: 8px; }
 .bandeau-titre .ligne-titre { display: flex; flex-direction: row; justify-content: flex-start; align-items: center; gap: 10px; text-align: left; }
 .bandeau-titre h1 { font-family: 'Georgia', serif; font-size: 16pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; line-height: 1.15; margin: 0; flex: 1; }
 .bandeau-titre .meta-droite { font-size: 9pt; color: #555; text-align: right; white-space: nowrap; }
@@ -502,16 +470,12 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .numero-texte { display: inline-block; background: #1a1a1a; color: #ffffff; font-family: 'Georgia', serif; font-size: 13pt; font-weight: bold; line-height: 1; padding: 4px 10px; border-radius: 3px; letter-spacing: 0.5px; white-space: nowrap; align-self: center; flex-shrink: 0; }
 
 /* CHIPS TAGS + VOCABULAIRE */
-.tags-haut { margin-top: 4px; margin-bottom: 4px; text-align: center; padding: 0 12px; }
+.tags-haut { margin-top: 4px; margin-bottom: 4px; text-align: center; }
 .tags-haut .memo-tag { display: inline-block; padding: 1px 9px; margin: 1px 3px; background: #f0f0f0; border-radius: 10px; font-size: 9.5pt; color: #444; font-style: normal; }
 
-.vocab-haut { margin-top: 3px; margin-bottom: 6px; text-align: center; padding: 0 12px; }
+.vocab-haut { margin-top: 3px; margin-bottom: 8px; text-align: center; }
 .vocab-haut .titre-memo { display: inline; font-weight: 600; font-size: 8.5pt; text-transform: uppercase; letter-spacing: 1px; color: #555; margin-right: 6px; }
 .vocab-haut .memo-mot { display: inline-block; padding: 1px 9px; margin: 1px 3px; background: #faf8f4; border: 0.5px solid #bbb; border-radius: 10px; font-size: 9pt; color: #3a2e22; line-height: 1.35; }
-
-/* CORPS DU CADRE CONTENU */
-.corps-contenu { padding: 12px 16px; }
-.corps-contenu .texte-zone { margin-top: 0; margin-bottom: 0; }
 
 /* ============================================================ */
 /* PARAGRAPHES                                                    */
@@ -559,34 +523,13 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .img-manquante { display: block; padding: 8px; border: 1px dashed #999; color: #666; font-size: 9pt; text-align: center; margin: 8px 0; }
 
 /* ============================================================ */
-/* ENCADRÉ QUESTIONS - angles droits, imbriqué dans le grand    */
+/* CORPS 2 COLONNES                                              */
 /* ============================================================ */
-.encadre-questions {
-  margin: 10px 12px 12px;
-  border: 1.5px solid #1a1a1a;
-  border-radius: 0;
-  padding: 0;
-  background: #fff;
-}
+.corps-2col { column-count: 2; column-gap: 14px; column-rule: 1px solid #e0dccf; font-size: 10pt; line-height: 1.3; }
 
-.encadre-questions .titre-questions {
-  font-family: 'Georgia', serif;
-  font-size: 13pt;
-  font-weight: bold;
-  color: #1a1a1a;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  text-align: center;
-  margin: 0;
-  padding: 8px 12px 6px;
-  border-bottom: 1.5px solid #1a1a1a;
-  background: #f2f2f2;
-  border-radius: 0;
-}
+.titre-questions { font-family: 'Georgia', serif; font-size: 13pt; font-weight: bold; color: #1a1a1a; letter-spacing: 0.5px; text-transform: uppercase; text-align: center; margin-bottom: 10px; padding-bottom: 4px; border-bottom: 1px solid #ddd; column-span: all; }
 
-.encadre-questions .corps-2col { column-count: 2; column-gap: 14px; column-rule: 1px solid #e0dccf; font-size: 10pt; line-height: 1.3; padding: 10px 12px; }
-
-.encadre-questions .zone-exercices { margin:0; padding:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
+.zone-exercices { margin-top:0; padding-top:0; font-size:9.5pt; line-height:1.35; color:#1a1a1a; }
 
 .exo { margin-bottom:9px; padding-bottom:7px; border-bottom: 0.5px dotted #ddd; break-inside: avoid; page-break-inside: avoid; }
 .exo:last-child { border-bottom: none; margin-bottom: 4px; padding-bottom: 0; }
@@ -636,7 +579,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .copier-ligne-pointillee { width: 100%; height: 38px; border-bottom: 1px dotted #5a4a3a; margin-top: 4px; }
 
 /* À RETENIR */
-.zone-memo { margin: 10px 12px 12px; padding: 7px 10px 8px; background: #f7f7f7; border: 0.5px solid #ccc; border-left: 3px solid #999; border-radius: 3px; break-inside: avoid; page-break-inside: avoid; }
+.zone-memo { margin-top:10px; padding: 7px 10px 8px; background: #f7f7f7; border: 0.5px solid #ccc; border-left: 3px solid #999; border-radius: 3px; break-inside: avoid; page-break-inside: avoid; }
 .zone-memo .titre-memo { font-weight:600; font-size:8.5pt; text-transform:uppercase; letter-spacing:1px; color:#555; margin-bottom:4px; }
 .zone-memo .titre-memo::before { content: "✦ "; color: #999; margin-right: 2px; }
 .zone-memo .memo-bloc { margin-bottom:5px; }
@@ -645,7 +588,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 .zone-memo .memo-liste li { font-size:9.5pt; margin-bottom:2px; padding-left:13px; position:relative; line-height: 1.35; }
 .zone-memo .memo-liste li::before { content: "●"; position: absolute; left: 0; color: #999; font-size: 6pt; top: 4px; }
 
-.pied-page { text-align: center; font-size: 8pt; color: #666; margin: 0 12px 8px; padding-top: 5px; border-top: 0.5px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 14px; }
+.pied-page { text-align: center; font-size: 8pt; color: #666; margin-top: 10px; padding-top: 5px; border-top: 0.5px solid #ddd; display: flex; justify-content: center; align-items: center; gap: 14px; }
 .pied-page .pied-centre { font-style: italic; color: #555; }
 .pied-page .pied-ecrit { font-style: italic; font-size: 7.5pt; color: #999; }
 .pied-page .imprime-le { font-style: italic; font-size: 7.5pt; color: #999; }
@@ -669,22 +612,20 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
 <div class="temps-lecture-haut">Temps de lecture estimé : ${tempsLecture} min</div>
 
-<div class="cadre-contenu">
-  <div class="bandeau-titre">
-    <div class="ligne-titre">
-      ${couvertureHtml}
-      ${numeroHtml}
-      <h1>${titreAffiche || 'Lecture'}</h1>
-      <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
-    </div>
+<div class="bandeau-titre">
+  <div class="ligne-titre">
+    ${couvertureHtml}
+    ${numeroHtml}
+    <h1>${titreAffiche || 'Lecture'}</h1>
+    <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
   </div>
+</div>
 
-  ${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
-  ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 
-  <div class="corps-contenu">
-    <div class="texte-zone">
+<div class="texte-zone">
 `;
 
   var exoNum = 0;
@@ -693,15 +634,13 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
 
   function ouvrirZoneExercices() {
     if (!texteZoneFermee) {
-      printHtml += '</div>';          // ferme .texte-zone
-      printHtml += '</div>';          // ferme .corps-contenu
-      printHtml += '</div>';          // ferme .cadre-contenu
-      printHtml += '<div class="encadre-questions">';
+      printHtml += '</div>';
+      printHtml += '<div class="corps-2col">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       texteZoneFermee = true;
     }
     if (!zoneExercicesOuverte) {
-      printHtml += '<div class="corps-2col"><div class="zone-exercices">';
+      printHtml += '<div class="zone-exercices">';
       zoneExercicesOuverte = true;
     }
   }
@@ -779,7 +718,7 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
-          printHtml += '<p>' + appliquerGrasItalique(rendreSources(rendreCitations(bloc))) + '</p>';
+          printHtml += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
         });
         bufferTexte = '';
       }
@@ -929,18 +868,9 @@ body { font-family:'Times New Roman', Times, serif; background:white; color:#1a1
     }
   });
 
-  // Fermeture des conteneurs
-  if (zoneExercicesOuverte) {
-    printHtml += '</div>';   // ferme .zone-exercices
-    printHtml += '</div>';   // ferme .corps-2col
-  }
-  if (texteZoneFermee) {
-    printHtml += '</div>';   // ferme .encadre-questions
-  } else {
-    printHtml += '</div>';   // ferme .texte-zone
-    printHtml += '</div>';   // ferme .corps-contenu
-    printHtml += '</div>';   // ferme .cadre-contenu
-  }
+  if (zoneExercicesOuverte) printHtml += '</div>';
+  if (texteZoneFermee) printHtml += '</div>';
+  else printHtml += '</div>';
 
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
