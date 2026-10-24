@@ -58,50 +58,60 @@
       color: var(--text);
     }
 
+    /* === GRILLE === */
     .grille-themes {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
       gap: 16px;
-      justify-items: center;
+      justify-items: stretch;
     }
 
-    /* === Bloc "infos bas de carte" (textes / exercices / tags) === */
-    .carte-couverture .carte-bas {
-      margin-top: 10px;
-      padding-top: 10px;
-      border-top: 1px solid var(--border);
+    /* === Wrapper carte + bloc bas === */
+    .grille-themes .carte-avec-bas {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+    }
+
+    /* === Bloc bas de carte === */
+    .carte-avec-bas .carte-bas {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-top: none;
+      background: var(--bg);
       display: flex;
       flex-direction: column;
       gap: 6px;
       font-size: 11px;
       color: var(--text-secondary);
+      box-sizing: border-box;
     }
 
-    .carte-couverture .carte-bas .ligne-compteurs {
+    .carte-avec-bas .carte-bas .ligne-compteurs {
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
     }
 
-    .carte-couverture .carte-bas .compteur-badge {
+    .carte-avec-bas .carte-bas .compteur-badge {
       padding: 2px 8px;
       border: 1px solid var(--border);
       white-space: nowrap;
     }
 
-    .carte-couverture .carte-bas .liste-tags {
+    .carte-avec-bas .carte-bas .liste-tags {
       display: flex;
       flex-wrap: wrap;
       gap: 4px;
     }
 
-    .carte-couverture .carte-bas .tag {
+    .carte-avec-bas .carte-bas .tag {
       padding: 1px 6px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
       color: var(--text-secondary);
       font-size: 10px;
-      letter-spacing: 0.3px;
     }
 
     .vide-themes {
@@ -219,9 +229,6 @@
     window.niveauEtudiant = 0;
     window.nomEtudiant = '';
 
-    // ============================================================
-    // Compter les exercices d'un texte (même logique que textes.html)
-    // ============================================================
     var TYPES_EXERCICES = [
       { prefix: 'quiz:',   label: 'QCM' },
       { prefix: 'open:',   label: 'Ouverte' },
@@ -353,7 +360,6 @@
       });
 
       var titresThemes = Object.keys(themesData);
-
       var totalExercicesGlobal = 0;
 
       var themesCalcules = titresThemes.map(function(titre) {
@@ -390,7 +396,6 @@
           ? Math.round((validees / textesDuTheme.length) * 100)
           : 0;
 
-        // === Nouveaux compteurs : exercices + tags ===
         var nbExercices = 0;
         var tagsSet = {};
         textesDuTheme.forEach(function(ch) {
@@ -452,33 +457,26 @@
           lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
         });
 
-        // On injecte le bloc "bas de carte" juste avant la fermeture
-        var basHtml = '<div class="carte-bas">'
-          + '<div class="ligne-compteurs">'
-          + '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
-          + '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
-          + '</div>'
-          + (theme.tags.length > 0
-              ? '<div class="liste-tags">'
-                + theme.tags.map(function(t) {
-                    return '<span class="tag">#' + escapeHtml(t) + '</span>';
-                  }).join('')
-                + '</div>'
-              : '')
+        var basHtml = ''
+          + '<div class="carte-bas">'
+          +   '<div class="ligne-compteurs">'
+          +     '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
+          +     '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
+          +   '</div>'
+          +   (theme.tags.length > 0
+                ? '<div class="liste-tags">'
+                  + theme.tags.map(function(t) {
+                      return '<span class="tag">#' + escapeHtml(t) + '</span>';
+                    }).join('')
+                  + '</div>'
+                : '')
           + '</div>';
 
-        html += injecterBasDeCarte(carteHtml, basHtml);
+        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + '</div>';
       });
       html += '</div>';
 
       container.innerHTML = html;
-    }
-
-    // Insère le bloc HTML en bas de la carte (avant la dernière </div>)
-    function injecterBasDeCarte(carteHtml, basHtml) {
-      var idx = carteHtml.lastIndexOf('</div>');
-      if (idx === -1) return carteHtml + basHtml;
-      return carteHtml.substring(0, idx) + basHtml + carteHtml.substring(idx);
     }
 
     function demarrer() {
