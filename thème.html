@@ -73,6 +73,29 @@
     var categorieActuelle = '';
     var themesData = {};
 
+    // Champs déjà affichés en dur ailleurs dans l'UI → on ne les répète pas dans le bloc infos
+    var CHAMPS_RESERVES = {
+      'description': true,
+      'couleur': true,
+      'couverture': true,
+      'couverture-url': true
+    };
+
+    // Ordre préféré d'affichage des champs issus de "infos"
+    var ORDRE_PREFERE = [
+      'sous-titre', 'sous titre',
+      'date',
+      'auteur',
+      'pre-requis', 'pré-requis', 'prerequis',
+      'pages', 'nombre de pages',
+      'niveau',
+      'discipline', 'disciplines',
+      'editeur', 'éditeur',
+      'langue',
+      'isbn',
+      'version'
+    ];
+
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
       var match = titre.match(/^\s*(\d+)\s+/);
@@ -94,6 +117,67 @@
       } catch(e) {
         return dateStr;
       }
+    }
+
+    function capitaliser(s) {
+      if (!s) return '';
+      var t = String(s).replace(/-/g, ' ');
+      return t.charAt(0).toUpperCase() + t.slice(1);
+    }
+
+    function echapperHtml(s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
+        return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+      });
+    }
+
+    // ============================================================
+    // Construit le bloc "pre-requis" dynamiquement à partir des infos
+    // ============================================================
+    function construireInfosHtml(infos) {
+      if (!infos) return '';
+      var html = '';
+      var vus = {};
+
+      // 1) champs dans l'ordre préféré
+      for (var i = 0; i < ORDRE_PREFERE.length; i++) {
+        var k = ORDRE_PREFERE[i];
+        if (CHAMPS_RESERVES[k]) continue;
+        if (vus[k]) continue;
+        if (infos[k] === undefined || infos[k] === null || infos[k] === '') continue;
+        html += '<div class="pre-requis"><strong>' +
+          echapperHtml(capitaliser(k)) + ' :</strong> ' +
+          echapperHtml(infos[k]) + '</div>';
+        vus[k] = true;
+      }
+
+      // 2) tous les autres champs non encore affichés
+      for (var cle in infos) {
+        if (vus[cle] || CHAMPS_RESERVES[cle]) continue;
+        if (infos[cle] === undefined || infos[cle] === null || infos[cle] === '') continue;
+        html += '<div class="pre-requis"><strong>' +
+          echapperHtml(capitaliser(cle)) + ' :</strong> ' +
+          echapperHtml(infos[cle]) + '</div>';
+        vus[cle] = true;
+      }
+
+      return html;
+    }
+
+    // Fusionne les infos JSON + les colonnes historiques (fallback)
+    function construireInfosCompletes(themeInfo) {
+      var infos = {};
+      if (themeInfo.infos && typeof themeInfo.infos === 'object') {
+        for (var k in themeInfo.infos) {
+          infos[k] = themeInfo.infos[k];
+        }
+      }
+      // Fallback : colonnes historiques si non présentes dans infos
+      if (themeInfo.sousTitre && !infos['sous-titre']) infos['sous-titre'] = themeInfo.sousTitre;
+      if (themeInfo.date && !infos['date'])             infos['date'] = themeInfo.date;
+      if (themeInfo.auteur && !infos['auteur'])         infos['auteur'] = themeInfo.auteur;
+      if (themeInfo.pages && !infos['pages'])           infos['pages'] = themeInfo.pages;
+      return infos;
     }
 
     function ouvrirAnnotations(texteId, titre) {
@@ -157,7 +241,6 @@
         return;
       }
 
-      // ✅ Plus de redirection : visiteur ou connecté, on continue
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
@@ -172,14 +255,15 @@
           if (data.themes && Array.isArray(data.themes)) {
             data.themes.forEach(function(l) {
               themesData[l.titre] = {
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                pages: l.pages || '',
+                couleur:    l.couleur || '#2d6a4f',
+                sousTitre:  l.sousTitre || '',
+                date:       l.date || '',
+                pages:      l.pages || '',
                 description: l.description || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
+                auteur:     l.auteur || '',
+                niveau:     parseInt(l.niveau) || 0,
+                couverture: l.couverture || '',
+                infos:      l.infos || null   // ← NOUVEAU
               };
             });
           }
@@ -206,14 +290,15 @@
               themesData = {};
               cache.themes.forEach(function(l) {
                 themesData[l.titre] = {
-                  couleur: l.couleur || '#2d6a4f',
-                  sousTitre: l.sousTitre || '',
-                  date: l.date || '',
-                  pages: l.pages || '',
+                  couleur:    l.couleur || '#2d6a4f',
+                  sousTitre:  l.sousTitre || '',
+                  date:       l.date || '',
+                  pages:      l.pages || '',
                   description: l.description || '',
-                  auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0,
-                  couverture: l.couverture || ''
+                  auteur:     l.auteur || '',
+                  niveau:     parseInt(l.niveau) || 0,
+                  couverture: l.couverture || '',
+                  infos:      l.infos || null   // ← NOUVEAU
                 };
               });
             }
@@ -285,7 +370,6 @@
       var dateFormatee = formatDate(dateTheme);
       var pourcentage = totalTextes > 0 ? Math.round((validees / totalTextes) * 100) : 0;
 
-      // ✅ Utilise la fonction centralisée de couverture.js
       var carteHtml = construireCarteCouverture({
         titre: categorieActuelle,
         couleur: couleur,
@@ -300,13 +384,16 @@
         cliquable: false
       });
 
+      // ✅ Bloc d'infos dynamique (tous les "clé: valeur" du fichier infos)
+      var infosCompletes = construireInfosCompletes(themeInfo);
+      var infosHtml = construireInfosHtml(infosCompletes);
+
       var enteteHtml = `
         <div class="entete-theme">
           ${carteHtml}
           <div class="description-theme">
             <h2>#${categorieActuelle}</h2>
-            ${pages ? `<div class="pre-requis"><strong>Nombre de pages :</strong> ${pages}</div>` : ''}
-            ${auteur ? `<div class="pre-requis"><strong>Auteur :</strong> ${auteur}</div>` : ''}
+            ${infosHtml}
             <div class="texte-desc">
               <p>${description}</p>
             </div>
