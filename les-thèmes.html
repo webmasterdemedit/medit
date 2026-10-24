@@ -13,7 +13,7 @@
 
   <style>
     .page-themes {
-      max-width: 1000px;
+      max-width: 900px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
@@ -58,13 +58,54 @@
       color: var(--text);
     }
 
-    .grille-livrets {
+    .grille-themes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 16px;
+      justify-items: center;
+    }
+
+    /* === Bloc "infos bas de carte" (textes / exercices / tags) === */
+    .carte-couverture .carte-bas {
+      margin-top: 10px;
+      padding-top: 10px;
+      border-top: 1px solid var(--border);
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    .carte-couverture .carte-bas .ligne-compteurs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .carte-couverture .carte-bas .compteur-badge {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    .carte-couverture .carte-bas .liste-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .carte-couverture .carte-bas .tag {
+      padding: 1px 6px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+      font-size: 10px;
+      letter-spacing: 0.3px;
     }
 
     .vide-themes {
+      grid-column: 1 / -1;
       text-align: center;
       padding: 60px 20px;
       color: var(--text-secondary);
@@ -92,6 +133,10 @@
     @media (max-width: 700px) {
       .page-themes { padding: 12px 16px 30px; }
       .page-themes h1 { font-size: 22px; }
+      .grille-themes {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+      }
     }
   </style>
 
@@ -119,6 +164,10 @@
       <div class="stat-item">
         <span>Textes :</span>
         <span class="nombre" id="totalTextes">0</span>
+      </div>
+      <div class="stat-item">
+        <span>Exercices :</span>
+        <span class="nombre" id="totalExercices">0</span>
       </div>
       <div class="stat-item">
         <span>Votre niveau :</span>
@@ -170,6 +219,50 @@
     window.niveauEtudiant = 0;
     window.nomEtudiant = '';
 
+    // ============================================================
+    // Compter les exercices d'un texte (même logique que textes.html)
+    // ============================================================
+    var TYPES_EXERCICES = [
+      { prefix: 'quiz:',   label: 'QCM' },
+      { prefix: 'open:',   label: 'Ouverte' },
+      { prefix: 'ordre:',  label: 'Ordre' },
+      { prefix: 'carte:',  label: 'Carte' },
+      { prefix: 'relier:', label: 'Relier' },
+      { prefix: 'tt:',     label: 'Trous' },
+      { prefix: 'vf:',     label: 'VF' },
+      { prefix: 'copier:', label: 'Copier' }
+    ];
+
+    function compterExercices(texte) {
+      var ordreBlocs = texte.ordreBlocs || [];
+      var total = 0;
+
+      if (ordreBlocs.length > 0) {
+        TYPES_EXERCICES.forEach(function(type) {
+          ordreBlocs.forEach(function(ob) {
+            if (ob.indexOf(type.prefix) === 0) total++;
+          });
+        });
+      } else {
+        if (texte.hasQuiz)     total++;
+        if (texte.hasQuestion) total++;
+      }
+      return total;
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // Chargement
+    // ============================================================
     function chargerThemes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
@@ -243,12 +336,14 @@
         });
     }
 
+    // ============================================================
+    // Affichage
+    // ============================================================
     function afficherThemes() {
       var container = document.getElementById('contenu');
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // Compter les textes par catégorie
       var textesParCategorie = {};
       textesData.forEach(function(ch) {
         var cat = (ch.categorie || '').trim();
@@ -258,6 +353,8 @@
       });
 
       var titresThemes = Object.keys(themesData);
+
+      var totalExercicesGlobal = 0;
 
       var themesCalcules = titresThemes.map(function(titre) {
         var meta = themesData[titre];
@@ -293,12 +390,29 @@
           ? Math.round((validees / textesDuTheme.length) * 100)
           : 0;
 
+        // === Nouveaux compteurs : exercices + tags ===
+        var nbExercices = 0;
+        var tagsSet = {};
+        textesDuTheme.forEach(function(ch) {
+          nbExercices += compterExercices(ch);
+          (ch.tags || []).forEach(function(tag) {
+            var t = String(tag).trim();
+            if (t) tagsSet[t] = true;
+          });
+        });
+        var tagsListe = Object.keys(tagsSet).sort(function(a, b) {
+          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+        });
+        totalExercicesGlobal += nbExercices;
+
         return {
           nom: titre,
           theme: (meta.theme || '').trim(),
           niveauMin: niveauMin,
           niveauMax: niveauMax,
           textes: textesDuTheme.length,
+          exercices: nbExercices,
+          tags: tagsListe,
           disponible: disponible,
           verrouille: !disponible,
           pourcentage: pourcentage,
@@ -316,9 +430,9 @@
           || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
       });
 
-      // Stats
       document.getElementById('totalThemes').textContent = themesCalcules.length;
       document.getElementById('totalTextes').textContent = textesData.length;
+      document.getElementById('totalExercices').textContent = totalExercicesGlobal;
 
       if (themesCalcules.length === 0) {
         container.innerHTML = `
@@ -331,17 +445,40 @@
         return;
       }
 
-      // Rendu : liste verticale comme les-sections
-      var html = '<div class="grille-livrets">';
+      var html = '<div class="grille-themes">';
       themesCalcules.forEach(function(theme) {
-        html += construireCarteCouverture(theme, {
+        var carteHtml = construireCarteCouverture(theme, {
           cliquable: theme.disponible,
           lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
         });
+
+        // On injecte le bloc "bas de carte" juste avant la fermeture
+        var basHtml = '<div class="carte-bas">'
+          + '<div class="ligne-compteurs">'
+          + '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
+          + '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
+          + '</div>'
+          + (theme.tags.length > 0
+              ? '<div class="liste-tags">'
+                + theme.tags.map(function(t) {
+                    return '<span class="tag">#' + escapeHtml(t) + '</span>';
+                  }).join('')
+                + '</div>'
+              : '')
+          + '</div>';
+
+        html += injecterBasDeCarte(carteHtml, basHtml);
       });
       html += '</div>';
 
       container.innerHTML = html;
+    }
+
+    // Insère le bloc HTML en bas de la carte (avant la dernière </div>)
+    function injecterBasDeCarte(carteHtml, basHtml) {
+      var idx = carteHtml.lastIndexOf('</div>');
+      if (idx === -1) return carteHtml + basHtml;
+      return carteHtml.substring(0, idx) + basHtml + carteHtml.substring(idx);
     }
 
     function demarrer() {
