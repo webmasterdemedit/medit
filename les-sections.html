@@ -102,7 +102,7 @@
     <div class="stats-ligne" id="statsLigne">
       <div class="stat-item">
         <span>Thèmes :</span>
-        <span class="nombre" id="totalThemes">0</span>
+        <span class="nombre" id="totalLivrets">0</span>
       </div>
       <div class="stat-item">
         <span>Textes :</span>
@@ -163,7 +163,7 @@
           <div class="vide-section">
             <span class="icone">◈</span>
             <h2>Aucune section spécifiée</h2>
-            <p><a href="/medit/les-sections.html" style="color:var(--text-secondary);">Voir toutes les sections</a></p>
+            <p><a href="/medit/présentation.html" style="color:var(--text-secondary);">Voir tous les textes</a></p>
           </div>
         `;
         return;
@@ -206,17 +206,17 @@
 
       var cible = normaliserComparaison(sectionDemandee);
 
-      // Thèmes appartenant à cette section (colonne A de la feuille Thèmes = section)
-      var themesDeLaSection = themes.filter(function(l) {
+      // Livrets appartenant à cette section (colonne A de la feuille Thèmes = section)
+      var livrets = themes.filter(function(l) {
         return normaliserComparaison(l.theme || '') === cible && l.titre;
       });
 
-      // Tri alphabétique sur le titre du thème
-      themesDeLaSection.sort(function(a, b) {
+      // Tri alphabétique sur le titre du livret
+      livrets.sort(function(a, b) {
         return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
       });
 
-      // Compter les textes par thème (= catégorie du texte)
+      // Compter les textes par livret
       var compteTextes = {};
       textes.forEach(function(t) {
         var cat = (t.categorie || '').trim();
@@ -224,29 +224,29 @@
       });
 
       var totalTextes = 0;
-      themesDeLaSection.forEach(function(l) {
+      livrets.forEach(function(l) {
         totalTextes += compteTextes[l.titre] || 0;
       });
 
-      document.getElementById('totalThemes').textContent = themesDeLaSection.length;
+      document.getElementById('totalLivrets').textContent = livrets.length;
       document.getElementById('totalTextes').textContent = totalTextes;
 
       var conteneur = document.getElementById('contenu');
 
-      if (themesDeLaSection.length === 0) {
+      if (livrets.length === 0) {
         conteneur.innerHTML = `
           <div class="vide-section">
             <span class="icone">◈</span>
             <h2>Aucun thème dans cette section</h2>
-            <p><a href="/medit/les-sections.html" style="color:var(--text-secondary);">Voir toutes les sections</a></p>
+            <p><a href="/medit/présentation.html" style="color:var(--text-secondary);">Voir tous les textes</a></p>
           </div>
         `;
         return;
       }
 
-      // Rendu identique à la page d'accueil : construireCarteCouverture
+      // Rendu identique à la page d'accueil (index.html) : construireCarteCouverture
       var html = '<div class="grille-livrets">';
-      themesDeLaSection.forEach(function(l) {
+      livrets.forEach(function(l) {
         html += construireCarteCouverture({
           titre: l.titre,
           couleur: l.couleur || '#2d6a4f',
