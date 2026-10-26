@@ -1,24 +1,25 @@
-<!-- les-thèmes.html -->
+<!-- textes.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Les Thèmes - Qiraat</title>
+  <title>Derniers textes publiés - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    .page-themes {
-      max-width: 900px;
+    /* ===== PAGE BLOG ===== */
+    .page-blog {
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
 
-    .page-themes h1 {
+    .page-blog h1 {
       font-family: 'Georgia', serif;
       font-size: 28px;
       font-weight: 700;
@@ -27,125 +28,256 @@
       letter-spacing: 0.5px;
     }
 
-    .page-themes .sous-titre-page {
+    .page-blog .sous-titre-page {
       font-size: 15px;
       color: var(--text-secondary);
       margin-bottom: 24px;
       font-weight: 300;
     }
 
-    .stats-ligne {
+    /* ===== BARRE DE TRI ===== */
+    .barre-tri {
       display: flex;
       flex-wrap: wrap;
-      gap: 18px;
+      gap: 10px;
       margin-bottom: 24px;
       padding-bottom: 18px;
       border-bottom: 1px solid var(--border);
     }
 
-    .stat-item {
+    .tri-groupe {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 6px;
       font-size: 13px;
       color: var(--text-secondary);
     }
 
-    .stat-item .nombre {
-      font-family: 'Georgia', serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text);
-    }
-
-    /* === GRILLE === */
-    .grille-themes {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: 16px;
-      justify-items: stretch;
-    }
-
-    /* === Wrapper carte + bloc bas === */
-    .grille-themes .carte-avec-bas {
-      display: flex;
-      flex-direction: column;
-      width: 100%;
-    }
-
-    /* === Bloc bas de carte === */
-    .carte-avec-bas .carte-bas {
-      margin-top: 6px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-top: none;
-      background: var(--bg);
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      font-size: 11px;
-      color: var(--text-secondary);
-      box-sizing: border-box;
-    }
-
-    .carte-avec-bas .carte-bas .ligne-compteurs {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 6px;
-    }
-
-    .carte-avec-bas .carte-bas .compteur-badge {
-      padding: 2px 8px;
-      border: 1px solid var(--border);
-      white-space: nowrap;
-    }
-
-    .carte-avec-bas .carte-bas .liste-tags {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 4px;
-    }
-
-    .carte-avec-bas .carte-bas .tag {
-      padding: 1px 6px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 10px;
-    }
-
-    .vide-themes {
-      grid-column: 1 / -1;
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary);
-    }
-
-    .vide-themes .icone {
-      font-size: 32px;
-      display: block;
-      margin-bottom: 12px;
+    .tri-groupe label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
       color: var(--text-muted);
     }
 
-    .vide-themes h2 {
-      font-size: 20px;
+    .tri-groupe select {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
       color: var(--text);
-      font-weight: 500;
-      margin-bottom: 4px;
+      cursor: pointer;
+      outline: none;
     }
 
-    .vide-themes p {
+    .tri-groupe select:hover,
+    .tri-groupe select:focus {
+      border-color: var(--text-secondary);
+    }
+
+    .tri-reset {
+      font-size: 12px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
       color: var(--text-secondary);
-      font-size: 14px;
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
     }
 
+    .tri-reset:hover {
+      color: var(--text);
+      border-color: var(--text-secondary);
+    }
+
+    /* Liste verticale de cartes */
+    .page-blog .grille-themes {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    /* ===== CARTE BLOG ===== */
+    .carte-blog {
+      display: flex;
+      gap: 0;
+      padding: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .carte-blog:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-secondary);
+    }
+
+    /* Encadré couverture à gauche */
+    .carte-blog .blog-couverture {
+      flex: 0 0 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+    }
+
+    .carte-blog .blog-couverture img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .carte-blog .blog-couverture .couverture-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+    }
+
+    /* Contenu principal */
+    .carte-blog .blog-centre {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-width: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-numero {
+      flex: 0 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      padding-right: 14px;
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-corps {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .carte-blog .blog-titre {
+      font-family: 'Georgia', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .carte-blog .blog-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-meta .badge-icone,
+    .carte-blog .blog-meta .niveau-badge,
+    .carte-blog .blog-meta .mots {
+      font-size: 11px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-extrait {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .carte-blog .blog-categorie {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .carte-blog .blog-date {
+      flex: 0 0 auto;
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding-left: 14px;
+      border-left: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-date .date-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-date .date-validation {
+      color: var(--text);
+    }
+
+    /* Responsive */
     @media (max-width: 700px) {
-      .page-themes { padding: 12px 16px 30px; }
-      .page-themes h1 { font-size: 22px; }
-      .grille-themes {
-        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+      .page-blog { padding: 12px 16px 30px; }
+      .page-blog h1 { font-size: 22px; }
+
+      .carte-blog .blog-couverture {
+        flex: 0 0 64px;
+      }
+
+      .carte-blog .blog-centre {
+        flex-wrap: wrap;
         gap: 12px;
+        padding: 14px;
+      }
+
+      .carte-blog .blog-numero {
+        flex: 0 0 36px;
+        font-size: 18px;
+        padding-right: 10px;
+      }
+
+      .carte-blog .blog-date {
+        flex: 1 0 100%;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 8px;
+        flex-direction: row;
+        gap: 8px;
       }
     }
   </style>
@@ -161,34 +293,38 @@
 </head>
 <body>
 
-  <div class="page page-themes">
+  <div class="page page-blog">
 
-    <h1>Tous les thèmes</h1>
-    <p class="sous-titre-page">Chaque thème regroupe des textes sur un même sujet. Cliquez sur un thème pour commencer l'apprentissage.</p>
+    <h1>Derniers textes publiés</h1>
+    <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
 
-    <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Thèmes :</span>
-        <span class="nombre" id="totalThemes">0</span>
+    <!-- ===== BARRE DE TRI ===== -->
+    <div class="barre-tri" id="barreTri">
+      <div class="tri-groupe">
+        <label for="triTheme">Thème</label>
+        <select id="triTheme" onchange="appliquerTri()">
+          <option value="">Tous</option>
+        </select>
       </div>
-      <div class="stat-item">
-        <span>Textes :</span>
-        <span class="nombre" id="totalTextes">0</span>
+      <div class="tri-groupe">
+        <label for="triTag">Tag</label>
+        <select id="triTag" onchange="appliquerTri()">
+          <option value="">Tous</option>
+        </select>
       </div>
-      <div class="stat-item">
-        <span>Exercices :</span>
-        <span class="nombre" id="totalExercices">0</span>
+      <div class="tri-groupe">
+        <label for="triAnnee">Année</label>
+        <select id="triAnnee" onchange="appliquerTri()">
+          <option value="">Toutes</option>
+        </select>
       </div>
-      <div class="stat-item">
-        <span>Votre niveau :</span>
-        <span class="nombre" id="niveauEtudiant">0</span>
-      </div>
+      <button class="tri-reset" onclick="reinitialiserTri()">Réinitialiser</button>
     </div>
 
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Chargement des thèmes...</p>
+        <p>Chargement des textes...</p>
       </div>
     </div>
 
@@ -220,45 +356,29 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
-  <script src="/medit/couverture.js"></script>
 
   <script>
-    window.toutesLesReponses = {};
-    window.textesData = [];
-    window.themesData = {};
-    window.niveauEtudiant = 0;
-    window.nomEtudiant = '';
+    // ===== VARIABLES GLOBALES =====
+    var toutesLesReponses = {};
+    var textesData = [];
+    var themesData = {};
+    var niveauEtudiant = 0;
+    var nomEtudiant = '';
 
-    var TYPES_EXERCICES = [
-      { prefix: 'quiz:',   label: 'QCM' },
-      { prefix: 'open:',   label: 'Ouverte' },
-      { prefix: 'ordre:',  label: 'Ordre' },
-      { prefix: 'carte:',  label: 'Carte' },
-      { prefix: 'relier:', label: 'Relier' },
-      { prefix: 'tt:',     label: 'Trous' },
-      { prefix: 'vf:',     label: 'VF' },
-      { prefix: 'copier:', label: 'Copier' }
-    ];
+    // ===== UTILITAIRES =====
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
 
-    function compterExercices(texte) {
-      var ordreBlocs = texte.ordreBlocs || [];
-      var total = 0;
-
-      if (ordreBlocs.length > 0) {
-        TYPES_EXERCICES.forEach(function(type) {
-          ordreBlocs.forEach(function(ob) {
-            if (ob.indexOf(type.prefix) === 0) total++;
-          });
-        });
-      } else {
-        if (texte.hasQuiz)     total++;
-        if (texte.hasQuestion) total++;
-      }
-      return total;
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
     }
 
     function escapeHtml(str) {
-      if (!str) return '';
+      if (str === null || str === undefined) return '';
       return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
@@ -267,10 +387,49 @@
         .replace(/'/g, '&#39;');
     }
 
-    // ============================================================
-    // Chargement
-    // ============================================================
-    function chargerThemes() {
+    function normaliserComparaison(str) {
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function formatDateRelative(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+
+      var maintenant = new Date();
+      var diffMs = maintenant - d;
+      var diffJours = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+      if (diffJours < 0) diffJours = 0;
+      if (diffJours === 0) return "Aujourd'hui";
+      if (diffJours === 1) return 'Hier';
+      if (diffJours < 7) return 'Il y a ' + diffJours + ' jours';
+      if (diffJours < 30) return 'Il y a ' + Math.floor(diffJours / 7) + ' sem.';
+      if (diffJours < 365) return 'Il y a ' + Math.floor(diffJours / 30) + ' mois';
+
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+    }
+
+    function formatDateComplete(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      return d.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+    }
+
+    function anneeDe(dateStr) {
+      if (!dateStr) return '';
+      var d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '';
+      return String(d.getFullYear());
+    }
+
+    // ===== CHARGEMENT =====
+    function chargerTextes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
@@ -285,11 +444,9 @@
           if (data.themes && Array.isArray(data.themes)) {
             data.themes.forEach(function(l) {
               themesData[l.titre] = {
-                theme: l.theme || '',
                 couleur: l.couleur || '#2d6a4f',
                 sousTitre: l.sousTitre || '',
                 date: l.date || '',
-                preRequis: l.preRequis || '',
                 auteur: l.auteur || '',
                 niveau: parseInt(l.niveau) || 0,
                 couverture: l.couverture || ''
@@ -304,32 +461,35 @@
             });
           }
 
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-          afficherThemes();
+          initialiserFiltres();
+          afficherBlog();
         })
         .catch(function(error) {
           console.error('Erreur chargement:', error);
           var cache = DataManager.getCacheForce(id);
           if (cache) {
             niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || cache.tousLesTextes || [];
+            textesData = cache.tousLesTextes || cache.textes || [];
             if (cache.themes && Array.isArray(cache.themes)) {
               themesData = {};
               cache.themes.forEach(function(l) {
                 themesData[l.titre] = {
-                  theme: l.theme || '',
                   couleur: l.couleur || '#2d6a4f',
                   sousTitre: l.sousTitre || '',
                   date: l.date || '',
-                  preRequis: l.preRequis || '',
                   auteur: l.auteur || '',
                   niveau: parseInt(l.niveau) || 0,
                   couverture: l.couverture || ''
                 };
               });
             }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-            afficherThemes();
+            if (cache.reponses) {
+              cache.reponses.forEach(function(r) {
+                toutesLesReponses[r.texteId] = r;
+              });
+            }
+            initialiserFiltres();
+            afficherBlog();
           } else {
             document.getElementById('loader').style.display = 'none';
             document.getElementById('contenu').innerHTML = `
@@ -337,150 +497,250 @@
                 <span class="icone">⚠</span>
                 <h2>Erreur de chargement</h2>
                 <p>Vérifiez votre connexion internet.</p>
+                <button onclick="DataManager.rafraichir(); location.reload();"
+                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text);">
+                  Réessayer
+                </button>
               </div>
             `;
           }
         });
     }
 
-    // ============================================================
-    // Affichage
-    // ============================================================
-    function afficherThemes() {
-      var container = document.getElementById('contenu');
+    // ===== FILTRES =====
+    function initialiserFiltres() {
+      var accessibles = textesData.filter(function(t) {
+        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
+      });
+
+      // Thèmes distincts
+      var themes = {};
+      accessibles.forEach(function(t) {
+        var cat = (t.categorie || '').trim();
+        if (cat) themes[normaliserComparaison(cat)] = cat;
+      });
+      var selTheme = document.getElementById('triTheme');
+      Object.keys(themes).sort(function(a, b) {
+        return themes[a].localeCompare(themes[b], 'fr', { sensitivity: 'base' });
+      }).forEach(function(k) {
+        var opt = document.createElement('option');
+        opt.value = themes[k];
+        opt.textContent = themes[k];
+        selTheme.appendChild(opt);
+      });
+
+      // Tags distincts
+      var tagsMap = {};
+      accessibles.forEach(function(t) {
+        (t.tags || []).forEach(function(tag) {
+          var brut = String(tag).trim();
+          if (brut) tagsMap[normaliserComparaison(brut)] = brut;
+        });
+      });
+      var selTag = document.getElementById('triTag');
+      Object.keys(tagsMap).sort(function(a, b) {
+        return tagsMap[a].localeCompare(tagsMap[b], 'fr', { sensitivity: 'base' });
+      }).forEach(function(k) {
+        var opt = document.createElement('option');
+        opt.value = tagsMap[k];
+        opt.textContent = '#' + tagsMap[k];
+        selTag.appendChild(opt);
+      });
+
+      // Années distinctes (DESC)
+      var annees = {};
+      accessibles.forEach(function(t) {
+        var a = anneeDe(t.date);
+        if (a) annees[a] = true;
+      });
+      var selAnnee = document.getElementById('triAnnee');
+      Object.keys(annees).sort(function(a, b) { return b - a; }).forEach(function(a) {
+        var opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        selAnnee.appendChild(opt);
+      });
+    }
+
+    function appliquerTri() { afficherBlog(); }
+
+    function reinitialiserTri() {
+      document.getElementById('triTheme').value = '';
+      document.getElementById('triTag').value = '';
+      document.getElementById('triAnnee').value = '';
+      afficherBlog();
+    }
+
+    // ===== AFFICHAGE PRINCIPAL =====
+    function afficherBlog() {
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      var textesParCategorie = {};
-      textesData.forEach(function(ch) {
-        var cat = (ch.categorie || '').trim();
-        if (!cat) return;
-        if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
-        textesParCategorie[cat].push(ch);
+      var filtreTheme = document.getElementById('triTheme').value;
+      var filtreTag = document.getElementById('triTag').value;
+      var filtreAnnee = document.getElementById('triAnnee').value;
+
+      // 1. Filtrer par niveau
+      var accessibles = textesData.filter(function(t) {
+        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      var titresThemes = Object.keys(themesData);
-      var totalExercicesGlobal = 0;
-
-      var themesCalcules = titresThemes.map(function(titre) {
-        var meta = themesData[titre];
-        var textesDuTheme = textesParCategorie[titre] || [];
-
-        var niveauMin = meta.niveau || 1;
-        var niveauMax = meta.niveau || 1;
-        if (textesDuTheme.length > 0) {
-          niveauMin = Infinity;
-          niveauMax = -Infinity;
-          textesDuTheme.forEach(function(ch) {
-            var n = parseInt(ch.niveau) || 1;
-            if (n < niveauMin) niveauMin = n;
-            if (n > niveauMax) niveauMax = n;
-          });
-        }
-
-        var disponible = false;
-        if (textesDuTheme.length === 0) {
-          disponible = true;
-        } else {
-          textesDuTheme.forEach(function(ch) {
-            if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
-          });
-        }
-
-        var validees = 0;
-        textesDuTheme.forEach(function(ch) {
-          var reponse = toutesLesReponses[ch.id];
-          if (reponse && reponse.valide === 'valide') validees++;
+      // 2. Filtrer thème
+      if (filtreTheme) {
+        var cibleTheme = normaliserComparaison(filtreTheme);
+        accessibles = accessibles.filter(function(t) {
+          return normaliserComparaison(t.categorie || '') === cibleTheme;
         });
-        var pourcentage = textesDuTheme.length > 0
-          ? Math.round((validees / textesDuTheme.length) * 100)
-          : 0;
-
-        var nbExercices = 0;
-        var tagsSet = {};
-        textesDuTheme.forEach(function(ch) {
-          nbExercices += compterExercices(ch);
-          (ch.tags || []).forEach(function(tag) {
-            var t = String(tag).trim();
-            if (t) tagsSet[t] = true;
-          });
-        });
-        var tagsListe = Object.keys(tagsSet).sort(function(a, b) {
-          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
-        });
-        totalExercicesGlobal += nbExercices;
-
-        return {
-          nom: titre,
-          theme: (meta.theme || '').trim(),
-          niveauMin: niveauMin,
-          niveauMax: niveauMax,
-          textes: textesDuTheme.length,
-          exercices: nbExercices,
-          tags: tagsListe,
-          disponible: disponible,
-          verrouille: !disponible,
-          pourcentage: pourcentage,
-          couleur: meta.couleur || '#2d6a4f',
-          sousTitre: meta.sousTitre || '',
-          date: meta.date || '',
-          auteur: meta.auteur || '',
-          niveau: meta.niveau || 1,
-          couverture: meta.couverture || ''
-        };
-      });
-
-      themesCalcules.sort(function(a, b) {
-        return a.niveauMin - b.niveauMin
-          || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-      });
-
-      document.getElementById('totalThemes').textContent = themesCalcules.length;
-      document.getElementById('totalTextes').textContent = textesData.length;
-      document.getElementById('totalExercices').textContent = totalExercicesGlobal;
-
-      if (themesCalcules.length === 0) {
-        container.innerHTML = `
-          <div class="vide-themes">
-            <span class="icone">◈</span>
-            <h2>Aucun thème disponible</h2>
-            <p>Aucun thème n'est configuré pour le moment.</p>
-          </div>
-        `;
-        return;
       }
 
-      var html = '<div class="grille-themes">';
-      themesCalcules.forEach(function(theme) {
-        var carteHtml = construireCarteCouverture(theme, {
-          cliquable: theme.disponible,
-          lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
+      // 3. Filtrer tag
+      if (filtreTag) {
+        var cibleTag = normaliserComparaison(filtreTag);
+        accessibles = accessibles.filter(function(t) {
+          return (t.tags || []).some(function(x) {
+            return normaliserComparaison(x) === cibleTag;
+          });
         });
+      }
 
-        var basHtml = ''
-          + '<div class="carte-bas">'
-          +   '<div class="ligne-compteurs">'
-          +     '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
-          +     '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
-          +   '</div>'
-          +   (theme.tags.length > 0
-                ? '<div class="liste-tags">'
-                  + theme.tags.map(function(t) {
-                      return '<span class="tag">#' + escapeHtml(t) + '</span>';
-                    }).join('')
-                  + '</div>'
-                : '')
-          + '</div>';
+      // 4. Filtrer année
+      if (filtreAnnee) {
+        accessibles = accessibles.filter(function(t) {
+          return anneeDe(t.date) === filtreAnnee;
+        });
+      }
 
-        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + '</div>';
+      // 5. Trier par date d'ajout DESC
+      accessibles.sort(function(a, b) {
+        var da = a.date ? new Date(a.date).getTime() : 0;
+        var db = b.date ? new Date(b.date).getTime() : 0;
+        if (da !== db) return db - da;
+        return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
-      html += '</div>';
 
+      // 6. Construire HTML
+      var container = document.getElementById('contenu');
+      var html = '<div class="grille-themes" id="listeBlog">';
+
+      if (accessibles.length === 0) {
+        html += `
+          <div class="vide-themes">
+            <span class="icone">◈</span>
+            <h2>Aucun texte disponible</h2>
+          </div>
+        `;
+      } else {
+        accessibles.forEach(function(texte) {
+          html += construireCarteBlog(texte);
+        });
+      }
+
+      html += '</div>';
       container.innerHTML = html;
     }
 
+    // ===== CARTE BLOG =====
+    function construireCarteBlog(texte) {
+      var numero = extraireNumeroTexte(texte.titre);
+      var titreAffiche = extraireTitreSansNumero(texte.titre);
+      var categorie = (texte.categorie || 'Sans catégorie').trim();
+      var mots = texte.mots || 0;
+
+      var reponse = toutesLesReponses[texte.id];
+      var estValide = reponse && reponse.valide === 'valide';
+      var dateValidation = reponse && reponse.date ? reponse.date : '';
+      var dateAjout = texte.date || '';
+
+      var TYPES_EXERCICES = [
+        { prefix: 'quiz:',   label: 'QCM' },
+        { prefix: 'open:',   label: 'Ouverte' },
+        { prefix: 'ordre:',  label: 'Ordre' },
+        { prefix: 'carte:',  label: 'Carte' },
+        { prefix: 'relier:', label: 'Relier' },
+        { prefix: 'tt:',     label: 'Trous' },
+        { prefix: 'vf:',     label: 'VF' },
+        { prefix: 'copier:', label: 'Copier' }
+      ];
+
+      var ordreBlocs = texte.ordreBlocs || [];
+      var detailParts = [];
+      var nbExercices = 0;
+
+      if (ordreBlocs.length > 0) {
+        TYPES_EXERCICES.forEach(function(type) {
+          var count = 0;
+          ordreBlocs.forEach(function(ob) {
+            if (ob.indexOf(type.prefix) === 0) count++;
+          });
+          if (count > 0) {
+            nbExercices++;
+            detailParts.push(count + ' ' + type.label);
+          }
+        });
+      } else {
+        if (texte.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+        if (texte.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+      }
+
+      var detailExercices = detailParts.join(' · ');
+      var extrait = texte.description || texte.extrait || '';
+      if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
+
+      var dateLabelHtml = '';
+      var dateHtml = '';
+
+      if (estValide && dateValidation) {
+        dateLabelHtml = '<span class="date-label">Fait :</span>';
+        dateHtml = '<span class="date-validation">' + formatDateComplete(dateValidation) + '</span>';
+      } else if (dateAjout) {
+        dateHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
+      }
+
+      var numeroHtml = (numero !== Infinity)
+        ? '<div class="blog-numero">' + numero + '</div>'
+        : '<div class="blog-numero">◆</div>';
+
+      // Encadré couverture à gauche
+      var themeMeta = themesData[texte.categorie] || {};
+      var couleurTheme = themeMeta.couleur || '#2d6a4f';
+      var couvertureTheme = themeMeta.couverture || '';
+      var couvertureHtml = '';
+      if (couvertureTheme) {
+        couvertureHtml = '<div class="blog-couverture"><img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy"></div>';
+      } else {
+        couvertureHtml = '<div class="blog-couverture" style="background:' + couleurTheme + ';">' +
+                         '<div class="couverture-fallback">◆</div></div>';
+      }
+
+      return `
+        <div class="carte-blog"
+             onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
+          ${couvertureHtml}
+          <div class="blog-centre">
+            ${numeroHtml}
+            <div class="blog-corps">
+              <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
+              <div class="blog-meta">
+                <span class="niveau-badge">Niveau ${texte.niveau}</span>
+                ${nbExercices > 0 ? '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' : ''}
+                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+                ${mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : ''}
+              </div>
+              ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
+              <span class="blog-categorie">#${escapeHtml(categorie)}</span>
+            </div>
+            <div class="blog-date">
+              ${dateLabelHtml}
+              ${dateHtml}
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== DÉMARRAGE =====
     function demarrer() {
-      chargerThemes();
+      chargerTextes();
     }
 
     if (document.readyState === 'loading') {
