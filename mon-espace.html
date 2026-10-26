@@ -1,4 +1,4 @@
-<!-- mon-espace.html -->
+<!-- mes-lectures.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -34,7 +34,6 @@
       font-weight: 300;
     }
 
-    /* Layout 2 colonnes : onglets à gauche + contenu */
     .layout-espace {
       display: flex;
       gap: 24px;
@@ -253,15 +252,6 @@
       overflow: hidden;
     }
 
-    .carte-blog .blog-categorie {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
     .carte-blog .blog-date {
       flex: 0 0 auto;
       text-align: right;
@@ -304,7 +294,6 @@
       border-color: var(--text-secondary);
     }
 
-    /* Colonne "Statut" à gauche pour Mes lectures */
     .statut-col {
       flex: 0 0 110px;
       display: flex;
@@ -329,7 +318,6 @@
       background: var(--bg-hover);
     }
 
-    /* Profil */
     .profil-grid {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
@@ -355,6 +343,26 @@
       color: var(--text);
       font-weight: 700;
       word-break: break-word;
+    }
+
+    /* Barre de progression des thèmes favoris */
+    .progression-theme-bloc {
+      margin-top: 10px;
+      height: 6px;
+      background: var(--border);
+      position: relative;
+    }
+    .progression-theme-bloc .progression-remplissage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: var(--text);
+    }
+    .progression-theme-texte {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--text-secondary);
     }
 
     @media (max-width: 800px) {
@@ -429,7 +437,7 @@
   <div class="page page-blog">
 
     <h1>Mon espace</h1>
-    <p class="sous-titre-page">Votre profil, vos lectures validées, et l'historique de vos essais.</p>
+    <p class="sous-titre-page">Votre profil, vos lectures validées, vos thèmes favoris, l'historique de vos essais et vos notes.</p>
 
     <div class="layout-espace">
 
@@ -437,7 +445,8 @@
       <div class="onglets-espace">
         <button class="filtre-cat-btn" data-onglet="profil" onclick="changerOnglet('profil')">Mon profil</button>
         <button class="filtre-cat-btn active" data-onglet="lectures" onclick="changerOnglet('lectures')">Mes lectures</button>
-        <button class="filtre-cat-btn" data-onglet="essais" onclick="changerOnglet('essais')">Mes réponses</button>
+        <button class="filtre-cat-btn" data-onglet="themes" onclick="changerOnglet('themes')">Mes thèmes</button>
+        <button class="filtre-cat-btn" data-onglet="essais" onclick="changerOnglet('essais')">Mes essais</button>
         <button class="filtre-cat-btn" data-onglet="notes" onclick="changerOnglet('notes')">Mes notes</button>
       </div>
 
@@ -478,6 +487,16 @@
             <div class="loader" id="loaderLectures">
               <div class="spinner"></div>
               <p>Chargement de vos lectures...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet : MES THÈMES -->
+        <div id="onglet-themes" style="display:none;">
+          <div id="contenuThemes">
+            <div class="loader" id="loaderThemes">
+              <div class="spinner"></div>
+              <p>Chargement de vos thèmes favoris...</p>
             </div>
           </div>
         </div>
@@ -555,6 +574,7 @@
     var tentativesData = [];
     var lecturesData = [];
     var annotationsData = [];
+    var favorisData = [];
     var themesData = {};
     var textesData = [];
     var profilInfo = null;
@@ -610,6 +630,7 @@
       });
       document.getElementById('onglet-profil').style.display = (nom === 'profil') ? 'block' : 'none';
       document.getElementById('onglet-lectures').style.display = (nom === 'lectures') ? 'block' : 'none';
+      document.getElementById('onglet-themes').style.display = (nom === 'themes') ? 'block' : 'none';
       document.getElementById('onglet-essais').style.display = (nom === 'essais') ? 'block' : 'none';
       document.getElementById('onglet-notes').style.display = (nom === 'notes') ? 'block' : 'none';
     }
@@ -628,8 +649,10 @@
           if (data.themes && Array.isArray(data.themes)) {
             data.themes.forEach(function(l) {
               themesData[l.titre] = {
+                niveau: parseInt(l.niveau) || 0,
                 couleur: l.couleur || '#2d6a4f',
-                couverture: l.couverture || ''
+                couverture: l.couverture || '',
+                sousTitre: l.sousTitre || ''
               };
             });
           }
@@ -647,10 +670,16 @@
         .then(function(data) { return (data && data.annotations) ? data.annotations : []; })
         .catch(function() { return []; });
 
-      Promise.all([promesseProfil, promesseTentatives, promesseNotes]).then(function(resultats) {
+      var promesseFavoris = fetch(base + '?action=getFavorisUtilisateur&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) { return (data && data.favoris) ? data.favoris : []; })
+        .catch(function() { return []; });
+
+      Promise.all([promesseProfil, promesseTentatives, promesseNotes, promesseFavoris]).then(function(resultats) {
         var data = resultats[0];
         tentativesData = resultats[1];
         annotationsData = resultats[2];
+        favorisData = resultats[3];
 
         profilInfo = construireProfil(data, nom);
         lecturesData = regrouperParTexte(tentativesData);
@@ -661,6 +690,7 @@
         afficherLectures();
         afficherEssais();
         afficherNotes();
+        afficherThemesFavoris();
       });
     }
 
@@ -732,7 +762,7 @@
     }
 
     // ============================================================
-    // REGROUPEMENT PAR TEXTE (Mes lectures)
+    // REGROUPEMENT PAR TEXTE
     // ============================================================
     function regrouperParTexte(tentatives) {
       var parTexte = {};
@@ -904,169 +934,4 @@
               </div>
               <div class="blog-extrait">${escapeHtml(extrait)}</div>
             </div>
-            <div class="blog-date">
-              <span class="date-label">Dernier essai :</span>
-              <span class="date-validation">${escapeHtml(l.dateDerniere)}</span>
-              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(l.texteId)}'">Revoir le texte</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // ============================================================
-    // MES ESSAIS
-    // ============================================================
-    function afficherEssais() {
-      var loader = document.getElementById('loaderEssais');
-      if (loader) loader.style.display = 'none';
-
-      var filtreResultat = document.getElementById('triResultat').value;
-      var filtreAnnee = document.getElementById('triAnnee').value;
-
-      var filtrees = tentativesData.slice();
-      if (filtreResultat === 'valide') {
-        filtrees = filtrees.filter(function(t) { return t.pourcentage >= 65; });
-      } else if (filtreResultat === 'non-valide') {
-        filtrees = filtrees.filter(function(t) { return t.pourcentage < 65; });
-      }
-      if (filtreAnnee) {
-        filtrees = filtrees.filter(function(t) { return anneeDe(t.date) === filtreAnnee; });
-      }
-
-      var container = document.getElementById('contenuEssais');
-      var html = '<div class="grille-themes">';
-
-      if (filtrees.length === 0) {
-        html += '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun essai pour le moment</h2><p>Passez des exercices sur un texte pour voir vos résultats ici.</p></div>';
-      } else {
-        filtrees.forEach(function(t) {
-          html += construireCarteEssai(t);
-        });
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
-    }
-
-    function construireCarteEssai(t) {
-      var numero = extraireNumeroTexte(t.titre);
-      var titreAffiche = extraireTitreSansNumero(t.titre);
-      var estValide = t.pourcentage >= 65;
-
-      var texteObj = null;
-      for (var i = 0; i < textesData.length; i++) {
-        if (String(textesData[i].id) === String(t.texteId)) { texteObj = textesData[i]; break; }
-      }
-      var couleurTheme = '#2d6a4f';
-      var couvertureTheme = '';
-      if (texteObj && texteObj.categorie) {
-        var meta = themesData[texteObj.categorie] || {};
-        couleurTheme = meta.couleur || '#2d6a4f';
-        couvertureTheme = meta.couverture || '';
-      }
-
-      var couvertureHtml = couvertureTheme
-        ? '<div class="blog-couverture"><img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy"></div>'
-        : '<div class="blog-couverture" style="background:' + couleurTheme + ';"><div class="couverture-fallback">◆</div></div>';
-
-      var numeroHtml = (numero !== Infinity)
-        ? '<div class="blog-numero">' + numero + '</div>'
-        : '<div class="blog-numero">◆</div>';
-
-      var badgeResultat = estValide
-        ? '<span class="badge-icone">Validé</span>'
-        : '<span class="badge-icone">Non validé</span>';
-
-      var extrait = 'Score : ' + t.bonnes + ' / ' + t.total + ' (' + t.pourcentage + ' %)';
-
-      return `
-        <div class="carte-blog">
-          ${couvertureHtml}
-          <div class="blog-centre">
-            ${numeroHtml}
-            <div class="blog-corps">
-              <div class="blog-titre">${escapeHtml(titreAffiche || t.titre)}</div>
-              <div class="blog-meta">
-                <span class="niveau-badge">Niveau ${t.niveau}</span>
-                ${badgeResultat}
-              </div>
-              <div class="blog-extrait">${escapeHtml(extrait)}</div>
-            </div>
-            <div class="blog-date">
-              <span class="date-label">Fait le :</span>
-              <span class="date-validation">${escapeHtml(t.date)}</span>
-              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(t.texteId)}'">Revoir le texte</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // ============================================================
-    // MES NOTES
-    // ============================================================
-    function afficherNotes() {
-      var loader = document.getElementById('loaderNotes');
-      if (loader) loader.style.display = 'none';
-
-      var container = document.getElementById('contenuNotes');
-      var html = '<div class="grille-themes">';
-
-      if (!annotationsData || annotationsData.length === 0) {
-        html += '<div class="vide-themes"><span class="icone">◈</span><h2>Aucune note pour le moment</h2><p>Ouvrez un texte et cliquez sur ✏️ en bas à droite pour ajouter une note.</p></div>';
-      } else {
-        annotationsData.forEach(function(a) {
-          html += construireCarteNote(a);
-        });
-      }
-
-      html += '</div>';
-      container.innerHTML = html;
-    }
-
-    function construireCarteNote(a) {
-      var numero = extraireNumeroTexte(a.titre);
-      var titreAffiche = extraireTitreSansNumero(a.titre);
-      var numeroHtml = (numero !== Infinity)
-        ? '<div class="blog-numero">' + numero + '</div>'
-        : '<div class="blog-numero">◆</div>';
-
-      return `
-        <div class="carte-blog">
-          <div class="blog-centre">
-            ${numeroHtml}
-            <div class="blog-corps">
-              <div class="blog-titre">${escapeHtml(titreAffiche || a.titre)}</div>
-              <div class="blog-meta">
-                <span class="badge-icone">Note</span>
-              </div>
-              <div class="blog-extrait" style="-webkit-line-clamp: 4;">${escapeHtml(a.annotation)}</div>
-            </div>
-            <div class="blog-date">
-              <span class="date-label">Modifiée :</span>
-              <span class="date-validation">${escapeHtml(a.date)}</span>
-              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(a.texteId)}'">Revoir le texte</button>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
-    function demarrer() {
-      changerOnglet('lectures');
-      chargerTout();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
-  </script>
-
-</body>
-</html>
+           
