@@ -12,9 +12,8 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ===== CONTENEUR (aligné sur les-sections) ===== */
     .page-themes {
-      max-width: 1000px;
+      max-width: 1000px;        /* ← était 900px, aligné sur les-sections */
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
@@ -35,7 +34,6 @@
       font-weight: 300;
     }
 
-    /* ===== BARRE DE STATS (identique les-sections) ===== */
     .stats-ligne {
       display: flex;
       flex-wrap: wrap;
@@ -60,84 +58,55 @@
       color: var(--text);
     }
 
-    /* ===== LISTE SOBRE (format identique aux sections) ===== */
-    .liste-themes {
+    /* === GRILLE (inchangée) === */
+    .grille-themes {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 16px;
+      justify-items: stretch;
+    }
+
+    /* === Wrapper carte + bloc bas (inchangé) === */
+    .grille-themes .carte-avec-bas {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      width: 100%;
     }
 
-    .carte-theme {
-      display: flex;
-      align-items: center;
-      gap: 20px;
-      padding: 16px 20px;
+    /* === Bloc bas de carte (inchangé) === */
+    .carte-avec-bas .carte-bas {
+      margin-top: 6px;
+      padding: 8px 10px;
+      border: 1px solid var(--border);
+      border-top: none;
       background: var(--bg);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      text-decoration: none;
-      color: inherit;
-      box-sizing: border-box;
-    }
-
-    .carte-theme:hover {
-      background: var(--bg-hover);
-      border-color: var(--text-secondary);
-    }
-
-    .carte-theme.verrouille {
-      opacity: 0.55;
-      cursor: not-allowed;
-      pointer-events: none;
-    }
-
-    /* Marqueur circulaire : initiale du thème */
-    .carte-theme .theme-marqueur {
-      flex: 0 0 40px;
-      height: 40px;
       display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Georgia', serif;
-      font-size: 18px;
-      font-weight: 700;
-      color: var(--text-muted);
-      border: 1px solid var(--border);
-      border-radius: 50%;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
       box-sizing: border-box;
     }
 
-    .carte-theme .theme-corps {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .carte-theme .theme-titre {
-      font-family: 'Georgia', serif;
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-      line-height: 1.3;
-      margin-bottom: 4px;
-    }
-
-    .carte-theme .theme-meta {
-      font-size: 12px;
-      color: var(--text-secondary);
+    .carte-avec-bas .carte-bas .ligne-compteurs {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      align-items: center;
+      gap: 6px;
     }
 
-    .carte-theme .theme-meta .nb {
-      color: var(--text);
-      font-weight: 600;
+    .carte-avec-bas .carte-bas .compteur-badge {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
     }
 
-    /* Tags inline dans la méta */
-    .carte-theme .theme-meta .tag {
+    .carte-avec-bas .carte-bas .liste-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .carte-avec-bas .carte-bas .tag {
       padding: 1px 6px;
       background: var(--bg-hover);
       border: 1px solid var(--border);
@@ -145,23 +114,8 @@
       font-size: 10px;
     }
 
-    .carte-theme .theme-fleche {
-      flex: 0 0 auto;
-      font-size: 18px;
-      color: var(--text-muted);
-      padding-left: 12px;
-    }
-
-    /* Badge verrou */
-    .carte-theme .theme-verrou {
-      flex: 0 0 auto;
-      font-size: 14px;
-      color: var(--text-muted);
-      padding-left: 12px;
-    }
-
-    /* ===== ÉTAT VIDE ===== */
     .vide-themes {
+      grid-column: 1 / -1;
       text-align: center;
       padding: 60px 20px;
       color: var(--text-secondary);
@@ -186,13 +140,13 @@
       font-size: 14px;
     }
 
-    /* ===== RESPONSIVE (identique les-sections) ===== */
     @media (max-width: 700px) {
       .page-themes { padding: 12px 16px 30px; }
       .page-themes h1 { font-size: 22px; }
-      .carte-theme { padding: 14px 16px; gap: 14px; }
-      .carte-theme .theme-marqueur { flex: 0 0 34px; height: 34px; font-size: 15px; }
-      .carte-theme .theme-titre { font-size: 15px; }
+      .grille-themes {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+      }
     }
   </style>
 
@@ -313,10 +267,6 @@
         .replace(/'/g, '&#39;');
     }
 
-    function normaliserComparaison(str) {
-      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
-    }
-
     // ============================================================
     // Chargement
     // ============================================================
@@ -394,7 +344,7 @@
     }
 
     // ============================================================
-    // Affichage — liste sobre, une ligne par thème
+    // Affichage (inchangé — grille + carte-bas)
     // ============================================================
     function afficherThemes() {
       var container = document.getElementById('contenu');
@@ -470,7 +420,13 @@
           tags: tagsListe,
           disponible: disponible,
           verrouille: !disponible,
-          pourcentage: pourcentage
+          pourcentage: pourcentage,
+          couleur: meta.couleur || '#2d6a4f',
+          sousTitre: meta.sousTitre || '',
+          date: meta.date || '',
+          auteur: meta.auteur || '',
+          niveau: meta.niveau || 1,
+          couverture: meta.couverture || ''
         };
       });
 
@@ -494,41 +450,29 @@
         return;
       }
 
-      var html = '<div class="liste-themes">';
+      var html = '<div class="grille-themes">';
       themesCalcules.forEach(function(theme) {
-        var lettre = theme.nom.charAt(0).toUpperCase();
-        var niveauLabel = (theme.niveauMin === theme.niveauMax)
-          ? 'Niv. ' + theme.niveauMin
-          : 'Niv. ' + theme.niveauMin + '–' + theme.niveauMax;
+        var carteHtml = construireCarteCouverture(theme, {
+          cliquable: theme.disponible,
+          lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
+        });
 
-        var tagsHtml = theme.tags.slice(0, 5).map(function(t) {
-          return '<span class="tag">#' + escapeHtml(t) + '</span>';
-        }).join('');
+        var basHtml = ''
+          + '<div class="carte-bas">'
+          +   '<div class="ligne-compteurs">'
+          +     '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
+          +     '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
+          +   '</div>'
+          +   (theme.tags.length > 0
+                ? '<div class="liste-tags">'
+                  + theme.tags.map(function(t) {
+                      return '<span class="tag">#' + escapeHtml(t) + '</span>';
+                    }).join('')
+                  + '</div>'
+                : '')
+          + '</div>';
 
-        var fleche = theme.verrouille
-          ? '<div class="theme-verrou">🔒</div>'
-          : '<div class="theme-fleche">→</div>';
-
-        var lien = theme.verrouille
-          ? 'javascript:void(0)'
-          : '/medit/thème.html?cat=' + encodeURIComponent(theme.nom);
-
-        html += `
-          <a class="carte-theme ${theme.verrouille ? 'verrouille' : ''}"
-             href="${lien}">
-            <div class="theme-marqueur">${escapeHtml(lettre)}</div>
-            <div class="theme-corps">
-              <div class="theme-titre">${escapeHtml(theme.nom)}</div>
-              <div class="theme-meta">
-                <span class="nb">${niveauLabel}</span>
-                <span><span class="nb">${theme.textes}</span> texte${theme.textes > 1 ? 's' : ''}</span>
-                <span><span class="nb">${theme.exercices}</span> exercice${theme.exercices > 1 ? 's' : ''}</span>
-                ${tagsHtml}
-              </div>
-            </div>
-            ${fleche}
-          </a>
-        `;
+        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + '</div>';
       });
       html += '</div>';
 
