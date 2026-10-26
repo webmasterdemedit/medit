@@ -1,0 +1,1025 @@
+<!-- mon-espace.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Mon espace - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    .page-blog {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px 30px 40px;
+    }
+
+    .page-blog h1 {
+      font-family: 'Georgia', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .page-blog .sous-titre-page {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    /* Layout 2 colonnes : onglets à gauche + contenu */
+    .layout-espace {
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+
+    .onglets-espace {
+      flex: 0 0 200px;
+      display: flex;
+      flex-direction: column;
+      border: 1px solid var(--border);
+      background: var(--bg-paper);
+    }
+
+    .onglets-espace .filtre-cat-btn {
+      text-align: left;
+      padding: 12px 16px;
+      margin: 0;
+      border: none;
+      border-bottom: 1px solid var(--border);
+      border-left: 2px solid transparent;
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: var(--font-sans);
+      font-size: 13px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .onglets-espace .filtre-cat-btn:last-child { border-bottom: none; }
+    .onglets-espace .filtre-cat-btn:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+    }
+    .onglets-espace .filtre-cat-btn.active {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-left-color: var(--text);
+      font-weight: 500;
+    }
+
+    .contenu-espace { flex: 1; min-width: 0; }
+
+    .barre-tri {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .tri-groupe {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .tri-groupe label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+    }
+
+    .tri-groupe select {
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      cursor: pointer;
+      outline: none;
+    }
+
+    .tri-groupe select:hover,
+    .tri-groupe select:focus {
+      border-color: var(--text-secondary);
+    }
+
+    .tri-reset {
+      font-size: 12px;
+      padding: 6px 12px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .tri-reset:hover {
+      color: var(--text);
+      border-color: var(--text-secondary);
+    }
+
+    .page-blog .grille-themes {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .carte-blog {
+      display: flex;
+      gap: 0;
+      padding: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .carte-blog:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-couverture {
+      flex: 0 0 90px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+    }
+
+    .carte-blog .blog-couverture img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+
+    .carte-blog .blog-couverture .couverture-fallback {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: rgba(255,255,255,0.85);
+    }
+
+    .carte-blog .blog-centre {
+      display: flex;
+      gap: 20px;
+      flex: 1;
+      min-width: 0;
+      padding: 18px 20px;
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-numero {
+      flex: 0 0 48px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Georgia', serif;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--text-muted);
+      border-right: 1px solid var(--border);
+      padding-right: 14px;
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-corps {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .carte-blog .blog-titre {
+      font-family: 'Georgia', serif;
+      font-size: 17px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 6px;
+      line-height: 1.3;
+    }
+
+    .carte-blog .blog-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-meta .badge-icone,
+    .carte-blog .blog-meta .niveau-badge,
+    .carte-blog .blog-meta .mots {
+      font-size: 11px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-extrait {
+      margin-top: 8px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .carte-blog .blog-categorie {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 11px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: var(--text-muted);
+    }
+
+    .carte-blog .blog-date {
+      flex: 0 0 auto;
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      padding-left: 14px;
+      border-left: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    .carte-blog .blog-date .date-label {
+      font-weight: 600;
+      color: var(--text-secondary);
+    }
+
+    .carte-blog .blog-date .date-validation {
+      color: var(--text);
+    }
+
+    .carte-blog .blog-date button {
+      margin-top: 6px;
+      padding: 6px 12px;
+      font-size: 11px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      cursor: pointer;
+      font-family: 'Roboto', sans-serif;
+      white-space: nowrap;
+    }
+
+    .carte-blog .blog-date button:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--text-secondary);
+    }
+
+    /* Colonne "Statut" à gauche pour Mes lectures */
+    .statut-col {
+      flex: 0 0 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      border-right: 1px solid var(--border);
+      padding: 0 10px;
+      box-sizing: border-box;
+      text-align: center;
+    }
+    .statut-col.valide {
+      color: var(--text);
+      background: var(--bg-active);
+    }
+    .statut-col.non-valide {
+      color: var(--text-secondary);
+      background: var(--bg-hover);
+    }
+
+    /* Profil */
+    .profil-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .profil-item {
+      border: 1px solid var(--border);
+      padding: 14px 16px;
+      background: var(--bg-paper);
+    }
+    .profil-item .profil-label {
+      font-family: var(--font-sans);
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .profil-item .profil-valeur {
+      font-family: var(--font-serif);
+      font-size: 16px;
+      color: var(--text);
+      font-weight: 700;
+      word-break: break-word;
+    }
+
+    @media (max-width: 800px) {
+      .layout-espace { flex-direction: column; gap: 16px; }
+      .onglets-espace {
+        flex: 1 1 auto;
+        flex-direction: row;
+        overflow-x: auto;
+        width: 100%;
+      }
+      .onglets-espace .filtre-cat-btn {
+        width: auto;
+        white-space: nowrap;
+        border-bottom: none;
+        border-left: none;
+        border-right: 1px solid var(--border);
+      }
+      .onglets-espace .filtre-cat-btn:last-child { border-right: none; }
+      .onglets-espace .filtre-cat-btn.active {
+        border-left-color: transparent;
+        border-bottom: 2px solid var(--text);
+      }
+    }
+
+    @media (max-width: 700px) {
+      .page-blog { padding: 12px 16px 30px; }
+      .page-blog h1 { font-size: 22px; }
+
+      .carte-blog .blog-couverture { flex: 0 0 64px; }
+
+      .carte-blog .blog-centre {
+        flex-wrap: wrap;
+        gap: 12px;
+        padding: 14px;
+      }
+
+      .carte-blog .blog-numero {
+        flex: 0 0 36px;
+        font-size: 18px;
+        padding-right: 10px;
+      }
+
+      .carte-blog .blog-date {
+        flex: 1 0 100%;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding-left: 0;
+        padding-top: 8px;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+      }
+
+      .statut-col {
+        flex: 0 0 90px;
+        font-size: 10px;
+        letter-spacing: 0.5px;
+      }
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) { document.write(xhr.responseText); }
+  </script>
+</head>
+<body>
+
+  <div class="page page-blog">
+
+    <h1>Mon espace</h1>
+    <p class="sous-titre-page">Votre profil, vos lectures validées, et l'historique de vos essais.</p>
+
+    <div class="layout-espace">
+
+      <!-- ===== ONGLETS À GAUCHE ===== -->
+      <div class="onglets-espace">
+        <button class="filtre-cat-btn" data-onglet="profil" onclick="changerOnglet('profil')">Mon profil</button>
+        <button class="filtre-cat-btn active" data-onglet="lectures" onclick="changerOnglet('lectures')">Mes lectures</button>
+        <button class="filtre-cat-btn" data-onglet="essais" onclick="changerOnglet('essais')">Mes essais</button>
+      </div>
+
+      <!-- ===== CONTENU ===== -->
+      <div class="contenu-espace">
+
+        <!-- Onglet : MON PROFIL -->
+        <div id="onglet-profil" style="display:none;">
+          <div id="profilZone">
+            <div class="loader" id="loaderProfil">
+              <div class="spinner"></div>
+              <p>Chargement du profil...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet : MES LECTURES -->
+        <div id="onglet-lectures">
+          <div class="barre-tri">
+            <div class="tri-groupe">
+              <label for="triLectureStatut">Statut</label>
+              <select id="triLectureStatut" onchange="appliquerTriLectures()">
+                <option value="">Tous</option>
+                <option value="valide">Validés</option>
+                <option value="non-valide">Non validés</option>
+              </select>
+            </div>
+            <div class="tri-groupe">
+              <label for="triLectureAnnee">Année</label>
+              <select id="triLectureAnnee" onchange="appliquerTriLectures()">
+                <option value="">Toutes</option>
+              </select>
+            </div>
+            <button class="tri-reset" onclick="reinitialiserTriLectures()">Réinitialiser</button>
+          </div>
+
+          <div id="contenuLectures">
+            <div class="loader" id="loaderLectures">
+              <div class="spinner"></div>
+              <p>Chargement de vos lectures...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Onglet : MES ESSAIS -->
+        <div id="onglet-essais" style="display:none;">
+          <div class="barre-tri">
+            <div class="tri-groupe">
+              <label for="triResultat">Résultat</label>
+              <select id="triResultat" onchange="appliquerTriEssais()">
+                <option value="">Tous</option>
+                <option value="valide">Validés (≥ 65 %)</option>
+                <option value="non-valide">Non validés</option>
+              </select>
+            </div>
+            <div class="tri-groupe">
+              <label for="triAnnee">Année</label>
+              <select id="triAnnee" onchange="appliquerTriEssais()">
+                <option value="">Toutes</option>
+              </select>
+            </div>
+            <button class="tri-reset" onclick="reinitialiserTriEssais()">Réinitialiser</button>
+          </div>
+
+          <div id="contenuEssais">
+            <div class="loader" id="loaderEssais">
+              <div class="spinner"></div>
+              <p>Chargement de vos essais...</p>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    var tentativesData = [];
+    var lecturesData = [];    // regroupées : une ligne par texte
+    var themesData = {};
+    var textesData = [];
+    var profilInfo = null;
+    var ongletActuel = 'lectures';
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
+    }
+
+    function anneeDe(dateStr) {
+      if (!dateStr) return '';
+      var parts = dateStr.split(' ')[0].split('/');
+      if (parts.length === 3) return parts[2];
+      return '';
+    }
+
+    function getNomUtilisateurCourant() {
+      if (typeof getIdUtilisateur === 'function') {
+        var id = getIdUtilisateur();
+        if (id) return id;
+      }
+      var stock = localStorage.getItem('etudiant_id');
+      if (stock) return stock;
+      var inv = localStorage.getItem('invite_id');
+      if (!inv) {
+        inv = 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        localStorage.setItem('invite_id', inv);
+      }
+      return inv;
+    }
+
+    function changerOnglet(nom) {
+      ongletActuel = nom;
+      document.querySelectorAll('.onglets-espace .filtre-cat-btn').forEach(function(btn) {
+        btn.classList.toggle('active', btn.getAttribute('data-onglet') === nom);
+      });
+      document.getElementById('onglet-profil').style.display = (nom === 'profil') ? 'block' : 'none';
+      document.getElementById('onglet-lectures').style.display = (nom === 'lectures') ? 'block' : 'none';
+      document.getElementById('onglet-essais').style.display = (nom === 'essais') ? 'block' : 'none';
+    }
+
+    // ============================================================
+    // CHARGEMENT GLOBAL
+    // ============================================================
+    function chargerTout() {
+      var nom = getNomUtilisateurCourant();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      var promesseProfil = DataManager.charger()
+        .then(function(data) {
+          textesData = data.tousLesTextes || data.textes || [];
+          themesData = {};
+          if (data.themes && Array.isArray(data.themes)) {
+            data.themes.forEach(function(l) {
+              themesData[l.titre] = {
+                couleur: l.couleur || '#2d6a4f',
+                couverture: l.couverture || ''
+              };
+            });
+          }
+          return data;
+        })
+        .catch(function() { return null; });
+
+      var promesseTentatives = fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          return (data && data.tentatives) ? data.tentatives : [];
+        })
+        .catch(function() { return []; });
+
+      Promise.all([promesseProfil, promesseTentatives]).then(function(resultats) {
+        var data = resultats[0];
+        tentativesData = resultats[1];
+
+        // Profil
+        profilInfo = construireProfil(data, nom);
+
+        // Regrouper tentatives par texteId (garder la meilleure)
+        lecturesData = regrouperParTexte(tentativesData);
+
+        afficherProfil();
+        initialiserFiltresLectures();
+        initialiserFiltresEssais();
+        afficherLectures();
+        afficherEssais();
+      });
+    }
+
+    // ============================================================
+    // PROFIL
+    // ============================================================
+    function construireProfil(data, nom) {
+      var connecte = false;
+      var contact = '';
+      var niveau = 0;
+      var description = '';
+
+      // Si getIdUtilisateur renvoie quelque chose ET que le nom n'est pas un invité
+      if (typeof getIdUtilisateur === 'function' && getIdUtilisateur()) {
+        connecte = true;
+      }
+
+      if (data) {
+        if (data.niveau !== undefined) niveau = data.niveau;
+        if (data.contact !== undefined) contact = data.contact;
+        if (data.description !== undefined) description = data.description;
+      }
+
+      // Cherche dans les données chargées par DataManager
+      if (data && data.contact === undefined) {
+        // fallback : essayer d'extraire depuis un éventuel cache "getComplet"
+        try {
+          var cache = DataManager.getCacheForce ? DataManager.getCacheForce(nom) : null;
+          if (cache) {
+            if (cache.niveau !== undefined) niveau = cache.niveau;
+            if (cache.contact !== undefined) contact = cache.contact;
+            if (cache.description !== undefined) description = cache.description;
+          }
+        } catch(e) {}
+      }
+
+      return {
+        nom: nom,
+        connecte: connecte,
+        contact: contact || '',
+        niveau: niveau || 0,
+        description: description || ''
+      };
+    }
+
+    function afficherProfil() {
+      var zone = document.getElementById('profilZone');
+      var html = '';
+
+      html += '<div class="profil-grid">';
+
+      html += '<div class="profil-item">';
+      html += '  <div class="profil-label">' + (profilInfo.connecte ? 'Étudiant' : 'Mode invité') + '</div>';
+      html += '  <div class="profil-valeur">' + escapeHtml(profilInfo.nom) + '</div>';
+      html += '</div>';
+
+      html += '<div class="profil-item">';
+      html += '  <div class="profil-label">Contact</div>';
+      html += '  <div class="profil-valeur">' + (profilInfo.contact ? escapeHtml(profilInfo.contact) : '—') + '</div>';
+      html += '</div>';
+
+      html += '<div class="profil-item">';
+      html += '  <div class="profil-label">Niveau</div>';
+      html += '  <div class="profil-valeur">' + profilInfo.niveau + '</div>';
+      html += '</div>';
+
+      html += '</div>';
+
+      if (profilInfo.description) {
+        html += '<div class="profil-item" style="margin-bottom:20px;">';
+        html += '  <div class="profil-label">Description du niveau</div>';
+        html += '  <div class="profil-valeur" style="font-weight:400;font-size:14px;line-height:1.6;">' + escapeHtml(profilInfo.description) + '</div>';
+        html += '</div>';
+      }
+
+      if (!profilInfo.connecte) {
+        html += '<div class="vide-themes" style="padding:20px;">';
+        html += '  <p>Vous êtes en mode invité. <a href="/medit/connexion.html">Connectez-vous</a> pour retrouver votre profil complet.</p>';
+        html += '</div>';
+      }
+
+      zone.innerHTML = html;
+    }
+
+    // ============================================================
+    // REGROUPEMENT PAR TEXTE (Mes lectures)
+    // ============================================================
+    function regrouperParTexte(tentatives) {
+      var parTexte = {};
+      tentatives.forEach(function(t) {
+        var id = String(t.texteId);
+        if (!parTexte[id]) {
+          parTexte[id] = {
+            texteId: t.texteId,
+            titre: t.titre,
+            niveau: t.niveau,
+            meilleurPct: t.pourcentage,
+            meilleurBonnes: t.bonnes,
+            meilleurTotal: t.total,
+            dateDerniere: t.date,
+            dateMeilleure: t.date,
+            nbEssais: 1
+          };
+        } else {
+          parTexte[id].nbEssais++;
+          if (t.pourcentage > parTexte[id].meilleurPct) {
+            parTexte[id].meilleurPct = t.pourcentage;
+            parTexte[id].meilleurBonnes = t.bonnes;
+            parTexte[id].meilleurTotal = t.total;
+            parTexte[id].dateMeilleure = t.date;
+          }
+          // La date la plus récente
+          if (datePlusGrande(t.date, parTexte[id].dateDerniere)) {
+            parTexte[id].dateDerniere = t.date;
+          }
+        }
+      });
+
+      var arr = Object.keys(parTexte).map(function(k) { return parTexte[k]; });
+      arr.sort(function(a, b) {
+        return datePlusGrande(a.dateDerniere, b.dateDerniere) ? -1 : 1;
+      });
+      return arr;
+    }
+
+    function datePlusGrande(d1, d2) {
+      if (!d1) return false;
+      if (!d2) return true;
+      var t1 = new Date(d1.split(' ')[0].split('/').reverse().join('-') + 'T' + (d1.split(' ')[1] || '00:00:00')).getTime();
+      var t2 = new Date(d2.split(' ')[0].split('/').reverse().join('-') + 'T' + (d2.split(' ')[1] || '00:00:00')).getTime();
+      return t1 > t2;
+    }
+
+    // ============================================================
+    // FILTRES
+    // ============================================================
+    function initialiserFiltresLectures() {
+      var annees = {};
+      lecturesData.forEach(function(l) {
+        var a = anneeDe(l.dateDerniere);
+        if (a) annees[a] = true;
+      });
+      var sel = document.getElementById('triLectureAnnee');
+      while (sel.options.length > 1) sel.remove(1);
+      Object.keys(annees).sort(function(a, b) { return b - a; }).forEach(function(a) {
+        var opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
+    }
+
+    function initialiserFiltresEssais() {
+      var annees = {};
+      tentativesData.forEach(function(t) {
+        var a = anneeDe(t.date);
+        if (a) annees[a] = true;
+      });
+      var sel = document.getElementById('triAnnee');
+      while (sel.options.length > 1) sel.remove(1);
+      Object.keys(annees).sort(function(a, b) { return b - a; }).forEach(function(a) {
+        var opt = document.createElement('option');
+        opt.value = a;
+        opt.textContent = a;
+        sel.appendChild(opt);
+      });
+    }
+
+    function appliquerTriLectures() { afficherLectures(); }
+    function reinitialiserTriLectures() {
+      document.getElementById('triLectureStatut').value = '';
+      document.getElementById('triLectureAnnee').value = '';
+      afficherLectures();
+    }
+    function appliquerTriEssais() { afficherEssais(); }
+    function reinitialiserTriEssais() {
+      document.getElementById('triResultat').value = '';
+      document.getElementById('triAnnee').value = '';
+      afficherEssais();
+    }
+
+    // ============================================================
+    // MES LECTURES
+    // ============================================================
+    function afficherLectures() {
+      var loader = document.getElementById('loaderLectures');
+      if (loader) loader.style.display = 'none';
+
+      var filtreStatut = document.getElementById('triLectureStatut').value;
+      var filtreAnnee = document.getElementById('triLectureAnnee').value;
+
+      var filtrees = lecturesData.slice();
+      if (filtreStatut === 'valide') {
+        filtrees = filtrees.filter(function(l) { return l.meilleurPct >= 65; });
+      } else if (filtreStatut === 'non-valide') {
+        filtrees = filtrees.filter(function(l) { return l.meilleurPct < 65; });
+      }
+      if (filtreAnnee) {
+        filtrees = filtrees.filter(function(l) { return anneeDe(l.dateDerniere) === filtreAnnee; });
+      }
+
+      var container = document.getElementById('contenuLectures');
+      var html = '<div class="grille-themes">';
+
+      if (filtrees.length === 0) {
+        html += '<div class="vide-themes"><span class="icone">◈</span><h2>Aucune lecture pour le moment</h2><p>Passez des exercices sur un texte pour le voir apparaître ici.</p></div>';
+      } else {
+        filtrees.forEach(function(l) {
+          html += construireCarteLecture(l);
+        });
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function construireCarteLecture(l) {
+      var numero = extraireNumeroTexte(l.titre);
+      var titreAffiche = extraireTitreSansNumero(l.titre);
+      var estValide = l.meilleurPct >= 65;
+
+      // Retrouver le texte pour la couverture
+      var texteObj = null;
+      for (var i = 0; i < textesData.length; i++) {
+        if (String(textesData[i].id) === String(l.texteId)) { texteObj = textesData[i]; break; }
+      }
+      var couleurTheme = '#2d6a4f';
+      var couvertureTheme = '';
+      if (texteObj && texteObj.categorie) {
+        var meta = themesData[texteObj.categorie] || {};
+        couleurTheme = meta.couleur || '#2d6a4f';
+        couvertureTheme = meta.couverture || '';
+      }
+
+      var couvertureHtml = couvertureTheme
+        ? '<div class="blog-couverture"><img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy"></div>'
+        : '<div class="blog-couverture" style="background:' + couleurTheme + ';"><div class="couverture-fallback">◆</div></div>';
+
+      var numeroHtml = (numero !== Infinity)
+        ? '<div class="blog-numero">' + numero + '</div>'
+        : '<div class="blog-numero">◆</div>';
+
+      var statutClasse = estValide ? 'statut-col valide' : 'statut-col non-valide';
+      var statutTexte = estValide ? 'Validé' : 'Non validé';
+
+      var extrait = 'Meilleur score : ' + l.meilleurBonnes + ' / ' + l.meilleurTotal + ' (' + l.meilleurPct + ' %)';
+      if (l.nbEssais > 1) extrait += ' · ' + l.nbEssais + ' essais';
+
+      return `
+        <div class="carte-blog">
+          <div class="${statutClasse}">${statutTexte}</div>
+          ${couvertureHtml}
+          <div class="blog-centre">
+            ${numeroHtml}
+            <div class="blog-corps">
+              <div class="blog-titre">${escapeHtml(titreAffiche || l.titre)}</div>
+              <div class="blog-meta">
+                <span class="niveau-badge">Niveau ${l.niveau}</span>
+              </div>
+              <div class="blog-extrait">${escapeHtml(extrait)}</div>
+            </div>
+            <div class="blog-date">
+              <span class="date-label">Dernier essai :</span>
+              <span class="date-validation">${escapeHtml(l.dateDerniere)}</span>
+              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(l.texteId)}'">Revoir le texte</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // MES ESSAIS
+    // ============================================================
+    function afficherEssais() {
+      var loader = document.getElementById('loaderEssais');
+      if (loader) loader.style.display = 'none';
+
+      var filtreResultat = document.getElementById('triResultat').value;
+      var filtreAnnee = document.getElementById('triAnnee').value;
+
+      var filtrees = tentativesData.slice();
+      if (filtreResultat === 'valide') {
+        filtrees = filtrees.filter(function(t) { return t.pourcentage >= 65; });
+      } else if (filtreResultat === 'non-valide') {
+        filtrees = filtrees.filter(function(t) { return t.pourcentage < 65; });
+      }
+      if (filtreAnnee) {
+        filtrees = filtrees.filter(function(t) { return anneeDe(t.date) === filtreAnnee; });
+      }
+
+      var container = document.getElementById('contenuEssais');
+      var html = '<div class="grille-themes">';
+
+      if (filtrees.length === 0) {
+        html += '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun essai pour le moment</h2><p>Passez des exercices sur un texte pour voir vos résultats ici.</p></div>';
+      } else {
+        filtrees.forEach(function(t) {
+          html += construireCarteEssai(t);
+        });
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function construireCarteEssai(t) {
+      var numero = extraireNumeroTexte(t.titre);
+      var titreAffiche = extraireTitreSansNumero(t.titre);
+      var estValide = t.pourcentage >= 65;
+
+      var texteObj = null;
+      for (var i = 0; i < textesData.length; i++) {
+        if (String(textesData[i].id) === String(t.texteId)) { texteObj = textesData[i]; break; }
+      }
+      var couleurTheme = '#2d6a4f';
+      var couvertureTheme = '';
+      if (texteObj && texteObj.categorie) {
+        var meta = themesData[texteObj.categorie] || {};
+        couleurTheme = meta.couleur || '#2d6a4f';
+        couvertureTheme = meta.couverture || '';
+      }
+
+      var couvertureHtml = couvertureTheme
+        ? '<div class="blog-couverture"><img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy"></div>'
+        : '<div class="blog-couverture" style="background:' + couleurTheme + ';"><div class="couverture-fallback">◆</div></div>';
+
+      var numeroHtml = (numero !== Infinity)
+        ? '<div class="blog-numero">' + numero + '</div>'
+        : '<div class="blog-numero">◆</div>';
+
+      var badgeResultat = estValide
+        ? '<span class="badge-icone">Validé</span>'
+        : '<span class="badge-icone">Non validé</span>';
+
+      var extrait = 'Score : ' + t.bonnes + ' / ' + t.total + ' (' + t.pourcentage + ' %)';
+
+      return `
+        <div class="carte-blog">
+          ${couvertureHtml}
+          <div class="blog-centre">
+            ${numeroHtml}
+            <div class="blog-corps">
+              <div class="blog-titre">${escapeHtml(titreAffiche || t.titre)}</div>
+              <div class="blog-meta">
+                <span class="niveau-badge">Niveau ${t.niveau}</span>
+                ${badgeResultat}
+              </div>
+              <div class="blog-extrait">${escapeHtml(extrait)}</div>
+            </div>
+            <div class="blog-date">
+              <span class="date-label">Fait le :</span>
+              <span class="date-validation">${escapeHtml(t.date)}</span>
+              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(t.texteId)}'">Revoir le texte</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // DÉMARRAGE
+    // ============================================================
+    function demarrer() {
+      changerOnglet('lectures');
+      chargerTout();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
+  </script>
+
+</body>
+</html>
