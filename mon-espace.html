@@ -1,4 +1,4 @@
-<!-- mon-espace.html -->
+<!-- mes-lectures.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -438,6 +438,7 @@
         <button class="filtre-cat-btn" data-onglet="profil" onclick="changerOnglet('profil')">Mon profil</button>
         <button class="filtre-cat-btn active" data-onglet="lectures" onclick="changerOnglet('lectures')">Mes lectures</button>
         <button class="filtre-cat-btn" data-onglet="essais" onclick="changerOnglet('essais')">Mes essais</button>
+        <button class="filtre-cat-btn" data-onglet="notes" onclick="changerOnglet('notes')">Mes notes</button>
       </div>
 
       <!-- ===== CONTENU ===== -->
@@ -509,6 +510,16 @@
           </div>
         </div>
 
+        <!-- Onglet : MES NOTES -->
+        <div id="onglet-notes" style="display:none;">
+          <div id="contenuNotes">
+            <div class="loader" id="loaderNotes">
+              <div class="spinner"></div>
+              <p>Chargement de vos notes...</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -542,7 +553,8 @@
 
   <script>
     var tentativesData = [];
-    var lecturesData = [];    // regroupées : une ligne par texte
+    var lecturesData = [];
+    var annotationsData = [];
     var themesData = {};
     var textesData = [];
     var profilInfo = null;
@@ -599,6 +611,7 @@
       document.getElementById('onglet-profil').style.display = (nom === 'profil') ? 'block' : 'none';
       document.getElementById('onglet-lectures').style.display = (nom === 'lectures') ? 'block' : 'none';
       document.getElementById('onglet-essais').style.display = (nom === 'essais') ? 'block' : 'none';
+      document.getElementById('onglet-notes').style.display = (nom === 'notes') ? 'block' : 'none';
     }
 
     // ============================================================
@@ -626,19 +639,20 @@
 
       var promesseTentatives = fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(nom))
         .then(function(r) { return r.json(); })
-        .then(function(data) {
-          return (data && data.tentatives) ? data.tentatives : [];
-        })
+        .then(function(data) { return (data && data.tentatives) ? data.tentatives : []; })
         .catch(function() { return []; });
 
-      Promise.all([promesseProfil, promesseTentatives]).then(function(resultats) {
+      var promesseNotes = fetch(base + '?action=getAnnotationsUtilisateur&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) { return (data && data.annotations) ? data.annotations : []; })
+        .catch(function() { return []; });
+
+      Promise.all([promesseProfil, promesseTentatives, promesseNotes]).then(function(resultats) {
         var data = resultats[0];
         tentativesData = resultats[1];
+        annotationsData = resultats[2];
 
-        // Profil
         profilInfo = construireProfil(data, nom);
-
-        // Regrouper tentatives par texteId (garder la meilleure)
         lecturesData = regrouperParTexte(tentativesData);
 
         afficherProfil();
@@ -646,6 +660,7 @@
         initialiserFiltresEssais();
         afficherLectures();
         afficherEssais();
+        afficherNotes();
       });
     }
 
@@ -658,7 +673,6 @@
       var niveau = 0;
       var description = '';
 
-      // Si getIdUtilisateur renvoie quelque chose ET que le nom n'est pas un invité
       if (typeof getIdUtilisateur === 'function' && getIdUtilisateur()) {
         connecte = true;
       }
@@ -667,19 +681,6 @@
         if (data.niveau !== undefined) niveau = data.niveau;
         if (data.contact !== undefined) contact = data.contact;
         if (data.description !== undefined) description = data.description;
-      }
-
-      // Cherche dans les données chargées par DataManager
-      if (data && data.contact === undefined) {
-        // fallback : essayer d'extraire depuis un éventuel cache "getComplet"
-        try {
-          var cache = DataManager.getCacheForce ? DataManager.getCacheForce(nom) : null;
-          if (cache) {
-            if (cache.niveau !== undefined) niveau = cache.niveau;
-            if (cache.contact !== undefined) contact = cache.contact;
-            if (cache.description !== undefined) description = cache.description;
-          }
-        } catch(e) {}
       }
 
       return {
@@ -746,7 +747,6 @@
             meilleurBonnes: t.bonnes,
             meilleurTotal: t.total,
             dateDerniere: t.date,
-            dateMeilleure: t.date,
             nbEssais: 1
           };
         } else {
@@ -755,9 +755,7 @@
             parTexte[id].meilleurPct = t.pourcentage;
             parTexte[id].meilleurBonnes = t.bonnes;
             parTexte[id].meilleurTotal = t.total;
-            parTexte[id].dateMeilleure = t.date;
           }
-          // La date la plus récente
           if (datePlusGrande(t.date, parTexte[id].dateDerniere)) {
             parTexte[id].dateDerniere = t.date;
           }
@@ -867,7 +865,6 @@
       var titreAffiche = extraireTitreSansNumero(l.titre);
       var estValide = l.meilleurPct >= 65;
 
-      // Retrouver le texte pour la couverture
       var texteObj = null;
       for (var i = 0; i < textesData.length; i++) {
         if (String(textesData[i].id) === String(l.texteId)) { texteObj = textesData[i]; break; }
@@ -1000,6 +997,56 @@
               <span class="date-label">Fait le :</span>
               <span class="date-validation">${escapeHtml(t.date)}</span>
               <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(t.texteId)}'">Revoir le texte</button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // ============================================================
+    // MES NOTES
+    // ============================================================
+    function afficherNotes() {
+      var loader = document.getElementById('loaderNotes');
+      if (loader) loader.style.display = 'none';
+
+      var container = document.getElementById('contenuNotes');
+      var html = '<div class="grille-themes">';
+
+      if (!annotationsData || annotationsData.length === 0) {
+        html += '<div class="vide-themes"><span class="icone">◈</span><h2>Aucune note pour le moment</h2><p>Ouvrez un texte et cliquez sur ✏️ en bas à droite pour ajouter une note.</p></div>';
+      } else {
+        annotationsData.forEach(function(a) {
+          html += construireCarteNote(a);
+        });
+      }
+
+      html += '</div>';
+      container.innerHTML = html;
+    }
+
+    function construireCarteNote(a) {
+      var numero = extraireNumeroTexte(a.titre);
+      var titreAffiche = extraireTitreSansNumero(a.titre);
+      var numeroHtml = (numero !== Infinity)
+        ? '<div class="blog-numero">' + numero + '</div>'
+        : '<div class="blog-numero">◆</div>';
+
+      return `
+        <div class="carte-blog">
+          <div class="blog-centre">
+            ${numeroHtml}
+            <div class="blog-corps">
+              <div class="blog-titre">${escapeHtml(titreAffiche || a.titre)}</div>
+              <div class="blog-meta">
+                <span class="badge-icone">Note</span>
+              </div>
+              <div class="blog-extrait" style="-webkit-line-clamp: 4;">${escapeHtml(a.annotation)}</div>
+            </div>
+            <div class="blog-date">
+              <span class="date-label">Modifiée :</span>
+              <span class="date-validation">${escapeHtml(a.date)}</span>
+              <button onclick="event.stopPropagation(); window.location.href='/medit/texte.html?id=${encodeURIComponent(a.texteId)}'">Revoir le texte</button>
             </div>
           </div>
         </div>
