@@ -123,65 +123,7 @@
         .partage-btn svg { width: 15px; height: 15px; }
         .partage-social { gap: 3px; }
       }
-
-      /* === ZONE PSEUDO === */
-      .zone-pseudo {
-        display: flex;
-        align-items: center;
-        flex-wrap: wrap;
-        gap: 6px;
-        margin-bottom: 16px;
-      }
-      .zone-pseudo label {
-        font-size: 14px;
-        color: #555;
-        margin-right: 4px;
-      }
-      .zone-pseudo input {
-        padding: 6px 10px;
-        border: 1px solid #ccc;
-        border-radius: 3px;
-        min-width: 200px;
-        font-family: inherit;
-      }
-      .zone-pseudo button {
-        padding: 6px 14px;
-        background: #2d6a4f;
-        color: #fff;
-        border: none;
-        border-radius: 3px;
-        cursor: pointer;
-        font-family: inherit;
-      }
-      .zone-pseudo button:hover { opacity: .85; }
-      #statutPseudo { font-size: 13px; color: #2d6a4f; margin-left: 4px; }
-
-      /* === BANDEAU RÉSULTATS === */
-      .bandeau-resultats {
-        background: #f4f7f4;
-        border-left: 3px solid #2d6a4f;
-        padding: 10px 14px;
-        margin-bottom: 16px;
-        font-size: 14px;
-        color: #333;
-        border-radius: 2px;
-      }
-      .bandeau-resultats-titre { font-weight: 600; margin-bottom: 4px; color: #2d6a4f; }
-      .bandeau-resultats-ligne { margin: 2px 0; }
-      .bandeau-resultats-date { color: #888; font-size: 12px; }
     </style>
-
-    <!-- ZONE PSEUDO -->
-    <div class="zone-pseudo">
-      <label for="inputPseudo">Votre pseudo (pour retrouver vos résultats) :</label>
-      <input type="text" id="inputPseudo" placeholder="Entrez un pseudo..."
-             onkeydown="if(event.key==='Enter'){validerPseudo();}">
-      <button onclick="validerPseudo()">Valider</button>
-      <span id="statutPseudo"></span>
-    </div>
-
-    <!-- BANDEAU RÉSULTATS -->
-    <div id="bandeauResultats" class="bandeau-resultats" style="display:none;"></div>
 
     <div id="texteContainer" class="colonne-principale">
       <div class="loader"><div class="spinner"></div><p>Chargement du texte...</p></div>
@@ -202,6 +144,7 @@
         <span>Total</span>
         <span id="popupNoteTotal">0 / 0</span>
       </div>
+
       <div class="popup-questions-zone" id="popupQuestionsZone">
         <div class="popup-questions-titre">Questions</div>
         <div id="popupQuestionsListe"></div>
@@ -1261,16 +1204,12 @@
         });
     }
 
-    // ============================================================
-    // ENVOI DE TOUTES LES TENTATIVES (via sauvegarderTentative)
-    // ============================================================
     function envoyerToutesReponses(silencieux) {
       var texteId = texteActuel ? texteActuel.id : '';
       if (!texteId) return Promise.resolve();
 
       var promesses = [];
 
-      // QUIZ
       var quizKeys = Object.keys(reponsesTexte.quiz);
       if (quizKeys.length > 0) {
         var quizBonnes = 0;
@@ -1284,7 +1223,6 @@
           { choixQcm: choixArr.join('|') }, quizBonnes, quizKeys.length));
       }
 
-      // VF
       var vfKeys = Object.keys(reponsesTexte.vf);
       if (vfKeys.length > 0) {
         var vfBonnes = 0;
@@ -1292,7 +1230,6 @@
         promesses.push(sauvegarderTentative(texteId, 'vf', {}, vfBonnes, vfKeys.length));
       }
 
-      // TT
       var ttKeys = Object.keys(reponsesTexte.tt);
       if (ttKeys.length > 0) {
         var ttBonnes = 0;
@@ -1300,7 +1237,6 @@
         promesses.push(sauvegarderTentative(texteId, 'tt', {}, ttBonnes, ttKeys.length));
       }
 
-      // CARTES
       var carteKeys = Object.keys(reponsesTexte.cartes);
       if (carteKeys.length > 0) {
         var carteBonnes = 0;
@@ -1314,7 +1250,6 @@
           { cartes: cartesArr.join(',') }, carteBonnes, carteKeys.length));
       }
 
-      // RELIER
       var relierKeys = Object.keys(reponsesTexte.relier);
       if (relierKeys.length > 0) {
         var relierBonnes = 0, relierTotal = 0;
@@ -1326,7 +1261,6 @@
         promesses.push(sauvegarderTentative(texteId, 'relier', {}, relierBonnes, relierTotal));
       }
 
-      // ORDRE
       var ordreKeys = Object.keys(reponsesTexte.ordre);
       if (ordreKeys.length > 0) {
         var ordreBonnes = 0, ordreTotal = 0;
@@ -1338,7 +1272,6 @@
         promesses.push(sauvegarderTentative(texteId, 'ordre', {}, ordreBonnes, ordreTotal));
       }
 
-      // COPIER
       var copierKeys = Object.keys(reponsesTexte.copier);
       if (copierKeys.length > 0) {
         var copierBonnes = 0;
@@ -1349,8 +1282,6 @@
       if (promesses.length === 0) return Promise.resolve();
       return Promise.all(promesses).then(function() {
         envoiEffectue = true;
-        // Rafraîchir le bandeau après envoi
-        chargerBandeauResultats();
       }).catch(function(){});
     }
 
@@ -1792,6 +1723,92 @@
       return html;
     }
 
+    // ============================================================
+    // BLOC « VOS TENTATIVES » — affiché avant le texte
+    // Réutilise : .bloc-section, .bloc-titre, .meta-ligne,
+    // .bloc-meta-texte, .note-totale, .note-ligne, .note-valeur
+    // Aucune nouvelle classe, aucune couleur nouvelle.
+    // ============================================================
+    function construireBlocTentatives(tentatives, texteId) {
+      var deCeTexte = (tentatives || []).filter(function(t) {
+        return String(t.texteId) === String(texteId);
+      });
+      if (deCeTexte.length === 0) return '';
+
+      // Meilleure tentative par type
+      var meilleuresParType = {};
+      deCeTexte.forEach(function(t) {
+        var pct = t.total > 0 ? (t.bonnes / t.total) : 0;
+        if (!meilleuresParType[t.typeExo] ||
+            pct > (meilleuresParType[t.typeExo].bonnes / (meilleuresParType[t.typeExo].total || 1))) {
+          meilleuresParType[t.typeExo] = t;
+        }
+      });
+
+      var labels = {
+        quiz: 'Quiz', vf: 'Vrai / Faux', tt: 'Textes à trous',
+        carte: 'Cartes', relier: 'Relier', ordre: 'Ordre', copier: 'Copier'
+      };
+
+      var totalBonnes = 0, totalTotal = 0, lignesDetail = [];
+      Object.keys(meilleuresParType).forEach(function(type) {
+        if (!labels[type]) return;
+        var t = meilleuresParType[type];
+        totalBonnes += t.bonnes;
+        totalTotal += t.total;
+        lignesDetail.push({ label: labels[type], bonnes: t.bonnes, total: t.total });
+      });
+      if (totalTotal === 0) return '';
+
+      var pourcentage = Math.round((totalBonnes / totalTotal) * 100);
+      var valide = pourcentage >= 65;
+
+      // Date de la dernière
+      var toutesDates = deCeTexte.map(function(t) { return new Date(t.date); }).filter(function(d) { return !isNaN(d); });
+      var derniereDate = toutesDates.length > 0 ? new Date(Math.max.apply(null, toutesDates)) : null;
+      var dateStr = derniereDate ? derniereDate.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) : '';
+
+      var html = '';
+      html += '<div class="bloc-section" id="blocTentatives">';
+      html += '  <div class="bloc-titre"><span class="icone">✓</span> Vos tentatives sur ce texte</div>';
+      html += '  <div class="bloc-meta-texte">';
+
+      // Total
+      html += '    <div class="note-totale" style="margin:0 0 10px;padding:10px 0;border-top:none;">';
+      html += '      <span>Total</span>';
+      html += '      <span class="note-valeur">' + totalBonnes + ' / ' + totalTotal + ' <span style="color:var(--text-muted);font-weight:400;font-size:0.9em;">(' + pourcentage + ' %)</span></span>';
+      html += '    </div>';
+
+      // Statut
+      if (valide) {
+        html += '    <div class="meta-ligne"><span class="meta-icone">✓</span><span class="meta-label">Statut</span><span class="meta-valeur">Validé (≥ 65 %)</span></div>';
+      } else {
+        html += '    <div class="meta-ligne"><span class="meta-icone">✗</span><span class="meta-label">Statut</span><span class="meta-valeur">À repasser (&lt; 65 %)</span></div>';
+      }
+
+      // Détail par type
+      lignesDetail.forEach(function(l) {
+        html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">' + l.label + '</span><span class="meta-valeur">' + l.bonnes + ' / ' + l.total + '</span></div>';
+      });
+
+      // Date
+      if (dateStr) {
+        html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Dernière</span><span class="meta-valeur">' + dateStr + '</span></div>';
+      }
+
+      html += '  </div>';
+
+      // Bouton repasser si non validé
+      if (!valide) {
+        html += '  <div class="note-actions" style="margin-top:14px;padding-top:12px;border-top:1px solid var(--border);">';
+        html += '    <button class="btn-revoir" style="display:inline-block;" onclick="relireEtRefaire()">Repasser le quiz</button>';
+        html += '  </div>';
+      }
+
+      html += '</div>';
+      return html;
+    }
+
     function chargerTexte() {
       var params = new URLSearchParams(window.location.search);
       var texteId = params.get('id');
@@ -1890,7 +1907,15 @@
 
       majNoteGlobale();
       initDragAndDropOrdre();
-      chargerBandeauResultats();
+
+      // Charge les tentatives et les insère AVANT le texte (dans la feuille)
+      DataManager.getTentatives(texte.id).then(function(tentatives) {
+        var blocHtml = construireBlocTentatives(tentatives, texte.id);
+        if (blocHtml) {
+          var feuille = container.querySelector('.feuille-texte');
+          if (feuille) feuille.insertAdjacentHTML('afterbegin', blocHtml);
+        }
+      }).catch(function() {});
     }
 
     function afficherErreur(message) {
@@ -1938,150 +1963,6 @@
         }
       }
     }
-
-    // ============================================================
-    // GESTION DU PSEUDO
-    // ============================================================
-    function validerPseudo() {
-      var input = document.getElementById('inputPseudo');
-      var statut = document.getElementById('statutPseudo');
-      if (!input || !statut) return;
-      var p = (input.value || '').trim();
-      if (p.length < 2) {
-        statut.textContent = 'Pseudo trop court (min. 2 caractères).';
-        statut.style.color = '#c00';
-        return;
-      }
-      AUTH.setPseudo(p);
-      statut.textContent = '✓ Pseudo enregistré : ' + p;
-      statut.style.color = '#2d6a4f';
-      chargerBandeauResultats();
-    }
-
-    function chargerBandeauResultats() {
-      if (!texteActuel) return;
-      DataManager.getTentatives(texteActuel.id).then(function(tentatives) {
-        afficherBandeauResultats(tentatives, texteActuel.id);
-      }).catch(function() {});
-    }
-
-        function afficherBandeauResultats(tentatives, texteId) {
-      var el = document.getElementById('bandeauResultats');
-      if (!el) return;
-
-      var deCeTexte = (tentatives || []).filter(function(t) {
-        return String(t.texteId) === String(texteId);
-      });
-      if (deCeTexte.length === 0) { el.style.display = 'none'; return; }
-
-      // === Regrouper par type et garder la MEILLEURE tentative de chaque type ===
-      var meilleuresParType = {};
-      deCeTexte.forEach(function(t) {
-        var type = t.typeExo;
-        var pct = t.total > 0 ? (t.bonnes / t.total) : 0;
-        if (!meilleuresParType[type] ||
-            pct > (meilleuresParType[type].bonnes / (meilleuresParType[type].total || 1))) {
-          meilleuresParType[type] = t;
-        }
-      });
-
-      var labels = {
-        quiz: 'Quiz', vf: 'Vrai / Faux', tt: 'Textes à trous',
-        carte: 'Cartes', relier: 'Relier', ordre: 'Ordre', copier: 'Copier'
-      };
-
-      // === Calcul du total (sur les meilleures tentatives) ===
-      var totalBonnes = 0;
-      var totalTotal = 0;
-      var lignesDetail = [];
-
-      Object.keys(meilleuresParType).forEach(function(type) {
-        if (!labels[type]) return;
-        var t = meilleuresParType[type];
-        totalBonnes += t.bonnes;
-        totalTotal += t.total;
-        lignesDetail.push({
-          label: labels[type],
-          bonnes: t.bonnes,
-          total: t.total
-        });
-      });
-
-      if (totalTotal === 0) { el.style.display = 'none'; return; }
-
-      var pourcentage = Math.round((totalBonnes / totalTotal) * 100);
-      var valide = pourcentage >= 65;
-
-      // === Date de la dernière tentative (toutes types confondus) ===
-      var toutesDates = deCeTexte.map(function(t) { return new Date(t.date); }).filter(function(d) { return !isNaN(d); });
-      var derniereDate = toutesDates.length > 0 ? new Date(Math.max.apply(null, toutesDates)) : null;
-      var dateStr = '';
-      if (derniereDate) {
-        dateStr = derniereDate.toLocaleDateString('fr-FR', {
-          day: '2-digit', month: '2-digit', year: 'numeric'
-        });
-      }
-
-      // === Construction HTML ===
-      var html = '<div class="bandeau-resultats-titre">Vos tentatives sur ce texte'
-               + (AUTH.aUnPseudo() ? ' (pseudo : ' + echapperHtml(AUTH.getPseudo()) + ')' : '')
-               + '</div>';
-
-      // Total
-      html += '<div class="bandeau-resultats-total">'
-            + '<strong>Total : ' + totalBonnes + ' / ' + totalTotal + '</strong>'
-            + ' <span class="bandeau-resultats-pct">(' + pourcentage + ' %)</span>'
-            + '</div>';
-
-      // Statut
-      if (valide) {
-        html += '<div class="bandeau-resultats-statut valide">'
-              + '✓ <strong>Validé</strong> — vous avez dépassé 65 %.'
-              + '</div>';
-      } else {
-        html += '<div class="bandeau-resultats-statut non-valide">'
-              + '✗ <strong>Pas encore validé</strong> — il faut au moins 65 % pour valider.'
-              + '</div>';
-      }
-
-      // Date
-      if (dateStr) {
-        html += '<div class="bandeau-resultats-date">Dernière tentative le ' + dateStr + '</div>';
-      }
-
-      // Détail par type
-      html += '<div class="bandeau-resultats-detail">';
-      lignesDetail.forEach(function(l) {
-        html += '<div class="bandeau-resultats-ligne-detail">'
-              + '<span class="detail-label">' + l.label + '</span>'
-              + '<span class="detail-valeur">' + l.bonnes + ' / ' + l.total + '</span>'
-              + '</div>';
-      });
-      html += '</div>';
-
-      // Bouton "Repasser" si pas validé
-      if (!valide) {
-        html += '<div class="bandeau-resultats-actions">'
-              + '<button class="bandeau-btn-repasser" onclick="relireEtRefaire()">'
-              + 'Repasser le quiz'
-              + '</button>'
-              + '</div>';
-      }
-
-      el.innerHTML = html;
-      el.style.display = 'block';
-    }
-
-    // Pré-remplir le champ pseudo au chargement
-    (function initPseudo() {
-      var p = AUTH.getPseudo();
-      var input = document.getElementById('inputPseudo');
-      var statut = document.getElementById('statutPseudo');
-      if (input && p) {
-        input.value = p;
-        if (statut) statut.textContent = '✓ Pseudo enregistré';
-      }
-    })();
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
     else chargerTexte();
