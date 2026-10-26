@@ -1113,7 +1113,7 @@
       }
     }
 
-    function ouvrirPopupResultat() {
+        function ouvrirPopupResultat() {
       popupOuverte = true;
       var note = calculerNote();
       var html = '';
@@ -1131,6 +1131,9 @@
       });
       document.getElementById('popupNoteLignes').innerHTML = html;
       document.getElementById('popupNoteTotal').textContent = note.total.bonnes + ' / ' + note.total.total;
+
+      // Ligne pseudo
+      rendreLignePseudoPopup();
 
       var pct = note.total.total > 0 ? (note.total.bonnes / note.total.total) * 100 : 0;
       var zoneQuestions = document.getElementById('popupQuestionsZone');
@@ -1161,6 +1164,62 @@
       document.getElementById('popupResultatOverlay').classList.add('visible');
     }
 
+    function rendreLignePseudoPopup() {
+      var el = document.getElementById('popupPseudoLigne');
+      if (!el) return;
+
+      var pseudo = AUTH.getPseudo();
+
+      if (pseudo) {
+        el.innerHTML =
+          '<span>Enregistré sous <strong>' + echapperHtml(pseudo) + '</strong></span>' +
+          '<button onclick="changerPseudoPopup()">Changer</button>';
+      } else {
+        el.innerHTML =
+          '<span>Enregistrer sous un pseudo (facultatif) :</span>' +
+          '<input type="text" id="popupInputPseudo" placeholder="Votre pseudo..." ' +
+          '       onkeydown="if(event.key===\'Enter\'){validerPseudoPopup();}">' +
+          '<button onclick="validerPseudoPopup()">OK</button>';
+      }
+    }
+
+    function validerPseudoPopup() {
+      var input = document.getElementById('popupInputPseudo');
+      if (!input) return;
+      var p = (input.value || '').trim();
+      if (p.length < 2) {
+        alert('Pseudo trop court (min. 2 caractères).');
+        return;
+      }
+      AUTH.setPseudo(p);
+      rendreLignePseudoPopup();
+
+      // Rafraîchir le bloc tentatives en haut de page
+      if (texteActuel) {
+        DataManager.getTentatives(texteActuel.id).then(function(tentatives) {
+          var ancien = document.getElementById('blocTentatives');
+          if (ancien) ancien.remove();
+          var blocHtml = construireBlocTentatives(tentatives, texteActuel.id);
+          if (blocHtml) {
+            var feuille = document.querySelector('.feuille-texte');
+            if (feuille) feuille.insertAdjacentHTML('afterbegin', blocHtml);
+          }
+        }).catch(function() {});
+      }
+    }
+
+    function changerPseudoPopup() {
+      var nouveau = prompt('Nouveau pseudo :', AUTH.getPseudo());
+      if (nouveau === null) return;
+      nouveau = nouveau.trim();
+      if (nouveau.length < 2) {
+        alert('Pseudo trop court (min. 2 caractères).');
+        return;
+      }
+      AUTH.setPseudo(nouveau);
+      rendreLignePseudoPopup();
+    }
+    
     function fermerPopupResultat() {
       document.getElementById('popupResultatOverlay').classList.remove('visible');
       popupOuverte = false;
