@@ -1965,7 +1965,7 @@
       }).catch(function() {});
     }
 
-    function afficherBandeauResultats(tentatives, texteId) {
+        function afficherBandeauResultats(tentatives, texteId) {
       var el = document.getElementById('bandeauResultats');
       if (!el) return;
 
@@ -1974,10 +1974,15 @@
       });
       if (deCeTexte.length === 0) { el.style.display = 'none'; return; }
 
-      var parType = {};
+      // === Regrouper par type et garder la MEILLEURE tentative de chaque type ===
+      var meilleuresParType = {};
       deCeTexte.forEach(function(t) {
-        if (!parType[t.typeExo]) parType[t.typeExo] = [];
-        parType[t.typeExo].push(t);
+        var type = t.typeExo;
+        var pct = t.total > 0 ? (t.bonnes / t.total) : 0;
+        if (!meilleuresParType[type] ||
+            pct > (meilleuresParType[type].bonnes / (meilleuresParType[type].total || 1))) {
+          meilleuresParType[type] = t;
+        }
       });
 
       var labels = {
@@ -1985,27 +1990,83 @@
         carte: 'Cartes', relier: 'Relier', ordre: 'Ordre', copier: 'Copier'
       };
 
-      var html = '<div class="bandeau-resultats-titre">Vos tentatives sur ce texte'
-               + (AUTH.aUnPseudo() ? ' (pseudo : ' + AUTH.getPseudo() + ')' : '')
-               + '</div>';
-      Object.keys(parType).forEach(function(type) {
+      // === Calcul du total (sur les meilleures tentatives) ===
+      var totalBonnes = 0;
+      var totalTotal = 0;
+      var lignesDetail = [];
+
+      Object.keys(meilleuresParType).forEach(function(type) {
         if (!labels[type]) return;
-        var list = parType[type].sort(function(a, b) {
-          return new Date(b.date) - new Date(a.date);
+        var t = meilleuresParType[type];
+        totalBonnes += t.bonnes;
+        totalTotal += t.total;
+        lignesDetail.push({
+          label: labels[type],
+          bonnes: t.bonnes,
+          total: t.total
         });
-        var derniere = list[0];
-        var dateStr = '';
-        try {
-          var d = new Date(derniere.date);
-          dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
-        } catch(e) {}
-        html += '<div class="bandeau-resultats-ligne">'
-          + '<strong>' + labels[type] + '</strong> : '
-          + 'dernière tentative ' + derniere.bonnes + ' / ' + derniere.total
-          + ' <span class="bandeau-resultats-date">(' + dateStr
-          + (list.length > 1 ? ' — ' + list.length + ' essais' : '') + ')</span>'
-          + '</div>';
       });
+
+      if (totalTotal === 0) { el.style.display = 'none'; return; }
+
+      var pourcentage = Math.round((totalBonnes / totalTotal) * 100);
+      var valide = pourcentage >= 65;
+
+      // === Date de la dernière tentative (toutes types confondus) ===
+      var toutesDates = deCeTexte.map(function(t) { return new Date(t.date); }).filter(function(d) { return !isNaN(d); });
+      var derniereDate = toutesDates.length > 0 ? new Date(Math.max.apply(null, toutesDates)) : null;
+      var dateStr = '';
+      if (derniereDate) {
+        dateStr = derniereDate.toLocaleDateString('fr-FR', {
+          day: '2-digit', month: '2-digit', year: 'numeric'
+        });
+      }
+
+      // === Construction HTML ===
+      var html = '<div class="bandeau-resultats-titre">Vos tentatives sur ce texte'
+               + (AUTH.aUnPseudo() ? ' (pseudo : ' + echapperHtml(AUTH.getPseudo()) + ')' : '')
+               + '</div>';
+
+      // Total
+      html += '<div class="bandeau-resultats-total">'
+            + '<strong>Total : ' + totalBonnes + ' / ' + totalTotal + '</strong>'
+            + ' <span class="bandeau-resultats-pct">(' + pourcentage + ' %)</span>'
+            + '</div>';
+
+      // Statut
+      if (valide) {
+        html += '<div class="bandeau-resultats-statut valide">'
+              + '✓ <strong>Validé</strong> — vous avez dépassé 65 %.'
+              + '</div>';
+      } else {
+        html += '<div class="bandeau-resultats-statut non-valide">'
+              + '✗ <strong>Pas encore validé</strong> — il faut au moins 65 % pour valider.'
+              + '</div>';
+      }
+
+      // Date
+      if (dateStr) {
+        html += '<div class="bandeau-resultats-date">Dernière tentative le ' + dateStr + '</div>';
+      }
+
+      // Détail par type
+      html += '<div class="bandeau-resultats-detail">';
+      lignesDetail.forEach(function(l) {
+        html += '<div class="bandeau-resultats-ligne-detail">'
+              + '<span class="detail-label">' + l.label + '</span>'
+              + '<span class="detail-valeur">' + l.bonnes + ' / ' + l.total + '</span>'
+              + '</div>';
+      });
+      html += '</div>';
+
+      // Bouton "Repasser" si pas validé
+      if (!valide) {
+        html += '<div class="bandeau-resultats-actions">'
+              + '<button class="bandeau-btn-repasser" onclick="relireEtRefaire()">'
+              + 'Repasser le quiz'
+              + '</button>'
+              + '</div>';
+      }
 
       el.innerHTML = html;
       el.style.display = 'block';
