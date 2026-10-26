@@ -172,6 +172,87 @@
         color: var(--text-secondary, #666);
         min-height: 1em;
       }
+
+      /* Bouton flottant d'annotation */
+      .btn-annotation-flottant {
+        position: fixed;
+        bottom: 24px;
+        right: 24px;
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        border: 1px solid var(--border);
+        background: var(--bg-paper);
+        color: var(--text);
+        font-size: 20px;
+        cursor: pointer;
+        z-index: 9000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background .15s, border-color .15s;
+      }
+      .btn-annotation-flottant:hover { background: var(--bg-hover); border-color: var(--border-hover); }
+      .btn-annotation-flottant.ouvert { background: var(--bg-active); }
+
+      .panneau-annotation {
+        position: fixed;
+        bottom: 78px;
+        right: 24px;
+        width: 320px;
+        max-width: calc(100vw - 32px);
+        background: var(--bg-paper);
+        border: 1px solid var(--border-hover);
+        padding: 14px;
+        z-index: 9000;
+        display: none;
+        box-sizing: border-box;
+      }
+      .panneau-annotation.ouvert { display: block; }
+      .panneau-annotation label {
+        display: block;
+        font-family: var(--font-sans);
+        font-size: 11px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+      .panneau-annotation textarea {
+        width: 100%;
+        min-height: 120px;
+        resize: vertical;
+        box-sizing: border-box;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        font-size: 13px;
+        padding: 8px 10px;
+      }
+      .panneau-annotation .annotation-actions {
+        display: flex;
+        gap: 8px;
+        justify-content: flex-end;
+        margin-top: 8px;
+      }
+      .panneau-annotation button {
+        padding: 6px 14px;
+        border: 1px solid var(--border);
+        background: transparent;
+        color: var(--text-secondary);
+        cursor: pointer;
+        font-family: var(--font-sans);
+        font-size: 12px;
+      }
+      .panneau-annotation button:hover { background: var(--bg-hover); color: var(--text); }
+      .panneau-annotation .annotation-statut {
+        margin-top: 6px;
+        font-size: 11px;
+        font-style: italic;
+        color: var(--text-muted);
+        min-height: 14px;
+      }
     </style>
 
     <div id="texteContainer" class="colonne-principale">
@@ -198,6 +279,20 @@
         <button class="popup-btn-fermer" onclick="fermerPopupResultat()">Fermer</button>
       </div>
     </div>
+  </div>
+
+  <!-- Bouton flottant d'annotation -->
+  <button class="btn-annotation-flottant" id="btnAnnotationFlottant" onclick="togglePanneauAnnotation()" title="Ajouter une note sur ce texte">✏️</button>
+
+  <!-- Panneau d'annotation -->
+  <div class="panneau-annotation" id="panneauAnnotation">
+    <label for="annotationTextarea">Ma note sur ce texte</label>
+    <textarea id="annotationTextarea" placeholder="Écrivez votre note, vos réflexions..."></textarea>
+    <div class="annotation-actions">
+      <button onclick="togglePanneauAnnotation()">Fermer</button>
+      <button onclick="enregistrerAnnotation()">Enregistrer</button>
+    </div>
+    <div class="annotation-statut" id="annotationStatut"></div>
   </div>
 
   <div id="footer-container"></div>
@@ -240,6 +335,8 @@
     };
 
     var questionsOuvertes = [];
+
+    var annotationChargee = false;
 
     function echapperHtml(str) {
       if (!str) return '';
@@ -1391,29 +1488,82 @@
     }
 
     function afficherBandeauValidation(dateStr, pourcentage) {
-  var container = document.getElementById('texteContainer');
-  if (!container) return;
-  if (container.querySelector('.validation-texte-info')) return;
+      var container = document.getElementById('texteContainer');
+      if (!container) return;
+      if (container.querySelector('.validation-texte-info')) return;
 
-  var ligne = document.createElement('div');
-  ligne.className = 'validation-texte-info';
-  ligne.style.fontStyle = 'italic';
-  ligne.style.marginBottom = '12px';
-  ligne.style.padding = '8px 12px';
-  ligne.style.opacity = '.9';
-  ligne.style.fontSize = '.95em';
-  ligne.style.borderLeft = '3px solid #2d6a4f';
+      var ligne = document.createElement('div');
+      ligne.className = 'validation-texte-info';
+      ligne.style.fontStyle = 'italic';
+      ligne.style.marginBottom = '12px';
+      ligne.style.padding = '8px 12px';
+      ligne.style.opacity = '.9';
+      ligne.style.fontSize = '.95em';
+      ligne.style.borderLeft = '3px solid #2d6a4f';
 
-  var texte = 'Vous avez validé ce texte';
-  if (dateStr) texte += ' le ' + dateStr;
-  if (typeof pourcentage === 'number') texte += ' (' + pourcentage + ' %)';
+      var texte = 'Vous avez validé ce texte';
+      if (dateStr) texte += ' le ' + dateStr;
+      if (typeof pourcentage === 'number') texte += ' (' + pourcentage + ' %)';
 
-  ligne.textContent = texte;
+      ligne.textContent = texte;
 
-  // Insère AVANT la feuille-texte (donc hors du cadre titre/texte)
-  container.insertBefore(ligne, container.firstChild);
-}
-    
+      container.insertBefore(ligne, container.firstChild);
+    }
+
+    // ============================================================
+    // ANNOTATIONS
+    // ============================================================
+    function togglePanneauAnnotation() {
+      var panneau = document.getElementById('panneauAnnotation');
+      var btn = document.getElementById('btnAnnotationFlottant');
+      var ouvert = panneau.classList.toggle('ouvert');
+      btn.classList.toggle('ouvert', ouvert);
+      if (ouvert && !annotationChargee && texteActuel) {
+        chargerAnnotation(texteActuel.id);
+      }
+    }
+
+    function chargerAnnotation(texteId) {
+      var nom = getNomUtilisateurCourant();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+      var ta = document.getElementById('annotationTextarea');
+      var statut = document.getElementById('annotationStatut');
+      if (!ta) return;
+      ta.value = '';
+      if (statut) statut.textContent = 'Chargement...';
+
+      fetch(base + '?action=getAnnotation&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          ta.value = (data && data.annotation) ? data.annotation : '';
+          annotationChargee = true;
+          if (statut) statut.textContent = '';
+        })
+        .catch(function() { if (statut) statut.textContent = 'Erreur de chargement.'; });
+    }
+
+    function enregistrerAnnotation() {
+      if (!texteActuel) return;
+      var nom = getNomUtilisateurCourant();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+      var ta = document.getElementById('annotationTextarea');
+      var statut = document.getElementById('annotationStatut');
+      if (!ta) return;
+      var valeur = ta.value;
+      if (statut) statut.textContent = 'Enregistrement...';
+
+      fetch(base + '?action=saveAnnotation'
+        + '&nom=' + encodeURIComponent(nom)
+        + '&texteId=' + encodeURIComponent(texteActuel.id)
+        + '&titre=' + encodeURIComponent(texteActuel.titre || '')
+        + '&annotation=' + encodeURIComponent(valeur))
+        .then(function(r) { return r.json(); })
+        .then(function() {
+          if (statut) statut.textContent = valeur.trim() === '' ? 'Note supprimée.' : '✓ Enregistré.';
+        })
+        .catch(function() { if (statut) statut.textContent = 'Erreur d\'enregistrement.'; });
+    }
+
     function construireHtmlTexte(texte, imagesTheme) {
       imagesTheme = imagesTheme || {};
       var contenu = texte.contenu || '';
