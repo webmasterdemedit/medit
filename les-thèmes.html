@@ -13,7 +13,7 @@
 
   <style>
     .page-themes {
-      max-width: 1000px;        /* ← était 900px, aligné sur les-sections */
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
@@ -58,7 +58,6 @@
       color: var(--text);
     }
 
-    /* === GRILLE (inchangée) === */
     .grille-themes {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -66,14 +65,12 @@
       justify-items: stretch;
     }
 
-    /* === Wrapper carte + bloc bas (inchangé) === */
     .grille-themes .carte-avec-bas {
       display: flex;
       flex-direction: column;
       width: 100%;
     }
 
-    /* === Bloc bas de carte (inchangé) === */
     .carte-avec-bas .carte-bas {
       margin-top: 6px;
       padding: 8px 10px;
@@ -138,6 +135,38 @@
     .vide-themes p {
       color: var(--text-secondary);
       font-size: 14px;
+    }
+
+    /* ============================================================
+       CŒUR FAVORI — bas centré de la couverture
+       ============================================================ */
+    .favori-coeur {
+      position: absolute;
+      bottom: 8px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--bg-paper);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 16px;
+      line-height: 1;
+      width: 28px;
+      height: 28px;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 10;
+      transition: color .15s ease, border-color .15s ease, background .15s ease;
+    }
+    .favori-coeur:hover {
+      background: var(--bg-hover);
+      border-color: var(--border-hover);
+    }
+    .favori-coeur.actif {
+      color: #c0392b;
+      border-color: #c0392b;
     }
 
     @media (max-width: 700px) {
@@ -228,6 +257,7 @@
     window.themesData = {};
     window.niveauEtudiant = 0;
     window.nomEtudiant = '';
+    window.favorisMap = {};
 
     var TYPES_EXERCICES = [
       { prefix: 'quiz:',   label: 'QCM' },
@@ -267,84 +297,133 @@
         .replace(/'/g, '&#39;');
     }
 
+    function getNomUtilisateur() {
+      if (typeof getIdUtilisateur === 'function') {
+        var id = getIdUtilisateur();
+        if (id) return id;
+      }
+      var stock = localStorage.getItem('etudiant_id');
+      if (stock) return stock;
+
+      var inv = localStorage.getItem('invite_id');
+      if (!inv) {
+        inv = 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        localStorage.setItem('invite_id', inv);
+      }
+      return inv;
+    }
+
+    // ============================================================
+    // FAVORIS
+    // ============================================================
+    function chargerFavoris() {
+      var nom = getNomUtilisateur();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      return fetch(base + '?action=getFavorisUtilisateur&nom=' + encodeURIComponent(nom))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          favorisMap = {};
+          (data.favoris || []).forEach(function(t) { favorisMap[t] = true; });
+        })
+        .catch(function() {});
+    }
+
+    function appliquerEtatFavoris() {
+      document.querySelectorAll('.favori-coeur').forEach(function(btn) {
+        var theme = btn.getAttribute('data-theme');
+        if (favorisMap[theme]) {
+          btn.textContent = '♥';
+          btn.classList.add('actif');
+          btn.title = 'Retirer des favoris';
+        } else {
+          btn.textContent = '♡';
+          btn.classList.remove('actif');
+          btn.title = 'Ajouter aux favoris';
+        }
+      });
+    }
+
+    function toggleFavori(btn) {
+      var theme = btn.getAttribute('data-theme');
+      var nom = getNomUtilisateur();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      fetch(base + '?action=saveFavori&nom=' + encodeURIComponent(nom) + '&theme=' + encodeURIComponent(theme))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data.favori) {
+            favorisMap[theme] = true;
+            btn.textContent = '♥';
+            btn.classList.add('actif');
+            btn.title = 'Retirer des favoris';
+          } else {
+            delete favorisMap[theme];
+            btn.textContent = '♡';
+            btn.classList.remove('actif');
+            btn.title = 'Ajouter aux favoris';
+          }
+        })
+        .catch(function() {});
+    }
+
     // ============================================================
     // Chargement
     // ============================================================
     function chargerThemes() {
-      var id = (typeof getIdUtilisateur === 'function')
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'invite');
+      var id = getNomUtilisateur();
       nomEtudiant = id;
 
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          textesData = data.tousLesTextes || data.textes || [];
+      Promise.all([
+        DataManager.charger().catch(function() { return DataManager.getCacheForce(id) || null; }),
+        chargerFavoris()
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        if (!data) throw new Error('Pas de données');
 
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                theme: l.theme || '',
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                preRequis: l.preRequis || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
-              };
-            });
-          }
+        niveauEtudiant = data.niveau || 0;
+        textesData = data.tousLesTextes || data.textes || [];
 
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.texteId] = r;
-            });
-          }
+        themesData = {};
+        if (data.themes && Array.isArray(data.themes)) {
+          data.themes.forEach(function(l) {
+            themesData[l.titre] = {
+              theme: l.theme || '',
+              couleur: l.couleur || '#2d6a4f',
+              sousTitre: l.sousTitre || '',
+              date: l.date || '',
+              preRequis: l.preRequis || '',
+              auteur: l.auteur || '',
+              niveau: parseInt(l.niveau) || 0,
+              couverture: l.couverture || ''
+            };
+          });
+        }
 
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-          afficherThemes();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || cache.tousLesTextes || [];
-            if (cache.themes && Array.isArray(cache.themes)) {
-              themesData = {};
-              cache.themes.forEach(function(l) {
-                themesData[l.titre] = {
-                  theme: l.theme || '',
-                  couleur: l.couleur || '#2d6a4f',
-                  sousTitre: l.sousTitre || '',
-                  date: l.date || '',
-                  preRequis: l.preRequis || '',
-                  auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0,
-                  couverture: l.couverture || ''
-                };
-              });
-            }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-            afficherThemes();
-          } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-themes">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-              </div>
-            `;
-          }
-        });
+        toutesLesReponses = {};
+        if (data.reponses) {
+          data.reponses.forEach(function(r) {
+            toutesLesReponses[r.texteId] = r;
+          });
+        }
+
+        document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+        afficherThemes();
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('contenu').innerHTML = `
+          <div class="vide-themes">
+            <span class="icone">⚠</span>
+            <h2>Erreur de chargement</h2>
+            <p>Vérifiez votre connexion internet.</p>
+          </div>
+        `;
+      });
     }
 
     // ============================================================
-    // Affichage (inchangé — grille + carte-bas)
+    // Affichage
     // ============================================================
     function afficherThemes() {
       var container = document.getElementById('contenu');
@@ -457,6 +536,20 @@
           lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
         });
 
+        // Insérer le cœur favori en bas centré de la couverture.
+        // On ajoute le bouton à la fin de la carte-couverture (avant </a>)
+        var coeurHtml = '<button class="favori-coeur" ' +
+          'data-theme="' + escapeHtml(theme.nom) + '" ' +
+          'onclick="event.stopPropagation(); event.preventDefault(); toggleFavori(this);" ' +
+          'aria-label="Ajouter ce thème aux favoris">♡</button>';
+
+        // On insère avant le dernier </a> de la carte-couverture (s'il existe)
+        if (carteHtml.indexOf('</a>') !== -1) {
+          carteHtml = carteHtml.replace(/<\/a>\s*$/, coeurHtml + '</a>');
+        } else {
+          carteHtml += coeurHtml;
+        }
+
         var basHtml = ''
           + '<div class="carte-bas">'
           +   '<div class="ligne-compteurs">'
@@ -477,6 +570,9 @@
       html += '</div>';
 
       container.innerHTML = html;
+
+      // Appliquer l'état visuel des favoris après insertion
+      appliquerEtatFavoris();
     }
 
     function demarrer() {
