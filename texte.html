@@ -1,4 +1,4 @@
-<!Texte html>
+<!DOCTYPE html>
 <html lang="fr">
 <head>
   <meta charset="UTF-8" />
@@ -244,6 +244,25 @@
     function echapperHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+    }
+
+    // ============================================================
+    // Identité utilisateur : connecté ou invité (stable via localStorage)
+    // ============================================================
+    function getNomUtilisateurCourant() {
+      if (typeof getIdUtilisateur === 'function') {
+        var id = getIdUtilisateur();
+        if (id) return id;
+      }
+      var stock = localStorage.getItem('etudiant_id');
+      if (stock) return stock;
+
+      var inv = localStorage.getItem('invite_id');
+      if (!inv) {
+        inv = 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
+        localStorage.setItem('invite_id', inv);
+      }
+      return inv;
     }
 
     function extraireNumeroTexte(titre) {
@@ -1243,14 +1262,11 @@
     function envoyerToutesReponses(silencieux) {
       if (envoiEffectue) return Promise.resolve();
 
-      var nom = (typeof getIdUtilisateur === 'function' && getIdUtilisateur())
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'anonyme');
+      var nom = getNomUtilisateurCourant();
       var texteId = texteActuel ? texteActuel.id : '';
       var titre = texteActuel ? texteActuel.titre : '';
       var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      // Détails par type
       var quizTotal = 0, quizBonnes = 0;
       var choixQcmArr = [];
       Object.keys(reponsesTexte.quiz).forEach(function(k) {
@@ -1304,7 +1320,6 @@
       });
       var reponseOuverteFinale = questionsOuvertesRep.join('\n\n');
 
-      // Détails JSON
       var details = {
         quiz:    { bonnes: quizBonnes,    total: quizTotal,    choix: choixQcm },
         vf:      { bonnes: vfBonnes,      total: vfTotal },
@@ -1330,6 +1345,7 @@
 
       var promesse = fetch(url).then(function(r){ return r.json(); }).then(function() {
         envoiEffectue = true;
+        if (texteActuel) verifierValidationTexte(texteActuel);
       }).catch(function(){});
 
       if (!silencieux) {
@@ -1353,6 +1369,45 @@
       envoiEffectue = false;
       window.scrollTo({ top: 0, behavior: 'smooth' });
       setTimeout(function() { window.location.reload(); }, 300);
+    }
+
+    // ============================================================
+    // Validation du texte : interroge le serveur, affiche le bandeau
+    // ============================================================
+    function verifierValidationTexte(texte) {
+      var nom = getNomUtilisateurCourant();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      fetch(base + '?action=getTentativeUtilisateur'
+        + '&nom=' + encodeURIComponent(nom)
+        + '&texteId=' + encodeURIComponent(texte.id))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.valide) {
+            afficherBandeauValidation(data.date, data.pourcentage);
+          }
+        })
+        .catch(function() {});
+    }
+
+    function afficherBandeauValidation(dateStr, pourcentage) {
+      var bandeau = document.getElementById('bandeauTitre');
+      if (!bandeau) return;
+      if (bandeau.querySelector('.validation-texte-info')) return;
+
+      var ligne = document.createElement('div');
+      ligne.className = 'validation-texte-info';
+      ligne.style.fontStyle = 'italic';
+      ligne.style.marginBottom = '6px';
+      ligne.style.opacity = '.85';
+      ligne.style.fontSize = '.95em';
+
+      var texte = 'Vous avez validé ce texte';
+      if (dateStr) texte += ' le ' + dateStr;
+      if (typeof pourcentage === 'number') texte += ' (' + pourcentage + ' %)';
+
+      ligne.textContent = texte;
+      bandeau.insertBefore(ligne, bandeau.firstChild);
     }
 
     function construireHtmlTexte(texte, imagesTheme) {
@@ -1465,7 +1520,7 @@
         : '';
 
       var html = '';
-      html += '<div class="bandeau-titre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
+      html += '<div class="bandeau-titre" id="bandeauTitre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
 
       html += '<div class="texte-zone">';
       blocsOrdonnes.forEach(function(bloc) {
@@ -1883,6 +1938,8 @@
 
       majNoteGlobale();
       initDragAndDropOrdre();
+
+      verifierValidationTexte(texte);
     }
 
     function afficherErreur(message) {
