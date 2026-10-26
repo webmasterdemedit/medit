@@ -3,13 +3,14 @@
 // - Reload (F5 / Ctrl+R / Ctrl+Shift+R) → Sheet
 // - Images → cache conservé
 // - MODE INVITÉ : accès aux textes + quiz sans compte
+// - 🆕 PSEUDO SIMPLE : sauvegarde des tentatives sous un pseudo
 // ============================================================
 
 // Clés de cache
 var CLE_CACHE          = 'qiraat_data_v1';
 var CLE_TIMESTAMP      = 'qiraat_data_ts';
 var CLE_NOM            = 'qiraat_data_nom';
-var CLE_IMAGES         = 'qiraat_images_v2_'; // ← v2 : les anciens caches v1 sont ignorés
+var CLE_IMAGES         = 'qiraat_images_v2_';
 var CLE_SESSION_INVITE = 'qiraat_session_invite';
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
@@ -37,14 +38,21 @@ function getSessionInvite() {
 }
 
 // Retourne l'identifiant à utiliser pour TOUTE action (chargement ou sauvegarde)
-// - connecté → etudiant_id
-// - invité   → session invite
+// - pseudo saisi → pseudo
+// - sinon        → session invite
 function getIdUtilisateur() {
-    return localStorage.getItem('etudiant_id') || getSessionInvite();
+    if (typeof AUTH !== 'undefined' && AUTH.getIdUtilisateur) {
+        return AUTH.getIdUtilisateur();
+    }
+    // Fallback si auth.js n'est pas chargé
+    return localStorage.getItem('qiraat_pseudo') || getSessionInvite();
 }
 
 function estConnecte() {
-    return !!localStorage.getItem('etudiant_id');
+    if (typeof AUTH !== 'undefined' && AUTH.aUnPseudo) {
+        return AUTH.aUnPseudo();
+    }
+    return !!localStorage.getItem('qiraat_pseudo');
 }
 
 var DataManager = {
@@ -53,7 +61,7 @@ var DataManager = {
     // CHARGER
     // ============================================================
     charger: function(forceRefresh) {
-        var id = getIdUtilisateur();   // ← ne rejette plus jamais
+        var id = getIdUtilisateur();
 
         if (EST_RELOAD || forceRefresh) {
             console.log('🔄 Reload détecté → chargement depuis le Sheet');
@@ -83,7 +91,7 @@ var DataManager = {
     _fetchDepuisSheet: function(id) {
         var self = this;
 
-        // Si invité → actions publiques (pas de compte requis)
+        // Si pas de pseudo → actions publiques (pas de compte requis)
         if (!estConnecte()) {
             return this._fetchInvite();
         }
@@ -119,7 +127,6 @@ var DataManager = {
                 console.log('✅ Données chargées depuis le Sheet');
                 console.log('📚 ' + data.themes.length + ' thèmes');
                 console.log('📖 ' + data.tousLesTextes.length + ' textes');
-                console.log('✏️ ' + data.reponses.length + ' réponses');
 
                 return data;
             })
@@ -146,9 +153,8 @@ var DataManager = {
 
             var textes = (textesData.textes || []);
 
-            // Invité : on affiche TOUS les textes (pas de filtre par niveau)
             var data = {
-                niveau: 999,                 // → tous les textes visibles
+                niveau: 999,
                 description: '',
                 mdp: '',
                 contact: '',
@@ -158,14 +164,13 @@ var DataManager = {
                 themes: themesData.themes || [],
                 textes: textes,
                 tousLesTextes: textes,
-                textesComplets: {},          // chargés à la demande via getTexteAsync
+                textesComplets: {},
                 reponses: [],
                 historique: []
             };
 
             self._dernierChargement = data;
             self._dernierNom = getIdUtilisateur();
-            // Pas de cache localStorage pour les invités (identité volatile)
             return data;
         });
     },
@@ -323,146 +328,67 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDES  (invité ou connecté : toujours envoyé)
+    // SAUVEGARDE UNIFIÉE (1 appel = 1 tentative)
     // ============================================================
-    sauvegarderOrdre: function(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&ordreDonne=' + encodeURIComponent(ordreDonne) +
-            '&bonnes=' + encodeURIComponent(bonnes) +
-            '&total=' + encodeURIComponent(total) +
-            '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
+    sauvegarderTentative: function(texteId, typeExo, details, bonnes, total) {
+        var url = CONFIG.SCRIPT_URL + '?action=saveTentative' +
+            '&id='       + encodeURIComponent(AUTH.getIdUtilisateur()) +
+            '&texteId='  + encodeURIComponent(texteId) +
+            '&typeExo='  + encodeURIComponent(typeExo) +
+            '&bonnes='   + encodeURIComponent(bonnes) +
+            '&total='    + encodeURIComponent(total) +
+            '&details='  + encodeURIComponent(JSON.stringify(details || {}));
         return fetch(url).then(function(r) { return r.json(); })
             .then(function(data) {
                 if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    sauvegarderCarte: function(texteId, titre, cartes, bonnes, total, tempsPasse) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&cartes=' + encodeURIComponent(cartes) +
-            '&bonnes=' + encodeURIComponent(bonnes) +
-            '&total=' + encodeURIComponent(total) +
-            '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    sauvegarderAnnotation: function(texteId, slide, annotation) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&slide=' + encodeURIComponent(slide) +
-            '&annotation=' + encodeURIComponent(annotation);
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    sauvegarderReponseOuverte: function(texteId, reponse) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&reponseOuverte=' + encodeURIComponent(reponse);
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    sauvegarderQuiz: function(texteId, titre, choixQcm, bonnes, total, tempsPasse) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&titre=' + encodeURIComponent(titre) +
-            '&choixQcm=' + encodeURIComponent(choixQcm) +
-            '&bonnes=' + encodeURIComponent(bonnes) +
-            '&total=' + encodeURIComponent(total) +
-            '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    sauvegarderLecture: function(texteId, titre) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&titre=' + encodeURIComponent(titre);
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
-    },
-
-    marquerRevise: function(texteId, revise) {
-        var id = getIdUtilisateur();
-
-        var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
-            '&nom=' + encodeURIComponent(id) +
-            '&texteId=' + encodeURIComponent(texteId) +
-            '&revise=' + encodeURIComponent(revise ? '1' : '0');
-
-        return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
+                throw new Error(data.message || 'Erreur sauvegarde');
             });
     },
 
     // ============================================================
-    // GET ANNOTATIONS / REVISE
+    // LIRE LES TENTATIVES
+    // ============================================================
+    getTentatives: function(texteId) {
+        var url = CONFIG.SCRIPT_URL + '?action=getTentatives' +
+            '&id='      + encodeURIComponent(AUTH.getIdUtilisateur()) +
+            (texteId ? '&texteId=' + encodeURIComponent(texteId) : '');
+        return fetch(url).then(function(r) { return r.json(); })
+            .then(function(data) {
+                if (data.success) return data.tentatives || [];
+                return [];
+            })
+            .catch(function() { return []; });
+    },
+
+    // ============================================================
+    // WRAPPERS DE COMPATIBILITÉ (anciens noms → sauvegarderTentative)
+    // ============================================================
+    sauvegarderQuiz: function(t, titre, choixQcm, b, tot) {
+        return this.sauvegarderTentative(t, 'quiz', { choixQcm: choixQcm }, b, tot);
+    },
+    sauvegarderReponseOuverte: function(t, rep) {
+        return this.sauvegarderTentative(t, 'ouverte', { texte: rep }, 0, 0);
+    },
+    sauvegarderAnnotation: function(t, slide, ann) {
+        return this.sauvegarderTentative(t, 'annotation', { slide: slide, texte: ann }, 0, 0);
+    },
+    sauvegarderCarte: function(t, titre, cartes, b, tot) {
+        return this.sauvegarderTentative(t, 'carte', { cartes: cartes }, b, tot);
+    },
+    sauvegarderOrdre: function(t, titre, ordreDonne, b, tot) {
+        return this.sauvegarderTentative(t, 'ordre', { ordre: ordreDonne }, b, tot);
+    },
+    sauvegarderLecture: function() { return Promise.resolve(); },
+    marquerRevise:      function() { return Promise.resolve(); },
+
+    // ============================================================
+    // GET ANNOTATIONS / REVISE (anciens getters, conservés vides)
     // ============================================================
     getAnnotations: function(texteId) {
-        var reponses = this.getReponses();
-        for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].texteId === texteId) {
-                return reponses[i].annotations || '';
-            }
-        }
         return '';
     },
 
     getReviseStatus: function(texteId) {
-        var reponses = this.getReponses();
-        for (var i = 0; i < reponses.length; i++) {
-            if (reponses[i].texteId === texteId) {
-                return reponses[i].revise || '0';
-            }
-        }
         return '0';
     },
 
@@ -528,6 +454,19 @@ function getThemes() { return DataManager.getThemes(); }
 function chargerImagesTheme(nomTheme) { return DataManager.chargerImagesTheme(nomTheme); }
 function getImagesThemeCache(nomTheme) { return DataManager.getImagesThemeCache(nomTheme); }
 
+// ============================================================
+// NOUVELLES FONCTIONS GLOBALES (tentatives)
+// ============================================================
+function sauvegarderTentative(texteId, typeExo, details, bonnes, total) {
+    return DataManager.sauvegarderTentative(texteId, typeExo, details, bonnes, total);
+}
+function getTentatives(texteId) {
+    return DataManager.getTentatives(texteId);
+}
+
+// ============================================================
+// ANCIENNES FONCTIONS GLOBALES (wrappers)
+// ============================================================
 function sauvegarderOrdre(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
     return DataManager.sauvegarderOrdre(texteId, titre, ordreDonne, bonnes, total, tempsPasse);
 }
