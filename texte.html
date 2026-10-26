@@ -123,7 +123,65 @@
         .partage-btn svg { width: 15px; height: 15px; }
         .partage-social { gap: 3px; }
       }
+
+      /* === ZONE PSEUDO === */
+      .zone-pseudo {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-bottom: 16px;
+      }
+      .zone-pseudo label {
+        font-size: 14px;
+        color: #555;
+        margin-right: 4px;
+      }
+      .zone-pseudo input {
+        padding: 6px 10px;
+        border: 1px solid #ccc;
+        border-radius: 3px;
+        min-width: 200px;
+        font-family: inherit;
+      }
+      .zone-pseudo button {
+        padding: 6px 14px;
+        background: #2d6a4f;
+        color: #fff;
+        border: none;
+        border-radius: 3px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .zone-pseudo button:hover { opacity: .85; }
+      #statutPseudo { font-size: 13px; color: #2d6a4f; margin-left: 4px; }
+
+      /* === BANDEAU RÉSULTATS === */
+      .bandeau-resultats {
+        background: #f4f7f4;
+        border-left: 3px solid #2d6a4f;
+        padding: 10px 14px;
+        margin-bottom: 16px;
+        font-size: 14px;
+        color: #333;
+        border-radius: 2px;
+      }
+      .bandeau-resultats-titre { font-weight: 600; margin-bottom: 4px; color: #2d6a4f; }
+      .bandeau-resultats-ligne { margin: 2px 0; }
+      .bandeau-resultats-date { color: #888; font-size: 12px; }
     </style>
+
+    <!-- ZONE PSEUDO -->
+    <div class="zone-pseudo">
+      <label for="inputPseudo">Votre pseudo (pour retrouver vos résultats) :</label>
+      <input type="text" id="inputPseudo" placeholder="Entrez un pseudo..."
+             onkeydown="if(event.key==='Enter'){validerPseudo();}">
+      <button onclick="validerPseudo()">Valider</button>
+      <span id="statutPseudo"></span>
+    </div>
+
+    <!-- BANDEAU RÉSULTATS -->
+    <div id="bandeauResultats" class="bandeau-resultats" style="display:none;"></div>
 
     <div id="texteContainer" class="colonne-principale">
       <div class="loader"><div class="spinner"></div><p>Chargement du texte...</p></div>
@@ -1174,11 +1232,7 @@
       var statut = document.getElementById('popupEnvoiStatut');
       if (!btn || !statut) return;
 
-      var nom = (typeof getIdUtilisateur === 'function')
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'anonyme');
       var texteId = texteActuel ? texteActuel.id : '';
-
       var toutesReponses = [];
       questionsOuvertes.forEach(function(q, i) {
         toutesReponses.push('Q' + (i + 1) + ': ' + (q.reponse || ''));
@@ -1193,13 +1247,8 @@
 
       btn.disabled = true;
       btn.textContent = '⏳ Envoi en cours...';
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      fetch(base + '?action=saveReponseOuverte' +
-        '&nom=' + encodeURIComponent(nom) +
-        '&texteId=' + encodeURIComponent(texteId) +
-        '&reponseOuverte=' + encodeURIComponent(texteFinal))
-        .then(function(r) { return r.json(); })
+      sauvegarderTentative(texteId, 'ouverte', { texte: texteFinal }, 0, 0)
         .then(function() {
           envoiQuestionsEffectue = true;
           btn.textContent = '✓ Réponses envoyées';
@@ -1212,61 +1261,97 @@
         });
     }
 
+    // ============================================================
+    // ENVOI DE TOUTES LES TENTATIVES (via sauvegarderTentative)
+    // ============================================================
     function envoyerToutesReponses(silencieux) {
-      var nom = (typeof getIdUtilisateur === 'function')
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'anonyme');
       var texteId = texteActuel ? texteActuel.id : '';
-      var titre = texteActuel ? texteActuel.titre : '';
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      var choixQcmArr = [];
-      var quizTotal = 0, quizBonnes = 0;
-      Object.keys(reponsesTexte.quiz).forEach(function(k) {
-        quizTotal++;
-        var r = reponsesTexte.quiz[k];
-        if (r.correct) quizBonnes++;
-        choixQcmArr.push((r.correct ? 'V' : 'F') + ':' + (parseInt(r.choix) + 1));
-      });
-      var choixQcm = choixQcmArr.join('|');
-
-      var vfTotal = 0, vfBonnes = 0;
-      Object.keys(reponsesTexte.vf).forEach(function(k) { vfTotal++; if (reponsesTexte.vf[k].correct) vfBonnes++; });
-
-      var ttTotal = 0, ttBonnes = 0;
-      Object.keys(reponsesTexte.tt).forEach(function(k) { ttTotal++; if (reponsesTexte.tt[k].correct) ttBonnes++; });
-
-      var cartesTotal = 0, cartesBonnes = 0, cartesStr = [];
-      Object.keys(reponsesTexte.cartes).forEach(function(k) {
-        cartesTotal++;
-        if (reponsesTexte.cartes[k] === true) cartesBonnes++;
-        cartesStr.push(reponsesTexte.cartes[k] ? '1' : '0');
-      });
-
-      var relierTotal = 0, relierBonnes = 0;
-      Object.keys(reponsesTexte.relier).forEach(function(k) {
-        var r = reponsesTexte.relier[k];
-        relierTotal += r.total;
-        relierBonnes += r.bonnes;
-      });
-
-      var ordreTotal = 0, ordreBonnes = 0;
-      Object.keys(reponsesTexte.ordre).forEach(function(k) {
-        var r = reponsesTexte.ordre[k];
-        ordreTotal += r.total;
-        ordreBonnes += r.bonnes;
-      });
+      if (!texteId) return Promise.resolve();
 
       var promesses = [];
-      if (quizTotal > 0) promesses.push(fetch(base + '?action=saveQuiz&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&choixQcm=' + encodeURIComponent(choixQcm) + '&bonnes=' + quizBonnes + '&total=' + quizTotal).then(function(r){return r.json();}));
-      if (vfTotal > 0) promesses.push(fetch(base + '?action=saveVraiFaux&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&bonnes=' + vfBonnes + '&total=' + vfTotal).then(function(r){return r.json();}));
-      if (ttTotal > 0) promesses.push(fetch(base + '?action=saveTexteTrous&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&bonnes=' + ttBonnes + '&total=' + ttTotal).then(function(r){return r.json();}));
-      if (cartesTotal > 0) promesses.push(fetch(base + '?action=saveCarte&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&cartes=' + encodeURIComponent(cartesStr.join(',')) + '&bonnes=' + cartesBonnes + '&total=' + cartesTotal).then(function(r){return r.json();}));
-      if (relierTotal > 0) promesses.push(fetch(base + '?action=saveRelier&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&bonnes=' + relierBonnes + '&total=' + relierTotal).then(function(r){return r.json();}));
-      if (ordreTotal > 0) promesses.push(fetch(base + '?action=saveOrdre&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId) + '&titre=' + encodeURIComponent(titre) + '&bonnes=' + ordreBonnes + '&total=' + ordreTotal).then(function(r){return r.json();}));
+
+      // QUIZ
+      var quizKeys = Object.keys(reponsesTexte.quiz);
+      if (quizKeys.length > 0) {
+        var quizBonnes = 0;
+        var choixArr = [];
+        quizKeys.forEach(function(k) {
+          var r = reponsesTexte.quiz[k];
+          if (r.correct) quizBonnes++;
+          choixArr.push((r.correct ? 'V' : 'F') + ':' + (parseInt(r.choix) + 1));
+        });
+        promesses.push(sauvegarderTentative(texteId, 'quiz',
+          { choixQcm: choixArr.join('|') }, quizBonnes, quizKeys.length));
+      }
+
+      // VF
+      var vfKeys = Object.keys(reponsesTexte.vf);
+      if (vfKeys.length > 0) {
+        var vfBonnes = 0;
+        vfKeys.forEach(function(k) { if (reponsesTexte.vf[k].correct) vfBonnes++; });
+        promesses.push(sauvegarderTentative(texteId, 'vf', {}, vfBonnes, vfKeys.length));
+      }
+
+      // TT
+      var ttKeys = Object.keys(reponsesTexte.tt);
+      if (ttKeys.length > 0) {
+        var ttBonnes = 0;
+        ttKeys.forEach(function(k) { if (reponsesTexte.tt[k].correct) ttBonnes++; });
+        promesses.push(sauvegarderTentative(texteId, 'tt', {}, ttBonnes, ttKeys.length));
+      }
+
+      // CARTES
+      var carteKeys = Object.keys(reponsesTexte.cartes);
+      if (carteKeys.length > 0) {
+        var carteBonnes = 0;
+        var cartesArr = [];
+        carteKeys.forEach(function(k) {
+          var ok = reponsesTexte.cartes[k] === true;
+          if (ok) carteBonnes++;
+          cartesArr.push(ok ? '1' : '0');
+        });
+        promesses.push(sauvegarderTentative(texteId, 'carte',
+          { cartes: cartesArr.join(',') }, carteBonnes, carteKeys.length));
+      }
+
+      // RELIER
+      var relierKeys = Object.keys(reponsesTexte.relier);
+      if (relierKeys.length > 0) {
+        var relierBonnes = 0, relierTotal = 0;
+        relierKeys.forEach(function(k) {
+          var r = reponsesTexte.relier[k];
+          relierTotal += r.total;
+          relierBonnes += r.bonnes;
+        });
+        promesses.push(sauvegarderTentative(texteId, 'relier', {}, relierBonnes, relierTotal));
+      }
+
+      // ORDRE
+      var ordreKeys = Object.keys(reponsesTexte.ordre);
+      if (ordreKeys.length > 0) {
+        var ordreBonnes = 0, ordreTotal = 0;
+        ordreKeys.forEach(function(k) {
+          var r = reponsesTexte.ordre[k];
+          ordreTotal += r.total;
+          ordreBonnes += r.bonnes;
+        });
+        promesses.push(sauvegarderTentative(texteId, 'ordre', {}, ordreBonnes, ordreTotal));
+      }
+
+      // COPIER
+      var copierKeys = Object.keys(reponsesTexte.copier);
+      if (copierKeys.length > 0) {
+        var copierBonnes = 0;
+        copierKeys.forEach(function(k) { if (reponsesTexte.copier[k] === true) copierBonnes++; });
+        promesses.push(sauvegarderTentative(texteId, 'copier', {}, copierBonnes, copierKeys.length));
+      }
 
       if (promesses.length === 0) return Promise.resolve();
-      return Promise.all(promesses).then(function() { envoiEffectue = true; }).catch(function(){});
+      return Promise.all(promesses).then(function() {
+        envoiEffectue = true;
+        // Rafraîchir le bandeau après envoi
+        chargerBandeauResultats();
+      }).catch(function(){});
     }
 
     function relireEtRefaire() {
@@ -1475,27 +1560,25 @@
     }
 
     function afficherFilAriane(texte) {
-  var html = '';
-  html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
-  html += '<a href="/medit/présentation.html">Tous les textes</a>';
+      var html = '';
+      html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
+      html += '<a href="/medit/présentation.html">Tous les textes</a>';
 
-  var themeMeta = themesData[texte.categorie] || {};
-  var section = (themeMeta.theme || '').trim();
+      var themeMeta = themesData[texte.categorie] || {};
+      var section = (themeMeta.theme || '').trim();
 
-  if (section) {
-    // Lien vers la page qui liste les livrets de cette section
-    html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
-  }
+      if (section) {
+        html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
+      }
+      if (texte.categorie) {
+        html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
+      }
+      html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
 
-  if (texte.categorie) {
-    html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
-  }
+      var el = document.getElementById('filAriane');
+      if (el) el.innerHTML = html;
+    }
 
-  html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
-
-  var el = document.getElementById('filAriane');
-  if (el) el.innerHTML = html;
-}
     function construireNavDansTheme(texte) {
       if (!texte.categorie) return {};
       var memeTheme = textesData.filter(function(c) { return (c.categorie || '') === (texte.categorie || ''); });
@@ -1638,21 +1721,21 @@
         html += '  </div>';
         html += '</div>';
       }
-      // APRÈS le bloc Informations et AVANT le bloc Thème
-var tagsClean = (texte.tags || [])
-  .map(function(t) { return String(t).trim(); })
-  .filter(function(t) { return t !== ''; });
 
-if (tagsClean.length > 0) {
-  html += '<div class="bloc-section">';
-  html += '  <div class="bloc-titre"><span class="icone">#</span> Tags (' + tagsClean.length + ')</div>';
-  html += '  <div class="bloc-tags">';
-  tagsClean.forEach(function(tag) {
-  html += '<a class="tag-item" href="/medit/tag.html?tag=' + encodeURIComponent(tag) + '">#' + echapperHtml(tag) + '</a>';
-});
-  html += '  </div>';
-  html += '</div>';
-}
+      var tagsClean = (texte.tags || [])
+        .map(function(t) { return String(t).trim(); })
+        .filter(function(t) { return t !== ''; });
+
+      if (tagsClean.length > 0) {
+        html += '<div class="bloc-section">';
+        html += '  <div class="bloc-titre"><span class="icone">#</span> Tags (' + tagsClean.length + ')</div>';
+        html += '  <div class="bloc-tags">';
+        tagsClean.forEach(function(tag) {
+          html += '<a class="tag-item" href="/medit/tag.html?tag=' + encodeURIComponent(tag) + '">#' + echapperHtml(tag) + '</a>';
+        });
+        html += '  </div>';
+        html += '</div>';
+      }
 
       if (texte.categorie) {
         var couleur = themeInfo.couleur || '#2d6a4f';
@@ -1807,6 +1890,7 @@ if (tagsClean.length > 0) {
 
       majNoteGlobale();
       initDragAndDropOrdre();
+      chargerBandeauResultats();
     }
 
     function afficherErreur(message) {
@@ -1854,6 +1938,89 @@ if (tagsClean.length > 0) {
         }
       }
     }
+
+    // ============================================================
+    // GESTION DU PSEUDO
+    // ============================================================
+    function validerPseudo() {
+      var input = document.getElementById('inputPseudo');
+      var statut = document.getElementById('statutPseudo');
+      if (!input || !statut) return;
+      var p = (input.value || '').trim();
+      if (p.length < 2) {
+        statut.textContent = 'Pseudo trop court (min. 2 caractères).';
+        statut.style.color = '#c00';
+        return;
+      }
+      AUTH.setPseudo(p);
+      statut.textContent = '✓ Pseudo enregistré : ' + p;
+      statut.style.color = '#2d6a4f';
+      chargerBandeauResultats();
+    }
+
+    function chargerBandeauResultats() {
+      if (!texteActuel) return;
+      DataManager.getTentatives(texteActuel.id).then(function(tentatives) {
+        afficherBandeauResultats(tentatives, texteActuel.id);
+      }).catch(function() {});
+    }
+
+    function afficherBandeauResultats(tentatives, texteId) {
+      var el = document.getElementById('bandeauResultats');
+      if (!el) return;
+
+      var deCeTexte = (tentatives || []).filter(function(t) {
+        return String(t.texteId) === String(texteId);
+      });
+      if (deCeTexte.length === 0) { el.style.display = 'none'; return; }
+
+      var parType = {};
+      deCeTexte.forEach(function(t) {
+        if (!parType[t.typeExo]) parType[t.typeExo] = [];
+        parType[t.typeExo].push(t);
+      });
+
+      var labels = {
+        quiz: 'Quiz', vf: 'Vrai / Faux', tt: 'Textes à trous',
+        carte: 'Cartes', relier: 'Relier', ordre: 'Ordre', copier: 'Copier'
+      };
+
+      var html = '<div class="bandeau-resultats-titre">Vos tentatives sur ce texte'
+               + (AUTH.aUnPseudo() ? ' (pseudo : ' + AUTH.getPseudo() + ')' : '')
+               + '</div>';
+      Object.keys(parType).forEach(function(type) {
+        if (!labels[type]) return;
+        var list = parType[type].sort(function(a, b) {
+          return new Date(b.date) - new Date(a.date);
+        });
+        var derniere = list[0];
+        var dateStr = '';
+        try {
+          var d = new Date(derniere.date);
+          dateStr = d.toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' });
+        } catch(e) {}
+        html += '<div class="bandeau-resultats-ligne">'
+          + '<strong>' + labels[type] + '</strong> : '
+          + 'dernière tentative ' + derniere.bonnes + ' / ' + derniere.total
+          + ' <span class="bandeau-resultats-date">(' + dateStr
+          + (list.length > 1 ? ' — ' + list.length + ' essais' : '') + ')</span>'
+          + '</div>';
+      });
+
+      el.innerHTML = html;
+      el.style.display = 'block';
+    }
+
+    // Pré-remplir le champ pseudo au chargement
+    (function initPseudo() {
+      var p = AUTH.getPseudo();
+      var input = document.getElementById('inputPseudo');
+      var statut = document.getElementById('statutPseudo');
+      if (input && p) {
+        input.value = p;
+        if (statut) statut.textContent = '✓ Pseudo enregistré';
+      }
+    })();
 
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
     else chargerTexte();
