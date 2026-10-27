@@ -1503,41 +1503,43 @@
     // ============================================================
     // VERSION ALTERNATIVE (fichier suffixé "(...)")
     // ============================================================
-    function verifierVersionParenthese(texte) {
-      if (!texte || !texte.titre) return;
-      var tous = textesData || [];
-      var alt = null;
-      var titrePrincipal = texte.titre;
+   function verifierVersionParenthese(texte) {
+  if (!texte || !texte.titre) return;
+  var tous = DataManager.getTousLesTextesComplets();  // ← au lieu de textesData
+  var alt = null;
+  var titrePrincipal = texte.titre;
 
-      for (var i = 0; i < tous.length; i++) {
-        var t = tous[i];
-        if (!t.titre) continue;
-        var re = new RegExp('^' + echapperRegexPourRegex(titrePrincipal) + '\\s*\\(([^)]+)\\)\\s*$');
-        var m = t.titre.match(re);
-        if (m) {
-          alt = { id: t.id, titre: t.titre, suffixe: m[1].trim() };
-          break;
-        }
-      }
-
-      if (alt) {
-        document.querySelectorAll('.btn-imprimer-alternative').forEach(function(btn) {
-          btn.textContent = 'Imprimer la version ' + alt.suffixe;
-          btn.style.display = 'inline-block';
-        });
-        window._altTexteId = alt.id;
-        window._altTexteTitre = alt.titre;
-        window._altTexteSuffixe = alt.suffixe;
-      }
+  for (var i = 0; i < tous.length; i++) {
+    var t = tous[i];
+    if (!t.titre) continue;
+    var re = new RegExp('^' + echapperRegexPourRegex(titrePrincipal) + '\\s*\\(([^)]+)\\)\\s*$');
+    var m = t.titre.match(re);
+    if (m) {
+      alt = { id: t.id, titre: t.titre, suffixe: m[1].trim() };
+      break;
     }
+  }
 
-    function imprimerVersionParenthese() {
-      if (!window._altTexteId) {
-        alert('Aucune version alternative disponible.');
-        return;
-      }
-      imprimerTexte(window._altTexteId, window._altTexteTitre, textesData);
-    }
+  if (alt) {
+    document.querySelectorAll('.btn-imprimer-alternative').forEach(function(btn) {
+      btn.textContent = 'Imprimer la version ' + alt.suffixe;
+      btn.style.display = 'inline-block';
+    });
+    window._altTexteId = alt.id;
+    window._altTexteTitre = alt.titre;
+    window._altTexteSuffixe = alt.suffixe;
+  }
+}
+
+   function imprimerVersionParenthese() {
+  if (!window._altTexteId) {
+    alert('Aucune version alternative disponible.');
+    return;
+  }
+  // Passe la liste COMPLÈTE pour que imprimerTexte puisse trouver le texte
+  var tous = DataManager.getTousLesTextesComplets();
+  imprimerTexte(window._altTexteId, window._altTexteTitre, tous);
+}
 
     // ============================================================
     // ANNOTATIONS
