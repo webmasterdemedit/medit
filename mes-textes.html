@@ -1,0 +1,522 @@
+<!-- mes-textes-a-faire.html -->
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Mes textes à faire - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    .page-blog {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 20px 30px 40px;
+    }
+
+    .page-blog h1 {
+      font-family: 'Georgia', serif;
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .page-blog .sous-titre-page {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-bottom: 24px;
+      font-weight: 300;
+    }
+
+    .stats-ligne {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 18px;
+      margin-bottom: 24px;
+      padding-bottom: 18px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .stat-item .nombre {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    /* Liste des prochains textes : une carte par thème */
+    .liste-prochains {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .carte-prochain {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      text-decoration: none;
+      color: inherit;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .carte-prochain:hover {
+      background: var(--bg-hover);
+      border-color: var(--text-secondary);
+    }
+
+    .carte-prochain .prochain-theme {
+      flex: 0 0 180px;
+      padding: 14px 16px;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      box-sizing: border-box;
+    }
+
+    .carte-prochain .prochain-theme-label {
+      font-family: var(--font-sans);
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+    }
+
+    .carte-prochain .prochain-theme-nom {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+      word-break: break-word;
+    }
+
+    .carte-prochain .prochain-corps {
+      flex: 1;
+      min-width: 0;
+      padding: 14px 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .carte-prochain .prochain-titre {
+      font-family: 'Georgia', serif;
+      font-size: 16px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .carte-prochain .prochain-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .carte-prochain .prochain-meta .badge-icone {
+      font-size: 11px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      color: var(--text-secondary);
+    }
+
+    .carte-prochain .prochain-date {
+      flex: 0 0 auto;
+      text-align: right;
+      padding: 14px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+      border-left: 1px solid var(--border);
+      box-sizing: border-box;
+      font-size: 11px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .vide-prochain {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-secondary);
+    }
+
+    .vide-prochain .icone {
+      font-size: 32px;
+      display: block;
+      margin-bottom: 12px;
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 700px) {
+      .page-blog { padding: 12px 16px 30px; }
+      .page-blog h1 { font-size: 22px; }
+      .carte-prochain { flex-wrap: wrap; }
+      .carte-prochain .prochain-theme {
+        flex: 1 0 100%;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+        padding: 10px 14px;
+      }
+      .carte-prochain .prochain-corps { padding: 12px 14px; }
+      .carte-prochain .prochain-date {
+        flex: 1 0 100%;
+        text-align: left;
+        border-left: none;
+        border-top: 1px solid var(--border);
+        padding: 8px 14px;
+        flex-direction: row;
+        gap: 8px;
+      }
+    }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) {
+      document.write(xhr.responseText);
+    }
+  </script>
+</head>
+<body>
+
+  <div class="page page-blog">
+
+    <h1>Mes textes à faire</h1>
+    <p class="sous-titre-page">Le prochain texte à valider pour chaque thème, en suivant l'ordre du programme.</p>
+
+    <div class="stats-ligne" id="statsLigne">
+      <div class="stat-item">
+        <span>Thèmes à compléter :</span>
+        <span class="nombre" id="totalThemes">0</span>
+      </div>
+      <div class="stat-item">
+        <span>Votre niveau :</span>
+        <span class="nombre" id="niveauEtudiant">0</span>
+      </div>
+    </div>
+
+    <div id="contenu">
+      <div class="loader" id="loader">
+        <div class="spinner"></div>
+        <p>Calcul des prochains textes...</p>
+      </div>
+    </div>
+
+    <div class="devise">
+      "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
+    </div>
+
+  </div>
+
+  <div id="footer-container"></div>
+
+  <script>
+    fetch('/medit/footer.html')
+      .then(function(response) { return response.text(); })
+      .then(function(data) {
+        document.getElementById('footer-container').innerHTML = data;
+      })
+      .catch(function(error) {
+        console.error('Erreur chargement footer:', error);
+        document.getElementById('footer-container').innerHTML = `
+          <footer class="site-footer">
+            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
+            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
+          </footer>
+        `;
+      });
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    var etatValidation = {};
+    var categoriesData = {};
+
+    function normaliser(str) {
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function extraireNumeroTexte(titre) {
+      if (!titre) return Infinity;
+      var match = titre.match(/^\s*(\d+)\s+/);
+      return match ? parseInt(match[1], 10) : Infinity;
+    }
+
+    function extraireTitreSansNumero(titre) {
+      if (!titre) return '';
+      return titre.replace(/^\s*\d+\s+/, '').trim();
+    }
+
+    function estTexteValide(texteId) {
+      var e = etatValidation[String(texteId)];
+      return e && e.valide;
+    }
+
+    function chargerProchains() {
+      var id = (typeof getIdUtilisateur === 'function')
+        ? getIdUtilisateur()
+        : (localStorage.getItem('etudiant_id') || 'invite');
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
+
+        etatValidation = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          var pct = t.pourcentage || 0;
+          if (!etatValidation[k] || pct > etatValidation[k].pourcentage) {
+            etatValidation[k] = {
+              valide: pct >= 65,
+              pourcentage: pct
+            };
+          }
+        });
+
+        afficherProchains(data);
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) afficherProchains(cache);
+        else {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide-prochain">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function afficherProchains(data) {
+      var loader = document.getElementById('loader');
+      if (loader) loader.style.display = 'none';
+
+      var themes = data.themes || [];
+      var textes = data.tousLesTextes || data.textes || [];
+      var niveauEtudiant = data.niveau || 0;
+
+      document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+
+      // Métadonnées des thèmes (pour l'ordre dans le programme)
+      categoriesData = {};
+      themes.forEach(function(l) {
+        if (!l.titre) return;
+        categoriesData[l.titre] = {
+          theme: (l.theme || '').trim(),
+          niveau: parseInt(l.niveau) || 1,
+          couleur: l.couleur || '#2d6a4f'
+        };
+      });
+
+      // Regrouper les textes par thème (via categorie → theme)
+      var textesParTheme = {};
+      textes.forEach(function(t) {
+        var cat = (t.categorie || '').trim();
+        if (!cat) return;
+        var meta = categoriesData[cat];
+        if (!meta) return;
+        var th = meta.theme || 'Sans thème';
+        if (!textesParTheme[th]) textesParTheme[th] = [];
+        textesParTheme[th].push(t);
+      });
+
+      // Pour chaque thème, calculer son niveau minimum, et le prochain texte
+      var themesListe = Object.keys(textesParTheme).map(function(nomTheme) {
+        var textesDuTheme = textesParTheme[nomTheme];
+
+        // Niveau minimum du thème (comme dans niveaux.html)
+        var niveauMin = Infinity;
+        textesDuTheme.forEach(function(t) {
+          var n = parseInt(t.niveau) || 1;
+          if (n < niveauMin) niveauMin = n;
+        });
+        if (niveauMin === Infinity) niveauMin = 1;
+
+        // Trouver le prochain texte : plus bas niveau non validé, puis ordre alpha
+        var nonValides = textesDuTheme.filter(function(t) {
+          return !estTexteValide(t.id);
+        });
+
+        var prochain = null;
+        if (nonValides.length > 0) {
+          // Trier par niveau croissant, puis numéro/titre
+          nonValides.sort(function(a, b) {
+            var na = parseInt(a.niveau) || 1;
+            var nb = parseInt(b.niveau) || 1;
+            if (na !== nb) return na - nb;
+            var numA = extraireNumeroTexte(a.titre);
+            var numB = extraireNumeroTexte(b.titre);
+            if (numA !== numB) return numA - numB;
+            return extraireTitreSansNumero(a.titre).localeCompare(
+              extraireTitreSansNumero(b.titre), 'fr', { sensitivity: 'base' }
+            );
+          });
+          prochain = nonValides[0];
+        }
+
+        return {
+          nom: nomTheme,
+          niveauMin: niveauMin,
+          prochain: prochain,
+          total: textesDuTheme.length,
+          valides: textesDuTheme.length - nonValides.length
+        };
+      });
+
+      // Ne garder que les thèmes qui ont encore un texte à faire
+      var aFaire = themesListe.filter(function(t) { return t.prochain !== null; });
+
+      // Trier par niveau minimum croissant (ordre du programme), puis alphabétique
+      aFaire.sort(function(a, b) {
+        if (a.niveauMin !== b.niveauMin) return a.niveauMin - b.niveauMin;
+        return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+      });
+
+      document.getElementById('totalThemes').textContent = aFaire.length;
+
+      var conteneur = document.getElementById('contenu');
+
+      if (aFaire.length === 0) {
+        conteneur.innerHTML = `
+          <div class="vide-prochain">
+            <span class="icone">✓</span>
+            <h2>Tout est validé</h2>
+            <p>Vous n'avez plus aucun texte à faire pour votre niveau actuel.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var html = '<div class="liste-prochains">';
+      aFaire.forEach(function(item) {
+        var t = item.prochain;
+        var numero = extraireNumeroTexte(t.titre);
+        var titreAffiche = extraireTitreSansNumero(t.titre);
+
+        var numeroHtml = (numero !== Infinity)
+          ? '<span class="badge-icone">N° ' + numero + '</span>'
+          : '';
+
+        // Nombre d'exercices (comme dans les-textes.html)
+        var TYPES_EXERCICES = [
+          { prefix: 'quiz:',   label: 'QCM' },
+          { prefix: 'open:',   label: 'Ouverte' },
+          { prefix: 'ordre:',  label: 'Ordre' },
+          { prefix: 'carte:',  label: 'Carte' },
+          { prefix: 'relier:', label: 'Relier' },
+          { prefix: 'tt:',     label: 'Trous' },
+          { prefix: 'vf:',     label: 'VF' },
+          { prefix: 'copier:', label: 'Copier' }
+        ];
+        var ordreBlocs = t.ordreBlocs || [];
+        var detailParts = [];
+        var nbExercices = 0;
+
+        if (ordreBlocs.length > 0) {
+          TYPES_EXERCICES.forEach(function(type) {
+            var count = 0;
+            ordreBlocs.forEach(function(ob) {
+              if (ob.indexOf(type.prefix) === 0) count++;
+            });
+            if (count > 0) {
+              nbExercices++;
+              detailParts.push(count + ' ' + type.label);
+            }
+          });
+        } else {
+          if (t.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+          if (t.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+        }
+        var detailExercices = detailParts.join(' · ');
+
+        var metaTheme = categoriesData[t.categorie] || {};
+        var niveauTexte = parseInt(t.niveau) || 1;
+
+        html += `
+          <a class="carte-prochain" href="/medit/texte.html?id=${encodeURIComponent(t.id)}">
+            <div class="prochain-theme">
+              <div class="prochain-theme-label">Thème</div>
+              <div class="prochain-theme-nom">${escapeHtml(item.nom)}</div>
+            </div>
+            <div class="prochain-corps">
+              <div class="prochain-titre">${escapeHtml(titreAffiche || t.titre)}</div>
+              <div class="prochain-meta">
+                <span class="badge-icone">Niveau ${niveauTexte}</span>
+                ${numeroHtml}
+                ${nbExercices > 0 ? '<span class="badge-icone">' + nbExercices + ' exercice' + (nbExercices > 1 ? 's' : '') + '</span>' : ''}
+                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+              </div>
+            </div>
+            <div class="prochain-date">
+              <span>${item.valides} / ${item.total}</span>
+              <span style="font-style:italic;">texte${item.valides > 1 ? 's' : ''} validé${item.valides > 1 ? 's' : ''}</span>
+            </div>
+          </a>
+        `;
+      });
+      html += '</div>';
+
+      conteneur.innerHTML = html;
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', chargerProchains);
+    } else {
+      chargerProchains();
+    }
+  </script>
+
+</body>
+</html>
