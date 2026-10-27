@@ -73,7 +73,6 @@
     var categorieActuelle = '';
     var themesData = {};
 
-    // Champs déjà affichés en dur ailleurs dans l'UI → on ne les répète pas dans le bloc infos
     var CHAMPS_RESERVES = {
       'description': true,
       'couleur': true,
@@ -81,7 +80,6 @@
       'couverture-url': true
     };
 
-    // Ordre préféré d'affichage des champs issus de "infos"
     var ORDRE_PREFERE = [
       'sous-titre', 'sous titre',
       'date',
@@ -132,14 +130,62 @@
     }
 
     // ============================================================
-    // Construit le bloc "pre-requis" dynamiquement à partir des infos
+    // Validé / Non validé
+    // ============================================================
+    function estTexteValide(texteId) {
+      var reponses = toutesLesReponses[texteId];
+      if (!reponses || reponses.length === 0) return false;
+      // Une tentative = un objet avec bonnes/total
+      for (var i = 0; i < reponses.length; i++) {
+        var r = reponses[i];
+        var bonnes = parseInt(r.bonnes) || 0;
+        var total = parseInt(r.total) || 0;
+        if (total > 0 && (bonnes / total) >= 0.65) return true;
+      }
+      return false;
+    }
+
+    function dateValidationTexte(texteId) {
+      var reponses = toutesLesReponses[texteId];
+      if (!reponses || reponses.length === 0) return '';
+      // On renvoie la date de la MEILLEURE tentative validée (>= 65%) la plus récente
+      var meilleureDate = '';
+      var meilleurePct = -1;
+      for (var i = 0; i < reponses.length; i++) {
+        var r = reponses[i];
+        var bonnes = parseInt(r.bonnes) || 0;
+        var total = parseInt(r.total) || 0;
+        var pct = total > 0 ? (bonnes / total) : 0;
+        if (pct >= 0.65 && pct > meilleurePct) {
+          meilleurePct = pct;
+          meilleureDate = r.date || '';
+        }
+      }
+      return meilleureDate;
+    }
+
+    function formaterDateValidation(dateStr) {
+      if (!dateStr) return '';
+      // dateStr peut être un objet Date ou une chaîne "JJ/MM/AAAA HH:MM:SS"
+      if (typeof dateStr === 'object' && dateStr instanceof Date) {
+        return dateStr.toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' })
+          + ' à ' + dateStr.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
+      }
+      // Chaîne déjà formatée
+      if (typeof dateStr === 'string' && dateStr.length > 0) {
+        return dateStr;
+      }
+      return '';
+    }
+
+    // ============================================================
+    // Infos thème
     // ============================================================
     function construireInfosHtml(infos) {
       if (!infos) return '';
       var html = '';
       var vus = {};
 
-      // 1) champs dans l'ordre préféré
       for (var i = 0; i < ORDRE_PREFERE.length; i++) {
         var k = ORDRE_PREFERE[i];
         if (CHAMPS_RESERVES[k]) continue;
@@ -151,7 +197,6 @@
         vus[k] = true;
       }
 
-      // 2) tous les autres champs non encore affichés
       for (var cle in infos) {
         if (vus[cle] || CHAMPS_RESERVES[cle]) continue;
         if (infos[cle] === undefined || infos[cle] === null || infos[cle] === '') continue;
@@ -164,7 +209,6 @@
       return html;
     }
 
-    // Fusionne les infos JSON + les colonnes historiques (fallback)
     function construireInfosCompletes(themeInfo) {
       var infos = {};
       if (themeInfo.infos && typeof themeInfo.infos === 'object') {
@@ -172,56 +216,11 @@
           infos[k] = themeInfo.infos[k];
         }
       }
-      // Fallback : colonnes historiques si non présentes dans infos
       if (themeInfo.sousTitre && !infos['sous-titre']) infos['sous-titre'] = themeInfo.sousTitre;
       if (themeInfo.date && !infos['date'])             infos['date'] = themeInfo.date;
       if (themeInfo.auteur && !infos['auteur'])         infos['auteur'] = themeInfo.auteur;
       if (themeInfo.pages && !infos['pages'])           infos['pages'] = themeInfo.pages;
       return infos;
-    }
-
-    function ouvrirAnnotations(texteId, titre) {
-      var reponse = toutesLesReponses[texteId] || null;
-      var annotations = reponse ? reponse.annotations : '';
-
-      var modal = document.createElement('div');
-      modal.className = 'modal-overlay';
-      modal.id = 'modalAnnotations';
-      modal.onclick = function(e) {
-        if (e.target === this) fermerAnnotations();
-      };
-
-      var html = '<div class="modal-contenu">';
-      html += '<h3>' + titre + '</h3>';
-      html += '<div class="modal-sous-titre">Annotations</div>';
-
-      if (annotations && annotations.trim() !== '') {
-        var parts = annotations.split('|');
-        for (var i = 0; i < parts.length; i++) {
-          var kv = parts[i].split(':');
-          if (kv.length === 2) {
-            var slideNum = kv[0].replace('slide', '');
-            var texte = kv[1];
-            html += '<div class="modal-annotation">';
-            html += '<strong>Slide ' + slideNum + '</strong>';
-            html += texte;
-            html += '</div>';
-          }
-        }
-      } else {
-        html += '<div class="aucune-annotation">Aucune annotation pour ce texte.</div>';
-      }
-
-      html += '<button class="modal-close" onclick="fermerAnnotations()">Fermer</button>';
-      html += '</div>';
-
-      modal.innerHTML = html;
-      document.body.appendChild(modal);
-    }
-
-    function fermerAnnotations() {
-      var modal = document.getElementById('modalAnnotations');
-      if (modal) modal.remove();
     }
 
     function chargerTheme() {
@@ -263,7 +262,7 @@
                 auteur:     l.auteur || '',
                 niveau:     parseInt(l.niveau) || 0,
                 couverture: l.couverture || '',
-                infos:      l.infos || null   // ← NOUVEAU
+                infos:      l.infos || null
               };
             });
           }
@@ -298,7 +297,7 @@
                   auteur:     l.auteur || '',
                   niveau:     parseInt(l.niveau) || 0,
                   couverture: l.couverture || '',
-                  infos:      l.infos || null   // ← NOUVEAU
+                  infos:      l.infos || null
                 };
               });
             }
@@ -349,13 +348,7 @@
 
       var validees = 0;
       textesFiltres.forEach(function(texte) {
-        var reponse = toutesLesReponses[texte.id];
-        if (reponse) {
-          var bonnes = parseInt(reponse.bonnes) || 0;
-          var total = parseInt(reponse.total) || 0;
-          if (total === 1 && bonnes === 1) validees++;
-          else if (total > 0 && bonnes >= Math.ceil(total / 2)) validees++;
-        }
+        if (estTexteValide(texte.id)) validees++;
       });
 
       var themeInfo = themesData[categorieActuelle] || {};
@@ -384,7 +377,6 @@
         cliquable: false
       });
 
-      // ✅ Bloc d'infos dynamique (tous les "clé: valeur" du fichier infos)
       var infosCompletes = construireInfosCompletes(themeInfo);
       var infosHtml = construireInfosHtml(infosCompletes);
 
@@ -392,7 +384,7 @@
         <div class="entete-theme">
           ${carteHtml}
           <div class="description-theme">
-            <h2>#${categorieActuelle}</h2>
+            <h2>${categorieActuelle}</h2>
             ${infosHtml}
             <div class="texte-desc">
               <p>${description}</p>
@@ -429,45 +421,12 @@
 
       for (var i = 0; i < textes.length; i++) {
         var texte = textes[i];
-        var reponse = toutesLesReponses[texte.id];
-
-        if (!reponse) {
-          for (var key in toutesLesReponses) {
-            if (toutesLesReponses[key].titre === texte.titre) {
-              reponse = toutesLesReponses[key];
-              break;
-            }
-          }
-        }
 
         var numeroTexte = extraireNumeroTexte(texte.titre);
         var titreAffiche = extraireTitreSansNumero(texte.titre);
         var numeroHtml = (numeroTexte !== Infinity)
           ? '<span class="numero-texte">' + numeroTexte + '</span>'
           : '';
-
-        var dateValidation = '';
-        var retenir = '';
-        var estLu = false;
-        var estValide = false;
-
-        var reponses = toutesLesReponses[texte.id] || [];
-        if (reponses.length > 0) {
-          var toutesValides = true;
-          for (var j = 0; j < reponses.length; j++) {
-            if (reponses[j].valide !== 'valide') {
-              toutesValides = false;
-              break;
-            }
-            if (reponses[j].date) dateValidation = reponses[j].date;
-            if (reponses[j].retenir) retenir = reponses[j].retenir;
-          }
-
-          if (toutesValides) {
-            estLu = true;
-            estValide = true;
-          }
-        }
 
         var mots = texte.mots || 0;
 
@@ -508,41 +467,20 @@
           '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' +
           (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
 
-        var metaHtml = '';
-
-        if (estLu) {
-          // ... (à compléter si besoin)
-        } else {
-          metaHtml = exercicesHtml;
-        }
-        var dateHtml = '';
-        var dateLabelHtml = '';
-
-        if (estLu && dateValidation) {
-          var d = new Date(dateValidation);
-          if (!isNaN(d.getTime())) {
-            var dateStr = d.toLocaleDateString('fr-FR', {
-              day: '2-digit', month: 'long', year: 'numeric'
-            });
-            var heureStr = d.toLocaleTimeString('fr-FR', {
-              hour: '2-digit', minute: '2-digit'
-            });
-            dateLabelHtml = '<span class="date-label">Fait :</span>';
-            dateHtml = '<span class="date-validation">' + dateStr + ' à ' + heureStr + '</span>';
-          }
-        }
-
-        var retenirHtml = '';
-        if (estValide && retenir) {
-          retenirHtml = `
-            <div class="retenir-cadre">
-              <strong>À retenir</strong>
-              ${retenir}
-            </div>
-          `;
-        }
-
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+
+        // === Validé / Non validé ===
+        var valide = estTexteValide(texte.id);
+        var dateValid = valide ? dateValidationTexte(texte.id) : '';
+        var dateValidStr = dateValid ? formaterDateValidation(dateValid) : '';
+
+        var statutHtml = '';
+        if (valide) {
+          statutHtml = '<span class="date-label">Validé' + (dateValidStr ? ' le ' : '') + '</span>';
+          if (dateValidStr) statutHtml += '<span class="date-validation">' + echapperHtml(dateValidStr) + '</span>';
+        } else {
+          statutHtml = '<span class="date-label" style="color: var(--text-muted);">Non validé</span>';
+        }
 
         var onClickAttr = 'onclick="window.location.href=\'/medit/texte.html?id=' + texte.id + '\'"';
 
@@ -552,16 +490,13 @@
               <div class="titre">${numeroHtml}${titreAffiche}</div>
               <div class="meta">
                 <span class="niveau-badge">Niveau ${texte.niveau}</span>
-                ${metaHtml}
+                ${exercicesHtml}
                 ${motsHtml}
-                ${retenirHtml}
               </div>
             </div>
             <div class="statut">
-              ${dateLabelHtml}
-              ${dateHtml}
+              ${statutHtml}
             </div>
-
           </div>
         `;
       }
