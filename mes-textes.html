@@ -66,8 +66,7 @@
 
     .carte-prochain {
       display: flex;
-      align-items: stretch;
-      gap: 0;
+      flex-direction: column;
       background: var(--bg);
       border: 1px solid var(--border);
       cursor: pointer;
@@ -81,6 +80,59 @@
     .carte-prochain:hover {
       background: var(--bg-hover);
       border-color: var(--text-secondary);
+    }
+
+    /* Bandeau "à faire avant" en haut */
+    .carte-prochain .prochain-echeance {
+      padding: 8px 16px;
+      font-size: 12px;
+      font-style: italic;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .carte-prochain .prochain-echeance.echeance-normale {
+      border-left: 3px solid var(--text-secondary);
+      color: var(--text-secondary);
+      background: var(--bg-hover);
+    }
+
+    .carte-prochain .prochain-echeance.echeance-proche {
+      border-left: 3px solid var(--text);
+      color: var(--text);
+      background: var(--bg-hover);
+      font-weight: 500;
+    }
+
+    .carte-prochain .prochain-echeance.echeance-retard {
+      border-left: 3px solid #b00020;
+      color: #b00020;
+      background: rgba(176, 0, 32, 0.06);
+      font-weight: 600;
+    }
+
+    .carte-prochain .prochain-echeance.echeance-aucune {
+      border-left: 3px solid var(--border-hover);
+      color: var(--text-muted);
+      background: var(--bg);
+    }
+
+    .carte-prochain .prochain-echeance .echeance-badge {
+      font-style: normal;
+      font-family: var(--font-sans);
+      font-size: 11px;
+      padding: 1px 8px;
+      border: 1px solid currentColor;
+      white-space: nowrap;
+    }
+
+    .carte-prochain .prochain-contenu {
+      display: flex;
+      align-items: stretch;
+      gap: 0;
     }
 
     .carte-prochain .prochain-theme {
@@ -175,7 +227,7 @@
     @media (max-width: 700px) {
       .page-blog { padding: 12px 16px 30px; }
       .page-blog h1 { font-size: 22px; }
-      .carte-prochain { flex-wrap: wrap; }
+      .carte-prochain .prochain-contenu { flex-wrap: wrap; }
       .carte-prochain .prochain-theme {
         flex: 1 0 100%;
         border-right: none;
@@ -261,6 +313,10 @@
   <script>
     var etatValidation = {};
     var categoriesData = {};
+    var tentativesParTexte = {};   // texteId → tableau de tentatives
+    var textesParCategorie = {};   // categorie (=livret) → tableau de textes
+
+    var DELAI_JOURS = 3;
 
     function normaliser(str) {
       return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
@@ -292,6 +348,107 @@
       return e && e.valide;
     }
 
+    // Convertit une date "JJ/MM/AAAA HH:MM:SS" en objet Date, ou null
+    function parserDateTentative(dateStr) {
+      if (!dateStr) return null;
+      if (dateStr instanceof Date) return dateStr;
+      var s = String(dateStr).trim();
+      // Format "JJ/MM/AAAA HH:MM:SS"
+      var m = s.match(/^(\d{2})\/(\d{2})\/(\d{4})(?:\s+(\d{2}):(\d{2})(?::(\d{2}))?)?/);
+      if (m) {
+        return new Date(parseInt(m[3]), parseInt(m[2]) - 1, parseInt(m[1]),
+                        parseInt(m[4] || 0), parseInt(m[5] || 0), parseInt(m[6] || 0));
+      }
+      var d = new Date(s);
+      if (!isNaN(d.getTime())) return d;
+      return null;
+    }
+
+    // Renvoie la date (objet Date) de la dernière tentative VALIDÉE
+    // dans le même thème que le texte fourni, ou null.
+    function derniereValidationDuTheme(themeNom) {
+      // textes du même thème
+      var textesDuTheme = [];
+      for (var cat in textesParCategorie) {
+        var meta = categoriesData[cat] || {};
+        if ((meta.theme || '') === themeNom) {
+          textesParCategorie[cat].forEach(function(t) { textesDuTheme.push(t); });
+        }
+      }
+
+      var derniere = null;
+      textesDuTheme.forEach(function(t) {
+        var liste = tentativesParTexte[String(t.id)] || [];
+        liste.forEach(function(tr) {
+          if ((tr.pourcentage || 0) < 65) return;
+          var d = parserDateTentative(tr.date);
+          if (!d) return;
+          if (!derniere || d.getTime() > derniere.getTime()) derniere = d;
+        });
+      });
+      return derniere;
+    }
+
+    // Calcule les infos d'échéance pour un texte donné
+    function calculerEcheance(texte) {
+      var meta = categoriesData[texte.categorie] || {};
+      var themeNom = meta.theme || '';
+
+      var derniereValidation = themeNom ? derniereValidationDuTheme(themeNom) : null;
+
+      if (!derniereValidation) {
+        return {
+          statut: 'aucune',
+          dateLimite: null,
+          joursRestants: null,
+          joursRetard: null,
+          texteAffiche: 'À faire'
+        };
+      }
+
+      // date limite = dernière validation + 3 jours
+      var dateLimite = new Date(derniereValidation.getTime());
+      dateLimite.setDate(dateLimite.getDate() + DELAI_JOURS);
+
+      // Comparaison avec aujourd'hui (à minuit pour ne compter que les jours)
+      var aujourdHui = new Date();
+      aujourdHui.setHours(0, 0, 0, 0);
+      var limiteMinuit = new Date(dateLimite.getTime());
+      limiteMinuit.setHours(0, 0, 0, 0);
+
+      var diffJours = Math.round((limiteMinuit.getTime() - aujourdHui.getTime()) / (1000 * 60 * 60 * 24));
+
+      var dateLimiteStr = dateLimite.toLocaleDateString('fr-FR', {
+        day: '2-digit', month: 'long', year: 'numeric'
+      });
+
+      if (diffJours < 0) {
+        return {
+          statut: 'retard',
+          dateLimite: dateLimite,
+          joursRestants: null,
+          joursRetard: Math.abs(diffJours),
+          texteAffiche: 'Vous êtes en retard pour ce texte de ' + Math.abs(diffJours) + ' jour' + (Math.abs(diffJours) > 1 ? 's' : '')
+        };
+      } else if (diffJours <= 2) {
+        return {
+          statut: 'proche',
+          dateLimite: dateLimite,
+          joursRestants: diffJours,
+          joursRetard: null,
+          texteAffiche: 'À faire avant le ' + dateLimiteStr + ' — il vous reste ' + diffJours + ' jour' + (diffJours > 1 ? 's' : '')
+        };
+      } else {
+        return {
+          statut: 'normale',
+          dateLimite: dateLimite,
+          joursRestants: diffJours,
+          joursRetard: null,
+          texteAffiche: 'À faire avant le ' + dateLimiteStr + ' — il vous reste ' + diffJours + ' jours'
+        };
+      }
+    }
+
     function chargerProchains() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
@@ -309,8 +466,11 @@
         var tentatives = resultats[1];
 
         etatValidation = {};
+        tentativesParTexte = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
+          if (!tentativesParTexte[k]) tentativesParTexte[k] = [];
+          tentativesParTexte[k].push(t);
           var pct = t.pourcentage || 0;
           if (!etatValidation[k] || pct > etatValidation[k].pourcentage) {
             etatValidation[k] = {
@@ -338,10 +498,6 @@
       });
     }
 
-    // ============================================================
-    // Détermine le niveau "en cours" = plus petit niveau NON entièrement
-    // validé, tous thèmes confondus.
-    // ============================================================
     function trouverNiveauEnCours(textes) {
       var parNiveau = {};
       textes.forEach(function(t) {
@@ -373,7 +529,6 @@
 
       document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
 
-      // Métadonnées des thèmes
       categoriesData = {};
       themes.forEach(function(l) {
         if (!l.titre) return;
@@ -384,7 +539,15 @@
         };
       });
 
-      // Niveau en cours = plus bas niveau non entièrement validé (tous thèmes)
+      // Index des textes par catégorie (= livret)
+      textesParCategorie = {};
+      textes.forEach(function(t) {
+        var cat = (t.categorie || '').trim();
+        if (!cat) return;
+        if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
+        textesParCategorie[cat].push(t);
+      });
+
       var niveauEnCours = trouverNiveauEnCours(textes);
       var conteneur = document.getElementById('contenu');
 
@@ -402,12 +565,10 @@
 
       document.getElementById('niveauEnCours').textContent = niveauEnCours.niveau;
 
-      // On ne garde QUE les textes du niveau en cours, qui ne sont pas validés.
       var textesNiveauEnCours = niveauEnCours.textes.filter(function(t) {
         return !estTexteValide(t.id);
       });
 
-      // Regrouper par thème
       var textesParTheme = {};
       textesNiveauEnCours.forEach(function(t) {
         var cat = (t.categorie || '').trim();
@@ -419,11 +580,9 @@
         textesParTheme[th].push(t);
       });
 
-      // Pour chaque thème, prendre UN seul texte (le premier non validé)
       var themesListe = Object.keys(textesParTheme).map(function(nomTheme) {
         var textesDuTheme = textesParTheme[nomTheme];
 
-        // Total des textes de ce thème au niveau en cours (validés + non validés)
         var tousLesTextesNiveau = niveauEnCours.textes.filter(function(t) {
           var cat = (t.categorie || '').trim();
           var meta = categoriesData[cat] || {};
@@ -431,7 +590,6 @@
         });
         var valides = tousLesTextesNiveau.length - textesDuTheme.length;
 
-        // Premier texte non validé (tri par numéro de titre puis alpha)
         textesDuTheme.sort(function(a, b) {
           var numA = extraireNumeroTexte(a.titre);
           var numB = extraireNumeroTexte(b.titre);
@@ -449,7 +607,6 @@
         };
       });
 
-      // Trier les thèmes par niveau minimum (tous au même niveau ici), puis alpha
       themesListe.sort(function(a, b) {
         var na = parseInt(a.texte.niveau) || 1;
         var nb = parseInt(b.texte.niveau) || 1;
@@ -509,24 +666,41 @@
         }
         var detailExercices = detailParts.join(' · ');
 
+        // === Calcul de l'échéance ===
+        var echeance = calculerEcheance(t);
+        var classeEcheance = 'echeance-' + echeance.statut;
+
+        // === Construction du bandeau "à faire avant" ===
+        var echeanceHtml = '<div class="prochain-echeance ' + classeEcheance + '">';
+        echeanceHtml += escapeHtml(echeance.texteAffiche);
+        if (echeance.statut === 'retard' && echeance.joursRetard !== null) {
+          echeanceHtml += '<span class="echeance-badge">+' + echeance.joursRetard + ' j</span>';
+        } else if (echeance.joursRestants !== null) {
+          echeanceHtml += '<span class="echeance-badge">' + echeance.joursRestants + ' j</span>';
+        }
+        echeanceHtml += '</div>';
+
         html += `
           <a class="carte-prochain" href="/medit/texte.html?id=${encodeURIComponent(t.id)}">
-            <div class="prochain-theme">
-              <div class="prochain-theme-label">Thème</div>
-              <div class="prochain-theme-nom">${escapeHtml(item.nom)}</div>
-            </div>
-            <div class="prochain-corps">
-              <div class="prochain-titre">${escapeHtml(titreAffiche || t.titre)}</div>
-              <div class="prochain-meta">
-                <span class="badge-icone">Niveau ${niveauEnCours.niveau}</span>
-                ${numeroHtml}
-                ${nbExercices > 0 ? '<span class="badge-icone">' + nbExercices + ' exercice' + (nbExercices > 1 ? 's' : '') + '</span>' : ''}
-                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+            ${echeanceHtml}
+            <div class="prochain-contenu">
+              <div class="prochain-theme">
+                <div class="prochain-theme-label">Thème</div>
+                <div class="prochain-theme-nom">${escapeHtml(item.nom)}</div>
               </div>
-            </div>
-            <div class="prochain-date">
-              <span>${item.valides} / ${item.total}</span>
-              <span style="font-style:italic;">niveau ${niveauEnCours.niveau}</span>
+              <div class="prochain-corps">
+                <div class="prochain-titre">${escapeHtml(titreAffiche || t.titre)}</div>
+                <div class="prochain-meta">
+                  <span class="badge-icone">Niveau ${niveauEnCours.niveau}</span>
+                  ${numeroHtml}
+                  ${nbExercices > 0 ? '<span class="badge-icone">' + nbExercices + ' exercice' + (nbExercices > 1 ? 's' : '') + '</span>' : ''}
+                  ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
+                </div>
+              </div>
+              <div class="prochain-date">
+                <span>${item.valides} / ${item.total}</span>
+                <span style="font-style:italic;">niveau ${niveauEnCours.niveau}</span>
+              </div>
             </div>
           </a>
         `;
