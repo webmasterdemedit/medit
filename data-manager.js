@@ -3,13 +3,15 @@
 // - Reload (F5 / Ctrl+R / Ctrl+Shift+R) → Sheet
 // - Images → cache conservé
 // - MODE INVITÉ : accès aux textes + quiz sans compte
+// - Les textes "(...)" sont EXCLUS de tousLesTextes (affichage)
+//   mais conservés dans tousLesTextesComplets (pour l'impression)
 // ============================================================
 
 // Clés de cache
 var CLE_CACHE          = 'qiraat_data_v1';
 var CLE_TIMESTAMP      = 'qiraat_data_ts';
 var CLE_NOM            = 'qiraat_data_nom';
-var CLE_IMAGES         = 'qiraat_images_v2_'; // ← v2 : les anciens caches v1 sont ignorés
+var CLE_IMAGES         = 'qiraat_images_v2_';
 var CLE_SESSION_INVITE = 'qiraat_session_invite';
 
 // ✅ Détecter un reload (F5 / Ctrl+R / Ctrl+Shift+R)
@@ -21,7 +23,15 @@ if (EST_RELOAD) {
 }
 
 // ============================================================
-// MODE INVITÉ : identifiant persistant pour les non-connectés
+// DÉTECTION DES VERSIONS ALTERNATIVES "(...)"
+// ============================================================
+function estVersionAlternative(titre) {
+    if (!titre) return false;
+    return /\s*\([^)]*\)\s*$/.test(titre);
+}
+
+// ============================================================
+// MODE INVITÉ
 // ============================================================
 function genererSessionInvite() {
     return 'invite_' + Date.now() + '_' + Math.floor(Math.random() * 100000);
@@ -36,9 +46,6 @@ function getSessionInvite() {
     return sid;
 }
 
-// Retourne l'identifiant à utiliser pour TOUTE action (chargement ou sauvegarde)
-// - connecté → etudiant_id
-// - invité   → session invite
 function getIdUtilisateur() {
     return localStorage.getItem('etudiant_id') || getSessionInvite();
 }
@@ -53,7 +60,7 @@ var DataManager = {
     // CHARGER
     // ============================================================
     charger: function(forceRefresh) {
-        var id = getIdUtilisateur();   // ← ne rejette plus jamais
+        var id = getIdUtilisateur();
 
         if (EST_RELOAD || forceRefresh) {
             console.log('🔄 Reload détecté → chargement depuis le Sheet');
@@ -83,7 +90,6 @@ var DataManager = {
     _fetchDepuisSheet: function(id) {
         var self = this;
 
-        // Si invité → actions publiques (pas de compte requis)
         if (!estConnecte()) {
             return this._fetchInvite();
         }
@@ -112,14 +118,28 @@ var DataManager = {
                 data.disciplines       = data.disciplines || '';
                 data.historique        = data.historique || [];
 
+                // === SÉPARATION : filtré (affichage) / complet (impression) ===
+                var tousComplets = data.tousLesTextes.slice();
+                var tousFiltres = tousComplets.filter(function(t) {
+                    return !estVersionAlternative(t.titre);
+                });
+
+                data.tousLesTextesComplets = tousComplets;
+                data.tousLesTextes = tousFiltres;
+
+                // textes (par niveau) : on filtre aussi
+                data.textes = (data.textes || []).filter(function(t) {
+                    return !estVersionAlternative(t.titre);
+                });
+
                 self._dernierChargement = data;
                 self._dernierNom = id;
                 self._ecrireCache(id, data);
 
                 console.log('✅ Données chargées depuis le Sheet');
                 console.log('📚 ' + data.themes.length + ' thèmes');
-                console.log('📖 ' + data.tousLesTextes.length + ' textes');
-                console.log('✏️ ' + data.reponses.length + ' réponses');
+                console.log('📖 ' + data.tousLesTextes.length + ' textes (affichage)');
+                console.log('📖 ' + data.tousLesTextesComplets.length + ' textes (dont alternatives)');
 
                 return data;
             })
@@ -130,7 +150,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // CHARGEMENT PUBLIC (invités) : textes + thèmes, sans niveau
+    // CHARGEMENT PUBLIC (invités)
     // ============================================================
     _fetchInvite: function() {
         var self = this;
@@ -144,11 +164,13 @@ var DataManager = {
             var textesData = results[0];
             var themesData = results[1];
 
-            var textes = (textesData.textes || []);
+            var textesComplets = (textesData.textes || []);
+            var textesFiltres = textesComplets.filter(function(t) {
+                return !estVersionAlternative(t.titre);
+            });
 
-            // Invité : on affiche TOUS les textes (pas de filtre par niveau)
             var data = {
-                niveau: 999,                 // → tous les textes visibles
+                niveau: 999,
                 description: '',
                 mdp: '',
                 contact: '',
@@ -156,22 +178,22 @@ var DataManager = {
                 messagePerso: '',
                 disciplines: '',
                 themes: themesData.themes || [],
-                textes: textes,
-                tousLesTextes: textes,
-                textesComplets: {},          // chargés à la demande via getTexteAsync
+                textes: textesFiltres,
+                tousLesTextes: textesFiltres,
+                tousLesTextesComplets: textesComplets,
+                textesComplets: {},
                 reponses: [],
                 historique: []
             };
 
             self._dernierChargement = data;
             self._dernierNom = getIdUtilisateur();
-            // Pas de cache localStorage pour les invités (identité volatile)
             return data;
         });
     },
 
     // ============================================================
-    // GETTER ASYNCHRONE d'un texte complet (utile aux invités)
+    // GETTER ASYNCHRONE d'un texte complet
     // ============================================================
     getTexteAsync: function(texteId) {
         if (this._dernierChargement && this._dernierChargement.textesComplets &&
@@ -204,7 +226,18 @@ var DataManager = {
             if (nomStocke !== id) return null;
             var json = localStorage.getItem(CLE_CACHE);
             if (!json) return null;
-            return JSON.parse(json);
+            var data = JSON.parse(json);
+
+            // Compatibilité : si le cache n'a pas tousLesTextesComplets, on le reconstitue
+            if (!data.tousLesTextesComplets) {
+                var tous = data.tousLesTextes || [];
+                data.tousLesTextesComplets = tous.slice();
+                data.tousLesTextes = tous.filter(function(t) {
+                    return !estVersionAlternative(t.titre);
+                });
+            }
+
+            return data;
         } catch(e) {
             console.warn('⚠️ Erreur lecture cache:', e);
             return null;
@@ -222,12 +255,20 @@ var DataManager = {
     },
 
     // ============================================================
-    // GETTERS (depuis cache mémoire)
+    // GETTERS
     // ============================================================
     getTexte: function(texteId) {
         var cache = this._dernierChargement;
         if (cache && cache.textesComplets && cache.textesComplets[texteId]) {
             return cache.textesComplets[texteId];
+        }
+        // Si pas en cache, chercher dans les complets (inclut les alternatives)
+        if (cache && cache.tousLesTextesComplets) {
+            for (var i = 0; i < cache.tousLesTextesComplets.length; i++) {
+                if (String(cache.tousLesTextesComplets[i].id) === String(texteId)) {
+                    return cache.tousLesTextesComplets[i];
+                }
+            }
         }
         return null;
     },
@@ -240,8 +281,14 @@ var DataManager = {
         return (this._dernierChargement && this._dernierChargement.textes) || [];
     },
 
+    // Renvoie les textes FILTRÉS (sans les alternatives) — pour l'affichage
     getTousLesTextes: function() {
         return (this._dernierChargement && this._dernierChargement.tousLesTextes) || [];
+    },
+
+    // Renvoie TOUS les textes (avec les alternatives) — pour l'impression
+    getTousLesTextesComplets: function() {
+        return (this._dernierChargement && this._dernierChargement.tousLesTextesComplets) || [];
     },
 
     getThemes: function() {
@@ -285,7 +332,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // 🖼️ IMAGES D'UN THÈME (cache mémoire + localStorage)
+    // IMAGES D'UN THÈME
     // ============================================================
     chargerImagesTheme: function(nomTheme) {
         var self = this;
@@ -323,11 +370,10 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDES  (invité ou connecté : toujours envoyé)
+    // SAUVEGARDES
     // ============================================================
     sauvegarderOrdre: function(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveOrdre' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
@@ -336,17 +382,12 @@ var DataManager = {
             '&bonnes=' + encodeURIComponent(bonnes) +
             '&total=' + encodeURIComponent(total) +
             '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     sauvegarderCarte: function(texteId, titre, cartes, bonnes, total, tempsPasse) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveCarte' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
@@ -355,48 +396,33 @@ var DataManager = {
             '&bonnes=' + encodeURIComponent(bonnes) +
             '&total=' + encodeURIComponent(total) +
             '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     sauvegarderAnnotation: function(texteId, slide, annotation) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveAnnotation' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
             '&slide=' + encodeURIComponent(slide) +
             '&annotation=' + encodeURIComponent(annotation);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     sauvegarderReponseOuverte: function(texteId, reponse) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveReponseOuverte' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
             '&reponseOuverte=' + encodeURIComponent(reponse);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     sauvegarderQuiz: function(texteId, titre, choixQcm, bonnes, total, tempsPasse) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveQuiz' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
@@ -405,42 +431,28 @@ var DataManager = {
             '&bonnes=' + encodeURIComponent(bonnes) +
             '&total=' + encodeURIComponent(total) +
             '&tempsPasse=' + encodeURIComponent(tempsPasse);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     sauvegarderLecture: function(texteId, titre) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=saveLecture' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
             '&titre=' + encodeURIComponent(titre);
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     marquerRevise: function(texteId, revise) {
         var id = getIdUtilisateur();
-
         var url = CONFIG.SCRIPT_URL + '?action=markRevised' +
             '&nom=' + encodeURIComponent(id) +
             '&texteId=' + encodeURIComponent(texteId) +
             '&revise=' + encodeURIComponent(revise ? '1' : '0');
-
         return fetch(url).then(function(r) { return r.json(); })
-            .then(function(data) {
-                if (data.success) return data;
-                else throw new Error(data.message || 'Erreur');
-            });
+            .then(function(data) { if (data.success) return data; else throw new Error(data.message || 'Erreur'); });
     },
 
     // ============================================================
