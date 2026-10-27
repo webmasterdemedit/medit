@@ -114,7 +114,7 @@
       border-color: var(--text-secondary);
     }
 
-    /* Couverture : le wrapper permet d'empiler image + barre de progression */
+    /* Couverture : image + barre de progression en bas */
     .carte-blog .blog-couverture {
       flex: 0 0 90px;
       display: flex;
@@ -245,29 +245,41 @@
       color: var(--text-muted);
     }
 
-    /* Bandeau "Vous avez validé ce texte" au-dessus du titre */
-    .carte-blog .bandeau-validation-texte {
-      font-style: italic;
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-bottom: 6px;
-      line-height: 1.4;
-    }
-
-    /* Colonne de droite : date de création (comportement d'origine) */
+    /* ============================================================
+       Colonne de droite : bandeau validation (si validé) + date création
+       La date de création est TOUJOURS affichée.
+       Le bandeau "Vous avez validé..." est à GAUCHE de la date.
+       ============================================================ */
     .carte-blog .blog-date {
       flex: 0 0 auto;
-      text-align: right;
-      font-size: 11px;
-      color: var(--text-muted);
-      white-space: nowrap;
       display: flex;
-      flex-direction: column;
-      justify-content: center;
-      gap: 4px;
+      align-items: flex-start;
+      gap: 16px;
       padding-left: 14px;
       border-left: 1px solid var(--border);
       box-sizing: border-box;
+      white-space: nowrap;
+    }
+
+    /* Bandeau "Vous avez validé ce texte" (à gauche de la date) */
+    .carte-blog .blog-date .bandeau-validation-texte {
+      font-style: italic;
+      font-size: 11px;
+      color: var(--text-secondary);
+      line-height: 1.4;
+      text-align: right;
+      max-width: 200px;
+      white-space: normal;
+    }
+
+    /* Bloc date de création (comportement d'origine) */
+    .carte-blog .blog-date .bloc-date {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      text-align: right;
+      font-size: 11px;
+      color: var(--text-muted);
     }
 
     .carte-blog .blog-date .date-label {
@@ -299,13 +311,25 @@
 
       .carte-blog .blog-date {
         flex: 1 0 100%;
-        text-align: left;
+        align-items: center;
+        justify-content: flex-start;
         border-left: none;
         border-top: 1px solid var(--border);
         padding-left: 0;
         padding-top: 8px;
+        flex-direction: row-reverse;
+        gap: 12px;
+      }
+
+      .carte-blog .blog-date .bandeau-validation-texte {
+        text-align: left;
+        max-width: none;
+      }
+
+      .carte-blog .blog-date .bloc-date {
+        text-align: left;
         flex-direction: row;
-        gap: 8px;
+        gap: 6px;
       }
     }
   </style>
@@ -726,22 +750,11 @@
       var extrait = texte.description || texte.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
-      // === Colonne de droite : date de création (comportement d'origine) ===
-      var dateLabelHtml = '';
-      var dateHtml = '';
-
-      if (estValide && dateValidation) {
-        dateLabelHtml = '<span class="date-label">Fait :</span>';
-        dateHtml = '<span class="date-validation">' + formatDateComplete(dateValidation) + '</span>';
-      } else if (dateAjout) {
-        dateHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
-      }
-
       var numeroHtml = (numero !== Infinity)
         ? '<div class="blog-numero">' + numero + '</div>'
         : '<div class="blog-numero">◆</div>';
 
-      // === Couverture : image + barre de progression horizontale SOUS l'image ===
+      // === Couverture : image + barre de progression en bas ===
       var themeMeta = themesData[texte.categorie] || {};
       var couleurTheme = themeMeta.couleur || '#2d6a4f';
       var couvertureTheme = themeMeta.couverture || '';
@@ -750,21 +763,36 @@
         ? '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">'
         : '<div class="couverture-fallback">◆</div>';
 
-      var hauteurProgression = estValide ? '100%' : '0%';
+      var largeurProgression = estValide ? '100%' : '0%';
 
       var couvertureHtml =
         '<div class="blog-couverture">' +
           '<div class="couverture-contenu">' + couvertureContenuHtml + '</div>' +
           '<div class="progression-couverture">' +
-            '<div class="progression-remplissage" style="width:' + hauteurProgression + ';"></div>' +
+            '<div class="progression-remplissage" style="width:' + largeurProgression + ';"></div>' +
           '</div>' +
         '</div>';
 
-      // === Bandeau "Vous avez validé ce texte" ===
-      var bandeauValidation = '';
+      // === Colonne de droite : bandeau validation (gauche) + date création (droite) ===
+      // Bandeau : seulement si validé
+      var bandeauValidationHtml = '';
       if (estValide && dateValidation) {
-        bandeauValidation = '<div class="bandeau-validation-texte">Vous avez validé ce texte le ' + escapeHtml(dateValidation) + '</div>';
+        bandeauValidationHtml = '<div class="bandeau-validation-texte">Vous avez validé ce texte le ' + escapeHtml(dateValidation) + '</div>';
       }
+
+      // Date de création : TOUJOURS affichée
+      var dateCreationHtml = '';
+      if (dateAjout) {
+        dateCreationHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
+      }
+
+      var colDateHtml =
+        '<div class="blog-date">' +
+          bandeauValidationHtml +
+          '<div class="bloc-date">' +
+            dateCreationHtml +
+          '</div>' +
+        '</div>';
 
       return `
         <div class="carte-blog"
@@ -773,7 +801,6 @@
           <div class="blog-centre">
             ${numeroHtml}
             <div class="blog-corps">
-              ${bandeauValidation}
               <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
               <div class="blog-meta">
                 <span class="niveau-badge">Niveau ${texte.niveau}</span>
@@ -784,10 +811,7 @@
               ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
               <span class="blog-categorie">#${escapeHtml(categorie)}</span>
             </div>
-            <div class="blog-date">
-              ${dateLabelHtml}
-              ${dateHtml}
-            </div>
+            ${colDateHtml}
           </div>
         </div>
       `;
