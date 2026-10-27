@@ -13,7 +13,7 @@
 
   <style>
     .page-themes {
-      max-width: 1000px;        /* ← était 900px, aligné sur les-sections */
+      max-width: 1000px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
@@ -58,7 +58,6 @@
       color: var(--text);
     }
 
-    /* === GRILLE (inchangée) === */
     .grille-themes {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
@@ -66,14 +65,12 @@
       justify-items: stretch;
     }
 
-    /* === Wrapper carte + bloc bas (inchangé) === */
     .grille-themes .carte-avec-bas {
       display: flex;
       flex-direction: column;
       width: 100%;
     }
 
-    /* === Bloc bas de carte (inchangé) === */
     .carte-avec-bas .carte-bas {
       margin-top: 6px;
       padding: 8px 10px;
@@ -268,6 +265,24 @@
     }
 
     // ============================================================
+    // Statut validé par texte (basé sur Tentatives)
+    // ============================================================
+    function estTexteValide(texteId) {
+      var r = toutesLesReponses[String(texteId)];
+      if (!r) return false;
+      // toutesLesReponses peut contenir un objet (compat) ou un tableau
+      if (Array.isArray(r)) {
+        for (var i = 0; i < r.length; i++) {
+          if ((r[i].pourcentage || 0) >= 65) return true;
+          if (r[i].valide === 'valide') return true;
+        }
+        return false;
+      }
+      if ((r.pourcentage || 0) >= 65) return true;
+      return r.valide === 'valide';
+    }
+
+    // ============================================================
     // Chargement
     // ============================================================
     function chargerThemes() {
@@ -275,15 +290,64 @@
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
       nomEtudiant = id;
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          textesData = data.tousLesTextes || data.textes || [];
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
 
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
+        niveauEtudiant = data.niveau || 0;
+        textesData = data.tousLesTextes || data.textes || [];
+
+        themesData = {};
+        if (data.themes && Array.isArray(data.themes)) {
+          data.themes.forEach(function(l) {
+            themesData[l.titre] = {
+              theme: l.theme || '',
+              couleur: l.couleur || '#2d6a4f',
+              sousTitre: l.sousTitre || '',
+              date: l.date || '',
+              preRequis: l.preRequis || '',
+              auteur: l.auteur || '',
+              niveau: parseInt(l.niveau) || 0,
+              couverture: l.couverture || ''
+            };
+          });
+        }
+
+        // Construit toutesLesReponses à partir des tentatives
+        toutesLesReponses = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          if (!toutesLesReponses[k]) toutesLesReponses[k] = [];
+          toutesLesReponses[k].push({
+            texteId: t.texteId,
+            titre: t.titre,
+            bonnes: t.bonnes,
+            total: t.total,
+            pourcentage: t.pourcentage,
+            date: t.date || '',
+            valide: (t.pourcentage >= 65) ? 'valide' : 'non-valide'
+          });
+        });
+
+        document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+        afficherThemes();
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) {
+          niveauEtudiant = cache.niveau || 0;
+          textesData = cache.textes || cache.tousLesTextes || [];
+          if (cache.themes && Array.isArray(cache.themes)) {
+            themesData = {};
+            cache.themes.forEach(function(l) {
               themesData[l.titre] = {
                 theme: l.theme || '',
                 couleur: l.couleur || '#2d6a4f',
@@ -296,55 +360,23 @@
               };
             });
           }
-
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.texteId] = r;
-            });
-          }
-
           document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
           afficherThemes();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            textesData = cache.textes || cache.tousLesTextes || [];
-            if (cache.themes && Array.isArray(cache.themes)) {
-              themesData = {};
-              cache.themes.forEach(function(l) {
-                themesData[l.titre] = {
-                  theme: l.theme || '',
-                  couleur: l.couleur || '#2d6a4f',
-                  sousTitre: l.sousTitre || '',
-                  date: l.date || '',
-                  preRequis: l.preRequis || '',
-                  auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0,
-                  couverture: l.couverture || ''
-                };
-              });
-            }
-            document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-            afficherThemes();
-          } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-themes">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-              </div>
-            `;
-          }
-        });
+        } else {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide-themes">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
     }
 
     // ============================================================
-    // Affichage (inchangé — grille + carte-bas)
+    // Affichage
     // ============================================================
     function afficherThemes() {
       var container = document.getElementById('contenu');
@@ -389,12 +421,13 @@
 
         var validees = 0;
         textesDuTheme.forEach(function(ch) {
-          var reponse = toutesLesReponses[ch.id];
-          if (reponse && reponse.valide === 'valide') validees++;
+          if (estTexteValide(ch.id)) validees++;
         });
         var pourcentage = textesDuTheme.length > 0
           ? Math.round((validees / textesDuTheme.length) * 100)
           : 0;
+        var restants = textesDuTheme.length - validees;
+        if (restants < 0) restants = 0;
 
         var nbExercices = 0;
         var tagsSet = {};
@@ -421,6 +454,8 @@
           disponible: disponible,
           verrouille: !disponible,
           pourcentage: pourcentage,
+          validees: validees,
+          restants: restants,
           couleur: meta.couleur || '#2d6a4f',
           sousTitre: meta.sousTitre || '',
           date: meta.date || '',
@@ -472,7 +507,15 @@
                 : '')
           + '</div>';
 
-        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + '</div>';
+        // Phrase de progression en dessous de la carte, sans cadre, en italique
+        var phraseProgression = ''
+          + '<div style="font-style: italic; font-size: 12px; color: var(--text-secondary); margin-top: 6px; text-align: center; line-height: 1.4;">'
+          +   'Vous avez complété ' + theme.pourcentage + ' %'
+          +   ' — il vous reste ' + theme.restants + ' texte' + (theme.restants > 1 ? 's' : '')
+          +   '.'
+          + '</div>';
+
+        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + phraseProgression + '</div>';
       });
       html += '</div>';
 
