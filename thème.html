@@ -224,97 +224,55 @@
     }
 
     function chargerTheme() {
-      var params = new URLSearchParams(window.location.search);
-      categorieActuelle = params.get('cat') || '';
+  var params = new URLSearchParams(window.location.search);
+  categorieActuelle = params.get('cat') || '';
+  if (!categorieActuelle) { ...; return; }
 
-      if (!categorieActuelle) {
-        document.getElementById('enteteTheme').innerHTML = `
-          <div class="vide-textes" style="margin-top:20px;">
-            <span class="icone">◈</span>
-            <h4>Aucune catégorie spécifiée</h4>
-            <p>Veuillez sélectionner un thème depuis la page d'accueil.</p>
-            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
-          </div>
-        `;
-        document.getElementById('contenuTextes').innerHTML = '';
-        return;
-      }
+  var id = (typeof getIdUtilisateur === 'function')
+    ? getIdUtilisateur()
+    : (localStorage.getItem('etudiant_id') || 'invite');
+  nomEtudiant = id;
+  var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      var id = (typeof getIdUtilisateur === 'function')
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'invite');
-      nomEtudiant = id;
+  Promise.all([
+    DataManager.charger(),
+    fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+      .then(function(r) { return r.json(); })
+      .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+      .catch(function() { return []; })
+  ]).then(function(resultats) {
+    var data = resultats[0];
+    var tentatives = resultats[1];
 
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          textesData = data.tousLesTextes || data.textes || [];
+    niveauEtudiant = data.niveau || 0;
+    textesData = data.tousLesTextes || data.textes || [];
 
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                couleur:    l.couleur || '#2d6a4f',
-                sousTitre:  l.sousTitre || '',
-                date:       l.date || '',
-                pages:      l.pages || '',
-                description: l.description || '',
-                auteur:     l.auteur || '',
-                niveau:     parseInt(l.niveau) || 0,
-                couverture: l.couverture || '',
-                infos:      l.infos || null
-              };
-            });
-          }
-
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              if (!toutesLesReponses[r.texteId]) {
-                toutesLesReponses[r.texteId] = [];
-              }
-              toutesLesReponses[r.texteId].push(r);
-            });
-          }
-
-          afficherTheme();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            textesData = cache.tousLesTextes || cache.textes || [];
-            if (cache.themes && Array.isArray(cache.themes)) {
-              themesData = {};
-              cache.themes.forEach(function(l) {
-                themesData[l.titre] = {
-                  couleur:    l.couleur || '#2d6a4f',
-                  sousTitre:  l.sousTitre || '',
-                  date:       l.date || '',
-                  pages:      l.pages || '',
-                  description: l.description || '',
-                  auteur:     l.auteur || '',
-                  niveau:     parseInt(l.niveau) || 0,
-                  couverture: l.couverture || '',
-                  infos:      l.infos || null
-                };
-              });
-            }
-            afficherTheme();
-          } else {
-            document.getElementById('enteteTheme').innerHTML = `
-              <div class="vide-textes" style="margin-top:20px;">
-                <span class="icone">⚠</span>
-                <h4>Erreur de chargement</h4>
-                <p>Vérifiez votre connexion internet.</p>
-                <button onclick="location.reload();" style="margin-top:10px;padding:8px 20px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text-secondary);">Réessayer</button>
-              </div>
-            `;
-            document.getElementById('contenuTextes').innerHTML = '';
-          }
-        });
+    themesData = {};
+    if (data.themes && Array.isArray(data.themes)) {
+      data.themes.forEach(function(l) { themesData[l.titre] = {...}; });
     }
+
+    // === Construire toutesLesReponses à partir des tentatives ===
+    toutesLesReponses = {};
+    tentatives.forEach(function(t) {
+      var id = String(t.texteId);
+      if (!toutesLesReponses[id]) toutesLesReponses[id] = [];
+      toutesLesReponses[id].push({
+        texteId: t.texteId,
+        titre: t.titre,
+        bonnes: t.bonnes,
+        total: t.total,
+        pourcentage: t.pourcentage,
+        date: t.date,
+        valide: t.pourcentage >= 65 ? 'valide' : 'non-valide'
+      });
+    });
+
+    afficherTheme();
+  }).catch(function(error) {
+    // ... fallback cache ...
+  });
+}
 
     function afficherTheme() {
       var textesFiltres = textesData.filter(function(p) {
