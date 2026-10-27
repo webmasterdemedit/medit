@@ -77,7 +77,6 @@
     var niveauEtudiant = 0;
     var rechercheActive = '';
 
-    // texteId → { valide: bool, pourcentage: number }
     var etatValidation = {};
 
     function echapperHtml(str) {
@@ -127,7 +126,6 @@
           });
         }
 
-        // Construit etatValidation : texteId → meilleur pourcentage
         etatValidation = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
@@ -248,9 +246,6 @@
       return false;
     }
 
-    // ============================================================
-    // Calcule le pourcentage de validité d'un ensemble de textes
-    // ============================================================
     function calculerProgression(textes) {
       if (!textes || textes.length === 0) return 0;
       var valides = 0;
@@ -261,33 +256,48 @@
     }
 
     // ============================================================
-    // Cercle de progression avec conic-gradient
-    // Le disque se remplit angulairement selon l'avancement.
-    // Le contour devient plus noir et plus épais en même temps.
+    // Cercle de progression (utilisé pour les THÈMES dans la cellule gauche)
     // ============================================================
     function construireCercleProgression(pourcentage) {
       var pct = Math.max(0, Math.min(100, pourcentage));
 
-      // Épaisseur du contour : 1px (0%) → 3px (100%)
       var epaisseur = 1 + (pct / 100) * 2;
-
-      // Couleur du contour : gris clair (200) → noir (17)
       var gris = Math.round(200 - (pct / 100) * 183);
       var couleurContour = 'rgb(' + gris + ',' + gris + ',' + gris + ')';
-
-      // Remplissage intérieur : part de camembert
       var remplissage = 'conic-gradient(rgba(17,17,17,0.85) ' + pct + '%, transparent ' + pct + '%)';
 
       return '<span class="cercle-progression" style="' +
         'display:inline-block;' +
         'width:18px;height:18px;' +
         'border-radius:50%;' +
-        'margin-left:6px;' +
+        'margin-left:8px;' +
         'vertical-align:middle;' +
         'box-sizing:border-box;' +
         'background:' + remplissage + ';' +
         'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
         '"></span>';
+    }
+
+    // ============================================================
+    // Barre de progression horizontale (utilisée pour les NIVEAUX dans l'en-tête)
+    // ============================================================
+    function construireBarreProgression(pourcentage) {
+      var pct = Math.max(0, Math.min(100, pourcentage));
+      return '<div class="progression-niveau-bloc" style="' +
+        'display:inline-block;' +
+        'width:60px;height:3px;' +
+        'margin-left:8px;' +
+        'background:var(--border);' +
+        'position:relative;' +
+        'vertical-align:middle;' +
+        'box-sizing:border-box;' +
+        '">' +
+        '<div style="' +
+        'position:absolute;top:0;left:0;bottom:0;' +
+        'width:' + pct + '%;' +
+        'background:var(--text);' +
+        '"></div>' +
+        '</div>';
     }
 
     function afficherProgramme() {
@@ -318,12 +328,13 @@
       html += '<thead><tr>';
       html += '<th class="coin">Thème</th>';
 
+      // === En-tête : "Niveau X" + barre de progression horizontale ===
       data.niveaux.forEach(function(n) {
         var textesDuNiveau = tousTextes.filter(function(ch) {
           return parseInt(ch.niveau) === n;
         });
         var pct = calculerProgression(textesDuNiveau);
-        html += '<th>Niveau ' + n + construireCercleProgression(pct) + '</th>';
+        html += '<th>Niveau ' + n + construireBarreProgression(pct) + '</th>';
       });
       html += '</tr></thead>';
 
@@ -395,14 +406,11 @@
 
         if (rechercheActive && !themeAResultat) return;
 
+        // === Cellule gauche : nom du thème + cercle de progression ===
         html += '<tr>';
         html += '<th class="theme-cell">';
-        html += '  <span class="theme-nom">' + echapperHtml(theme) + '</span>';
+        html += '  <span class="theme-nom">' + echapperHtml(theme) + '</span>' + construireCercleProgression(pctTheme);
         html += '  <span class="theme-compteur">' + compterCategoriesDuTheme(theme, data) + ' catégorie(s)</span>';
-        // Barre de progression horizontale sous le nom du thème
-        html += '  <div class="progression-theme-bloc" style="margin-top:6px;height:3px;background:var(--border);position:relative;">';
-        html += '    <div class="progression-remplissage" style="position:absolute;top:0;left:0;bottom:0;width:' + pctTheme + '%;background:var(--text);"></div>';
-        html += '  </div>';
         html += '</th>';
         html += cellulesHtml;
         html += '</tr>';
