@@ -1500,20 +1500,25 @@
     // VERSION ALTERNATIVE (fichier suffixé "(...)")
     // ============================================================
     function verifierVersionParenthese(texte) {
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-      fetch(base + '?action=getVersionSecondaire&texteId=' + encodeURIComponent(texte.id))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data && data.trouve) {
-            var btn = document.getElementById('btnImprimerAlternative');
-            if (btn) btn.style.display = 'inline-block';
-            window._versionParenthese = data.contenu;
-            window._versionParentheseNom = data.nom;
-          }
-        })
-        .catch(function() {});
-    }
-
+  var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+  fetch(base + '?action=getVersionSecondaire&texteId=' + encodeURIComponent(texte.id))
+    .then(function(r) { return r.json(); })
+    .then(function(data) {
+      if (data && data.trouve) {
+        var btn = document.getElementById('btnImprimerAlternative');
+        if (btn) {
+          var suffixe = (data.suffixe || '').trim();
+          btn.textContent = suffixe
+            ? 'Imprimer la version ' + suffixe
+            : 'Imprimer la version alternative';
+          btn.style.display = 'inline-block';
+        }
+        window._versionParenthese = data.contenu;
+        window._versionParentheseNom = data.nom;
+      }
+    })
+    .catch(function() {});
+}
     function imprimerVersionParenthese() {
       if (!window._versionParenthese) {
         alert('Aucune version alternative disponible.');
