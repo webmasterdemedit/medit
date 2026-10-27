@@ -1,4 +1,4 @@
-<!-- mes-textes-a-faire.html -->
+<!-- mes-textes.html -->
 <!DOCTYPE html>
 <html lang="fr">
 <head>
@@ -58,7 +58,6 @@
       color: var(--text);
     }
 
-    /* Liste des prochains textes : une carte par thème */
     .liste-prochains {
       display: flex;
       flex-direction: column;
@@ -210,13 +209,9 @@
   <div class="page page-blog">
 
     <h1>Mes textes à faire</h1>
-    <p class="sous-titre-page">Le prochain texte à valider pour chaque thème, en suivant l'ordre du programme.</p>
+    <p class="sous-titre-page">Le prochain texte à valider, en suivant l'ordre du programme. On n'avance au niveau suivant que si le niveau inférieur est entièrement validé.</p>
 
     <div class="stats-ligne" id="statsLigne">
-      <div class="stat-item">
-        <span>Thèmes à compléter :</span>
-        <span class="nombre" id="totalThemes">0</span>
-      </div>
       <div class="stat-item">
         <span>Votre niveau :</span>
         <span class="nombre" id="niveauEtudiant">0</span>
@@ -226,7 +221,7 @@
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Calcul des prochains textes...</p>
+        <p>Calcul du prochain texte...</p>
       </div>
     </div>
 
@@ -321,11 +316,11 @@
           }
         });
 
-        afficherProchains(data);
+        afficherProchain(data);
       }).catch(function(error) {
         console.error('Erreur chargement:', error);
         var cache = DataManager.getCacheForce(id);
-        if (cache) afficherProchains(cache);
+        if (cache) afficherProchain(cache);
         else {
           document.getElementById('loader').style.display = 'none';
           document.getElementById('contenu').innerHTML = `
@@ -339,17 +334,22 @@
       });
     }
 
-    function afficherProchains(data) {
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
-
+    // ============================================================
+    // Trouve le prochain texte à faire en respectant la règle :
+    // - On parcourt les thèmes dans l'ordre du programme.
+    // - Dans chaque thème, on parcourt les niveaux dans l'ordre croissant.
+    // - Pour un niveau, si tous les textes de ce niveau sont validés,
+    //   on passe au niveau suivant du même thème.
+    // - Si un niveau n'est pas entièrement validé, on renvoie le premier
+    //   texte non validé de ce niveau et on s'arrête.
+    // - On ne passe au thème suivant que si tous les niveaux de ce thème
+    //   sont entièrement validés.
+    // ============================================================
+    function trouverProchainTexte(data) {
       var themes = data.themes || [];
       var textes = data.tousLesTextes || data.textes || [];
-      var niveauEtudiant = data.niveau || 0;
 
-      document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
-
-      // Métadonnées des thèmes (pour l'ordre dans le programme)
+      // Métadonnées des thèmes
       categoriesData = {};
       themes.forEach(function(l) {
         if (!l.titre) return;
@@ -372,11 +372,10 @@
         textesParTheme[th].push(t);
       });
 
-      // Pour chaque thème, calculer son niveau minimum, et le prochain texte
+      // Construire la liste des thèmes, triée dans l'ordre du programme
       var themesListe = Object.keys(textesParTheme).map(function(nomTheme) {
         var textesDuTheme = textesParTheme[nomTheme];
 
-        // Niveau minimum du thème (comme dans niveaux.html)
         var niveauMin = Infinity;
         textesDuTheme.forEach(function(t) {
           var n = parseInt(t.niveau) || 1;
@@ -384,18 +383,51 @@
         });
         if (niveauMin === Infinity) niveauMin = 1;
 
-        // Trouver le prochain texte : plus bas niveau non validé, puis ordre alpha
-        var nonValides = textesDuTheme.filter(function(t) {
-          return !estTexteValide(t.id);
+        // Regrouper par niveau
+        var parNiveau = {};
+        textesDuTheme.forEach(function(t) {
+          var n = parseInt(t.niveau) || 1;
+          if (!parNiveau[n]) parNiveau[n] = [];
+          parNiveau[n].push(t);
         });
 
-        var prochain = null;
-        if (nonValides.length > 0) {
-          // Trier par niveau croissant, puis numéro/titre
-          nonValides.sort(function(a, b) {
-            var na = parseInt(a.niveau) || 1;
-            var nb = parseInt(b.niveau) || 1;
-            if (na !== nb) return na - nb;
+        // Niveaux triés croissants
+        var niveaux = Object.keys(parNiveau).map(Number).sort(function(a, b) { return a - b; });
+
+        return {
+          nom: nomTheme,
+          niveauMin: niveauMin,
+          niveaux: niveaux,
+          parNiveau: parNiveau,
+          total: textesDuTheme.length
+        };
+      });
+
+      themesListe.sort(function(a, b) {
+        if (a.niveauMin !== b.niveauMin) return a.niveauMin - b.niveauMin;
+        return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+      });
+
+      // Parcours thème par thème, niveau par niveau
+      for (var i = 0; i < themesListe.length; i++) {
+        var theme = themesListe[i];
+
+        for (var j = 0; j < theme.niveaux.length; j++) {
+          var niv = theme.niveaux[j];
+          var textesDuNiveau = theme.parNiveau[niv] || [];
+
+          // Y a-t-il au moins un texte non validé dans ce niveau ?
+          var nonValidesNiveau = textesDuNiveau.filter(function(t) {
+            return !estTexteValide(t.id);
+          });
+
+          if (nonValidesNiveau.length === 0) {
+            // Ce niveau est entièrement validé → on passe au niveau suivant
+            continue;
+          }
+
+          // Ce niveau n'est pas entièrement validé → on renvoie le premier non validé
+          nonValidesNiveau.sort(function(a, b) {
             var numA = extraireNumeroTexte(a.titre);
             var numB = extraireNumeroTexte(b.titre);
             if (numA !== numB) return numA - numB;
@@ -403,32 +435,32 @@
               extraireTitreSansNumero(b.titre), 'fr', { sensitivity: 'base' }
             );
           });
-          prochain = nonValides[0];
+
+          return {
+            theme: theme.nom,
+            niveau: niv,
+            texte: nonValidesNiveau[0],
+            validesNiveau: textesDuNiveau.length - nonValidesNiveau.length,
+            totalNiveau: textesDuNiveau.length
+          };
         }
+        // Tous les niveaux de ce thème sont validés → on passe au thème suivant
+      }
 
-        return {
-          nom: nomTheme,
-          niveauMin: niveauMin,
-          prochain: prochain,
-          total: textesDuTheme.length,
-          valides: textesDuTheme.length - nonValides.length
-        };
-      });
+      return null;
+    }
 
-      // Ne garder que les thèmes qui ont encore un texte à faire
-      var aFaire = themesListe.filter(function(t) { return t.prochain !== null; });
+    function afficherProchain(data) {
+      var loader = document.getElementById('loader');
+      if (loader) loader.style.display = 'none';
 
-      // Trier par niveau minimum croissant (ordre du programme), puis alphabétique
-      aFaire.sort(function(a, b) {
-        if (a.niveauMin !== b.niveauMin) return a.niveauMin - b.niveauMin;
-        return a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-      });
+      var niveauEtudiant = data.niveau || 0;
+      document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
 
-      document.getElementById('totalThemes').textContent = aFaire.length;
-
+      var prochain = trouverProchainTexte(data);
       var conteneur = document.getElementById('contenu');
 
-      if (aFaire.length === 0) {
+      if (!prochain) {
         conteneur.innerHTML = `
           <div class="vide-prochain">
             <span class="icone">✓</span>
@@ -439,73 +471,67 @@
         return;
       }
 
-      var html = '<div class="liste-prochains">';
-      aFaire.forEach(function(item) {
-        var t = item.prochain;
-        var numero = extraireNumeroTexte(t.titre);
-        var titreAffiche = extraireTitreSansNumero(t.titre);
+      var t = prochain.texte;
+      var numero = extraireNumeroTexte(t.titre);
+      var titreAffiche = extraireTitreSansNumero(t.titre);
 
-        var numeroHtml = (numero !== Infinity)
-          ? '<span class="badge-icone">N° ' + numero + '</span>'
-          : '';
+      var numeroHtml = (numero !== Infinity)
+        ? '<span class="badge-icone">N° ' + numero + '</span>'
+        : '';
 
-        // Nombre d'exercices (comme dans les-textes.html)
-        var TYPES_EXERCICES = [
-          { prefix: 'quiz:',   label: 'QCM' },
-          { prefix: 'open:',   label: 'Ouverte' },
-          { prefix: 'ordre:',  label: 'Ordre' },
-          { prefix: 'carte:',  label: 'Carte' },
-          { prefix: 'relier:', label: 'Relier' },
-          { prefix: 'tt:',     label: 'Trous' },
-          { prefix: 'vf:',     label: 'VF' },
-          { prefix: 'copier:', label: 'Copier' }
-        ];
-        var ordreBlocs = t.ordreBlocs || [];
-        var detailParts = [];
-        var nbExercices = 0;
+      var TYPES_EXERCICES = [
+        { prefix: 'quiz:',   label: 'QCM' },
+        { prefix: 'open:',   label: 'Ouverte' },
+        { prefix: 'ordre:',  label: 'Ordre' },
+        { prefix: 'carte:',  label: 'Carte' },
+        { prefix: 'relier:', label: 'Relier' },
+        { prefix: 'tt:',     label: 'Trous' },
+        { prefix: 'vf:',     label: 'VF' },
+        { prefix: 'copier:', label: 'Copier' }
+      ];
+      var ordreBlocs = t.ordreBlocs || [];
+      var detailParts = [];
+      var nbExercices = 0;
 
-        if (ordreBlocs.length > 0) {
-          TYPES_EXERCICES.forEach(function(type) {
-            var count = 0;
-            ordreBlocs.forEach(function(ob) {
-              if (ob.indexOf(type.prefix) === 0) count++;
-            });
-            if (count > 0) {
-              nbExercices++;
-              detailParts.push(count + ' ' + type.label);
-            }
+      if (ordreBlocs.length > 0) {
+        TYPES_EXERCICES.forEach(function(type) {
+          var count = 0;
+          ordreBlocs.forEach(function(ob) {
+            if (ob.indexOf(type.prefix) === 0) count++;
           });
-        } else {
-          if (t.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
-          if (t.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
-        }
-        var detailExercices = detailParts.join(' · ');
+          if (count > 0) {
+            nbExercices++;
+            detailParts.push(count + ' ' + type.label);
+          }
+        });
+      } else {
+        if (t.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
+        if (t.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
+      }
+      var detailExercices = detailParts.join(' · ');
 
-        var metaTheme = categoriesData[t.categorie] || {};
-        var niveauTexte = parseInt(t.niveau) || 1;
-
-        html += `
-          <a class="carte-prochain" href="/medit/texte.html?id=${encodeURIComponent(t.id)}">
-            <div class="prochain-theme">
-              <div class="prochain-theme-label">Thème</div>
-              <div class="prochain-theme-nom">${escapeHtml(item.nom)}</div>
+      var html = '<div class="liste-prochains">';
+      html += `
+        <a class="carte-prochain" href="/medit/texte.html?id=${encodeURIComponent(t.id)}">
+          <div class="prochain-theme">
+            <div class="prochain-theme-label">Thème</div>
+            <div class="prochain-theme-nom">${escapeHtml(prochain.theme)}</div>
+          </div>
+          <div class="prochain-corps">
+            <div class="prochain-titre">${escapeHtml(titreAffiche || t.titre)}</div>
+            <div class="prochain-meta">
+              <span class="badge-icone">Niveau ${prochain.niveau}</span>
+              ${numeroHtml}
+              ${nbExercices > 0 ? '<span class="badge-icone">' + nbExercices + ' exercice' + (nbExercices > 1 ? 's' : '') + '</span>' : ''}
+              ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
             </div>
-            <div class="prochain-corps">
-              <div class="prochain-titre">${escapeHtml(titreAffiche || t.titre)}</div>
-              <div class="prochain-meta">
-                <span class="badge-icone">Niveau ${niveauTexte}</span>
-                ${numeroHtml}
-                ${nbExercices > 0 ? '<span class="badge-icone">' + nbExercices + ' exercice' + (nbExercices > 1 ? 's' : '') + '</span>' : ''}
-                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
-              </div>
-            </div>
-            <div class="prochain-date">
-              <span>${item.valides} / ${item.total}</span>
-              <span style="font-style:italic;">texte${item.valides > 1 ? 's' : ''} validé${item.valides > 1 ? 's' : ''}</span>
-            </div>
-          </a>
-        `;
-      });
+          </div>
+          <div class="prochain-date">
+            <span>${prochain.validesNiveau} / ${prochain.totalNiveau}</span>
+            <span style="font-style:italic;">niveau ${prochain.niveau}</span>
+          </div>
+        </a>
+      `;
       html += '</div>';
 
       conteneur.innerHTML = html;
