@@ -12,7 +12,6 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    /* ===== PAGE BLOG ===== */
     .page-blog {
       max-width: 1000px;
       margin: 0 auto;
@@ -35,7 +34,6 @@
       font-weight: 300;
     }
 
-    /* ===== BARRE DE TRI ===== */
     .barre-tri {
       display: flex;
       flex-wrap: wrap;
@@ -91,14 +89,12 @@
       border-color: var(--text-secondary);
     }
 
-    /* Liste verticale de cartes */
     .page-blog .grille-themes {
       display: flex;
       flex-direction: column;
       gap: 14px;
     }
 
-    /* ===== CARTE BLOG ===== */
     .carte-blog {
       display: flex;
       gap: 0;
@@ -118,7 +114,6 @@
       border-color: var(--text-secondary);
     }
 
-    /* Encadré couverture à gauche */
     .carte-blog .blog-couverture {
       flex: 0 0 90px;
       display: flex;
@@ -148,7 +143,6 @@
       color: rgba(255,255,255,0.85);
     }
 
-    /* Contenu principal */
     .carte-blog .blog-centre {
       display: flex;
       gap: 20px;
@@ -248,14 +242,20 @@
       color: var(--text);
     }
 
-    /* Responsive */
+    /* Bandeau "Vous avez validé ce texte" — au-dessus du titre, italique, aligné à gauche */
+    .carte-blog .bandeau-validation-texte {
+      font-style: italic;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      line-height: 1.4;
+    }
+
     @media (max-width: 700px) {
       .page-blog { padding: 12px 16px 30px; }
       .page-blog h1 { font-size: 22px; }
 
-      .carte-blog .blog-couverture {
-        flex: 0 0 64px;
-      }
+      .carte-blog .blog-couverture { flex: 0 0 64px; }
 
       .carte-blog .blog-centre {
         flex-wrap: wrap;
@@ -298,7 +298,6 @@
     <h1>Derniers textes publiés</h1>
     <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
 
-    <!-- ===== BARRE DE TRI ===== -->
     <div class="barre-tri" id="barreTri">
       <div class="tri-groupe">
         <label for="triTheme">Thème</label>
@@ -358,14 +357,12 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    // ===== VARIABLES GLOBALES =====
     var toutesLesReponses = {};
     var textesData = [];
     var themesData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
 
-    // ===== UTILITAIRES =====
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
       var match = titre.match(/^\s*(\d+)\s+/);
@@ -428,21 +425,70 @@
       return String(d.getFullYear());
     }
 
-    // ===== CHARGEMENT =====
+    // ============================================================
+    // Chargement
+    // ============================================================
     function chargerTextes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
       nomEtudiant = id;
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          textesData = data.tousLesTextes || data.textes || [];
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
 
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
+        niveauEtudiant = data.niveau || 0;
+        textesData = data.tousLesTextes || data.textes || [];
+
+        themesData = {};
+        if (data.themes && Array.isArray(data.themes)) {
+          data.themes.forEach(function(l) {
+            themesData[l.titre] = {
+              couleur: l.couleur || '#2d6a4f',
+              sousTitre: l.sousTitre || '',
+              date: l.date || '',
+              auteur: l.auteur || '',
+              niveau: parseInt(l.niveau) || 0,
+              couverture: l.couverture || ''
+            };
+          });
+        }
+
+        // Construit toutesLesReponses à partir des tentatives
+        toutesLesReponses = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          if (!toutesLesReponses[k]) toutesLesReponses[k] = [];
+          toutesLesReponses[k].push({
+            texteId: t.texteId,
+            titre: t.titre,
+            bonnes: t.bonnes,
+            total: t.total,
+            pourcentage: t.pourcentage,
+            date: t.date || '',
+            valide: (t.pourcentage >= 65) ? 'valide' : 'non-valide'
+          });
+        });
+
+        initialiserFiltres();
+        afficherBlog();
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) {
+          niveauEtudiant = cache.niveau || 0;
+          textesData = cache.tousLesTextes || cache.textes || [];
+          if (cache.themes && Array.isArray(cache.themes)) {
+            themesData = {};
+            cache.themes.forEach(function(l) {
               themesData[l.titre] = {
                 couleur: l.couleur || '#2d6a4f',
                 sousTitre: l.sousTitre || '',
@@ -453,67 +499,33 @@
               };
             });
           }
-
-          toutesLesReponses = {};
-          if (data.reponses) {
-            data.reponses.forEach(function(r) {
-              toutesLesReponses[r.texteId] = r;
-            });
-          }
-
           initialiserFiltres();
           afficherBlog();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            textesData = cache.tousLesTextes || cache.textes || [];
-            if (cache.themes && Array.isArray(cache.themes)) {
-              themesData = {};
-              cache.themes.forEach(function(l) {
-                themesData[l.titre] = {
-                  couleur: l.couleur || '#2d6a4f',
-                  sousTitre: l.sousTitre || '',
-                  date: l.date || '',
-                  auteur: l.auteur || '',
-                  niveau: parseInt(l.niveau) || 0,
-                  couverture: l.couverture || ''
-                };
-              });
-            }
-            if (cache.reponses) {
-              cache.reponses.forEach(function(r) {
-                toutesLesReponses[r.texteId] = r;
-              });
-            }
-            initialiserFiltres();
-            afficherBlog();
-          } else {
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-themes">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-                <button onclick="DataManager.rafraichir(); location.reload();"
-                        style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text);">
-                  Réessayer
-                </button>
-              </div>
-            `;
-          }
-        });
+        } else {
+          document.getElementById('loader').style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide-themes">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+              <button onclick="DataManager.rafraichir(); location.reload();"
+                      style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text);">
+                Réessayer
+              </button>
+            </div>
+          `;
+        }
+      });
     }
 
-    // ===== FILTRES =====
+    // ============================================================
+    // Filtres
+    // ============================================================
     function initialiserFiltres() {
       var accessibles = textesData.filter(function(t) {
         return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      // Thèmes distincts
       var themes = {};
       accessibles.forEach(function(t) {
         var cat = (t.categorie || '').trim();
@@ -529,7 +541,6 @@
         selTheme.appendChild(opt);
       });
 
-      // Tags distincts
       var tagsMap = {};
       accessibles.forEach(function(t) {
         (t.tags || []).forEach(function(tag) {
@@ -547,7 +558,6 @@
         selTag.appendChild(opt);
       });
 
-      // Années distinctes (DESC)
       var annees = {};
       accessibles.forEach(function(t) {
         var a = anneeDe(t.date);
@@ -571,7 +581,9 @@
       afficherBlog();
     }
 
-    // ===== AFFICHAGE PRINCIPAL =====
+    // ============================================================
+    // Affichage
+    // ============================================================
     function afficherBlog() {
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
@@ -580,12 +592,10 @@
       var filtreTag = document.getElementById('triTag').value;
       var filtreAnnee = document.getElementById('triAnnee').value;
 
-      // 1. Filtrer par niveau
       var accessibles = textesData.filter(function(t) {
         return (parseInt(t.niveau) || 1) <= niveauEtudiant;
       });
 
-      // 2. Filtrer thème
       if (filtreTheme) {
         var cibleTheme = normaliserComparaison(filtreTheme);
         accessibles = accessibles.filter(function(t) {
@@ -593,7 +603,6 @@
         });
       }
 
-      // 3. Filtrer tag
       if (filtreTag) {
         var cibleTag = normaliserComparaison(filtreTag);
         accessibles = accessibles.filter(function(t) {
@@ -603,14 +612,12 @@
         });
       }
 
-      // 4. Filtrer année
       if (filtreAnnee) {
         accessibles = accessibles.filter(function(t) {
           return anneeDe(t.date) === filtreAnnee;
         });
       }
 
-      // 5. Trier par date d'ajout DESC
       accessibles.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
@@ -618,7 +625,6 @@
         return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
 
-      // 6. Construire HTML
       var container = document.getElementById('contenu');
       var html = '<div class="grille-themes" id="listeBlog">';
 
@@ -639,16 +645,38 @@
       container.innerHTML = html;
     }
 
-    // ===== CARTE BLOG =====
+    // ============================================================
+    // Statut validé pour un texte
+    // ============================================================
+    function infoValidationTexte(texteId) {
+      var reponses = toutesLesReponses[String(texteId)];
+      if (!reponses || reponses.length === 0) return { valide: false, date: '' };
+
+      var meilleurPct = -1;
+      var meilleureDate = '';
+      for (var i = 0; i < reponses.length; i++) {
+        var pct = reponses[i].pourcentage || 0;
+        if (pct > meilleurPct) {
+          meilleurPct = pct;
+          meilleureDate = reponses[i].date || '';
+        }
+      }
+      var valide = meilleurPct >= 65;
+      return { valide: valide, date: valide ? meilleureDate : '' };
+    }
+
+    // ============================================================
+    // Carte blog
+    // ============================================================
     function construireCarteBlog(texte) {
       var numero = extraireNumeroTexte(texte.titre);
       var titreAffiche = extraireTitreSansNumero(texte.titre);
       var categorie = (texte.categorie || 'Sans catégorie').trim();
       var mots = texte.mots || 0;
 
-      var reponse = toutesLesReponses[texte.id];
-      var estValide = reponse && reponse.valide === 'valide';
-      var dateValidation = reponse && reponse.date ? reponse.date : '';
+      var validation = infoValidationTexte(texte.id);
+      var estValide = validation.valide;
+      var dateValidation = validation.date;
       var dateAjout = texte.date || '';
 
       var TYPES_EXERCICES = [
@@ -686,6 +714,7 @@
       var extrait = texte.description || texte.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
+      // === Colonne de droite (comportement inchangé) ===
       var dateLabelHtml = '';
       var dateHtml = '';
 
@@ -700,7 +729,6 @@
         ? '<div class="blog-numero">' + numero + '</div>'
         : '<div class="blog-numero">◆</div>';
 
-      // Encadré couverture à gauche
       var themeMeta = themesData[texte.categorie] || {};
       var couleurTheme = themeMeta.couleur || '#2d6a4f';
       var couvertureTheme = themeMeta.couverture || '';
@@ -712,6 +740,12 @@
                          '<div class="couverture-fallback">◆</div></div>';
       }
 
+      // === Bandeau "Vous avez validé ce texte" — au-dessus du titre ===
+      var bandeauValidation = '';
+      if (estValide && dateValidation) {
+        bandeauValidation = '<div class="bandeau-validation-texte">Vous avez validé ce texte le ' + escapeHtml(dateValidation) + '</div>';
+      }
+
       return `
         <div class="carte-blog"
              onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
@@ -719,6 +753,7 @@
           <div class="blog-centre">
             ${numeroHtml}
             <div class="blog-corps">
+              ${bandeauValidation}
               <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
               <div class="blog-meta">
                 <span class="niveau-badge">Niveau ${texte.niveau}</span>
