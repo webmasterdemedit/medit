@@ -339,6 +339,10 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
+    function echapperRegexPourRegex(str) {
+      return String(str).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     function getNomUtilisateurCourant() {
       if (typeof getIdUtilisateur === 'function') {
         var id = getIdUtilisateur();
@@ -1500,38 +1504,39 @@
     // VERSION ALTERNATIVE (fichier suffixé "(...)")
     // ============================================================
     function verifierVersionParenthese(texte) {
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-      fetch(base + '?action=getVersionSecondaire&texteId=' + encodeURIComponent(texte.id))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data && data.trouve) {
-            var suffixe = (data.suffixe || '').trim();
-            var btns = document.querySelectorAll('.btn-imprimer-alternative');
-            btns.forEach(function(btn) {
-              btn.textContent = suffixe
-                ? 'Imprimer la version ' + suffixe
-                : 'Imprimer la version alternative';
-              btn.style.display = 'inline-block';
-            });
-            window._versionParenthese = data.contenu;
-            window._versionParentheseNom = data.nom;
-            window._versionParentheseSuffixe = suffixe;
-          }
-        })
-        .catch(function() {});
+      if (!texte || !texte.titre) return;
+      var tous = textesData || [];
+      var alt = null;
+      var titrePrincipal = texte.titre;
+
+      for (var i = 0; i < tous.length; i++) {
+        var t = tous[i];
+        if (!t.titre) continue;
+        var re = new RegExp('^' + echapperRegexPourRegex(titrePrincipal) + '\\s*\\(([^)]+)\\)\\s*$');
+        var m = t.titre.match(re);
+        if (m) {
+          alt = { id: t.id, titre: t.titre, suffixe: m[1].trim() };
+          break;
+        }
+      }
+
+      if (alt) {
+        document.querySelectorAll('.btn-imprimer-alternative').forEach(function(btn) {
+          btn.textContent = 'Imprimer la version ' + alt.suffixe;
+          btn.style.display = 'inline-block';
+        });
+        window._altTexteId = alt.id;
+        window._altTexteTitre = alt.titre;
+        window._altTexteSuffixe = alt.suffixe;
+      }
     }
 
     function imprimerVersionParenthese() {
-      if (!window._versionParenthese) {
+      if (!window._altTexteId) {
         alert('Aucune version alternative disponible.');
         return;
       }
-      if (typeof imprimerContenuAlternatif !== 'function') {
-        alert('Fonction d\'impression alternative indisponible.');
-        return;
-      }
-      var suffixe = (window._versionParentheseSuffixe || '').trim();
-      imprimerContenuAlternatif(texteActuel, window._versionParenthese, suffixe);
+      imprimerTexte(window._altTexteId, window._altTexteTitre, textesData);
     }
 
     // ============================================================
