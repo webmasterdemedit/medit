@@ -77,6 +77,9 @@
     var niveauEtudiant = 0;
     var rechercheActive = '';
 
+    // texteId → { valide: bool, pourcentage: number }
+    var etatValidation = {};
+
     function echapperHtml(str) {
       if (!str) return '';
       return String(str)
@@ -93,20 +96,61 @@
     }
 
     function chargerProgramme() {
-      // ✅ Plus de redirection : visiteur ou connecté, on continue
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      DataManager.charger()
-        .then(function(data) {
-          niveauEtudiant = data.niveau || 0;
-          tousTextes = data.tousLesTextes || [];
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
+
+        niveauEtudiant = data.niveau || 0;
+        tousTextes = data.tousLesTextes || [];
+        textesData = tousTextes;
+
+        categoriesData = {};
+        if (data.themes && Array.isArray(data.themes)) {
+          data.themes.forEach(function(l) {
+            categoriesData[l.titre] = {
+              theme: (l.theme || '').trim(),
+              couleur: l.couleur || '#2d6a4f',
+              niveau: parseInt(l.niveau) || 0,
+              sousTitre: l.sousTitre || ''
+            };
+          });
+        }
+
+        // Construit etatValidation : texteId → meilleur pourcentage
+        etatValidation = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          var pct = t.pourcentage || 0;
+          if (!etatValidation[k] || pct > etatValidation[k].pourcentage) {
+            etatValidation[k] = {
+              valide: pct >= 65,
+              pourcentage: pct
+            };
+          }
+        });
+
+        afficherProgramme();
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) {
+          niveauEtudiant = cache.niveau || 0;
+          tousTextes = cache.tousLesTextes || cache.textes || [];
           textesData = tousTextes;
-
           categoriesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
+          if (cache.themes && Array.isArray(cache.themes)) {
+            cache.themes.forEach(function(l) {
               categoriesData[l.titre] = {
                 theme: (l.theme || '').trim(),
                 couleur: l.couleur || '#2d6a4f',
@@ -115,38 +159,22 @@
               };
             });
           }
-
           afficherProgramme();
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            niveauEtudiant = cache.niveau || 0;
-            tousTextes = cache.tousLesTextes || cache.textes || [];
-            textesData = tousTextes;
-            categoriesData = {};
-            if (cache.themes && Array.isArray(cache.themes)) {
-              cache.themes.forEach(function(l) {
-                categoriesData[l.titre] = {
-                  theme: (l.theme || '').trim(),
-                  couleur: l.couleur || '#2d6a4f',
-                  niveau: parseInt(l.niveau) || 0,
-                  sousTitre: l.sousTitre || ''
-                };
-              });
-            }
-            afficherProgramme();
-          } else {
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-global">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-              </div>
-            `;
-          }
-        });
+        } else {
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide-global">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function estTexteValide(texteId) {
+      var e = etatValidation[String(texteId)];
+      return e && e.valide;
     }
 
     function construireDonneesProgramme() {
@@ -220,6 +248,43 @@
       return false;
     }
 
+    // ============================================================
+    // Calcule le pourcentage de validité d'un ensemble de textes
+    // ============================================================
+    function calculerProgression(textes) {
+      if (!textes || textes.length === 0) return 0;
+      var valides = 0;
+      textes.forEach(function(ch) {
+        if (estTexteValide(ch.id)) valides++;
+      });
+      return Math.round((valides / textes.length) * 100);
+    }
+
+    // ============================================================
+    // Cercle de progression (à côté du niveau dans l'en-tête)
+    // Le contour devient plus noir et plus épais selon l'avancement
+    // ============================================================
+    function construireCercleProgression(pourcentage) {
+      var pct = Math.max(0, Math.min(100, pourcentage));
+
+      // Opacité du contour : 0.15 (vide) → 1 (plein)
+      var opacite = 0.15 + (pct / 100) * 0.85;
+      // Épaisseur du contour : 1px (vide) → 3px (plein)
+      var epaisseur = 1 + (pct / 100) * 2;
+
+      var couleurContour = 'rgba(17,17,17,' + opacite.toFixed(2) + ')';
+
+      return '<span class="cercle-progression" style="' +
+             'display:inline-block;' +
+             'width:16px;height:16px;' +
+             'border-radius:50%;' +
+             'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
+             'margin-left:6px;' +
+             'vertical-align:middle;' +
+             'box-sizing:border-box;' +
+             '"></span>';
+    }
+
     function afficherProgramme() {
       var conteneur = document.getElementById('contenu');
       var data = construireDonneesProgramme();
@@ -247,8 +312,14 @@
 
       html += '<thead><tr>';
       html += '<th class="coin">Thème</th>';
+
+      // Pour chaque colonne de niveau, calculer la progression globale
       data.niveaux.forEach(function(n) {
-        html += '<th>Niveau ' + n + '</th>';
+        var textesDuNiveau = tousTextes.filter(function(ch) {
+          return parseInt(ch.niveau) === n;
+        });
+        var pct = calculerProgression(textesDuNiveau);
+        html += '<th>Niveau ' + n + construireCercleProgression(pct) + '</th>';
       });
       html += '</tr></thead>';
 
@@ -258,6 +329,18 @@
       data.themes.forEach(function(theme) {
         var themeAResultat = false;
         var cellulesHtml = '';
+
+        // Calculer la progression globale du thème (tous niveaux confondus)
+        var textesDuTheme = [];
+        data.niveaux.forEach(function(n) {
+          if (!data.matrice[theme] || !data.matrice[theme][n]) return;
+          Object.keys(data.matrice[theme][n]).forEach(function(cat) {
+            data.matrice[theme][n][cat].forEach(function(ch) {
+              textesDuTheme.push(ch);
+            });
+          });
+        });
+        var pctTheme = calculerProgression(textesDuTheme);
 
         data.niveaux.forEach(function(niveau) {
           var categoriesDansCellule = data.matrice[theme] && data.matrice[theme][niveau] ? data.matrice[theme][niveau] : {};
@@ -292,7 +375,8 @@
             htmlCell += '  </a>';
             htmlCell += '  <ul class="liste-textes-cell">';
             textesFiltres.forEach(function(ch) {
-              htmlCell += '    <li><a href="/medit/texte.html?id=' + encodeURIComponent(ch.id) + '">' + echapperHtml(ch.titre) + '</a></li>';
+              var check = estTexteValide(ch.id) ? ' <span class="badge-icone" style="border:none;padding:0;background:transparent;">✓</span>' : '';
+              htmlCell += '    <li><a href="/medit/texte.html?id=' + encodeURIComponent(ch.id) + '">' + echapperHtml(ch.titre) + check + '</a></li>';
             });
             htmlCell += '  </ul>';
             htmlCell += '</div>';
@@ -308,10 +392,15 @@
 
         if (rechercheActive && !themeAResultat) return;
 
+        // Barre de progression en bord inférieur du thème (dans la cellule du thème)
         html += '<tr>';
         html += '<th class="theme-cell">';
         html += '  <span class="theme-nom">' + echapperHtml(theme) + '</span>';
         html += '  <span class="theme-compteur">' + compterCategoriesDuTheme(theme, data) + ' catégorie(s)</span>';
+        // Barre de progression horizontale sous le nom du thème
+        html += '  <div class="progression-theme-bloc" style="margin-top:6px;height:3px;background:var(--border);position:relative;">';
+        html += '    <div class="progression-remplissage" style="position:absolute;top:0;left:0;bottom:0;width:' + pctTheme + '%;background:var(--text);"></div>';
+        html += '  </div>';
         html += '</th>';
         html += cellulesHtml;
         html += '</tr>';
