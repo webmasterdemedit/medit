@@ -124,7 +124,6 @@
         .partage-social { gap: 3px; }
       }
 
-      /* Questions ouvertes sur la page */
       .open-exo .open-textarea {
         width: 100%;
         min-height: 90px;
@@ -173,7 +172,6 @@
         min-height: 1em;
       }
 
-      /* Bouton flottant d'annotation */
       .btn-annotation-flottant {
         position: fixed;
         bottom: 24px;
@@ -281,10 +279,8 @@
     </div>
   </div>
 
-  <!-- Bouton flottant d'annotation -->
   <button class="btn-annotation-flottant" id="btnAnnotationFlottant" onclick="togglePanneauAnnotation()" title="Ajouter une note sur ce texte">✏</button>
 
-  <!-- Panneau d'annotation -->
   <div class="panneau-annotation" id="panneauAnnotation">
     <label for="annotationTextarea">Ma note sur ce texte</label>
     <textarea id="annotationTextarea" placeholder="Écrivez votre note, vos réflexions..."></textarea>
@@ -343,9 +339,6 @@
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
 
-    // ============================================================
-    // Identité utilisateur : connecté ou invité (stable via localStorage)
-    // ============================================================
     function getNomUtilisateurCourant() {
       if (typeof getIdUtilisateur === 'function') {
         var id = getIdUtilisateur();
@@ -1352,10 +1345,6 @@
       popupOuverte = false;
     }
 
-    // ============================================================
-    // ENVOI UNIFIÉ : une seule ligne dans la feuille "Tentatives"
-    // Fonctionne aussi pour les invités (nom résolu côté serveur)
-    // ============================================================
     function envoyerToutesReponses(silencieux) {
       if (envoiEffectue) return Promise.resolve();
 
@@ -1468,9 +1457,6 @@
       setTimeout(function() { window.location.reload(); }, 300);
     }
 
-    // ============================================================
-    // Validation du texte : interroge le serveur, affiche le bandeau
-    // ============================================================
     function verifierValidationTexte(texte) {
       var nom = getNomUtilisateurCourant();
       var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
@@ -1508,6 +1494,57 @@
       ligne.textContent = texte;
 
       container.insertBefore(ligne, container.firstChild);
+    }
+
+    // ============================================================
+    // VERSION ALTERNATIVE (fichier suffixé "(...)")
+    // ============================================================
+    function verifierVersionParenthese(texte) {
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+      fetch(base + '?action=getVersionSecondaire&texteId=' + encodeURIComponent(texte.id))
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+          if (data && data.trouve) {
+            var btn = document.getElementById('btnImprimerAlternative');
+            if (btn) btn.style.display = 'inline-block';
+            window._versionParenthese = data.contenu;
+            window._versionParentheseNom = data.nom;
+          }
+        })
+        .catch(function() {});
+    }
+
+    function imprimerVersionParenthese() {
+      if (!window._versionParenthese) {
+        alert('Aucune version alternative disponible.');
+        return;
+      }
+      var contenu = window._versionParenthese;
+      var titre = (texteActuel && texteActuel.titre) ? texteActuel.titre : 'Version alternative';
+
+      var w = window.open('', '_blank');
+      if (!w) { alert('Autorisez les pop-ups pour imprimer.'); return; }
+
+      var html = '<!DOCTYPE html><html lang="fr"><head><meta charset="UTF-8">'
+        + '<title>' + (titre + ' — version alternative').replace(/</g, '&lt;') + '</title>'
+        + '<style>body{font-family:Georgia,serif;font-size:12pt;line-height:1.7;margin:2cm;color:#111;}'
+        + 'h1{font-size:15pt;text-align:center;margin-bottom:1.2em;}p{margin:.6em 0;text-align:justify;}'
+        + '.arabe{font-family:"Janna LT Bold","Traditional Arabic",serif;direction:rtl;}</style></head><body>'
+        + '<h1>' + (titre + ' — version alternative').replace(/</g, '&lt;') + '</h1>';
+
+      var blocs = contenu.split(/\n\s*\n/);
+      blocs.forEach(function(b) {
+        var t = b.trim();
+        if (!t) return;
+        html += '<p>' + t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/\n/g, '<br>') + '</p>';
+      });
+      html += '</body></html>';
+
+      w.document.open();
+      w.document.write(html);
+      w.document.close();
+      w.focus();
+      setTimeout(function() { w.print(); }, 300);
     }
 
     // ============================================================
@@ -1887,6 +1924,7 @@
     function construireBlocActions(texte) {
       var html = '<div class="bloc-actions-texte">';
       html += '<button class="btn-action-lateral btn-imprimer" style="border:1px solid var(--border);border-radius:0;box-shadow:none;" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
+      html += '<button class="btn-action-lateral btn-imprimer-alternative" id="btnImprimerAlternative" style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" onclick="imprimerVersionParenthese()">Imprimer la version alternative</button>';
       html += '</div>';
       return html;
     }
@@ -2094,6 +2132,7 @@
       initDragAndDropOrdre();
 
       verifierValidationTexte(texte);
+      verifierVersionParenthese(texte);
     }
 
     function afficherErreur(message) {
@@ -2107,7 +2146,6 @@
       `;
     }
 
-    // ===== PARTAGE SOCIAL =====
     function partagerReseau(reseau) {
       var url = window.location.href;
       var titre = texteActuel ? texteActuel.titre : (document.title || 'Qiraat');
