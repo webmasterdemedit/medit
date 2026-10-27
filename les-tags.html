@@ -64,23 +64,31 @@
       gap: 10px;
     }
 
+    /* Carte tag : colonne pour empiler contenu + barre de progression en bas */
     .carte-tag {
-      display: inline-flex;
-      align-items: center;
-      gap: 10px;
-      padding: 10px 16px;
+      display: flex;
+      flex-direction: column;
+      padding: 10px 16px 0;
       background: var(--bg);
       border: 1px solid var(--border);
       text-decoration: none;
       color: var(--text);
-      transition: background 0.15s, border-color 0.15s, transform 0.1s;
+      transition: background 0.15s, border-color 0.15s;
       box-sizing: border-box;
+      overflow: hidden;
+      position: relative;
     }
 
     .carte-tag:hover {
       background: var(--bg-hover);
       border-color: var(--text-secondary);
-      transform: translateY(-1px);
+    }
+
+    .carte-tag .tag-contenu {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding-bottom: 10px;
     }
 
     .carte-tag .tag-diese {
@@ -105,6 +113,25 @@
       white-space: nowrap;
     }
 
+    /* Barre de progression horizontale en bas de la carte */
+    .carte-tag .tag-progression {
+      width: 100%;
+      height: 3px;
+      background: var(--border);
+      position: relative;
+      overflow: hidden;
+      margin: 0 -16px;
+      width: calc(100% + 32px);
+    }
+
+    .carte-tag .tag-progression .progression-remplissage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      background: var(--text);
+    }
+
     .vide-tags {
       text-align: center;
       padding: 60px 20px;
@@ -121,8 +148,10 @@
     @media (max-width: 700px) {
       .page-tags { padding: 12px 16px 30px; }
       .page-tags h1 { font-size: 22px; }
-      .carte-tag { padding: 8px 12px; gap: 8px; }
+      .carte-tag { padding: 8px 12px 0; gap: 0; }
+      .carte-tag .tag-contenu { gap: 8px; padding-bottom: 8px; }
       .carte-tag .tag-nom { font-size: 14px; }
+      .carte-tag .tag-progression { margin: 0 -12px; width: calc(100% + 24px); }
     }
   </style>
 
@@ -190,6 +219,8 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
+    var etatValidation = {};
+
     function escapeHtml(str) {
       if (str === null || str === undefined) return '';
       return String(str)
@@ -204,40 +235,66 @@
       return String(t).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     }
 
+    function estTexteValide(texteId) {
+      var e = etatValidation[String(texteId)];
+      return e && e.valide;
+    }
+
     function chargerTags() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      DataManager.charger()
-        .then(function(data) {
-          var textes = data.tousLesTextes || data.textes || [];
-          afficherTags(textes);
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) {
-            afficherTags(cache.tousLesTextes || cache.textes || []);
-          } else {
-            var loader = document.getElementById('loader');
-            if (loader) loader.style.display = 'none';
-            document.getElementById('contenu').innerHTML = `
-              <div class="vide-tags">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-              </div>
-            `;
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
+
+        var textes = data.tousLesTextes || data.textes || [];
+
+        etatValidation = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          var pct = t.pourcentage || 0;
+          if (!etatValidation[k] || pct > etatValidation[k].pourcentage) {
+            etatValidation[k] = {
+              valide: pct >= 65,
+              pourcentage: pct
+            };
           }
         });
+
+        afficherTags(textes);
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) {
+          afficherTags(cache.tousLesTextes || cache.textes || []);
+        } else {
+          var loader = document.getElementById('loader');
+          if (loader) loader.style.display = 'none';
+          document.getElementById('contenu').innerHTML = `
+            <div class="vide-tags">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
     }
 
     function afficherTags(textes) {
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      // Regrouper les tags (clé normalisée → { label, count })
+      // Pour chaque tag : nombre de textes + liste des textes (pour calculer le %)
       var map = {};
       var nbTextesTagues = 0;
 
@@ -249,13 +306,27 @@
           if (brut === '') return;
           var cle = normaliserTag(brut);
           if (!map[cle]) {
-            map[cle] = { label: brut, count: 0 };
+            map[cle] = { label: brut, textes: [] };
           }
-          map[cle].count++;
+          map[cle].textes.push(t);
         });
       });
 
-      var liste = Object.keys(map).map(function(k) { return map[k]; });
+      var liste = Object.keys(map).map(function(k) {
+        var item = map[k];
+        var total = item.textes.length;
+        var valides = 0;
+        item.textes.forEach(function(t) {
+          if (estTexteValide(t.id)) valides++;
+        });
+        var pct = total > 0 ? Math.round((valides / total) * 100) : 0;
+        return {
+          label: item.label,
+          count: total,
+          pourcentage: pct
+        };
+      });
+
       liste.sort(function(a, b) {
         return a.label.localeCompare(b.label, 'fr', { sensitivity: 'base' });
       });
@@ -278,9 +349,14 @@
       var html = '<div class="grille-tags">';
       liste.forEach(function(item) {
         html += '<a class="carte-tag" href="/medit/tag.html?tag=' + encodeURIComponent(item.label) + '">';
-        html += '  <span class="tag-diese">#</span>';
-        html += '  <span class="tag-nom">' + escapeHtml(item.label) + '</span>';
-        html += '  <span class="tag-compteur">' + item.count + ' texte' + (item.count > 1 ? 's' : '') + '</span>';
+        html += '  <span class="tag-contenu">';
+        html += '    <span class="tag-diese">#</span>';
+        html += '    <span class="tag-nom">' + escapeHtml(item.label) + '</span>';
+        html += '    <span class="tag-compteur">' + item.count + ' texte' + (item.count > 1 ? 's' : '') + '</span>';
+        html += '  </span>';
+        html += '  <div class="tag-progression">';
+        html += '    <div class="progression-remplissage" style="width:' + item.pourcentage + '%;"></div>';
+        html += '  </div>';
         html += '</a>';
       });
       html += '</div>';
