@@ -261,28 +261,33 @@
     }
 
     // ============================================================
-    // Cercle de progression (à côté du niveau dans l'en-tête)
-    // Le contour devient plus noir et plus épais selon l'avancement
+    // Cercle de progression avec conic-gradient
+    // Le disque se remplit angulairement selon l'avancement.
+    // Le contour devient plus noir et plus épais en même temps.
     // ============================================================
     function construireCercleProgression(pourcentage) {
       var pct = Math.max(0, Math.min(100, pourcentage));
 
-      // Opacité du contour : 0.15 (vide) → 1 (plein)
-      var opacite = 0.15 + (pct / 100) * 0.85;
-      // Épaisseur du contour : 1px (vide) → 3px (plein)
+      // Épaisseur du contour : 1px (0%) → 3px (100%)
       var epaisseur = 1 + (pct / 100) * 2;
 
-      var couleurContour = 'rgba(17,17,17,' + opacite.toFixed(2) + ')';
+      // Couleur du contour : gris clair (200) → noir (17)
+      var gris = Math.round(200 - (pct / 100) * 183);
+      var couleurContour = 'rgb(' + gris + ',' + gris + ',' + gris + ')';
+
+      // Remplissage intérieur : part de camembert
+      var remplissage = 'conic-gradient(rgba(17,17,17,0.85) ' + pct + '%, transparent ' + pct + '%)';
 
       return '<span class="cercle-progression" style="' +
-             'display:inline-block;' +
-             'width:16px;height:16px;' +
-             'border-radius:50%;' +
-             'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
-             'margin-left:6px;' +
-             'vertical-align:middle;' +
-             'box-sizing:border-box;' +
-             '"></span>';
+        'display:inline-block;' +
+        'width:18px;height:18px;' +
+        'border-radius:50%;' +
+        'margin-left:6px;' +
+        'vertical-align:middle;' +
+        'box-sizing:border-box;' +
+        'background:' + remplissage + ';' +
+        'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
+        '"></span>';
     }
 
     function afficherProgramme() {
@@ -313,7 +318,6 @@
       html += '<thead><tr>';
       html += '<th class="coin">Thème</th>';
 
-      // Pour chaque colonne de niveau, calculer la progression globale
       data.niveaux.forEach(function(n) {
         var textesDuNiveau = tousTextes.filter(function(ch) {
           return parseInt(ch.niveau) === n;
@@ -330,7 +334,6 @@
         var themeAResultat = false;
         var cellulesHtml = '';
 
-        // Calculer la progression globale du thème (tous niveaux confondus)
         var textesDuTheme = [];
         data.niveaux.forEach(function(n) {
           if (!data.matrice[theme] || !data.matrice[theme][n]) return;
@@ -375,7 +378,7 @@
             htmlCell += '  </a>';
             htmlCell += '  <ul class="liste-textes-cell">';
             textesFiltres.forEach(function(ch) {
-              var check = estTexteValide(ch.id) ? ' <span class="badge-icone" style="border:none;padding:0;background:transparent;">✓</span>' : '';
+              var check = estTexteValide(ch.id) ? ' <span style="border:none;padding:0;background:transparent;">✓</span>' : '';
               htmlCell += '    <li><a href="/medit/texte.html?id=' + encodeURIComponent(ch.id) + '">' + echapperHtml(ch.titre) + check + '</a></li>';
             });
             htmlCell += '  </ul>';
@@ -392,7 +395,6 @@
 
         if (rechercheActive && !themeAResultat) return;
 
-        // Barre de progression en bord inférieur du thème (dans la cellule du thème)
         html += '<tr>';
         html += '<th class="theme-cell">';
         html += '  <span class="theme-nom">' + echapperHtml(theme) + '</span>';
