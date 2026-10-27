@@ -58,41 +58,51 @@
       color: var(--text);
     }
 
+    /* === GRILLE (comme les-thèmes.html) === */
     .grille-livrets {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+      gap: 16px;
+      justify-items: stretch;
+    }
+
+    .grille-livrets .carte-avec-bas {
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      width: 100%;
     }
 
-    /* Wrapper : cercle carré à GAUCHE + carte à DROITE */
-    .carte-avec-cercle {
-      display: flex;
-      align-items: stretch;
-      gap: 10px;
-    }
-
-    /* Carré de progression, hauteur = carte (stretch), largeur = même que la hauteur via aspect-ratio */
-    .cercle-carre {
-      flex: 0 0 auto;
-      align-self: stretch;      /* prend la hauteur de la carte */
-      aspect-ratio: 1 / 1;      /* largeur = hauteur → carré parfait */
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--bg);
+    .grille-livrets .carte-bas {
+      margin-top: 6px;
+      padding: 8px 10px;
       border: 1px solid var(--border);
+      border-top: none;
+      background: var(--bg);
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      font-size: 11px;
+      color: var(--text-secondary);
       box-sizing: border-box;
     }
 
-    .carte-avec-cercle > :not(.cercle-carre) {
-      flex: 1 1 auto;
-      min-width: 0;
+    .grille-livrets .carte-bas .ligne-compteurs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .grille-livrets .carte-bas .compteur-badge {
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
     }
 
     .vide-section {
       text-align: center;
       padding: 60px 20px;
       color: var(--text-secondary);
+      grid-column: 1 / -1;
     }
 
     .vide-section .icone {
@@ -105,6 +115,10 @@
     @media (max-width: 700px) {
       .page-section { padding: 12px 16px 30px; }
       .page-section h1 { font-size: 22px; }
+      .grille-livrets {
+        grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+        gap: 12px;
+      }
     }
   </style>
 
@@ -182,25 +196,6 @@
     function estTexteValide(texteId) {
       var e = etatValidation[String(texteId)];
       return e && e.valide;
-    }
-
-    function construireCercleProgression(pourcentage) {
-      var pct = Math.max(0, Math.min(100, pourcentage));
-
-      var epaisseur = 1 + (pct / 100) * 2;
-      var gris = Math.round(200 - (pct / 100) * 183);
-      var couleurContour = 'rgb(' + gris + ',' + gris + ',' + gris + ')';
-      var remplissage = 'conic-gradient(rgba(17,17,17,0.85) ' + pct + '%, transparent ' + pct + '%)';
-
-      // Cercle 36x36 centré dans le carré
-      return '<span class="cercle-progression" style="' +
-        'display:inline-block;' +
-        'width:36px;height:36px;' +
-        'border-radius:50%;' +
-        'box-sizing:border-box;' +
-        'background:' + remplissage + ';' +
-        'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
-        '"></span>';
     }
 
     function chargerSection() {
@@ -334,18 +329,23 @@
           auteur: l.auteur || '',
           date: l.date || '',
           niveau: parseInt(l.niveau) || 1,
-          pourcentage: 0,  // pas de barre dans la carte elle-même
+          pourcentage: pct,   // ← barre de progression sur la couverture
           couverture: l.couverture || ''
         }, {
           cliquable: true,
           lien: '/medit/thème.html?cat=' + encodeURIComponent(l.titre)
         });
 
-        // Cercle carré à GAUCHE + carte à DROITE
-        html += '<div class="carte-avec-cercle">' +
-                  '<div class="cercle-carre">' + construireCercleProgression(pct) + '</div>' +
-                  carteHtml +
-                '</div>';
+        // Petit bloc bas (nb textes) sous la carte, comme dans les-thèmes
+        var nbTextes = compteTextes[l.titre] || 0;
+        var basHtml = ''
+          + '<div class="carte-bas">'
+          +   '<div class="ligne-compteurs">'
+          +     '<span class="compteur-badge">' + nbTextes + ' texte' + (nbTextes > 1 ? 's' : '') + '</span>'
+          +   '</div>'
+          + '</div>';
+
+        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + '</div>';
       });
       html += '</div>';
 
