@@ -142,6 +142,15 @@
       border-color: var(--text);
     }
 
+    /* Conteneur des boutons "compte" du hero */
+    #accueilActionsCompte {
+      display: inline-flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: center;
+    }
+
     /* ===== SECTIONS ===== */
     .accueil-section {
       margin-bottom: 60px;
@@ -315,6 +324,7 @@
       .accueil-btn-principal,
       .accueil-btn-secondaire { padding: 12px 24px; font-size: 14px; width: 100%; max-width: 300px; }
       .accueil-actions { flex-direction: column; align-items: center; }
+      #accueilActionsCompte { flex-direction: column; width: 100%; }
       .accueil-themes-grille { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 14px; }
       .accueil-section { margin-bottom: 44px; }
     }
@@ -374,8 +384,10 @@
 
       <div class="accueil-actions">
         <a href="/medit/les-textes.html" class="accueil-btn-principal">Explorer les textes</a>
-        <button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>
-        <button class="accueil-btn-secondaire" onclick="ouvrirInscription()">Créer un compte lecteur</button>
+        <span id="accueilActionsCompte">
+          <button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>
+          <button class="accueil-btn-secondaire" onclick="ouvrirInscription()">Créer un compte lecteur</button>
+        </span>
       </div>
     </section>
 
@@ -529,6 +541,25 @@
     }
 
     // ============================================================
+    // ACTIONS DU HERO : connecté → Mon espace / Déconnexion
+    // Même logique que majActionsHeader() du header
+    // ============================================================
+    function majActionsAccueil() {
+      var container = document.getElementById('accueilActionsCompte');
+      if (!container) return;
+      var id = localStorage.getItem('etudiant_id');
+      if (id) {
+        container.innerHTML =
+          '<a href="/medit/mon-espace.html" class="accueil-btn-secondaire">Mon espace</a>' +
+          '<button class="accueil-btn-secondaire" onclick="if (window.deconnecter) { window.deconnecter(); } else if (confirm(\'Se déconnecter ?\')) { localStorage.removeItem(\'etudiant_id\'); localStorage.removeItem(\'etudiant_nom\'); localStorage.removeItem(\'etudiant_niveau\'); window.location.href = \'/medit/index.html\'; }">Déconnexion</button>';
+      } else {
+        container.innerHTML =
+          '<button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>' +
+          '<button class="accueil-btn-secondaire" onclick="ouvrirInscription()">Créer un compte lecteur</button>';
+      }
+    }
+
+    // ============================================================
     // MODAL
     // ============================================================
     function ouvrirConnexion() {
@@ -655,6 +686,10 @@
 
             msg.textContent = '✓ Connecté';
             msg.className = 'message success';
+
+            // Met à jour le hero et le header immédiatement
+            majActionsAccueil();
+            if (typeof window.majActionsHeader === 'function') window.majActionsHeader();
 
             var urlComplet = CONFIG.SCRIPT_URL + '?action=getTout&nom=' + encodeURIComponent(etudiantId);
             fetch(urlComplet)
@@ -841,69 +876,4 @@
           ? '<div class="accueil-texte-num">' + numero + '</div>'
           : '<div class="accueil-texte-num">◆</div>';
 
-        var metaHtml = '<span>Niveau ' + (texte.niveau || 0) + '</span>';
-        if (texte.categorie) metaHtml += '<span>' + echapperHtml(texte.categorie) + '</span>';
-        if (texte.mots) metaHtml += '<span>' + texte.mots + ' mots</span>';
-
-        html += `
-          <a href="/medit/texte.html?id=${encodeURIComponent(texte.id)}" class="accueil-texte-card">
-            ${numeroHtml}
-            <div class="accueil-texte-corps">
-              <div class="accueil-texte-titre">${echapperHtml(titreAffiche)}</div>
-              <div class="accueil-texte-meta">${metaHtml}</div>
-            </div>
-          </a>
-        `;
-      });
-      container.innerHTML = html;
-    }
-
-    function afficherThemesAccueil(themes) {
-      var container = document.getElementById('accueilThemes');
-
-      if (!themes || themes.length === 0) {
-        container.innerHTML =
-          '<p style="text-align:center;color:var(--text-muted);font-family:var(--font-sans);font-size:13px;grid-column:1/-1;">Aucun thème disponible pour le moment.</p>';
-        return;
-      }
-
-      var selection = themes.slice(0, 4);
-
-      var html = '';
-      selection.forEach(function(theme) {
-        if (typeof construireCarteCouverture === 'function') {
-          html += construireCarteCouverture({
-            titre: theme.titre,
-            couleur: theme.couleur || '#2d6a4f',
-            sousTitre: theme.sousTitre || '',
-            auteur: theme.auteur || '',
-            date: theme.date || '',
-            niveau: theme.niveau || 1,
-            pourcentage: 0,
-            couverture: theme.couverture || ''
-          }, {
-            cliquable: true,
-            lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.titre)
-          });
-        }
-      });
-      container.innerHTML = html;
-    }
-
-    // ============================================================
-    // DÉMARRAGE
-    // ============================================================
-    function demarrer() {
-      chargerDisciplinesEtNiveaux();
-      chargerAccueil();
-    }
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
-  </script>
-
-</body>
-</html>
+        var metaHtml = '<
