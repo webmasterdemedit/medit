@@ -64,6 +64,31 @@
       gap: 14px;
     }
 
+    /* Wrapper : cercle carré à GAUCHE + carte à DROITE */
+    .carte-avec-cercle {
+      display: flex;
+      align-items: stretch;
+      gap: 10px;
+    }
+
+    /* Carré de progression, hauteur = carte (stretch), largeur = même que la hauteur via aspect-ratio */
+    .cercle-carre {
+      flex: 0 0 auto;
+      align-self: stretch;      /* prend la hauteur de la carte */
+      aspect-ratio: 1 / 1;      /* largeur = hauteur → carré parfait */
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      box-sizing: border-box;
+    }
+
+    .carte-avec-cercle > :not(.cercle-carre) {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     .vide-section {
       text-align: center;
       padding: 60px 20px;
@@ -148,8 +173,34 @@
   <script src="/medit/couverture.js"></script>
 
   <script>
+    var etatValidation = {};
+
     function normaliserComparaison(str) {
       return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function estTexteValide(texteId) {
+      var e = etatValidation[String(texteId)];
+      return e && e.valide;
+    }
+
+    function construireCercleProgression(pourcentage) {
+      var pct = Math.max(0, Math.min(100, pourcentage));
+
+      var epaisseur = 1 + (pct / 100) * 2;
+      var gris = Math.round(200 - (pct / 100) * 183);
+      var couleurContour = 'rgb(' + gris + ',' + gris + ',' + gris + ')';
+      var remplissage = 'conic-gradient(rgba(17,17,17,0.85) ' + pct + '%, transparent ' + pct + '%)';
+
+      // Cercle 36x36 centré dans le carré
+      return '<span class="cercle-progression" style="' +
+        'display:inline-block;' +
+        'width:36px;height:36px;' +
+        'border-radius:50%;' +
+        'box-sizing:border-box;' +
+        'background:' + remplissage + ';' +
+        'border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';' +
+        '"></span>';
     }
 
     function chargerSection() {
@@ -175,26 +226,46 @@
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
         : (localStorage.getItem('etudiant_id') || 'invite');
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
-      DataManager.charger()
-        .then(function(data) {
-          afficherSection(data, section);
-        })
-        .catch(function(error) {
-          console.error('Erreur chargement:', error);
-          var cache = DataManager.getCacheForce(id);
-          if (cache) afficherSection(cache, section);
-          else {
-            document.getElementById('loader').style.display = 'none';
-            conteneur.innerHTML = `
-              <div class="vide-section">
-                <span class="icone">⚠</span>
-                <h2>Erreur de chargement</h2>
-                <p>Vérifiez votre connexion internet.</p>
-              </div>
-            `;
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
+
+        etatValidation = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          var pct = t.pourcentage || 0;
+          if (!etatValidation[k] || pct > etatValidation[k].pourcentage) {
+            etatValidation[k] = {
+              valide: pct >= 65,
+              pourcentage: pct
+            };
           }
         });
+
+        afficherSection(data, section);
+      }).catch(function(error) {
+        console.error('Erreur chargement:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) afficherSection(cache, section);
+        else {
+          document.getElementById('loader').style.display = 'none';
+          conteneur.innerHTML = `
+            <div class="vide-section">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
     }
 
     function afficherSection(data, sectionDemandee) {
@@ -206,21 +277,22 @@
 
       var cible = normaliserComparaison(sectionDemandee);
 
-      // Livrets appartenant à cette section (colonne A de la feuille Thèmes = section)
       var livrets = themes.filter(function(l) {
         return normaliserComparaison(l.theme || '') === cible && l.titre;
       });
 
-      // Tri alphabétique sur le titre du livret
       livrets.sort(function(a, b) {
         return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
       });
 
-      // Compter les textes par livret
       var compteTextes = {};
+      var textesParCategorie = {};
       textes.forEach(function(t) {
         var cat = (t.categorie || '').trim();
-        if (cat) compteTextes[cat] = (compteTextes[cat] || 0) + 1;
+        if (!cat) return;
+        compteTextes[cat] = (compteTextes[cat] || 0) + 1;
+        if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
+        textesParCategorie[cat].push(t);
       });
 
       var totalTextes = 0;
@@ -244,22 +316,36 @@
         return;
       }
 
-      // Rendu identique à la page d'accueil (index.html) : construireCarteCouverture
       var html = '<div class="grille-livrets">';
       livrets.forEach(function(l) {
-        html += construireCarteCouverture({
+        var textesDuLivret = textesParCategorie[l.titre] || [];
+        var valides = 0;
+        textesDuLivret.forEach(function(t) {
+          if (estTexteValide(t.id)) valides++;
+        });
+        var pct = textesDuLivret.length > 0
+          ? Math.round((valides / textesDuLivret.length) * 100)
+          : 0;
+
+        var carteHtml = construireCarteCouverture({
           titre: l.titre,
           couleur: l.couleur || '#2d6a4f',
           sousTitre: l.sousTitre || l.description || '',
           auteur: l.auteur || '',
           date: l.date || '',
           niveau: parseInt(l.niveau) || 1,
-          pourcentage: 0,
+          pourcentage: 0,  // pas de barre dans la carte elle-même
           couverture: l.couverture || ''
         }, {
           cliquable: true,
           lien: '/medit/thème.html?cat=' + encodeURIComponent(l.titre)
         });
+
+        // Cercle carré à GAUCHE + carte à DROITE
+        html += '<div class="carte-avec-cercle">' +
+                  '<div class="cercle-carre">' + construireCercleProgression(pct) + '</div>' +
+                  carteHtml +
+                '</div>';
       });
       html += '</div>';
 
