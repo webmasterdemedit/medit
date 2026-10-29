@@ -892,14 +892,14 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
       lignesPara.forEach(function(l) {
         var trimmed = l.trim();
-        var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z-]+))?(?::([a-zA-Z-]+))?$/i);
+        var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
         if (imgMatch) {
           flushParagraphe();
           var nomImg = imgMatch[1];
           var opt1 = (imgMatch[2] || '').toLowerCase();
           var opt2 = (imgMatch[3] || '').toLowerCase();
           var position = 'centre', taille = 'moyen';
-          var positionsValides = ['gauche', 'droite', 'centre', 'marge-gauche', 'marge-droite'];
+          var positionsValides = ['gauche', 'droite', 'centre', 'margegauche', 'margedroite'];
           [opt1, opt2].forEach(function(o) {
             if (positionsValides.indexOf(o) !== -1) position = o;
             else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
