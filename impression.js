@@ -637,7 +637,6 @@ body {
   min-height: 38px;
   direction: ltr;
 }
-
 /* Ligne pointillée à gauche (remplace l'ancienne flèche) */
 .copier-ligne-pointillee {
   flex: 1 1 auto;
@@ -650,15 +649,18 @@ body {
 }
 
 /* Texte arabe à droite, sur la ligne */
+/* Texte arabe à droite, sur la ligne */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 1.9em;
-  line-height: 1;
+  font-size: 2.6em;
+  line-height: 1.05;
   color: #1f1a13;
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
-  padding-bottom: 2px;
+  padding-bottom: 0;
+  margin-bottom: -2px;
+  align-self: flex-start;
   order: 1;
 }
 
