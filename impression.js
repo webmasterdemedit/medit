@@ -627,7 +627,7 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-/* ---- Recopier : texte arabe à droite, grosse flèche à sa suite ---- */
+/* ---- Recopier : ligne pointillée, flèche fine en contour, puis texte arabe ---- */
 .bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
@@ -648,7 +648,22 @@ body {
   order: 0;
 }
 
-/* Texte arabe */
+/* Flèche fine en contour, entre la ligne pointillée et le texte arabe */
+.copier-fleche-apres {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  order: 1;
+}
+
+.copier-fleche-apres svg {
+  display: block;
+  width: 58px;
+  height: 26px;
+  overflow: visible;
+}
+
+/* Texte arabe à droite */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.6em;
@@ -657,28 +672,13 @@ body {
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
-  order: 1;
+  order: 2;
 }
 
 .copier-texte-arabe .copier-mot {
   display: inline-block;
   white-space: nowrap;
   direction: rtl;
-}
-
-/* Grosse flèche en contour, juste après le texte arabe, centrée verticalement */
-.copier-fleche-apres {
-  flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  order: 2;
-}
-
-.copier-fleche-apres svg {
-  display: block;
-  width: 90px;
-  height: 44px;
-  overflow: visible;
 }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
@@ -809,15 +809,15 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="bloc-copier-inline">';
       printHtml += '  <div class="copier-ligne-inline">';
       printHtml += '    <span class="copier-ligne-pointillee"></span>';
+      printHtml += '    <span class="copier-fleche-apres">';
+      printHtml += '      <svg viewBox="0 0 58 26" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '        <path d="M 54 13 L 6 13 M 16 4 L 6 13 L 16 22" fill="none" stroke="#2a241c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+      printHtml += '      </svg>';
+      printHtml += '    </span>';
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
       }
-      printHtml += '    </span>';
-      printHtml += '    <span class="copier-fleche-apres">';
-      printHtml += '      <svg viewBox="0 0 90 44" xmlns="http://www.w3.org/2000/svg">';
-      printHtml += '        <path d="M 4 22 L 82 22 M 64 6 L 82 22 L 64 38" fill="none" stroke="#2a241c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
-      printHtml += '      </svg>';
       printHtml += '    </span>';
       printHtml += '  </div>';
       printHtml += '</div>';
