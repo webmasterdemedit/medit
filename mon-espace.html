@@ -388,7 +388,7 @@
     .statut-col.valide { color: var(--text); background: var(--bg-active); }
     .statut-col.non-valide { color: var(--text-secondary); background: var(--bg-hover); }
 
-    /* ===== Styles page Programme (onglet Ma progression) ===== */
+    /* ===== Styles page Programme ===== */
     .barre-recherche {
       display: flex; align-items: center; gap: 12px; margin-bottom: 20px;
     }
@@ -574,6 +574,14 @@
     .hist-legende .leg-couleur.valide { background: #2d6a4f; }
     .hist-legende .leg-couleur.echec  { background: #b23a3a; }
 
+    /* Conteneur global : graphique + axe des mois, scrollables ensemble */
+    .hist-scroll {
+      overflow-x: auto;
+      overflow-y: hidden;
+      padding-bottom: 6px;
+      scrollbar-width: thin;
+    }
+
     .hist-graphique {
       display: flex;
       align-items: flex-end;
@@ -581,15 +589,14 @@
       height: 220px;
       padding: 10px 0 0;
       border-bottom: 1px solid var(--border);
-      overflow-x: auto;
-      overflow-y: hidden;
-      scrollbar-width: thin;
+      min-width: max-content;
     }
 
     .hist-colonne {
       flex: 0 0 auto;
-      min-width: 14px;
-      max-width: 26px;
+      width: 18px;
+      min-width: 18px;
+      max-width: 18px;
       display: flex;
       flex-direction: column;
       align-items: center;
@@ -619,16 +626,39 @@
     .hist-barre.valide { background: #2d6a4f; }
     .hist-barre.echec  { background: #b23a3a; }
 
+    /* Étiquette jour (chiffre) sous chaque barre */
     .hist-jour-label {
       font-size: 9px;
       color: var(--text-muted);
-      margin-top: 4px;
+      line-height: 1;
+      padding-top: 4px;
+      text-align: center;
       white-space: nowrap;
-      transform: rotate(-45deg);
-      transform-origin: top right;
-      height: 22px;
+      height: 14px;
     }
 
+    /* Ligne des mois : un bloc par mois, largeur = nombre de jours */
+    .hist-mois-ligne {
+      display: flex;
+      gap: 3px;
+      margin-top: 2px;
+      min-width: max-content;
+    }
+    .hist-mois-bloc {
+      flex: 0 0 auto;
+      text-align: center;
+      font-size: 10px;
+      color: var(--text-secondary);
+      font-family: 'Roboto', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.5px;
+      white-space: nowrap;
+      padding: 3px 0 6px;
+      border-top: 1px solid var(--border);
+      text-transform: capitalize;
+    }
+
+    /* Tooltip */
     .hist-tooltip {
       position: fixed;
       background: rgba(20,20,20,0.92);
@@ -1871,200 +1901,9 @@
     // ============================================================
     // HISTORIQUE / GRAPHIQUE
     // ============================================================
-    function afficherHistorique() {
-      var loader = document.getElementById('loaderHistorique');
-      if (loader) loader.style.display = 'none';
-
-      var container = document.getElementById('contenuHistorique');
-      if (!container) return;
-
-      // Filtres
-      var filtreAnnee = (document.getElementById('triHistAnnee') || {}).value || '';
-      var filtreType  = (document.getElementById('triHistType') || {}).value || 'tous';
-
-      // Filtrer les tentatives
-      var filtrees = tentativesData.slice();
-      if (filtreAnnee) {
-        filtrees = filtrees.filter(function(t) { return anneeDe(t.date) === filtreAnnee; });
-      }
-
-      if (filtrees.length === 0) {
-        container.innerHTML = '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun historique pour le moment</h2><p>Passez des exercices pour voir votre historique de progression.</p></div>';
-        return;
-      }
-
-      // Grouper par jour (clé YYYY-MM-DD)
-      var parJour = {};
-      filtrees.forEach(function(t) {
-        var jour = jourDe(t.date); // 'YYYY-MM-DD' ou ''
-        if (!jour) return;
-        if (!parJour[jour]) parJour[jour] = { valides: 0, echecs: 0, total: 0 };
-        var estValide = (t.pourcentage >= 65);
-        if (estValide) parJour[jour].valides++;
-        else parJour[jour].echecs++;
-        parJour[jour].total++;
-      });
-
-      var jours = Object.keys(parJour).sort(); // ordre chronologique
-      if (jours.length === 0) {
-        container.innerHTML = '<div class="vide-themes"><span class="icone">◈</span><h2>Aucune donnée</h2></div>';
-        return;
-      }
-
-      // Remplir les jours manquants (optionnel : on garde seulement les jours actifs pour lisibilité)
-      // On garde les jours actifs, mais on peut aussi densifier si peu de jours
-      var toutesDates = construireSerieDeJours(jours[0], jours[jours.length - 1]);
-
-      // Stats résumé
-      var totalValides = 0, totalEchecs = 0;
-      jours.forEach(function(j) {
-        totalValides += parJour[j].valides;
-        totalEchecs  += parJour[j].echecs;
-      });
-
-      // Max pour l'échelle
-      var maxBarre = 1;
-      jours.forEach(function(j) {
-        var total = parJour[j].valides + parJour[j].echecs;
-        if (total > maxBarre) maxBarre = total;
-      });
-
-      // HTML
-      var html = '';
-
-      // Résumé
-      html += '<div class="hist-resume">';
-      html += '  <div class="hist-stat"><span>Jours actifs :</span><span class="nombre">' + jours.length + '</span></div>';
-      html += '  <div class="hist-stat"><span>Validations :</span><span class="nombre valide">' + totalValides + '</span></div>';
-      html += '  <div class="hist-stat"><span>Échecs :</span><span class="nombre echec">' + totalEchecs + '</span></div>';
-      html += '  <div class="hist-stat"><span>Total essais :</span><span class="nombre">' + (totalValides + totalEchecs) + '</span></div>';
-      html += '</div>';
-
-      // Légende
-      html += '<div class="hist-legende">';
-      html += '  <span class="leg-item"><span class="leg-couleur valide"></span> Validations</span>';
-      html += '  <span class="leg-item"><span class="leg-couleur echec"></span> Échecs</span>';
-      html += '</div>';
-
-      // Graphique
-      html += '<div class="hist-graphique" id="histGraphique">';
-      toutesDates.forEach(function(jour) {
-        var d = parJour[jour] || { valides: 0, echecs: 0, total: 0 };
-        var total = d.valides + d.echecs;
-
-        var hValidePct = (total > 0) ? (d.valides / maxBarre) * 100 : 0;
-        var hEchecPct  = (total > 0) ? (d.echecs  / maxBarre) * 100 : 0;
-
-        // Appliquer le filtre type
-        if (filtreType === 'valide') { hEchecPct = 0; }
-        if (filtreType === 'echec')  { hValidePct = 0; }
-
-        var dateAffichage = formaterJourCourt(jour);
-
-        html += '<div class="hist-colonne" data-jour="' + jour + '" data-valides="' + d.valides + '" data-echecs="' + d.echecs + '">';
-        html += '  <div class="hist-barre-stack" style="height:100%;">';
-        html += '    <div class="hist-barre echec"  style="height:' + hEchecPct.toFixed(1) + '%;"></div>';
-        html += '    <div class="hist-barre valide" style="height:' + hValidePct.toFixed(1) + '%;"></div>';
-        html += '  </div>';
-        html += '</div>';
-      });
-      html += '</div>';
-
-      // Étiquettes de dates (tous les N jours)
-      var step = Math.max(1, Math.floor(toutesDates.length / 20));
-      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);padding:4px 0;margin-top:-6px;">';
-      html += '  <span>' + formaterJourLong(toutesDates[0]) + '</span>';
-      html += '  <span>' + formaterJourLong(toutesDates[toutesDates.length - 1]) + '</span>';
-      html += '</div>';
-
-      container.innerHTML = html;
-
-      // Tooltip
-      brancherTooltipHistorique();
-    }
-
-    function brancherTooltipHistorique() {
-      var tooltip = document.getElementById('histTooltip');
-      var colonnes = document.querySelectorAll('#histGraphique .hist-colonne');
-      colonnes.forEach(function(col) {
-        col.addEventListener('mouseenter', function(e) {
-          var jour = col.getAttribute('data-jour');
-          var valides = parseInt(col.getAttribute('data-valides')) || 0;
-          var echecs  = parseInt(col.getAttribute('data-echecs'))  || 0;
-          tooltip.innerHTML = '<div class="tt-date">' + formaterJourLong(jour) + '</div>' +
-            '<div class="tt-ligne"><span>Validations</span><span style="color:#7fd9a7;">' + valides + '</span></div>' +
-            '<div class="tt-ligne"><span>Échecs</span><span style="color:#f4a0a0;">' + echecs + '</span></div>' +
-            '<div class="tt-ligne"><span>Total</span><span>' + (valides + echecs) + '</span></div>';
-          var rect = col.getBoundingClientRect();
-          tooltip.style.left = (rect.left + rect.width / 2) + 'px';
-          tooltip.style.top  = (rect.top) + 'px';
-          tooltip.classList.add('visible');
-        });
-        col.addEventListener('mouseleave', function() {
-          tooltip.classList.remove('visible');
-        });
-      });
-    }
-
-    // Utilitaire : 'DD/MM/YYYY HH:MM:SS' -> 'YYYY-MM-DD'
-    function jourDe(dateStr) {
-      if (!dateStr) return '';
-      var parts = dateStr.split(' ')[0].split('/');
-      if (parts.length !== 3) return '';
-      return parts[2] + '-' + parts[1] + '-' + parts[0];
-    }
-
-    function formaterJourCourt(jour) {
-      // 'YYYY-MM-DD' -> 'DD/MM'
-      var p = jour.split('-');
-      if (p.length !== 3) return jour;
-      return p[2] + '/' + p[1];
-    }
-
-    function formaterJourLong(jour) {
-      // 'YYYY-MM-DD' -> 'DD/MM/YYYY'
-      var p = jour.split('-');
-      if (p.length !== 3) return jour;
-      return p[2] + '/' + p[1] + '/' + p[0];
-    }
-
-    function construireSerieDeJours(debut, fin) {
-      // debut et fin en 'YYYY-MM-DD'
-      var res = [];
-      var d = new Date(debut + 'T00:00:00');
-      var f = new Date(fin + 'T00:00:00');
-      if (isNaN(d.getTime()) || isNaN(f.getTime())) return res;
-
-      // Si la plage est très grande, on ne remplit pas les vides
-      var diff = Math.round((f - d) / (1000 * 60 * 60 * 24)) + 1;
-      if (diff > 180) {
-        // Plus de 6 mois : on garde seulement les jours actifs (déjà filtrés)
-        // On renvoie les jours existants, triés
-        return Object.keys(parJourGlobal()).sort();
-      }
-
-      var cur = new Date(d.getTime());
-      while (cur <= f) {
-        res.push(formatDate(cur));
-        cur.setDate(cur.getDate() + 1);
-      }
-      return res;
-    }
-
-    // Astuce : on doit garder la trace du parJour courant pour construireSerieDeJours
     var _dernierParJour = {};
-    function parJourGlobal() { return _dernierParJour; }
 
-    function formatDate(d) {
-      function p(n) { return n < 10 ? '0' + n : '' + n; }
-      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
-    }
-
-    // Patch : stocker parJour dans _dernierParJour avant appel
-    var _afficherHistoriqueOriginal = afficherHistorique;
-
-    // On redéfinit afficherHistorique pour stocker parJour dans _dernierParJour
-    afficherHistorique = function() {
+    function afficherHistorique() {
       var loader = document.getElementById('loaderHistorique');
       if (loader) loader.style.display = 'none';
 
@@ -2114,6 +1953,7 @@
         if (total > maxBarre) maxBarre = total;
       });
 
+      // Résumé
       var html = '';
       html += '<div class="hist-resume">';
       html += '  <div class="hist-stat"><span>Jours actifs :</span><span class="nombre">' + jours.length + '</span></div>';
@@ -2122,11 +1962,28 @@
       html += '  <div class="hist-stat"><span>Total essais :</span><span class="nombre">' + (totalValides + totalEchecs) + '</span></div>';
       html += '</div>';
 
+      // Légende
       html += '<div class="hist-legende">';
       html += '  <span class="leg-item"><span class="leg-couleur valide"></span> Validations</span>';
       html += '  <span class="leg-item"><span class="leg-couleur echec"></span> Échecs</span>';
       html += '</div>';
 
+      // Pré-calcul des groupes de mois
+      var moisGroupes = [];
+      var moisIndex = {};
+      toutesDates.forEach(function(jour) {
+        var cleMois = jour.substring(0, 7);
+        if (!moisIndex[cleMois]) {
+          moisIndex[cleMois] = { cle: cleMois, nbJours: 0 };
+          moisGroupes.push(moisIndex[cleMois]);
+        }
+        moisIndex[cleMois].nbJours++;
+      });
+
+      // Conteneur scrollable
+      html += '<div class="hist-scroll">';
+
+      // Graphique
       html += '<div class="hist-graphique" id="histGraphique">';
       toutesDates.forEach(function(jour) {
         var d = parJour[jour] || { valides: 0, echecs: 0, total: 0 };
@@ -2138,23 +1995,110 @@
         if (filtreType === 'valide') hEchecPct = 0;
         if (filtreType === 'echec')  hValidePct = 0;
 
+        var jourNum = jour.substring(8, 10);
+
         html += '<div class="hist-colonne" data-jour="' + jour + '" data-valides="' + d.valides + '" data-echecs="' + d.echecs + '">';
         html += '  <div class="hist-barre-stack" style="height:100%;">';
         html += '    <div class="hist-barre echec"  style="height:' + hEchecPct.toFixed(1) + '%;"></div>';
         html += '    <div class="hist-barre valide" style="height:' + hValidePct.toFixed(1) + '%;"></div>';
         html += '  </div>';
+        html += '  <div class="hist-jour-label">' + parseInt(jourNum, 10) + '</div>';
         html += '</div>';
+      });
+      html += '</div>'; // .hist-graphique
+
+      // Ligne des mois
+      html += '<div class="hist-mois-ligne">';
+      moisGroupes.forEach(function(m) {
+        var label = formaterMois(m.cle);
+        var largeur = m.nbJours * 18 + (m.nbJours - 1) * 3;
+        html += '<div class="hist-mois-bloc" style="width:' + largeur + 'px;">' + label + '</div>';
       });
       html += '</div>';
 
-      html += '<div style="display:flex;justify-content:space-between;font-size:10px;color:var(--text-muted);padding:4px 0;margin-top:-6px;">';
-      html += '  <span>' + formaterJourLong(toutesDates[0]) + '</span>';
-      html += '  <span>' + formaterJourLong(toutesDates[toutesDates.length - 1]) + '</span>';
-      html += '</div>';
+      html += '</div>'; // .hist-scroll
 
       container.innerHTML = html;
       brancherTooltipHistorique();
-    };
+    }
+
+    function brancherTooltipHistorique() {
+      var tooltip = document.getElementById('histTooltip');
+      var colonnes = document.querySelectorAll('#histGraphique .hist-colonne');
+      colonnes.forEach(function(col) {
+        col.addEventListener('mouseenter', function() {
+          var jour = col.getAttribute('data-jour');
+          var valides = parseInt(col.getAttribute('data-valides')) || 0;
+          var echecs  = parseInt(col.getAttribute('data-echecs'))  || 0;
+          tooltip.innerHTML = '<div class="tt-date">' + formaterJourLong(jour) + '</div>' +
+            '<div class="tt-ligne"><span>Validations</span><span style="color:#7fd9a7;">' + valides + '</span></div>' +
+            '<div class="tt-ligne"><span>Échecs</span><span style="color:#f4a0a0;">' + echecs + '</span></div>' +
+            '<div class="tt-ligne"><span>Total</span><span>' + (valides + echecs) + '</span></div>';
+          var rect = col.getBoundingClientRect();
+          tooltip.style.left = (rect.left + rect.width / 2) + 'px';
+          tooltip.style.top  = (rect.top) + 'px';
+          tooltip.classList.add('visible');
+        });
+        col.addEventListener('mouseleave', function() {
+          tooltip.classList.remove('visible');
+        });
+      });
+    }
+
+    // ============================================================
+    // UTILITAIRES DATES
+    // ============================================================
+    function jourDe(dateStr) {
+      if (!dateStr) return '';
+      var parts = dateStr.split(' ')[0].split('/');
+      if (parts.length !== 3) return '';
+      return parts[2] + '-' + parts[1] + '-' + parts[0];
+    }
+
+    function formaterJourCourt(jour) {
+      var p = jour.split('-');
+      if (p.length !== 3) return jour;
+      return p[2] + '/' + p[1];
+    }
+
+    function formaterJourLong(jour) {
+      var p = jour.split('-');
+      if (p.length !== 3) return jour;
+      return p[2] + '/' + p[1] + '/' + p[0];
+    }
+
+    function formaterMois(cleMois) {
+      var p = cleMois.split('-');
+      if (p.length !== 2) return cleMois;
+      var annee = p[0];
+      var mois = parseInt(p[1], 10) - 1;
+      var noms = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+      return noms[mois] + ' ' + annee;
+    }
+
+    function construireSerieDeJours(debut, fin) {
+      var res = [];
+      var d = new Date(debut + 'T00:00:00');
+      var f = new Date(fin + 'T00:00:00');
+      if (isNaN(d.getTime()) || isNaN(f.getTime())) return res;
+
+      var diff = Math.round((f - d) / (1000 * 60 * 60 * 24)) + 1;
+      if (diff > 180) {
+        return Object.keys(_dernierParJour).sort();
+      }
+
+      var cur = new Date(d.getTime());
+      while (cur <= f) {
+        res.push(formatDate(cur));
+        cur.setDate(cur.getDate() + 1);
+      }
+      return res;
+    }
+
+    function formatDate(d) {
+      function p(n) { return n < 10 ? '0' + n : '' + n; }
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+    }
 
     // ============================================================
     // DÉMARRAGE
