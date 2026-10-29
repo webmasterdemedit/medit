@@ -1,5 +1,5 @@
 // ============================================================
-// couverture.js — CARTE-COUVERTURE PAYSAGE MINIMALE
+// couverture.js — CARTE-COUVERTURE PAYSAGE OLD SCHOOL
 // Contenu : titre, sous-titre, image, progression
 // ============================================================
 
@@ -39,7 +39,12 @@
       attrs = ' href="' + lien + '" title="' + _escapeHtml(titre) + '"';
     }
 
-    var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
+    // Old school : fond assombri pour faire ressortir le titre blanc
+    var styleInline =
+      'background: ' + couleur + ';' +
+      'border-color: #2b2b2b;' +
+      'box-shadow: 4px 4px 0 rgba(0,0,0,0.45), inset 0 0 0 2px rgba(255,255,255,0.12);';
+
     var classeVerrou = verrouille ? ' verrouille' : '';
 
     var html = '';
