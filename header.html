@@ -41,9 +41,19 @@ function majActionsHeader() {
       '<button onclick="window.deconnecter()" class="header-btn-deconnexion" style="margin-left:12px;">Déconnexion</button>';
   } else {
     container.innerHTML =
-      '<a href="/medit/mes-textes.html" class="header-btn-compte" style="margin-right:12px;">Mes textes à faire</a>' +
-      '<a href="/medit/mon-espace.html" class="header-btn-creer">Mon espace lecteur</a>';
+      '<button type="button" class="header-btn-creer" onclick="ouvrirConnexionHeader()">Se connecter / Créer un compte lecteur</button>';
   }
+}
+
+// Ouvre le popup de connexion de index.html si présent sur la page courante,
+// sinon redirige vers index.html avec l'ancre #connexion
+function ouvrirConnexionHeader() {
+  if (typeof window.ouvrirPopupConnexion === 'function') {
+    window.ouvrirPopupConnexion();
+    return;
+  }
+  // Fallback : redirection vers index avec intention d'ouverture
+  window.location.href = '/medit/index.html#connexion';
 }
 
 function toggleMenuMobile() {
@@ -68,7 +78,7 @@ function fermerMenuMobile() {
 document.addEventListener('click', function(e) {
   var nav = document.getElementById('headerNav');
   if (!nav) return;
-  if (e.target.closest('.header-link') || e.target.closest('#headerActions a')) {
+  if (e.target.closest('.header-link') || e.target.closest('#headerActions a') || e.target.closest('#headerActions button')) {
     fermerMenuMobile();
   }
 });
