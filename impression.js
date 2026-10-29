@@ -658,8 +658,8 @@ body {
 
 .copier-fleche-apres svg {
   display: block;
-  width: 58px;
-  height: 26px;
+  width: 38px;
+  height: 18px;
   overflow: visible;
 }
 
@@ -810,8 +810,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '  <div class="copier-ligne-inline">';
       printHtml += '    <span class="copier-ligne-pointillee"></span>';
       printHtml += '    <span class="copier-fleche-apres">';
-      printHtml += '      <svg viewBox="0 0 58 26" xmlns="http://www.w3.org/2000/svg">';
-      printHtml += '        <path d="M 54 13 L 6 13 M 16 4 L 6 13 L 16 22" fill="none" stroke="#2a241c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+      printHtml += '      <svg viewBox="0 0 38 18" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
       printHtml += '    <span class="copier-texte-arabe">';
