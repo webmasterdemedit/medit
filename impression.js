@@ -553,8 +553,8 @@ body {
    - centre        : bloc centré sur toute la largeur
    - gauche        : float gauche classique
    - droite        : float droit classique
-   - marge-gauche  : image centrée dans l'espace vide à GAUCHE
-   - marge-droite  : image centrée dans l'espace vide à DROITE
+   - margegauche  : image centrée dans l'espace vide à GAUCHE
+   - margedroite  : image centrée dans l'espace vide à DROITE
    ============================================================ */
 .print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
@@ -566,7 +566,7 @@ body {
 /* --- NOUVEAU : image dans la marge (centrée dans l'espace vide) --- */
 /* Le texte est aligné à droite, l'image occupe la marge gauche,
    et est centrée verticalement + horizontalement dans cet espace vide. */
-.print-img-marge-gauche {
+.print-img-margegauche {
   float: left;
   display: flex;
   align-items: center;
@@ -578,7 +578,7 @@ body {
 
 /* Le texte est aligné à gauche, l'image occupe la marge droite,
    et est centrée verticalement + horizontalement dans cet espace vide. */
-.print-img-marge-droite {
+.print-img-margedroite {
   float: right;
   display: flex;
   align-items: center;
@@ -590,15 +590,15 @@ body {
 /* Quand une image est en mode "marge", on aligne le paragraphe
    en conséquence pour que le texte coule "contre" l'image
    mais laisse l'espace vide de l'autre côté. */
-.paragraphe.img-marge-gauche-active p,
-.texte-zone .img-marge-gauche-active p { text-align: right; }
-.paragraphe.img-marge-droite-active p,
-.texte-zone .img-marge-droite-active p { text-align: left; }
+.paragraphe.img-margegauche-active p,
+.texte-zone .img-margegauche-active p { text-align: right; }
+.paragraphe.img-margedroite-active p,
+.texte-zone .img-margedroite-active p { text-align: left; }
 
 /* Wrapper centré verticalement : permet à l'image d'être centrée
    dans la hauteur de la ligne de texte même si elle est plus courte */
-.print-img-marge-gauche,
-.print-img-marge-droite {
+.print-img-margegauche,
+.print-img-margedroite {
   /* On centre verticalement l'image dans la zone de texte */
   min-height: 1em;
 }
@@ -912,8 +912,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
             // pour aligner le texte du bon côté.
             var classeImg = 'print-img print-img-' + position + ' print-img-' + taille;
             printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="' + classeImg + '">';
-            if (position === 'marge-gauche') imgMargeActive = 'gauche';
-            else if (position === 'marge-droite') imgMargeActive = 'droite';
+            if (position === 'margegauche') imgMargeActive = 'gauche';
+            else if (position === 'margedroite') imgMargeActive = 'droite';
           }
           return;
         }
