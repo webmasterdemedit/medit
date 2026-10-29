@@ -627,34 +627,26 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-/* ---- Recopier : flèche à gauche, texte arabe à droite, sur une seule ligne pointillée ---- */
+/* ---- Recopier : ligne pointillée à gauche, texte arabe à droite ---- */
 .bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
   display: flex;
   align-items: flex-end;
   gap: 10px;
-  border-bottom: 0.8px dotted #8a7d68;
-  padding-bottom: 2px;
   min-height: 38px;
   direction: ltr;
 }
 
-/* Flèche large, en contour, à gauche, pointe vers la gauche */
-.copier-fleche {
+/* Ligne pointillée à gauche (remplace l'ancienne flèche) */
+.copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
   height: 20px;
   min-width: 120px;
-  padding-bottom: 3px;
+  margin-bottom: 6px;
+  border-bottom: 0.8px dotted #8a7d68;
   order: 0;
-}
-
-.copier-fleche svg {
-  display: block;
-  width: 100%;
-  height: 20px;
-  overflow: visible;
 }
 
 /* Texte arabe à droite, sur la ligne */
@@ -803,11 +795,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte" style="flex:1;">';
       printHtml += '<div class="bloc-copier-inline">';
       printHtml += '  <div class="copier-ligne-inline">';
-      printHtml += '    <span class="copier-fleche">';
-      printHtml += '      <svg viewBox="0 0 300 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">';
-      printHtml += '        <path d="M 296 10 L 20 10 L 30 3 M 20 10 L 30 17" fill="none" stroke="#2a241c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
-      printHtml += '      </svg>';
-      printHtml += '    </span>';
+      printHtml += '    <span class="copier-ligne-pointillee"></span>';
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
