@@ -1,6 +1,7 @@
 // ============================================================
 // couverture.js — CARTE-COUVERTURE PAYSAGE MINIMALE
 // Contenu : titre, sous-titre, image, progression
+// + Couleur du titre/sous-titre via theme.couleurTitre
 // ============================================================
 
 (function() {
@@ -16,16 +17,27 @@
       .replace(/'/g, '&#39;');
   }
 
+  function _couleurValide(c) {
+    if (!c) return '';
+    var v = String(c).trim();
+    if (!v) return '';
+    if (/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/.test(v)) return v;
+    if (/^(rgb|rgba|hsl|hsla)\s*\(/i.test(v)) return v;
+    if (/^[a-zA-Z]+$/.test(v)) return v;
+    return '';
+  }
+
   function construireCarteCouverture(theme, options) {
     theme = theme || {};
     options = options || {};
 
-    var titre       = theme.titre || theme.nom || '';
-    var couleur     = theme.couleur || '#f5f5f5';
-    var sousTitre   = theme.sousTitre || '';
-    var pourcentage = theme.pourcentage || 0;
-    var couverture  = theme.couverture || '';
-    var verrouille  = theme.verrouille || theme.disponible === false;
+    var titre        = theme.titre || theme.nom || '';
+    var couleur      = theme.couleur || '#f5f5f5';
+    var couleurTitre = _couleurValide(theme.couleurTitre || theme.couleur_texte || theme.couleurTitreCarte);
+    var sousTitre    = theme.sousTitre || '';
+    var pourcentage  = theme.pourcentage || 0;
+    var couverture   = theme.couverture || '';
+    var verrouille   = theme.verrouille || theme.disponible === false;
 
     var estActuel   = !!options.actuel;
     var cliquable   = options.cliquable !== false;
@@ -41,6 +53,8 @@
 
     var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
     var classeVerrou = verrouille ? ' verrouille' : '';
+
+    var styleTitre = couleurTitre ? ' style="color:' + couleurTitre + ';"' : '';
 
     var html = '';
     html += '<' + tag + ' class="carte-couverture' + classeVerrou + (estActuel ? ' actuelle' : '') + '"';
@@ -58,9 +72,9 @@
     // Texte à droite : titre + sous-titre
     html += '<div class="contenu-theme">';
     html += '<div class="titre-wrapper">';
-    html += '<span class="titre-theme">' + _escapeHtml(titre) + '</span>';
+    html += '<span class="titre-theme"' + styleTitre + '>' + _escapeHtml(titre) + '</span>';
     if (sousTitre) {
-      html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
+      html += '<span class="sous-titre-theme"' + styleTitre + '>' + _escapeHtml(sousTitre) + '</span>';
     }
     html += '</div>';
     html += '</div>';
