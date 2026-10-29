@@ -336,7 +336,7 @@
     }
   </style>
 
-  <!-- CHARGEMENT DU HEADER (identique aux autres pages) -->
+  <!-- CHARGEMENT DU HEADER -->
   <script>
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/medit/header.html', false);
@@ -370,7 +370,6 @@
         Disponibles en ligne et en version imprimable.
       </p>
 
-      <!-- Formats disponibles -->
       <div class="accueil-formats">
         <div class="accueil-format">
           <span class="accueil-format-emoji">🖥️</span>
@@ -541,22 +540,21 @@
     }
 
     // ============================================================
-    // ACTIONS DU HERO : connecté → Mon espace / Déconnexion
-    // Même logique que majActionsHeader() du header
+    // ACTIONS DU HERO
     // ============================================================
     function majActionsAccueil() {
-  var container = document.getElementById('accueilActionsCompte');
-  if (!container) return;
-  var id = localStorage.getItem('etudiant_id');
-  if (id) {
-    container.innerHTML =
-      '<a href="/medit/mon-espace.html" class="accueil-btn-secondaire">Mon espace</a>';
-  } else {
-    container.innerHTML =
-      '<button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>' +
-      '<button class="accueil-btn-secondaire" onclick="ouvrirInscription()">Créer un compte lecteur</button>';
-  }
-}
+      var container = document.getElementById('accueilActionsCompte');
+      if (!container) return;
+      var id = localStorage.getItem('etudiant_id');
+      if (id) {
+        container.innerHTML =
+          '<a href="/medit/mon-espace.html" class="accueil-btn-secondaire">Mon espace</a>';
+      } else {
+        container.innerHTML =
+          '<button class="accueil-btn-secondaire" onclick="ouvrirConnexion()">Se connecter</button>' +
+          '<button class="accueil-btn-secondaire" onclick="ouvrirInscription()">Créer un compte lecteur</button>';
+      }
+    }
 
     // ============================================================
     // MODAL
@@ -686,7 +684,6 @@
             msg.textContent = '✓ Connecté';
             msg.className = 'message success';
 
-            // Met à jour le hero et le header immédiatement
             majActionsAccueil();
             if (typeof window.majActionsHeader === 'function') window.majActionsHeader();
 
@@ -925,15 +922,27 @@
     }
 
     // ============================================================
+    // EXPOSITION POUR LE HEADER
+    // ============================================================
+    window.ouvrirConnexion = ouvrirConnexion;
+    window.ouvrirInscription = ouvrirInscription;
+
+    // ============================================================
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
       majActionsAccueil();
       chargerDisciplinesEtNiveaux();
       chargerAccueil();
+
+      // Ouverture auto du popup si on arrive avec #connexion (depuis le header)
+      if (window.location.hash === '#connexion') {
+        ouvrirConnexion();
+        // Nettoie l'ancre pour éviter la réouverture au reload
+        if (history.replaceState) history.replaceState(null, '', window.location.pathname);
+      }
     }
 
-    // Mise à jour si connexion/déconnexion depuis un autre onglet
     window.addEventListener('storage', function(e) {
       if (e.key === 'etudiant_id' || e.key === 'etudiant_nom') {
         majActionsAccueil();
