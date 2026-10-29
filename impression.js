@@ -548,55 +548,11 @@ body {
 
 .paragraphe p em, .texte-zone p em { color:#3a2e22; }
 
-/* ============================================================
-   IMAGES DANS LE TEXTE
-   - centre        : bloc centré sur toute la largeur
-   - gauche        : float gauche classique
-   - droite        : float droit classique
-   - margegauche   : image dans la marge gauche, centrée dans le blanc
-   - margedroite   : image dans la marge droite, centrée dans le blanc
-   ============================================================ */
-.print-img { display:block; height:auto; border:none; margin:12px 0;
-  page-break-inside:avoid; break-inside:avoid;
+.print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
-
 .print-img-centre { margin-left:auto; margin-right:auto; }
 .print-img-gauche { float:left; margin:6px 16px 10px 0; }
 .print-img-droite { float:right; margin:6px 0 10px 16px; }
-
-/* --- NOUVEAU : image dans la marge, centrée dans le blanc --- */
-.print-img-marge-wrap {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 1px;
-  box-sizing: border-box;
-}
-.print-img-marge-wrap-margegauche {
-  float: left;
-  width: 200px;
-  margin: 6px 18px 10px 0;
-}
-.print-img-marge-wrap-margedroite {
-  float: right;
-  width: 200px;
-  margin: 6px 0 10px 18px;
-}
-.print-img-marge {
-  display: block;
-  height: auto;
-  border: none;
-  border-radius: 1px;
-  box-shadow: 0 1px 4px rgba(60,45,25,0.12);
-  max-width: 100%;
-  margin: 0 auto;
-}
-
-.paragraphe.img-margegauche-active p,
-.texte-zone .img-margegauche-active p { text-align: right; }
-.paragraphe.img-margedroite-active p,
-.texte-zone .img-margedroite-active p { text-align: left; }
-
 .print-img-petit  { max-width:110px; }
 .print-img-moyen  { max-width:180px; }
 .print-img-grand  { max-width:230px; }
@@ -682,6 +638,7 @@ body {
   direction: ltr;
 }
 
+/* Ligne pointillée à gauche */
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
@@ -691,6 +648,7 @@ body {
   order: 0;
 }
 
+/* Flèche fine en contour, entre la ligne pointillée et le texte arabe */
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
@@ -705,6 +663,7 @@ body {
   overflow: visible;
 }
 
+/* Texte arabe à droite */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.6em;
@@ -869,27 +828,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
 
     if (bloc.type === 'paragraphe') {
-      // --- Pré-analyse : détecter si une image "marge" est présente ---
-      var lignesPara = bloc.data.split('\n');
-      var imgMargeActive = '';
-      lignesPara.forEach(function(l) {
-        var t = l.trim();
-        var m = t.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
-        if (!m) return;
-        var o1 = (m[2] || '').toLowerCase();
-        var o2 = (m[3] || '').toLowerCase();
-        if (o1 === 'margegauche' || o2 === 'margegauche') imgMargeActive = 'gauche';
-        else if (o1 === 'margedroite' || o2 === 'margedroite') imgMargeActive = 'droite';
-      });
-
-      var classePara = 'paragraphe';
-      if (premierParagraphe) classePara += ' lettrine';
-      if (imgMargeActive === 'gauche') classePara += ' img-margegauche-active';
-      if (imgMargeActive === 'droite') classePara += ' img-margedroite-active';
-
-      printHtml += '<div class="' + classePara + '">';
+      printHtml += '<div class="paragraphe' + (premierParagraphe ? ' lettrine' : '') + '">';
       premierParagraphe = false;
-
+      var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
 
       function flushParagraphe() {
@@ -910,23 +851,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
           var opt1 = (imgMatch[2] || '').toLowerCase();
           var opt2 = (imgMatch[3] || '').toLowerCase();
           var position = 'centre', taille = 'moyen';
-          var positionsValides = ['gauche', 'droite', 'centre', 'margegauche', 'margedroite'];
           [opt1, opt2].forEach(function(o) {
-            if (positionsValides.indexOf(o) !== -1) position = o;
+            if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
             else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
           });
           var url = imagesTheme[nomImg];
-          if (!url) {
-            printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
-          } else if (position === 'margegauche' || position === 'margedroite') {
-            var classeConteneur = 'print-img-marge-wrap print-img-marge-wrap-' + position;
-            printHtml += '<span class="' + classeConteneur + '">';
-            printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="print-img-marge print-img-' + taille + '">';
-            printHtml += '</span>';
-          } else {
-            var classeImg = 'print-img print-img-' + position + ' print-img-' + taille;
-            printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="' + classeImg + '">';
-          }
+          if (!url) printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
+          else printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
           return;
         }
         bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
