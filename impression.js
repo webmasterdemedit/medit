@@ -385,7 +385,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     });
   }
 
-  // Fallback : si aucun bloc paragraphe n'a été ajouté (ordreBlocs vide ou mal formé)
   var nbParas = blocsOrdonnes.filter(function(b) { return b.type === 'paragraphe'; }).length;
   if (nbParas === 0) {
     var nouveaux = [];
@@ -482,13 +481,11 @@ body {
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite .ligne-pointillee { display:inline-block; flex:1; border-bottom:0.6px dotted #b0a48f; height:12px; }
 
-/* filet décoratif */
 .filet { border: none; border-top: 1.6px solid #2a241c; border-bottom: 0.6px solid #b0a48f; height: 4px; margin: 10px 0 14px; }
 
 .temps-lecture-haut { text-align:center; font-size:9pt; color:#8a7d68; font-style:italic; margin-bottom:10px; letter-spacing:0.5px; font-family:'Georgia',serif; }
 .temps-lecture-haut::before { content:"❧ "; font-style:normal; color:#a89a80; margin-right:4px; }
 
-/* ---- Bandeau titre (sans cadre) ---- */
 .bandeau-titre { text-align:center; padding: 6px 0 4px; margin-bottom: 6px; }
 .bandeau-titre .ligne-titre { display:flex; flex-direction:column; align-items:center; gap:6px; }
 .bandeau-titre h1 {
@@ -510,7 +507,6 @@ body {
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
-/* ---- Tags / vocabulaire ---- */
 .tags-haut { margin-top:6px; margin-bottom:4px; text-align:center; }
 .tags-haut .memo-tag { display:inline-block; padding:2px 10px; margin:2px 3px;
   background:transparent; border:0.5px solid #c9bda3; border-radius:12px;
@@ -525,7 +521,6 @@ body {
 .vocab-haut .memo-mot::after { content:","; }
 .vocab-haut .memo-mot:last-child::after { content:""; }
 
-/* ---- Corps ---- */
 .corps-contenu { padding: 0; }
 
 .texte-zone { margin-top: 6px; margin-bottom: 10px; }
@@ -536,7 +531,6 @@ body {
 }
 .paragraphe p:last-child { margin-bottom: 0; }
 
-/* Lettrine sur le premier paragraphe du texte */
 .paragraphe.lettrine p:first-child::first-letter {
   font-family:'Georgia',serif; font-size:3.1em; float:left; line-height:0.82;
   padding:4px 8px 0 0; color:#2a241c; font-weight:700;
@@ -552,10 +546,8 @@ body {
 .paragraphe p em, .texte-zone p em { font-style:italic; white-space:pre-line; }
 .paragraphe::after { content:""; display:table; clear:both; }
 
-/* Citations */
 .paragraphe p em, .texte-zone p em { color:#3a2e22; }
 
-/* ---- Images ---- */
 .print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
 .print-img-centre { margin-left:auto; margin-right:auto; }
@@ -567,7 +559,6 @@ body {
 .img-manquante { display:block; padding:8px; border:1px dashed #c9bda3; color:#8a7d68;
   font-size:9pt; text-align:center; margin:8px 0; font-style:italic; }
 
-/* ---- Exercices : intégrés au flux, sans cadre ni colonnes ---- */
 .zone-exercices { margin-top: 22px; }
 .zone-exercices .titre-questions {
   font-family:'Georgia',serif; font-size:13pt; font-weight:700; color:#2a241c;
@@ -590,9 +581,17 @@ body {
 
 .exo-ligne { display:flex; align-items:baseline; gap:8px; margin-top:3px; }
 
-.exo-num-inline { display:inline-block; width:17px; height:17px; line-height:16px; text-align:center;
-  background:transparent; color:#2a241c; border:0.9px solid #2a241c; border-radius:50%;
-  font-weight:700; font-size:8.5pt; flex-shrink:0; font-family:'Georgia',serif; }
+.exo-num-inline {
+  display:inline-flex; align-items:center; justify-content:center;
+  width:17px; height:17px;
+  background:transparent; color:#2a241c;
+  border:0.9px solid #2a241c; border-radius:50%;
+  font-weight:700; font-size:8.5pt; flex-shrink:0;
+  font-family:'Georgia',serif;
+  line-height:1;
+  padding-bottom:1.2px;
+  transform: translateY(-0.5px);
+}
 .exo-texte { flex:1; font-size:10.5pt; line-height:1.5; }
 
 .quiz-reponses { margin-left:26px; margin-top:4px; }
@@ -628,16 +627,55 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-.bloc-copier { margin-top:6px; width:100%; }
-.copier-mots { text-align:right; direction:rtl; font-family:'Janna LT Bold','Traditional Arabic','Amiri',serif;
-  font-size:2.5em; line-height:1.15; color:#1f1a13; padding:6px 0 0; word-spacing:16px;
-  position:relative; display:block; margin-bottom:10px; }
-.copier-mots .copier-mot { display:inline-block; white-space:nowrap; direction:rtl; }
-.copier-mots::after { content:""; position:absolute; left:0; right:0; bottom:0.30em;
-  height:1.2px; background:#2a241c !important; pointer-events:none; }
-.copier-ligne-pointillee { width:100%; height:40px; border-bottom:0.6px dotted #8a7d68; margin-top:4px; }
+/* ---- Recopier : flèche à gauche, texte arabe à droite, sur une seule ligne pointillée ---- */
+.bloc-copier-inline { width:100%; margin-top:4px; }
 
-/* ---- À retenir ---- */
+.copier-ligne-inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 10px;
+  border-bottom: 0.8px dotted #8a7d68;
+  padding-bottom: 2px;
+  min-height: 38px;
+  direction: ltr;
+}
+
+/* Flèche large, en contour, à gauche, pointe vers la gauche */
+.copier-fleche {
+  flex: 1 1 auto;
+  display: block;
+  height: 20px;
+  min-width: 120px;
+  padding-bottom: 3px;
+  order: 0;
+}
+
+.copier-fleche svg {
+  display: block;
+  width: 100%;
+  height: 20px;
+  overflow: visible;
+}
+
+/* Texte arabe à droite, sur la ligne */
+.copier-texte-arabe {
+  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 1.9em;
+  line-height: 1;
+  color: #1f1a13;
+  direction: rtl;
+  white-space: nowrap;
+  flex: 0 0 auto;
+  padding-bottom: 2px;
+  order: 1;
+}
+
+.copier-texte-arabe .copier-mot {
+  display: inline-block;
+  white-space: nowrap;
+  direction: rtl;
+}
+
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
@@ -652,7 +690,6 @@ body {
 .zone-memo .memo-liste li::before { content:"❧"; position:absolute; left:0;
   color:#a89a80; font-size:8pt; top:3px; }
 
-/* ---- Pied de page ---- */
 .pied-page { text-align:center; font-size:8pt; color:#8a7d68; margin: 18px 0 6px;
   padding-top:8px; border-top:0.6px solid #d6cbb4;
   display:flex; justify-content:center; align-items:center; gap:16px; }
@@ -704,7 +741,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   function ouvrirZoneExercices() {
     if (!zoneExercicesOuverte) {
-      printHtml += '</div>'; // ferme .texte-zone
+      printHtml += '</div>';
       printHtml += '<div class="zone-exercices">';
       printHtml += '<div class="titre-questions">Exercices</div>';
       printHtml += '<div class="titre-questions-filets"></div>';
@@ -763,12 +800,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">';
-      printHtml += '<div class="bloc-copier">';
-      printHtml += '<div class="copier-mots">';
-      for (var cm = 0; cm < mots.length; cm++) printHtml += '<span class="copier-mot">' + mots[cm] + '</span>';
-      printHtml += '</div>';
-      printHtml += '<div class="copier-ligne-pointillee"></div>';
+      printHtml += '<span class="exo-texte" style="flex:1;">';
+      printHtml += '<div class="bloc-copier-inline">';
+      printHtml += '  <div class="copier-ligne-inline">';
+      printHtml += '    <span class="copier-fleche">';
+      printHtml += '      <svg viewBox="0 0 300 20" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '        <path d="M 296 10 L 20 10 L 30 3 M 20 10 L 30 17" fill="none" stroke="#2a241c" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>';
+      printHtml += '      </svg>';
+      printHtml += '    </span>';
+      printHtml += '    <span class="copier-texte-arabe">';
+      for (var cm = 0; cm < mots.length; cm++) {
+        printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
+      }
+      printHtml += '    </span>';
+      printHtml += '  </div>';
       printHtml += '</div>';
       printHtml += '</span>';
       printHtml += '</div>';
@@ -936,13 +981,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     }
   });
 
-  // Fermeture : si la zone exercices a été ouverte, on la ferme ; sinon on ferme texte-zone
   if (zoneExercicesOuverte) {
-    printHtml += '</div>'; // ferme .zone-exercices
+    printHtml += '</div>';
   } else {
-    printHtml += '</div>'; // ferme .texte-zone
+    printHtml += '</div>';
   }
-  printHtml += '</div>'; // ferme .corps-contenu
+  printHtml += '</div>';
 
   if (aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
