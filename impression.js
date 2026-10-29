@@ -627,29 +627,28 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-/* ---- Recopier : ligne pointillée à gauche, texte arabe à droite ---- */
+/* ---- Recopier : texte arabe à droite, grosse flèche à sa suite ---- */
 .bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   gap: 10px;
   min-height: 38px;
   direction: ltr;
 }
-/* Ligne pointillée à gauche (remplace l'ancienne flèche) */
+
+/* Ligne pointillée à gauche */
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
   height: 20px;
   min-width: 120px;
-  margin-bottom: 6px;
   border-bottom: 0.8px dotted #8a7d68;
   order: 0;
 }
 
-/* Texte arabe à droite, sur la ligne */
-/* Texte arabe à droite, sur la ligne */
+/* Texte arabe */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.6em;
@@ -658,9 +657,6 @@ body {
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
-  padding-bottom: 0;
-  margin-bottom: -2px;
-  align-self: flex-start;
   order: 1;
 }
 
@@ -670,6 +666,20 @@ body {
   direction: rtl;
 }
 
+/* Grosse flèche en contour, juste après le texte arabe, centrée verticalement */
+.copier-fleche-apres {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  order: 2;
+}
+
+.copier-fleche-apres svg {
+  display: block;
+  width: 90px;
+  height: 44px;
+  overflow: visible;
+}
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
