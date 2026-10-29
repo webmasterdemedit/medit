@@ -548,11 +548,61 @@ body {
 
 .paragraphe p em, .texte-zone p em { color:#3a2e22; }
 
+/* ============================================================
+   IMAGES DANS LE TEXTE
+   - centre        : bloc centré sur toute la largeur
+   - gauche        : float gauche classique
+   - droite        : float droit classique
+   - marge-gauche  : image centrée dans l'espace vide à GAUCHE
+   - marge-droite  : image centrée dans l'espace vide à DROITE
+   ============================================================ */
 .print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
+
 .print-img-centre { margin-left:auto; margin-right:auto; }
 .print-img-gauche { float:left; margin:6px 16px 10px 0; }
 .print-img-droite { float:right; margin:6px 0 10px 16px; }
+
+/* --- NOUVEAU : image dans la marge (centrée dans l'espace vide) --- */
+/* Le texte est aligné à droite, l'image occupe la marge gauche,
+   et est centrée verticalement + horizontalement dans cet espace vide. */
+.print-img-marge-gauche {
+  float: left;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 14px 10px 0;
+  /* pas de width/height ici : la taille est gérée par print-img-petit/moyen/grand */
+  align-self: center;
+}
+
+/* Le texte est aligné à gauche, l'image occupe la marge droite,
+   et est centrée verticalement + horizontalement dans cet espace vide. */
+.print-img-marge-droite {
+  float: right;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 6px 0 10px 14px;
+  align-self: center;
+}
+
+/* Quand une image est en mode "marge", on aligne le paragraphe
+   en conséquence pour que le texte coule "contre" l'image
+   mais laisse l'espace vide de l'autre côté. */
+.paragraphe.img-marge-gauche-active p,
+.texte-zone .img-marge-gauche-active p { text-align: right; }
+.paragraphe.img-marge-droite-active p,
+.texte-zone .img-marge-droite-active p { text-align: left; }
+
+/* Wrapper centré verticalement : permet à l'image d'être centrée
+   dans la hauteur de la ligne de texte même si elle est plus courte */
+.print-img-marge-gauche,
+.print-img-marge-droite {
+  /* On centre verticalement l'image dans la zone de texte */
+  min-height: 1em;
+}
+
 .print-img-petit  { max-width:110px; }
 .print-img-moyen  { max-width:180px; }
 .print-img-grand  { max-width:230px; }
@@ -638,7 +688,6 @@ body {
   direction: ltr;
 }
 
-/* Ligne pointillée à gauche */
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
@@ -648,7 +697,6 @@ body {
   order: 0;
 }
 
-/* Flèche fine en contour, entre la ligne pointillée et le texte arabe */
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
@@ -663,7 +711,6 @@ body {
   overflow: visible;
 }
 
-/* Texte arabe à droite */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.6em;
@@ -832,6 +879,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       premierParagraphe = false;
       var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
+      var imgMargeActive = '';   // '', 'gauche' ou 'droite' — pour aligner le texte
 
       function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
@@ -844,20 +892,29 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
       lignesPara.forEach(function(l) {
         var trimmed = l.trim();
-        var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
+        var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z-]+))?(?::([a-zA-Z-]+))?$/i);
         if (imgMatch) {
           flushParagraphe();
           var nomImg = imgMatch[1];
           var opt1 = (imgMatch[2] || '').toLowerCase();
           var opt2 = (imgMatch[3] || '').toLowerCase();
           var position = 'centre', taille = 'moyen';
+          var positionsValides = ['gauche', 'droite', 'centre', 'marge-gauche', 'marge-droite'];
           [opt1, opt2].forEach(function(o) {
-            if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
+            if (positionsValides.indexOf(o) !== -1) position = o;
             else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
           });
           var url = imagesTheme[nomImg];
-          if (!url) printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
-          else printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
+          if (!url) {
+            printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
+          } else {
+            // Pour les modes "marge", on ajoute une classe au paragraphe courant
+            // pour aligner le texte du bon côté.
+            var classeImg = 'print-img print-img-' + position + ' print-img-' + taille;
+            printHtml += '<img src="' + url + '" alt="' + nomImg + '" class="' + classeImg + '">';
+            if (position === 'marge-gauche') imgMargeActive = 'gauche';
+            else if (position === 'marge-droite') imgMargeActive = 'droite';
+          }
           return;
         }
         bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
