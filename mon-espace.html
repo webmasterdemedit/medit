@@ -34,6 +34,166 @@
       font-weight: 300;
     }
 
+    /* ===== EN-TÊTE : titre + bouton profil à droite ===== */
+    .entete-espace {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 20px;
+      margin-bottom: 24px;
+    }
+
+    .entete-espace .entete-gauche {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .btn-profil {
+      flex: 0 0 auto;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border: 1px solid var(--border);
+      background: var(--bg-paper);
+      color: var(--text-secondary);
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, border-color 0.15s;
+      white-space: nowrap;
+    }
+
+    .btn-profil:hover {
+      background: var(--bg-hover);
+      color: var(--text);
+      border-color: var(--text-secondary);
+    }
+
+    .btn-profil .btn-profil-icone {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    /* ===== POPUP PROFIL ===== */
+    .popup-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 20px;
+      box-sizing: border-box;
+    }
+
+    .popup-overlay.visible {
+      display: flex;
+    }
+
+    .popup-profil {
+      background: var(--bg);
+      border: 1px solid var(--border);
+      max-width: 440px;
+      width: 100%;
+      max-height: 85vh;
+      overflow-y: auto;
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+      box-sizing: border-box;
+    }
+
+    .popup-profil-entete {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .popup-profil-entete h2 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+      margin: 0;
+    }
+
+    .popup-profil-fermer {
+      border: none;
+      background: transparent;
+      font-size: 20px;
+      line-height: 1;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .popup-profil-fermer:hover {
+      color: var(--text);
+    }
+
+    .popup-profil-corps {
+      padding: 16px 20px 20px;
+    }
+
+    .profil-ligne {
+      display: flex;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 13px;
+    }
+
+    .profil-ligne:last-child {
+      border-bottom: none;
+    }
+
+    .profil-ligne .profil-label {
+      font-family: 'Roboto', sans-serif;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .profil-ligne .profil-valeur {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      text-align: right;
+      word-break: break-word;
+    }
+
+    .profil-description {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: var(--bg-paper);
+      border: 1px solid var(--border);
+      font-size: 13px;
+      color: var(--text-secondary);
+      line-height: 1.6;
+    }
+
+    .profil-message-invite {
+      margin-top: 14px;
+      padding: 12px 14px;
+      background: var(--bg-hover);
+      border: 1px solid var(--border);
+      font-size: 12px;
+      color: var(--text-secondary);
+      line-height: 1.5;
+    }
+
+    .profil-message-invite a {
+      color: var(--text);
+      font-weight: 500;
+    }
+
     /* Layout 2 colonnes : onglets à gauche + contenu */
     .layout-espace {
       display: flex;
@@ -329,35 +489,220 @@
       background: var(--bg-hover);
     }
 
-    /* Profil */
-    .profil-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-      gap: 16px;
+    /* ===== Styles page Programme (onglet Ma progression) ===== */
+    .barre-recherche {
+      display: flex;
+      align-items: center;
+      gap: 12px;
       margin-bottom: 20px;
     }
-    .profil-item {
+
+    .barre-recherche input {
+      flex: 1;
+      padding: 9px 14px;
       border: 1px solid var(--border);
-      padding: 14px 16px;
-      background: var(--bg-paper);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      outline: none;
+      box-sizing: border-box;
     }
-    .profil-item .profil-label {
-      font-family: var(--font-sans);
+
+    .barre-recherche input:focus {
+      border-color: var(--text-secondary);
+    }
+
+    .compteur-resultats {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
+    .stats-ligne {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      margin-bottom: 22px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .stat-item {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .stat-item .nombre {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .tableau-wrapper {
+      overflow-x: auto;
+      border: 1px solid var(--border);
+    }
+
+    .tableau-programme {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .tableau-programme thead th {
+      background: var(--bg-paper);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 12px 14px;
+      font-family: 'Roboto', sans-serif;
       font-size: 11px;
       text-transform: uppercase;
       letter-spacing: 1px;
       color: var(--text-muted);
+      text-align: left;
+      font-weight: 500;
+    }
+
+    .tableau-programme thead th.coin {
+      min-width: 160px;
+    }
+
+    .tableau-programme tbody th.theme-cell {
+      background: var(--bg-paper);
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 14px;
+      vertical-align: top;
+      min-width: 160px;
+    }
+
+    .tableau-programme tbody th.theme-cell .theme-nom {
+      font-family: 'Georgia', serif;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1.3;
+    }
+
+    .tableau-programme tbody th.theme-cell .theme-compteur {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .tableau-programme td.cellule-programme {
+      border-bottom: 1px solid var(--border);
+      border-right: 1px solid var(--border);
+      padding: 12px;
+      vertical-align: top;
+      min-width: 180px;
+    }
+
+    .tableau-programme td.cellule-programme:last-child {
+      border-right: none;
+    }
+
+    .bloc-categorie-cell {
+      margin-bottom: 12px;
+    }
+
+    .bloc-categorie-cell:last-child {
+      margin-bottom: 0;
+    }
+
+    .entete-categorie-cell {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-decoration: none;
+      color: inherit;
       margin-bottom: 6px;
     }
-    .profil-item .profil-valeur {
-      font-family: var(--font-serif);
-      font-size: 16px;
+
+    .entete-categorie-cell .barre-couleur {
+      flex: 0 0 4px;
+      height: 14px;
+      display: inline-block;
+    }
+
+    .entete-categorie-cell .titre-categorie-cell {
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
       color: var(--text);
-      font-weight: 700;
-      word-break: break-word;
+    }
+
+    .entete-categorie-cell .compteur-textes {
+      margin-left: auto;
+      font-size: 10px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 0 6px;
+      line-height: 16px;
+    }
+
+    .liste-textes-cell {
+      list-style: none;
+      margin: 0;
+      padding: 0 0 0 12px;
+    }
+
+    .liste-textes-cell li {
+      margin-bottom: 3px;
+    }
+
+    .liste-textes-cell li a {
+      font-size: 12px;
+      color: var(--text-secondary);
+      text-decoration: none;
+      line-height: 1.4;
+    }
+
+    .liste-textes-cell li a:hover {
+      color: var(--text);
+      text-decoration: underline;
+    }
+
+    .vide-cell {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: center;
+      padding: 8px 0;
+    }
+
+    .vide-global {
+      text-align: center;
+      padding: 40px 20px;
+      color: var(--text-secondary);
+    }
+
+    .vide-global .icone {
+      display: block;
+      font-size: 28px;
+      margin-bottom: 10px;
+      color: var(--text-muted);
+    }
+
+    .vide-global h2 {
+      font-family: 'Georgia', serif;
+      font-size: 18px;
+      color: var(--text);
+      margin-bottom: 6px;
+    }
+
+    .vide-global p {
+      font-size: 13px;
     }
 
     @media (max-width: 800px) {
+      .entete-espace {
+        flex-direction: column;
+        align-items: stretch;
+      }
       .layout-espace { flex-direction: column; gap: 16px; }
       .onglets-espace {
         flex: 1 1 auto;
@@ -428,31 +773,28 @@
 
   <div class="page page-blog">
 
-    <h1>Mon espace</h1>
-    <p class="sous-titre-page">Votre profil, vos lectures validées, et l'historique de vos essais.</p>
+    <div class="entete-espace">
+      <div class="entete-gauche">
+        <h1>Mon espace</h1>
+        <p class="sous-titre-page">Vos lectures validées, l'historique de vos essais et votre progression.</p>
+      </div>
+      <button class="btn-profil" onclick="ouvrirPopupProfil()">
+        <span class="btn-profil-icone">◆</span> Mon profil
+      </button>
+    </div>
 
     <div class="layout-espace">
 
       <!-- ===== ONGLETS À GAUCHE ===== -->
       <div class="onglets-espace">
-        <button class="filtre-cat-btn" data-onglet="profil" onclick="changerOnglet('profil')">Mon profil</button>
         <button class="filtre-cat-btn active" data-onglet="lectures" onclick="changerOnglet('lectures')">Mes lectures</button>
         <button class="filtre-cat-btn" data-onglet="essais" onclick="changerOnglet('essais')">Mes réponses</button>
         <button class="filtre-cat-btn" data-onglet="notes" onclick="changerOnglet('notes')">Mes annotations</button>
+        <button class="filtre-cat-btn" data-onglet="progression" onclick="changerOnglet('progression')">Ma progression</button>
       </div>
 
       <!-- ===== CONTENU ===== -->
       <div class="contenu-espace">
-
-        <!-- Onglet : MON PROFIL -->
-        <div id="onglet-profil" style="display:none;">
-          <div id="profilZone">
-            <div class="loader" id="loaderProfil">
-              <div class="spinner"></div>
-              <p>Chargement du profil...</p>
-            </div>
-          </div>
-        </div>
 
         <!-- Onglet : MES LECTURES -->
         <div id="onglet-lectures">
@@ -520,6 +862,28 @@
           </div>
         </div>
 
+        <!-- Onglet : MA PROGRESSION (contenu page Programme) -->
+        <div id="onglet-progression" style="display:none;">
+          <div class="barre-recherche">
+            <input type="text" id="rechercheProgramme" placeholder="Rechercher un thème, une catégorie ou un texte..." />
+            <span class="compteur-resultats" id="compteurResultats"></span>
+          </div>
+
+          <div class="stats-ligne" id="statsLigne">
+            <div class="stat-item"><span>Thèmes :</span><span class="nombre" id="statThemes">0</span></div>
+            <div class="stat-item"><span>Catégories :</span><span class="nombre" id="statCategories">0</span></div>
+            <div class="stat-item"><span>Textes :</span><span class="nombre" id="statTextes">0</span></div>
+            <div class="stat-item"><span>Niveaux :</span><span class="nombre" id="statNiveaux">0</span></div>
+          </div>
+
+          <div id="contenuProgramme">
+            <div class="loader">
+              <div class="spinner"></div>
+              <p>Chargement du programme...</p>
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -527,6 +891,22 @@
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
     </div>
 
+  </div>
+
+  <!-- ===== POPUP PROFIL ===== -->
+  <div class="popup-overlay" id="popupProfil" onclick="if(event.target===this)fermerPopupProfil()">
+    <div class="popup-profil" role="dialog" aria-modal="true" aria-labelledby="popupProfilTitre">
+      <div class="popup-profil-entete">
+        <h2 id="popupProfilTitre">Mon profil</h2>
+        <button class="popup-profil-fermer" onclick="fermerPopupProfil()" aria-label="Fermer">✕</button>
+      </div>
+      <div class="popup-profil-corps" id="popupProfilCorps">
+        <div class="loader">
+          <div class="spinner"></div>
+          <p>Chargement du profil...</p>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div id="footer-container"></div>
@@ -608,10 +988,14 @@
       document.querySelectorAll('.onglets-espace .filtre-cat-btn').forEach(function(btn) {
         btn.classList.toggle('active', btn.getAttribute('data-onglet') === nom);
       });
-      document.getElementById('onglet-profil').style.display = (nom === 'profil') ? 'block' : 'none';
       document.getElementById('onglet-lectures').style.display = (nom === 'lectures') ? 'block' : 'none';
       document.getElementById('onglet-essais').style.display = (nom === 'essais') ? 'block' : 'none';
       document.getElementById('onglet-notes').style.display = (nom === 'notes') ? 'block' : 'none';
+      document.getElementById('onglet-progression').style.display = (nom === 'progression') ? 'block' : 'none';
+
+      if (nom === 'progression') {
+        progCharger();
+      }
     }
 
     // ============================================================
@@ -655,7 +1039,6 @@
         profilInfo = construireProfil(data, nom);
         lecturesData = regrouperParTexte(tentativesData);
 
-        afficherProfil();
         initialiserFiltresLectures();
         initialiserFiltresEssais();
         afficherLectures();
@@ -665,7 +1048,7 @@
     }
 
     // ============================================================
-    // PROFIL
+    // PROFIL (popup)
     // ============================================================
     function construireProfil(data, nom) {
       var connecte = false;
@@ -692,40 +1075,47 @@
       };
     }
 
-    function afficherProfil() {
-      var zone = document.getElementById('profilZone');
+    function ouvrirPopupProfil() {
+      var overlay = document.getElementById('popupProfil');
+      overlay.classList.add('visible');
+      afficherProfilPopup();
+    }
+
+    function fermerPopupProfil() {
+      document.getElementById('popupProfil').classList.remove('visible');
+    }
+
+    function afficherProfilPopup() {
+      var zone = document.getElementById('popupProfilCorps');
+
+      if (!profilInfo) {
+        zone.innerHTML = '<div class="loader"><div class="spinner"></div><p>Chargement du profil...</p></div>';
+        return;
+      }
+
       var html = '';
 
-      html += '<div class="profil-grid">';
-
-      html += '<div class="profil-item">';
-      html += '  <div class="profil-label">' + (profilInfo.connecte ? 'Étudiant' : 'Mode invité') + '</div>';
-      html += '  <div class="profil-valeur">' + escapeHtml(profilInfo.nom) + '</div>';
+      html += '<div class="profil-ligne">';
+      html += '  <span class="profil-label">' + (profilInfo.connecte ? 'Étudiant' : 'Mode invité') + '</span>';
+      html += '  <span class="profil-valeur">' + escapeHtml(profilInfo.nom) + '</span>';
       html += '</div>';
 
-      html += '<div class="profil-item">';
-      html += '  <div class="profil-label">Contact</div>';
-      html += '  <div class="profil-valeur">' + (profilInfo.contact ? escapeHtml(profilInfo.contact) : '—') + '</div>';
+      html += '<div class="profil-ligne">';
+      html += '  <span class="profil-label">Contact</span>';
+      html += '  <span class="profil-valeur">' + (profilInfo.contact ? escapeHtml(profilInfo.contact) : '—') + '</span>';
       html += '</div>';
 
-      html += '<div class="profil-item">';
-      html += '  <div class="profil-label">Niveau</div>';
-      html += '  <div class="profil-valeur">' + profilInfo.niveau + '</div>';
-      html += '</div>';
-
+      html += '<div class="profil-ligne">';
+      html += '  <span class="profil-label">Niveau</span>';
+      html += '  <span class="profil-valeur">' + profilInfo.niveau + '</span>';
       html += '</div>';
 
       if (profilInfo.description) {
-        html += '<div class="profil-item" style="margin-bottom:20px;">';
-        html += '  <div class="profil-label">Description du niveau</div>';
-        html += '  <div class="profil-valeur" style="font-weight:400;font-size:14px;line-height:1.6;">' + escapeHtml(profilInfo.description) + '</div>';
-        html += '</div>';
+        html += '<div class="profil-description">' + escapeHtml(profilInfo.description) + '</div>';
       }
 
       if (!profilInfo.connecte) {
-        html += '<div class="vide-themes" style="padding:20px;">';
-        html += '  <p>Vous êtes en mode invité. <a href="/medit/connexion.html">Connectez-vous</a> pour retrouver votre profil complet.</p>';
-        html += '</div>';
+        html += '<div class="profil-message-invite">Vous êtes en mode invité. <a href="/medit/connexion.html">Connectez-vous</a> pour retrouver votre profil complet.</div>';
       }
 
       zone.innerHTML = html;
@@ -1054,11 +1444,358 @@
     }
 
     // ============================================================
+    // ONGLET MA PROGRESSION — contenu identique à la page Programme
+    // ============================================================
+    var progCategoriesData = {};
+    var progTousTextes = [];
+    var progNiveauEtudiant = 0;
+    var progRechercheActive = '';
+    var progEtatValidation = {};
+    var progCharge = false;
+
+    function progEchapperHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    function progNormaliser(str) {
+      if (!str) return '';
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    }
+
+    function progCharger() {
+      if (progCharge) return;
+      progCharge = true;
+
+      var id = getNomUtilisateurCourant();
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+      Promise.all([
+        DataManager.charger(),
+        fetch(base + '?action=getTentativesUtilisateur&nom=' + encodeURIComponent(id))
+          .then(function(r) { return r.json(); })
+          .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
+          .catch(function() { return []; })
+      ]).then(function(resultats) {
+        var data = resultats[0];
+        var tentatives = resultats[1];
+
+        progNiveauEtudiant = data.niveau || 0;
+        progTousTextes = data.tousLesTextes || [];
+
+        progCategoriesData = {};
+        if (data.themes && Array.isArray(data.themes)) {
+          data.themes.forEach(function(l) {
+            progCategoriesData[l.titre] = {
+              theme: (l.theme || '').trim(),
+              couleur: l.couleur || '#2d6a4f',
+              niveau: parseInt(l.niveau) || 0,
+              sousTitre: l.sousTitre || ''
+            };
+          });
+        }
+
+        progEtatValidation = {};
+        tentatives.forEach(function(t) {
+          var k = String(t.texteId);
+          var pct = t.pourcentage || 0;
+          if (!progEtatValidation[k] || pct > progEtatValidation[k].pourcentage) {
+            progEtatValidation[k] = { valide: pct >= 65, pourcentage: pct };
+          }
+        });
+
+        progAfficher();
+      }).catch(function(error) {
+        console.error('Erreur chargement programme:', error);
+        var cache = DataManager.getCacheForce(id);
+        if (cache) {
+          progNiveauEtudiant = cache.niveau || 0;
+          progTousTextes = cache.tousLesTextes || cache.textes || [];
+          progCategoriesData = {};
+          if (cache.themes && Array.isArray(cache.themes)) {
+            cache.themes.forEach(function(l) {
+              progCategoriesData[l.titre] = {
+                theme: (l.theme || '').trim(),
+                couleur: l.couleur || '#2d6a4f',
+                niveau: parseInt(l.niveau) || 0,
+                sousTitre: l.sousTitre || ''
+              };
+            });
+          }
+          progAfficher();
+        } else {
+          document.getElementById('contenuProgramme').innerHTML = `
+            <div class="vide-global">
+              <span class="icone">⚠</span>
+              <h2>Erreur de chargement</h2>
+              <p>Vérifiez votre connexion internet.</p>
+            </div>
+          `;
+        }
+      });
+    }
+
+    function progEstTexteValide(texteId) {
+      var e = progEtatValidation[String(texteId)];
+      return e && e.valide;
+    }
+
+    function progConstruireDonnees() {
+      var ordreThemes = [];
+      var themesVus = {};
+      for (var titreCategorie in progCategoriesData) {
+        var t = progCategoriesData[titreCategorie].theme || 'Sans thème';
+        if (!themesVus[t]) {
+          themesVus[t] = true;
+          ordreThemes.push(t);
+        }
+      }
+
+      var niveauxSet = {};
+      progTousTextes.forEach(function(ch) {
+        var n = parseInt(ch.niveau) || 0;
+        if (n > 0) niveauxSet[n] = true;
+      });
+      var niveaux = Object.keys(niveauxSet).map(Number).sort(function(a, b) { return a - b; });
+      if (niveaux.length === 0) niveaux = [1];
+
+      var matrice = {};
+      ordreThemes.forEach(function(t) {
+        matrice[t] = {};
+        niveaux.forEach(function(n) { matrice[t][n] = {}; });
+      });
+
+      progTousTextes.forEach(function(ch) {
+        var titreCategorie = ch.categorie || '';
+        var categorie = progCategoriesData[titreCategorie];
+        if (!categorie) return;
+
+        var theme = categorie.theme || 'Sans thème';
+        var niveau = parseInt(ch.niveau) || 0;
+        if (niveau <= 0) return;
+        if (!matrice[theme]) matrice[theme] = {};
+        if (!matrice[theme][niveau]) matrice[theme][niveau] = {};
+        if (!matrice[theme][niveau][titreCategorie]) matrice[theme][niveau][titreCategorie] = [];
+        matrice[theme][niveau][titreCategorie].push(ch);
+      });
+
+      for (var t in matrice) {
+        for (var n in matrice[t]) {
+          for (var l in matrice[t][n]) {
+            matrice[t][n][l].sort(function(a, b) {
+              return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
+            });
+          }
+        }
+      }
+
+      return { themes: ordreThemes, niveaux: niveaux, matrice: matrice };
+    }
+
+    function progCorrespondRecherche(theme, categorie, texte) {
+      if (!progRechercheActive) return true;
+      var r = progNormaliser(progRechercheActive);
+      if (progNormaliser(theme).indexOf(r) !== -1) return true;
+      if (categorie && progNormaliser(categorie).indexOf(r) !== -1) return true;
+      if (texte && progNormaliser(texte).indexOf(r) !== -1) return true;
+      return false;
+    }
+
+    function progCalculerProgression(textes) {
+      if (!textes || textes.length === 0) return 0;
+      var valides = 0;
+      textes.forEach(function(ch) {
+        if (progEstTexteValide(ch.id)) valides++;
+      });
+      return Math.round((valides / textes.length) * 100);
+    }
+
+    function progConstruireCercleProgression(pourcentage) {
+      var pct = Math.max(0, Math.min(100, pourcentage));
+      var epaisseur = 1 + (pct / 100) * 2;
+      var gris = Math.round(200 - (pct / 100) * 183);
+      var couleurContour = 'rgb(' + gris + ',' + gris + ',' + gris + ')';
+      var remplissage = 'conic-gradient(rgba(17,17,17,0.85) ' + pct + '%, transparent ' + pct + '%)';
+
+      return '<div class="cercle-progression-conteneur" style="display:flex;justify-content:center;margin-top:6px;">' +
+        '<span class="cercle-progression" style="display:inline-block;width:18px;height:18px;border-radius:50%;box-sizing:border-box;background:' + remplissage + ';border:' + epaisseur.toFixed(1) + 'px solid ' + couleurContour + ';"></span>' +
+        '</div>';
+    }
+
+    function progConstruireBarreProgression(pourcentage) {
+      var pct = Math.max(0, Math.min(100, pourcentage));
+      return '<div class="progression-niveau-bloc" style="display:inline-block;width:60px;height:3px;margin-left:8px;background:var(--border);position:relative;vertical-align:middle;box-sizing:border-box;">' +
+        '<div style="position:absolute;top:0;left:0;bottom:0;width:' + pct + '%;background:var(--text);"></div>' +
+        '</div>';
+    }
+
+    function progCompterCategoriesDuTheme(theme, data) {
+      var vus = {};
+      data.niveaux.forEach(function(n) {
+        if (!data.matrice[theme] || !data.matrice[theme][n]) return;
+        Object.keys(data.matrice[theme][n]).forEach(function(l) { vus[l] = true; });
+      });
+      return Object.keys(vus).length;
+    }
+
+    function progAfficher() {
+      var conteneur = document.getElementById('contenuProgramme');
+      var data = progConstruireDonnees();
+
+      if (data.themes.length === 0) {
+        conteneur.innerHTML = `
+          <div class="vide-global">
+            <span class="icone">◈</span>
+            <h2>Aucune donnée disponible</h2>
+            <p>Aucun thème ou texte n'est encore configuré.</p>
+          </div>
+        `;
+        return;
+      }
+
+      var nbCategories = Object.keys(progCategoriesData).length;
+      var nbTextes = progTousTextes.length;
+      document.getElementById('statThemes').textContent = data.themes.length;
+      document.getElementById('statCategories').textContent = nbCategories;
+      document.getElementById('statTextes').textContent = nbTextes;
+      document.getElementById('statNiveaux').textContent = data.niveaux.length;
+
+      var html = '<div class="tableau-wrapper">';
+      html += '<table class="tableau-programme">';
+
+      html += '<thead><tr>';
+      html += '<th class="coin">Thème</th>';
+
+      data.niveaux.forEach(function(n) {
+        var textesDuNiveau = progTousTextes.filter(function(ch) {
+          return parseInt(ch.niveau) === n;
+        });
+        var pct = progCalculerProgression(textesDuNiveau);
+        html += '<th>Niveau ' + n + progConstruireBarreProgression(pct) + '</th>';
+      });
+      html += '</tr></thead>';
+
+      html += '<tbody>';
+      var totalResultats = 0;
+
+      data.themes.forEach(function(theme) {
+        var themeAResultat = false;
+        var cellulesHtml = '';
+
+        var textesDuTheme = [];
+        data.niveaux.forEach(function(n) {
+          if (!data.matrice[theme] || !data.matrice[theme][n]) return;
+          Object.keys(data.matrice[theme][n]).forEach(function(cat) {
+            data.matrice[theme][n][cat].forEach(function(ch) {
+              textesDuTheme.push(ch);
+            });
+          });
+        });
+        var pctTheme = progCalculerProgression(textesDuTheme);
+
+        data.niveaux.forEach(function(niveau) {
+          var categoriesDansCellule = data.matrice[theme] && data.matrice[theme][niveau] ? data.matrice[theme][niveau] : {};
+          var categoriesTriees = Object.keys(categoriesDansCellule).sort(function(a, b) {
+            return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+          });
+
+          var htmlCell = '<td class="cellule-programme">';
+          var auMoinsUneCategorie = false;
+
+          categoriesTriees.forEach(function(nomCategorie) {
+            var textes = categoriesDansCellule[nomCategorie] || [];
+
+            var textesFiltres = textes.filter(function(ch) {
+              return progCorrespondRecherche(theme, nomCategorie, ch.titre);
+            });
+
+            if (progRechercheActive && textesFiltres.length === 0) return;
+
+            auMoinsUneCategorie = true;
+            themeAResultat = true;
+            totalResultats += textesFiltres.length;
+
+            var categorieMeta = progCategoriesData[nomCategorie] || {};
+            var couleur = categorieMeta.couleur || '#2d6a4f';
+
+            htmlCell += '<div class="bloc-categorie-cell">';
+            htmlCell += '  <a class="entete-categorie-cell" href="/medit/thème.html?cat=' + encodeURIComponent(nomCategorie) + '">';
+            htmlCell += '    <span class="barre-couleur" style="background: ' + couleur + ';"></span>';
+            htmlCell += '    <span class="titre-categorie-cell">' + progEchapperHtml(nomCategorie) + '</span>';
+            htmlCell += '    <span class="compteur-textes">' + textesFiltres.length + '</span>';
+            htmlCell += '  </a>';
+            htmlCell += '  <ul class="liste-textes-cell">';
+            textesFiltres.forEach(function(ch) {
+              var check = progEstTexteValide(ch.id) ? ' <span style="border:none;padding:0;background:transparent;">✓</span>' : '';
+              htmlCell += '    <li><a href="/medit/texte.html?id=' + encodeURIComponent(ch.id) + '">' + progEchapperHtml(ch.titre) + check + '</a></li>';
+            });
+            htmlCell += '  </ul>';
+            htmlCell += '</div>';
+          });
+
+          if (!auMoinsUneCategorie) {
+            htmlCell += '<div class="vide-cell">—</div>';
+          }
+
+          htmlCell += '</td>';
+          cellulesHtml += htmlCell;
+        });
+
+        if (progRechercheActive && !themeAResultat) return;
+
+        html += '<tr>';
+        html += '<th class="theme-cell">';
+        html += '  <span class="theme-nom" style="display:block;text-align:center;">' + progEchapperHtml(theme) + '</span>';
+        html += progConstruireCercleProgression(pctTheme);
+        html += '  <span class="theme-compteur" style="display:block;text-align:center;margin-top:4px;">' + progCompterCategoriesDuTheme(theme, data) + ' catégorie(s)</span>';
+        html += '</th>';
+        html += cellulesHtml;
+        html += '</tr>';
+      });
+
+      html += '</tbody></table></div>';
+      conteneur.innerHTML = html;
+
+      var compteurEl = document.getElementById('compteurResultats');
+      if (progRechercheActive) {
+        compteurEl.textContent = totalResultats + ' texte(s) trouvé(s)';
+      } else {
+        compteurEl.textContent = '';
+      }
+    }
+
+    function progBrancherRecherche() {
+      var input = document.getElementById('rechercheProgramme');
+      if (!input) return;
+      var timer = null;
+      input.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+          progRechercheActive = input.value.trim();
+          if (progCharge) progAfficher();
+        }, 200);
+      });
+    }
+
+    // ============================================================
     // DÉMARRAGE
     // ============================================================
     function demarrer() {
       changerOnglet('lectures');
+      brancherPopupProfil();
+      progBrancherRecherche();
       chargerTout();
+    }
+
+    function brancherPopupProfil() {
+      document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') fermerPopupProfil();
+      });
     }
 
     if (document.readyState === 'loading') {
