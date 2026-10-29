@@ -680,6 +680,7 @@ body {
   height: 44px;
   overflow: visible;
 }
+
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
@@ -812,6 +813,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
       }
+      printHtml += '    </span>';
+      printHtml += '    <span class="copier-fleche-apres">';
+      printHtml += '      <svg viewBox="0 0 90 44" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '        <path d="M 4 22 L 82 22 M 64 6 L 82 22 L 64 38" fill="none" stroke="#2a241c" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>';
+      printHtml += '      </svg>';
       printHtml += '    </span>';
       printHtml += '  </div>';
       printHtml += '</div>';
