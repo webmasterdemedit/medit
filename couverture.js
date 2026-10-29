@@ -1,6 +1,7 @@
 // ============================================================
 // couverture.js — CARTE-COUVERTURE PAYSAGE MINIMALE
 // Contenu : titre, sous-titre, image, progression
+// Couleur du texte personnalisable via theme.couleurTitre
 // ============================================================
 
 (function() {
@@ -27,6 +28,9 @@
     var couverture  = theme.couverture || '';
     var verrouille  = theme.verrouille || theme.disponible === false;
 
+    // 🎨 Couleur du titre (texte) — par défaut blanc/noir selon besoin
+    var couleurTitre = theme.couleurTitre || theme.couleur_titre || '';
+
     var estActuel   = !!options.actuel;
     var cliquable   = options.cliquable !== false;
     var showImage   = options.showImage !== false;
@@ -41,6 +45,12 @@
 
     var styleInline = 'background: ' + couleur + '; border-color: ' + couleur + ';';
     var classeVerrou = verrouille ? ' verrouille' : '';
+
+    // Style spécifique pour le texte (titre + sous-titre)
+    var styleTexte = '';
+    if (couleurTitre) {
+      styleTexte = ' style="color: ' + _escapeHtml(couleurTitre) + ';"';
+    }
 
     var html = '';
     html += '<' + tag + ' class="carte-couverture' + classeVerrou + (estActuel ? ' actuelle' : '') + '"';
@@ -57,7 +67,7 @@
 
     // Texte à droite : titre + sous-titre
     html += '<div class="contenu-theme">';
-    html += '<div class="titre-wrapper">';
+    html += '<div class="titre-wrapper"' + styleTexte + '>';
     html += '<span class="titre-theme">' + _escapeHtml(titre) + '</span>';
     if (sousTitre) {
       html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
