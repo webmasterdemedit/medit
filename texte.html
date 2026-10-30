@@ -97,6 +97,28 @@
       }
       .partage-btn:hover { opacity: .6; }
 
+            .source-discrete {
+        float: left;
+        width: 0;
+        margin-left: -110px;
+        font-family: Georgia, serif;
+        font-style: italic;
+        font-size: 0.8em;
+        line-height: 1.2;
+        color: var(--text-muted, #888);
+        text-align: right;
+        white-space: normal;
+      }
+      @media (max-width: 1100px) {
+        .source-discrete {
+          float: none;
+          width: auto;
+          margin-left: 0;
+          display: inline;
+          font-size: 0.85em;
+        }
+      }
+
       @media (max-width: 900px) {
         .partage-btn { padding: 0 3px; }
         .partage-btn svg { width: 15px; height: 15px; }
@@ -370,7 +392,7 @@
       return titre.replace(/^\s*\d+\s+/, '').trim();
     }
 
-    function rendreSources(texte) {
+        function rendreSources(texte) {
       if (!/\[[^\]]+\]/.test(texte)) return texte;
       var matchSource = texte.match(/\[([^\]]+)\]\.?/);
       if (!matchSource) return texte;
@@ -394,6 +416,14 @@
       var avantPhrase = texteSansSource.substring(0, idxDebutPhrase);
       var phrase = texteSansSource.substring(idxDebutPhrase);
       return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
+    }
+
+    function rendreSourcesDiscretes(texte) {
+      if (!texte) return texte;
+      if (texte.indexOf('[[') === -1) return texte;
+      return texte.replace(/\[\[([^\]]+)\]\]/g, function(m, contenu) {
+        return '<span class="source-discrete">' + contenu.trim() + '</span>';
+      });
     }
 
     function rendreCitations(texte) {
@@ -1718,7 +1748,7 @@
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
           var blocs = decouperEnBlocsTexte(bufferTexte);
           blocs.forEach(function(bloc) {
-            html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+            html += '<p>' + rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))) + '</p>';
           });
           bufferTexte = '';
         }
