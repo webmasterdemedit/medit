@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
+  <link rel="stylesheet" href="/medit/sidebar.css" />
 
   <script>
     var xhr = new XMLHttpRequest();
@@ -252,11 +253,14 @@
         min-height: 14px;
       }
     </style>
-
-    <div id="texteContainer" class="colonne-principale">
+        <div id="texteContainer" class="colonne-principale">
       <div class="loader"><div class="spinner"></div><p>Chargement du texte...</p></div>
     </div>
-    <aside class="colonne-laterale" id="colonneLaterale"></aside>
+
+    <aside class="colonne-laterale" id="colonneLaterale">
+      <div class="loader"><div class="spinner"></div><p>Chargement...</p></div>
+    </aside>
+
     <div class="zone-basse-mobile" id="zoneBasseMobile"></div>
     <div class="zone-bas-page" id="zoneBasPage"></div>
     <div class="devise">
@@ -334,7 +338,28 @@
 
     var annotationChargee = false;
 
-    function echapperHtml(str) {
+    /* =========================================================
+       CHARGEMENT DE LA COLONNE LATÉRALE (fichier externe)
+       ========================================================= */
+    function chargerSidebar() {
+      var conteneur = document.getElementById('colonneLaterale');
+      if (!conteneur) return;
+
+      fetch('/medit/sidebar.html')
+        .then(function(r) { return r.text(); })
+        .then(function(html) {
+          conteneur.innerHTML = html;
+          if (typeof remplirSidebarInfos === 'function') remplirSidebarInfos();
+          if (typeof remplirSidebarTags === 'function') remplirSidebarTags();
+          if (typeof remplirSidebarThemes === 'function') remplirSidebarThemes();
+        })
+        .catch(function(err) {
+          console.error('Erreur chargement sidebar:', err);
+          conteneur.innerHTML = '';
+        });
+    }
+
+        function echapperHtml(str) {
       if (!str) return '';
       return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
     }
@@ -617,7 +642,7 @@
       return blocs;
     }
 
-    function construireExercicesPourFeuille(blocsOrdonnes) {
+        function construireExercicesPourFeuille(blocsOrdonnes) {
       var html = '';
       var exoNum = 0;
       var hasExercice = false;
@@ -658,11 +683,14 @@
         iGroupe = jGroupe;
       }
 
-      function afficherConsigne(bloc) { if (bloc._consigne) html += '<div class="consigne-exo">' + bloc._consigne + '</div>'; }
+      function afficherConsigne(bloc) {
+        if (bloc._consigne) html += '<div class="consigne-exo">' + bloc._consigne + '</div>';
+      }
 
       blocsOrdonnes.forEach(function(bloc) {
         if (bloc.type === 'texte') return;
 
+        /* ---------- COPIER ---------- */
         if (bloc.type === 'copier') {
           hasExercice = true;
           exoNum++;
@@ -676,1506 +704,192 @@
           html += '<span class="exo-texte">';
           html += '<div class="bloc-copier">';
           html += '<div class="copier-mots">';
-          for (var cm = 0; cm < mots.length; cm++) html += '<span class="copier-mot">' + mots[cm] + '</span>';
+          for (var cm = 0; cm < mots.length; cm++) {
+            html += '<span class="copier-mot">' + echapperHtml(mots[cm]) + '</span>';
+          }
           html += '</div>';
-          html += '<div class="copier-ligne-pointillee"></div>';
+          html += '<input type="text" class="copier-input" data-copier-idx="' + copierIdx + '" placeholder="Recopiez ici..." autocomplete="off" />';
           html += '</div>';
           html += '</span>';
-          html += '</div>';
-          html += '<div class="copier-actions">';
-          html += '<button class="copier-btn" data-copier-idx="' + copierIdx + '" onclick="marquerCopie(this)">J\'ai recopié</button>';
           html += '</div>';
           html += '</div>';
           return;
         }
 
+        /* ---------- QUIZ ---------- */
         if (bloc.type === 'quiz') {
           hasExercice = true;
-          exoNum++;
-          var q = bloc.data;
-          var quizIdx = quizCounter++;
-          exoNumParType.quiz[quizIdx] = exoNum;
-          html += '<div class="exo">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + q.question + '</span>';
-          html += '</div>';
-          html += '<div class="quiz-reponses" data-quiz-idx="' + quizIdx + '">';
-          q.reponses.forEach(function(rep, ri) {
-            html += '<span class="quiz-rep interactive" data-quiz-idx="' + quizIdx + '" data-rep-idx="' + ri + '" data-correct="' + (rep.correcte ? '1' : '0') + '" onclick="repondreQuiz(this)">';
-            html += '<span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte;
-            html += '</span>';
+          bloc.data.forEach(function(quiz) {
+            exoNum++;
+            var qIdx = quizCounter++;
+            exoNumParType.quiz[qIdx] = exoNum;
+            html += '<div class="exo exo-quiz" data-quiz-idx="' + qIdx + '">';
+            afficherConsigne(bloc);
+            html += '<div class="exo-ligne">';
+            html += '<span class="exo-num-inline">' + exoNum + '</span>';
+            html += '<span class="exo-texte">' + echapperHtml(quiz.question) + '</span>';
+            html += '</div>';
+            html += '<div class="quiz-reponses">';
+            quiz.reponses.forEach(function(rep, rIdx) {
+              html += '<label class="quiz-rep">';
+              html += '<input type="radio" name="quiz-' + qIdx + '" value="' + rIdx + '" data-quiz-idx="' + qIdx + '" data-rep-idx="' + rIdx + '" />';
+              html += '<span class="quiz-lettre">' + rep.lettre + '</span>';
+              html += '<span class="quiz-texte">' + echapperHtml(rep.texte) + '</span>';
+              html += '</label>';
+            });
+            html += '</div>';
+            html += '</div>';
           });
-          html += '</div>';
-          html += '<div class="quiz-feedback-exo" id="quizFeedbackExo-' + quizIdx + '"></div>';
-          html += '</div>';
           return;
         }
 
-        if (bloc.type === 'open') {
-          hasExercice = true;
-          exoNum++;
-          var openIdx = openCounter++;
-          exoNumParType.open[openIdx] = exoNum;
-          var questionTexte = bloc.data;
-          questionsOuvertes.push({ texte: questionTexte, reponse: '', idx: openIdx });
-          html += '<div class="exo open-exo" data-open-idx="' + openIdx + '">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + echapperHtml(questionTexte) + '</span>';
-          html += '</div>';
-          html += '<textarea class="open-textarea" id="openInput-' + openIdx + '" placeholder="Écrivez votre réponse ici..." oninput="majReponseOpen(' + openIdx + ', this.value)"></textarea>';
-          html += '<div class="open-actions">';
-          html += '<button class="open-btn-valider" id="openBtnValider-' + openIdx + '" onclick="validerOpen(' + openIdx + ')">Valider ma réponse</button>';
-          html += '</div>';
-          html += '<div class="open-feedback" id="openFeedback-' + openIdx + '"></div>';
-          html += '</div>';
-          return;
-        }
-
+        /* ---------- TEXTE À TROUS ---------- */
         if (bloc.type === 'tt') {
           hasExercice = true;
-          exoNum++;
-          var tt = bloc.data;
-          var ttIdx = ttCounter++;
-          exoNumParType.tt[ttIdx] = exoNum;
-          html += '<div class="exo">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="tt-phrase-print">';
-          if (tt.avant) html += tt.avant + ' ';
-          html += '<input type="text" class="tt-input" id="ttInput-' + ttIdx + '" data-mot="' + echapperHtml(tt.mot) + '" onkeydown="if(event.key===\'Enter\'){validerTT(' + ttIdx + ');return false;}" onblur="validerTT(' + ttIdx + ')">';
-          if (tt.apres) html += ' ' + tt.apres;
-          html += '</span>';
-          html += '</div>';
-          html += '<div class="tt-feedback" id="ttFeedback-' + ttIdx + '"></div>';
-          html += '</div>';
+          bloc.data.forEach(function(item) {
+            exoNum++;
+            var ttIdx = ttCounter++;
+            exoNumParType.tt[ttIdx] = exoNum;
+            html += '<div class="exo exo-tt" data-tt-idx="' + ttIdx + '">';
+            afficherConsigne(bloc);
+            html += '<div class="exo-ligne">';
+            html += '<span class="exo-num-inline">' + exoNum + '</span>';
+            html += '<span class="exo-texte">';
+            if (item.avant) html += echapperHtml(item.avant) + ' ';
+            html += '<input type="text" class="tt-input" data-tt-idx="' + ttIdx + '" autocomplete="off" />';
+            if (item.apres) html += ' ' + echapperHtml(item.apres);
+            html += '</span>';
+            html += '</div>';
+            html += '</div>';
+          });
           return;
         }
 
+        /* ---------- VRAI / FAUX ---------- */
         if (bloc.type === 'vf') {
           hasExercice = true;
-          bloc.data.forEach(function(item, idxVf) {
+          bloc.data.forEach(function(q) {
             exoNum++;
             var vfIdx = vfCounter++;
             exoNumParType.vf[vfIdx] = exoNum;
-            html += '<div class="exo">';
-            if (idxVf === 0) afficherConsigne(bloc);
-            html += '<div class="exo-ligne vf-ligne">';
+            html += '<div class="exo exo-vf" data-vf-idx="' + vfIdx + '">';
+            afficherConsigne(bloc);
+            html += '<div class="exo-ligne">';
             html += '<span class="exo-num-inline">' + exoNum + '</span>';
-            html += '<span class="exo-texte-vf">' + item.question + '</span>';
-            html += '<span class="vf-cases">';
-            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="v" data-correct="' + (item.reponse === 'v' ? '1' : '0') + '" onclick="repondreVF(this)">VRAI</button>';
-            html += '<button class="vf-btn" data-vf-idx="' + vfIdx + '" data-choix="f" data-correct="' + (item.reponse === 'f' ? '1' : '0') + '" onclick="repondreVF(this)">FAUX</button>';
+            html += '<span class="exo-texte">' + echapperHtml(q.question) + '</span>';
+            html += '<span class="vf-choix">';
+            html += '<label class="vf-rep"><input type="radio" name="vf-' + vfIdx + '" value="v" data-vf-idx="' + vfIdx + '" /> V</label>';
+            html += '<label class="vf-rep"><input type="radio" name="vf-' + vfIdx + '" value="f" data-vf-idx="' + vfIdx + '" /> F</label>';
             html += '</span>';
             html += '</div>';
-            html += '<div class="vf-feedback" id="vfFeedback-' + vfIdx + '"></div>';
             html += '</div>';
           });
           return;
         }
 
+        /* ---------- RELIER ---------- */
+        if (bloc.type === 'relier') {
+          hasExercice = true;
+          exoNum++;
+          var relierIdx = relierCounter++;
+          exoNumParType.relier[relierIdx] = exoNum;
+          var dataRelier = bloc.data;
+          html += '<div class="exo exo-relier" data-relier-idx="' + relierIdx + '">';
+          afficherConsigne(bloc);
+          html += '<div class="exo-ligne">';
+          html += '<span class="exo-num-inline">' + exoNum + '</span>';
+          html += '<span class="exo-texte">' + echapperHtml(dataRelier.consigne) + '</span>';
+          html += '</div>';
+          html += '<div class="relier-grille">';
+          html += '<div class="relier-colonne relier-gauche">';
+          dataRelier.paires.forEach(function(p, gIdx) {
+            html += '<div class="relier-item relier-item-gauche" data-gauche-idx="' + gIdx + '">' + echapperHtml(p.gauche) + '</div>';
+          });
+          html += '</div>';
+          html += '<div class="relier-colonne relier-droite">';
+          dataRelier.droitesMelangees.forEach(function(d, dIdx) {
+            html += '<div class="relier-item relier-item-droite" data-droite-idx="' + dIdx + '">' + echapperHtml(d.droite) + '</div>';
+          });
+          html += '</div>';
+          html += '</div>';
+          html += '</div>';
+          return;
+        }
+
+        /* ---------- ORDRE ---------- */
         if (bloc.type === 'ordre') {
           hasExercice = true;
-          var ordreData = bloc.data;
-          var items = ordreData.elements || [];
-          var consigne = ordreData.consigne || 'Remettez dans l\'ordre';
-          var itemsMelanges = items.slice();
-          for (var m = itemsMelanges.length - 1; m > 0; m--) {
-            var k = Math.floor(Math.random() * (m + 1));
-            var tmp = itemsMelanges[m]; itemsMelanges[m] = itemsMelanges[k]; itemsMelanges[k] = tmp;
-          }
           exoNum++;
           var ordreIdx = ordreCounter++;
           exoNumParType.ordre[ordreIdx] = exoNum;
-
-          html += '<div class="exo ordre-exo" data-ordre-idx="' + ordreIdx + '">';
+          var dataOrdre = bloc.data;
+          html += '<div class="exo exo-ordre" data-ordre-idx="' + ordreIdx + '">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
           html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + consigne + '</span>';
+          html += '<span class="exo-texte">' + echapperHtml(dataOrdre.consigne) + '</span>';
           html += '</div>';
-          html += '<div class="ordre-grille" id="ordreGrille-' + ordreIdx + '" data-ordre-idx="' + ordreIdx + '">';
-          itemsMelanges.forEach(function(item, i) {
-            html += '<div class="ordre-item" draggable="true" data-ordre-idx="' + ordreIdx + '" data-original="' + i + '">';
-            html += '<span class="ordre-grip">⋮⋮</span>';
-            html += '<span class="ordre-num">' + (i + 1) + '</span>';
-            html += '<span class="ordre-texte">' + item + '</span>';
-            html += '</div>';
+          html += '<ul class="ordre-liste">';
+          dataOrdre.elements.forEach(function(el, elIdx) {
+            html += '<li class="ordre-item" data-ordre-idx="' + ordreIdx + '" data-el-idx="' + elIdx + '">' + echapperHtml(el) + '</li>';
           });
-          html += '</div>';
-          html += '<div class="ordre-actions">';
-          html += '<button class="ordre-btn-valider" id="ordreBtnValider-' + ordreIdx + '" onclick="validerOrdre(' + ordreIdx + ')">Valider l\'ordre</button>';
-          html += '</div>';
-          html += '<div class="ordre-resultat" id="ordreResultat-' + ordreIdx + '"></div>';
+          html += '</ul>';
           html += '</div>';
           return;
         }
 
+        /* ---------- CARTES ---------- */
         if (bloc.type === 'carte') {
           hasExercice = true;
           exoNum++;
-          var c = bloc.data;
           var carteIdx = carteCounter++;
           exoNumParType.carte[carteIdx] = exoNum;
-          html += '<div class="exo">';
+          html += '<div class="exo exo-carte" data-carte-idx="' + carteIdx + '">';
           afficherConsigne(bloc);
           html += '<div class="exo-ligne">';
           html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + c.recto + '</span>';
+          html += '<span class="exo-texte">Cartes à mémoriser</span>';
           html += '</div>';
-          html += '<div class="carte-actions">';
-          html += '<button class="carte-btn-voir" data-carte-idx="' + carteIdx + '" onclick="voirCarteReponse(this)">Voir la réponse</button>';
-          html += '</div>';
-          html += '<div class="carte-reponse-cachee" id="carteRep-' + carteIdx + '">' + echapperHtml(c.verso) + '</div>';
-          html += '<div class="carte-choix" id="carteChoix-' + carteIdx + '">';
-          html += '<button class="trouve" data-carte-idx="' + carteIdx + '" data-choix="trouve" onclick="carteTrouvePasTrouve(this)">✓ J\'ai trouvé</button>';
-          html += '<button class="pas-trouve" data-carte-idx="' + carteIdx + '" data-choix="pas-trouve" onclick="carteTrouvePasTrouve(this)">✗ Pas trouvé</button>';
+          html += '<div class="cartes-liste">';
+          bloc.data.forEach(function(c, cIdx) {
+            html += '<div class="carte-item" data-carte-idx="' + carteIdx + '" data-item-idx="' + cIdx + '">';
+            html += '<div class="carte-recto">' + echapperHtml(c.recto) + '</div>';
+            html += '<div class="carte-verso" style="display:none;">' + echapperHtml(c.verso) + '</div>';
+            html += '</div>';
+          });
           html += '</div>';
           html += '</div>';
           return;
         }
 
-        if (bloc.type === 'relier') {
+        /* ---------- QUESTIONS OUVERTES ---------- */
+        if (bloc.type === 'open') {
           hasExercice = true;
-          var relierData = bloc.data;
-          var relierIdx = relierCounter++;
-          exoNum++;
-          exoNumParType.relier[relierIdx] = exoNum;
-          var paires = relierData.paires || [];
-          var droitesMelangees = relierData.droitesMelangees || [];
-          html += '<div class="exo relier-exo" data-relier-idx="' + relierIdx + '">';
-          afficherConsigne(bloc);
-          html += '<div class="exo-ligne">';
-          html += '<span class="exo-num-inline">' + exoNum + '</span>';
-          html += '<span class="exo-texte">' + relierData.consigne + '</span>';
-          html += '</div>';
-          html += '<div class="relier-zone" id="relierZone-' + relierIdx + '">';
-          html += '<div class="relier-grid">';
-          html += '<div class="relier-colonne gauche">';
-          paires.forEach(function(p, i) {
-            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="gauche" data-idx="' + i + '" onclick="selectionnerRelier(' + relierIdx + ', \'gauche\', ' + i + ')">';
-            html += '<span class="texte">' + p.gauche + '</span>';
-            html += '<span class="point"></span>';
+          bloc.data.forEach(function(q) {
+            exoNum++;
+            var openIdx = openCounter++;
+            exoNumParType.open[openIdx] = exoNum;
+            questionsOuvertes.push({ idx: openIdx, question: q.question || q });
+            html += '<div class="exo exo-open open-exo" data-open-idx="' + openIdx + '">';
+            afficherConsigne(bloc);
+            html += '<div class="exo-ligne">';
+            html += '<span class="exo-num-inline">' + exoNum + '</span>';
+            html += '<span class="exo-texte">' + echapperHtml(q.question || q) + '</span>';
+            html += '</div>';
+            html += '<textarea class="open-textarea" data-open-idx="' + openIdx + '" placeholder="Écrivez votre réponse..."></textarea>';
+            html += '<div class="open-actions">';
+            html += '<button class="open-btn-valider" data-open-idx="' + openIdx + '" onclick="validerQuestionOuverte(' + openIdx + ')">Valider</button>';
+            html += '</div>';
+            html += '<div class="open-feedback" data-open-feedback="' + openIdx + '"></div>';
             html += '</div>';
           });
-          html += '</div>';
-          html += '<div class="relier-colonne droite">';
-          droitesMelangees.forEach(function(d, i) {
-            var classePoint = d.partagee ? 'point point-partage' : 'point';
-            html += '<div class="relier-item" data-relier-idx="' + relierIdx + '" data-cote="droite" data-idx="' + i + '" data-droite-texte="' + echapperHtml(d.droite) + '" onclick="selectionnerRelier(' + relierIdx + ', \'droite\', ' + i + ')">';
-            html += '<span class="' + classePoint + '"></span>';
-            html += '<span class="texte">' + d.droite + '</span>';
-            html += '</div>';
-          });
-          html += '</div>';
-          html += '</div>';
-          html += '</div>';
-          html += '<div class="relier-resultat" id="relierResultat-' + relierIdx + '"></div>';
-          html += '</div>';
           return;
         }
       });
 
       if (!hasExercice) return '';
-
-      return '<div class="exercices-zone">' +
-               '<div class="titre-exercices">QUIZ</div>' +
-               html +
-             '</div>';
-    }
-
-    function repondreQuiz(el) {
-      var quizIdx = el.getAttribute('data-quiz-idx');
-      var repIdx = el.getAttribute('data-rep-idx');
-      var correct = el.getAttribute('data-correct') === '1';
-      if (reponsesTexte.quiz[quizIdx]) return;
-      reponsesTexte.quiz[quizIdx] = { choix: repIdx, correct: correct };
-      var parent = el.parentElement;
-      var reps = parent.querySelectorAll('.quiz-rep');
-      reps.forEach(function(r) { r.classList.remove('interactive'); r.style.pointerEvents = 'none'; });
-      el.classList.add(correct ? 'correct' : 'incorrect');
-      var feedback = document.getElementById('quizFeedbackExo-' + quizIdx);
-      if (feedback) {
-        if (correct) feedback.textContent = 'Bonne réponse.';
-        else {
-          var bonne = parent.querySelector('.quiz-rep[data-correct="1"]');
-          var texteBonne = bonne ? bonne.textContent.trim() : '';
-          feedback.textContent = 'La bonne réponse était : ' + texteBonne;
-          if (bonne) bonne.classList.add('correct');
-        }
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function repondreVF(btn) {
-      var vfIdx = btn.getAttribute('data-vf-idx');
-      var choix = btn.getAttribute('data-choix');
-      var correct = btn.getAttribute('data-correct') === '1';
-      if (reponsesTexte.vf[vfIdx]) return;
-      reponsesTexte.vf[vfIdx] = { choix: choix, correct: correct };
-      var parent = btn.parentElement;
-      var boutons = parent.querySelectorAll('.vf-btn');
-      boutons.forEach(function(b) { b.disabled = true; });
-      btn.classList.add(correct ? 'vf-ok' : 'vf-ko');
-      if (!correct) {
-        boutons.forEach(function(b) { if (b.getAttribute('data-correct') === '1') b.classList.add('vf-ok'); });
-      }
-      var feedback = document.getElementById('vfFeedback-' + vfIdx);
-      if (feedback) feedback.textContent = correct ? 'Correct.' : 'Incorrect.';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function validerTT(ttIdx) {
-      var input = document.getElementById('ttInput-' + ttIdx);
-      if (!input || reponsesTexte.tt[ttIdx]) return;
-      var saisi = input.value.trim();
-      if (saisi === '') return;
-      var motAttendu = input.getAttribute('data-mot') || '';
-      var correct = normaliserComparaison(saisi) === normaliserComparaison(motAttendu);
-      reponsesTexte.tt[ttIdx] = { saisi: saisi, correct: correct };
-      input.classList.add(correct ? 'tt-ok' : 'tt-ko');
-      input.disabled = true;
-      var feedback = document.getElementById('ttFeedback-' + ttIdx);
-      if (feedback) feedback.textContent = correct ? 'Bonne réponse.' : 'La bonne réponse était : « ' + motAttendu + ' »';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function voirCarteReponse(btn) {
-      var carteIdx = btn.getAttribute('data-carte-idx');
-      var rep = document.getElementById('carteRep-' + carteIdx);
-      var choix = document.getElementById('carteChoix-' + carteIdx);
-      if (rep) rep.classList.add('visible');
-      if (choix) choix.classList.add('visible');
-      btn.style.display = 'none';
-    }
-
-    function carteTrouvePasTrouve(btn) {
-      var carteIdx = btn.getAttribute('data-carte-idx');
-      var choix = btn.getAttribute('data-choix');
-      if (reponsesTexte.cartes[carteIdx] !== undefined) return;
-      reponsesTexte.cartes[carteIdx] = (choix === 'trouve');
-      var parent = btn.parentElement;
-      var boutons = parent.querySelectorAll('button');
-      boutons.forEach(function(b) { b.disabled = true; });
-      btn.classList.add('actif');
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function marquerCopie(btn) {
-      var copierIdx = btn.getAttribute('data-copier-idx');
-      if (reponsesTexte.copier[copierIdx] !== undefined) return;
-      reponsesTexte.copier[copierIdx] = true;
-      btn.classList.add('actif');
-      btn.disabled = true;
-      btn.textContent = '✓ Recopié';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function majReponseOpen(openIdx, valeur) {
-      for (var i = 0; i < questionsOuvertes.length; i++) {
-        if (questionsOuvertes[i].idx === openIdx) {
-          questionsOuvertes[i].reponse = valeur;
-          break;
-        }
-      }
-    }
-
-    function validerOpen(openIdx) {
-      if (reponsesTexte.open[openIdx] !== undefined) return;
-      var q = null;
-      for (var i = 0; i < questionsOuvertes.length; i++) {
-        if (questionsOuvertes[i].idx === openIdx) { q = questionsOuvertes[i]; break; }
-      }
-      if (!q) return;
-      var saisi = (q.reponse || '').trim();
-      if (saisi === '') {
-        var fbVide = document.getElementById('openFeedback-' + openIdx);
-        if (fbVide) fbVide.textContent = 'Veuillez écrire une réponse avant de valider.';
-        return;
-      }
-      reponsesTexte.open[openIdx] = { texte: q.texte, reponse: saisi, valide: true };
-      var input = document.getElementById('openInput-' + openIdx);
-      var btn = document.getElementById('openBtnValider-' + openIdx);
-      var fb = document.getElementById('openFeedback-' + openIdx);
-      if (input) { input.disabled = true; input.classList.add('open-ok'); }
-      if (btn) { btn.disabled = true; btn.textContent = '✓ Validée'; btn.classList.add('actif'); }
-      if (fb) fb.textContent = 'Réponse enregistrée.';
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    var relierState = {};
-
-    function initRelierState(relierIdx) {
-      if (!relierState[relierIdx]) relierState[relierIdx] = { associations: {}, selection: null, mapPaires: null };
-      return relierState[relierIdx];
-    }
-
-    function setRelierPaires(relierIdx, mapPaires) {
-      var st = initRelierState(relierIdx);
-      st.mapPaires = mapPaires;
-    }
-
-    function selectionnerRelier(relierIdx, cote, idx) {
-      var st = initRelierState(relierIdx);
-      if (st.valide) return;
-      var exoEl = document.querySelector('.relier-exo[data-relier-idx="' + relierIdx + '"]');
-      if (!exoEl) return;
-      var item = exoEl.querySelector('.relier-item[data-cote="' + cote + '"][data-idx="' + idx + '"]');
-      if (!item) return;
-      if (item.classList.contains('associe')) return;
-      var sel = st.selection;
-      if (!sel) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      if (sel.cote === cote) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      var gaucheIdx = sel.cote === 'gauche' ? sel.idx : idx;
-      var droiteIdx = sel.cote === 'droite' ? sel.idx : idx;
-      var droiteEl = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + droiteIdx + '"]');
-      if (droiteEl && droiteEl.classList.contains('associe')) {
-        exoEl.querySelectorAll('.relier-item.selectionne').forEach(function(el) { el.classList.remove('selectionne'); });
-        item.classList.add('selectionne');
-        st.selection = { cote: cote, idx: idx };
-        return;
-      }
-      var gaucheEl = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gaucheIdx + '"]');
-      st.associations[gaucheIdx] = droiteIdx;
-      if (gaucheEl) { gaucheEl.classList.remove('selectionne'); gaucheEl.classList.add('associe'); }
-      if (droiteEl) { droiteEl.classList.remove('selectionne'); droiteEl.classList.add('associe'); }
-      st.selection = null;
-      var totalPaires = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]').length;
-      var nbAssociees = Object.keys(st.associations).length;
-      if (nbAssociees >= totalPaires) validerRelier(relierIdx);
-    }
-
-    function validerRelier(relierIdx) {
-      var exoEl = document.querySelector('.relier-exo[data-relier-idx="' + relierIdx + '"]');
-      if (!exoEl) return;
-      var st = initRelierState(relierIdx);
-      var mapPaires = st.mapPaires;
-      if (!mapPaires) return;
-      var itemsGauche = exoEl.querySelectorAll('.relier-item[data-cote="gauche"]');
-      var total = itemsGauche.length;
-      var bonnes = 0;
-      exoEl.querySelectorAll('.relier-item.erreur').forEach(function(el) { el.classList.remove('erreur'); });
-      for (var gIdx in st.associations) {
-        var dIdx = st.associations[gIdx];
-        var texteGauche = itemsGauche[parseInt(gIdx)].querySelector('.texte').textContent.trim();
-        var itemDroite = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
-        var texteDroite = itemDroite ? itemDroite.getAttribute('data-droite-texte') : '';
-        var bonne = (mapPaires[texteGauche] === texteDroite);
-        if (bonne) bonnes++;
-        else {
-          var elG = exoEl.querySelector('.relier-item[data-cote="gauche"][data-idx="' + gIdx + '"]');
-          var elD = exoEl.querySelector('.relier-item[data-cote="droite"][data-idx="' + dIdx + '"]');
-          if (elG) elG.classList.add('erreur');
-          if (elD) elD.classList.add('erreur');
-        }
-      }
-      var resultat = document.getElementById('relierResultat-' + relierIdx);
-      var correct = (bonnes === total);
-      reponsesTexte.relier[relierIdx] = { valide: correct, bonnes: bonnes, total: total };
-      if (correct) {
-        st.valide = true;
-        if (resultat) resultat.textContent = 'Toutes les associations sont correctes.';
-      } else {
-        if (resultat) resultat.textContent = bonnes + '/' + total + ' associations correctes. Réessayez.';
-        setTimeout(function() {
-          exoEl.querySelectorAll('.relier-item.erreur').forEach(function(el) { el.classList.remove('erreur'); });
-          st.associations = {};
-          st.selection = null;
-          exoEl.querySelectorAll('.relier-item.associe, .relier-item.selectionne').forEach(function(el) { el.classList.remove('associe', 'selectionne'); });
-          if (resultat) resultat.textContent = '';
-        }, 1500);
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    var ordreState = {};
-
-    function initOrdreState(ordreIdx) {
-      if (!ordreState[ordreIdx]) ordreState[ordreIdx] = { valide: false, ordreInitial: null };
-      return ordreState[ordreIdx];
-    }
-
-    function initDragAndDropOrdre() {
-      var grilles = document.querySelectorAll('.ordre-grille');
-      grilles.forEach(function(grille) {
-        var ordreIdx = grille.getAttribute('data-ordre-idx');
-        var st = initOrdreState(ordreIdx);
-        var items = grille.querySelectorAll('.ordre-item');
-        var ordre = [];
-        items.forEach(function(it) { ordre.push(it.querySelector('.ordre-texte').textContent.trim()); });
-        st.ordreInitial = ordre;
-
-        items.forEach(function(item) {
-          item.addEventListener('dragstart', function(e) {
-            if (st.valide) { e.preventDefault(); return; }
-            item.classList.add('dragging');
-            e.dataTransfer.effectAllowed = 'move';
-            e.dataTransfer.setData('text/plain', '');
-          });
-          item.addEventListener('dragend', function() {
-            item.classList.remove('dragging');
-            grille.querySelectorAll('.ordre-item').forEach(function(el) { el.classList.remove('drag-over'); });
-          });
-          item.addEventListener('dragover', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            e.dataTransfer.dropEffect = 'move';
-          });
-          item.addEventListener('dragenter', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            if (!item.classList.contains('dragging')) item.classList.add('drag-over');
-          });
-          item.addEventListener('dragleave', function() {
-            item.classList.remove('drag-over');
-          });
-          item.addEventListener('drop', function(e) {
-            e.preventDefault();
-            if (st.valide) return;
-            item.classList.remove('drag-over');
-            var dragging = grille.querySelector('.ordre-item.dragging');
-            if (!dragging || dragging === item) return;
-            var allItems = Array.from(grille.querySelectorAll('.ordre-item'));
-            var dragIdx = allItems.indexOf(dragging);
-            var dropIdx = allItems.indexOf(item);
-            if (dragIdx < dropIdx) grille.insertBefore(dragging, item.nextSibling);
-            else grille.insertBefore(dragging, item);
-            renumOrdre(grille);
-            var res = document.getElementById('ordreResultat-' + ordreIdx);
-            if (res) res.textContent = '';
-          });
-        });
-      });
-    }
-
-    function renumOrdre(grille) {
-      var items = grille.querySelectorAll('.ordre-item');
-      items.forEach(function(el, idx) {
-        var num = el.querySelector('.ordre-num');
-        if (num) num.textContent = (idx + 1);
-      });
-    }
-
-    function validerOrdre(ordreIdx) {
-      var grille = document.getElementById('ordreGrille-' + ordreIdx);
-      if (!grille) return;
-      var st = initOrdreState(ordreIdx);
-      if (st.valide) return;
-
-      var items = grille.querySelectorAll('.ordre-item');
-      var ordreActuel = [];
-      items.forEach(function(it) { ordreActuel.push(it.querySelector('.ordre-texte').textContent.trim()); });
-
-      var ordreCorrect = [];
-      var positionsOriginales = [];
-      items.forEach(function(it) {
-        positionsOriginales.push({ texte: it.querySelector('.ordre-texte').textContent.trim(), original: parseInt(it.getAttribute('data-original')) });
-      });
-      positionsOriginales.sort(function(a, b) { return a.original - b.original; });
-      positionsOriginales.forEach(function(p) { ordreCorrect.push(p.texte); });
-
-      var bonnes = 0;
-      for (var i = 0; i < ordreActuel.length; i++) {
-        if (ordreActuel[i] === ordreCorrect[i]) bonnes++;
-      }
-      var correct = (bonnes === ordreActuel.length);
-      var resultat = document.getElementById('ordreResultat-' + ordreIdx);
-      var btnValider = document.getElementById('ordreBtnValider-' + ordreIdx);
-
-      reponsesTexte.ordre[ordreIdx] = { valide: correct, bonnes: bonnes, total: ordreActuel.length };
-
-      if (correct) {
-        st.valide = true;
-        if (resultat) resultat.textContent = 'Tous les éléments sont bien placés.';
-        if (btnValider) btnValider.disabled = true;
-        grille.querySelectorAll('.ordre-item').forEach(function(it) { it.setAttribute('draggable', 'false'); it.style.cursor = 'default'; });
-      } else {
-        if (resultat) resultat.textContent = bonnes + '/' + ordreActuel.length + ' bien placés. Réessayez.';
-        setTimeout(function() {
-          if (resultat) resultat.textContent = '';
-        }, 1500);
-      }
-      majNoteGlobale();
-      verifierQuizTermine();
-    }
-
-    function calculerNote() {
-      var note = {
-        quiz:   { bonnes: 0, total: Object.keys(reponsesTexte.quiz).length },
-        vf:     { bonnes: 0, total: Object.keys(reponsesTexte.vf).length },
-        tt:     { bonnes: 0, total: Object.keys(reponsesTexte.tt).length },
-        cartes: { bonnes: 0, total: Object.keys(reponsesTexte.cartes).length },
-        relier: { bonnes: 0, total: 0 },
-        ordre:  { bonnes: 0, total: 0 },
-        copier: { bonnes: 0, total: Object.keys(reponsesTexte.copier).length },
-        open:   { bonnes: 0, total: Object.keys(reponsesTexte.open).length },
-        total:  { bonnes: 0, total: 0 }
-      };
-
-      Object.keys(reponsesTexte.quiz).forEach(function(k) { if (reponsesTexte.quiz[k].correct) note.quiz.bonnes++; });
-      Object.keys(reponsesTexte.vf).forEach(function(k) { if (reponsesTexte.vf[k].correct) note.vf.bonnes++; });
-      Object.keys(reponsesTexte.tt).forEach(function(k) { if (reponsesTexte.tt[k].correct) note.tt.bonnes++; });
-      Object.keys(reponsesTexte.cartes).forEach(function(k) { if (reponsesTexte.cartes[k] === true) note.cartes.bonnes++; });
-      Object.keys(reponsesTexte.copier).forEach(function(k) { if (reponsesTexte.copier[k] === true) note.copier.bonnes++; });
-      Object.keys(reponsesTexte.open).forEach(function(k) { if (reponsesTexte.open[k].valide) note.open.bonnes++; });
-      Object.keys(reponsesTexte.relier).forEach(function(k) {
-        var r = reponsesTexte.relier[k];
-        note.relier.total += r.total;
-        note.relier.bonnes += r.bonnes;
-      });
-      Object.keys(reponsesTexte.ordre).forEach(function(k) {
-        var r = reponsesTexte.ordre[k];
-        note.ordre.total += r.total;
-        note.ordre.bonnes += r.bonnes;
-      });
-
-      note.total.bonnes = note.quiz.bonnes + note.vf.bonnes + note.tt.bonnes + note.cartes.bonnes
-                        + note.relier.bonnes + note.ordre.bonnes + note.copier.bonnes + note.open.bonnes;
-      note.total.total  = note.quiz.total  + note.vf.total  + note.tt.total  + note.cartes.total
-                        + note.relier.total  + note.ordre.total  + note.copier.total + note.open.total;
-
-      return note;
-    }
-
-    function majNoteGlobale() {
-      var note = calculerNote();
-      var lignes = [];
-      if (note.quiz.total > 0)   lignes.push({ label: 'Quiz',           b: note.quiz.bonnes,   t: note.quiz.total });
-      if (note.vf.total > 0)     lignes.push({ label: 'Vrai / Faux',    b: note.vf.bonnes,     t: note.vf.total });
-      if (note.tt.total > 0)     lignes.push({ label: 'Textes à trous', b: note.tt.bonnes,     t: note.tt.total });
-      if (note.cartes.total > 0) lignes.push({ label: 'Cartes',         b: note.cartes.bonnes, t: note.cartes.total });
-      if (note.relier.total > 0) lignes.push({ label: 'Relier',         b: note.relier.bonnes, t: note.relier.total });
-      if (note.ordre.total > 0)  lignes.push({ label: 'Ordre',          b: note.ordre.bonnes,  t: note.ordre.total });
-      if (note.copier.total > 0) lignes.push({ label: 'Copier',         b: note.copier.bonnes, t: note.copier.total });
-      if (note.open.total > 0)   lignes.push({ label: 'Questions ouvertes', b: note.open.bonnes, t: note.open.total });
-
-      var html = '';
-      if (lignes.length === 0) {
-        html = '<div class="note-ligne"><span class="note-label">Aucune réponse pour le moment.</span></div>';
-      } else {
-        lignes.forEach(function(l) {
-          html += '<div class="note-ligne"><span class="note-label">' + l.label + '</span><span class="note-valeur">' + l.b + ' / ' + l.t + '</span></div>';
-        });
-      }
-      var el = document.getElementById('noteLignes');
-      if (el) el.innerHTML = html;
-      var totalEl = document.getElementById('noteTotalValeur');
-      if (totalEl) totalEl.textContent = note.total.bonnes + ' / ' + note.total.total;
-
-      var btnRevoir = document.getElementById('btnRevoir');
-      if (btnRevoir && note.total.total > 0) {
-        var pct = (note.total.bonnes / note.total.total) * 100;
-        btnRevoir.style.display = (pct < 60) ? 'inline-block' : 'none';
-      }
-    }
-
-    var popupOuverte = false;
-
-    function verifierQuizTermine() {
-      if (popupOuverte) return;
-      var totalExos = Object.keys(exoNumParType.quiz).length
-                    + Object.keys(exoNumParType.vf).length
-                    + Object.keys(exoNumParType.tt).length
-                    + Object.keys(exoNumParType.carte).length
-                    + Object.keys(exoNumParType.relier).length
-                    + Object.keys(exoNumParType.ordre).length
-                    + Object.keys(exoNumParType.copier).length
-                    + Object.keys(exoNumParType.open).length;
-      if (totalExos === 0) return;
-
-      var faits = Object.keys(reponsesTexte.quiz).length
-                + Object.keys(reponsesTexte.vf).length
-                + Object.keys(reponsesTexte.tt).length
-                + Object.keys(reponsesTexte.cartes).length
-                + Object.keys(reponsesTexte.relier).length
-                + Object.keys(reponsesTexte.ordre).length
-                + Object.keys(reponsesTexte.copier).length
-                + Object.keys(reponsesTexte.open).length;
-
-      if (faits >= totalExos) {
-        if (!envoiEffectue) envoyerToutesReponses(true);
-        ouvrirPopupResultat();
-      }
-    }
-
-    function ouvrirPopupResultat() {
-      popupOuverte = true;
-      var note = calculerNote();
-      var html = '';
-      var lignes = [];
-      if (note.quiz.total > 0)   lignes.push({ label: 'Quiz',           b: note.quiz.bonnes,   t: note.quiz.total });
-      if (note.vf.total > 0)     lignes.push({ label: 'Vrai / Faux',    b: note.vf.bonnes,     t: note.vf.total });
-      if (note.tt.total > 0)     lignes.push({ label: 'Textes à trous', b: note.tt.bonnes,     t: note.tt.total });
-      if (note.cartes.total > 0) lignes.push({ label: 'Cartes',         b: note.cartes.bonnes, t: note.cartes.total });
-      if (note.relier.total > 0) lignes.push({ label: 'Relier',         b: note.relier.bonnes, t: note.relier.total });
-      if (note.ordre.total > 0)  lignes.push({ label: 'Ordre',          b: note.ordre.bonnes,  t: note.ordre.total });
-      if (note.copier.total > 0) lignes.push({ label: 'Copier',         b: note.copier.bonnes, t: note.copier.total });
-      if (note.open.total > 0)   lignes.push({ label: 'Questions ouvertes', b: note.open.bonnes, t: note.open.total });
-
-      lignes.forEach(function(l) {
-        html += '<div class="popup-note-ligne"><span class="note-label">' + l.label + '</span><span class="note-valeur">' + l.b + ' / ' + l.t + '</span></div>';
-      });
-      document.getElementById('popupNoteLignes').innerHTML = html;
-      document.getElementById('popupNoteTotal').textContent = note.total.bonnes + ' / ' + note.total.total;
-
-      document.getElementById('popupActionsSansQuestions').style.display = 'flex';
-
-      document.getElementById('popupResultatOverlay').classList.add('visible');
-    }
-
-    function fermerPopupResultat() {
-      document.getElementById('popupResultatOverlay').classList.remove('visible');
-      popupOuverte = false;
-    }
-
-    function envoyerToutesReponses(silencieux) {
-      if (envoiEffectue) return Promise.resolve();
-
-      var nom = getNomUtilisateurCourant();
-      var texteId = texteActuel ? texteActuel.id : '';
-      var titre = texteActuel ? texteActuel.titre : '';
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      var quizTotal = 0, quizBonnes = 0;
-      var choixQcmArr = [];
-      Object.keys(reponsesTexte.quiz).forEach(function(k) {
-        quizTotal++;
-        var r = reponsesTexte.quiz[k];
-        if (r.correct) quizBonnes++;
-        choixQcmArr.push((r.correct ? 'V' : 'F') + ':' + (parseInt(r.choix) + 1));
-      });
-      var choixQcm = choixQcmArr.join('|');
-
-      var vfTotal = 0, vfBonnes = 0;
-      Object.keys(reponsesTexte.vf).forEach(function(k) { vfTotal++; if (reponsesTexte.vf[k].correct) vfBonnes++; });
-
-      var ttTotal = 0, ttBonnes = 0;
-      Object.keys(reponsesTexte.tt).forEach(function(k) { ttTotal++; if (reponsesTexte.tt[k].correct) ttBonnes++; });
-
-      var cartesTotal = 0, cartesBonnes = 0, cartesStr = [];
-      Object.keys(reponsesTexte.cartes).forEach(function(k) {
-        cartesTotal++;
-        if (reponsesTexte.cartes[k] === true) cartesBonnes++;
-        cartesStr.push(reponsesTexte.cartes[k] ? '1' : '0');
-      });
-
-      var relierTotal = 0, relierBonnes = 0;
-      Object.keys(reponsesTexte.relier).forEach(function(k) {
-        var r = reponsesTexte.relier[k];
-        relierTotal += r.total;
-        relierBonnes += r.bonnes;
-      });
-
-      var ordreTotal = 0, ordreBonnes = 0;
-      Object.keys(reponsesTexte.ordre).forEach(function(k) {
-        var r = reponsesTexte.ordre[k];
-        ordreTotal += r.total;
-        ordreBonnes += r.bonnes;
-      });
-
-      var copierTotal = 0, copierBonnes = 0;
-      Object.keys(reponsesTexte.copier).forEach(function(k) {
-        copierTotal++;
-        if (reponsesTexte.copier[k] === true) copierBonnes++;
-      });
-
-      var openTotal = 0, openBonnes = 0;
-      var questionsOuvertesRep = [];
-      Object.keys(reponsesTexte.open).forEach(function(k) {
-        openTotal++;
-        var r = reponsesTexte.open[k];
-        if (r.valide) openBonnes++;
-        questionsOuvertesRep.push('Q' + (parseInt(k) + 1) + ': ' + (r.reponse || ''));
-      });
-      var reponseOuverteFinale = questionsOuvertesRep.join('\n\n');
-
-      var details = {
-        quiz:    { bonnes: quizBonnes,    total: quizTotal,    choix: choixQcm },
-        vf:      { bonnes: vfBonnes,      total: vfTotal },
-        tt:      { bonnes: ttBonnes,      total: ttTotal },
-        cartes:  { bonnes: cartesBonnes,  total: cartesTotal,  reponses: cartesStr.join(',') },
-        relier:  { bonnes: relierBonnes,  total: relierTotal },
-        ordre:   { bonnes: ordreBonnes,   total: ordreTotal },
-        copier:  { bonnes: copierBonnes,  total: copierTotal },
-        open:    { bonnes: openBonnes,    total: openTotal }
-      };
-
-      var noteGlobale = calculerNote();
-
-      var url = base + '?action=saveTentative'
-        + '&nom=' + encodeURIComponent(nom)
-        + '&texteId=' + encodeURIComponent(texteId)
-        + '&titre=' + encodeURIComponent(titre)
-        + '&bonnes=' + noteGlobale.total.bonnes
-        + '&total=' + noteGlobale.total.total
-        + '&choixQcm=' + encodeURIComponent(choixQcm)
-        + '&reponseOuverte=' + encodeURIComponent(reponseOuverteFinale)
-        + '&details=' + encodeURIComponent(JSON.stringify(details));
-
-      var promesse = fetch(url).then(function(r){ return r.json(); }).then(function() {
-        envoiEffectue = true;
-        if (texteActuel) verifierValidationTexte(texteActuel);
-      }).catch(function(){});
-
-      if (!silencieux) {
-        var statut = document.getElementById('envoiStatut');
-        if (statut) {
-          statut.textContent = 'Envoi en cours...';
-          promesse.then(function() { statut.textContent = '✓ Réponses envoyées.'; })
-                  .catch(function() { statut.textContent = 'Erreur d\'envoi.'; });
-        }
-      }
-
-      return promesse;
-    }
-
-    function relireEtRefaire() {
-      reponsesTexte = { quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {}, open: {} };
-      questionsOuvertes = [];
-      relierState = {};
-      ordreState = {};
-      exoNumParType = { quiz: {}, vf: {}, tt: {}, relier: {}, carte: {}, ordre: {}, copier: {}, open: {} };
-      envoiEffectue = false;
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-      setTimeout(function() { window.location.reload(); }, 300);
-    }
-
-    function verifierValidationTexte(texte) {
-      var nom = getNomUtilisateurCourant();
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      fetch(base + '?action=getTentativeUtilisateur'
-        + '&nom=' + encodeURIComponent(nom)
-        + '&texteId=' + encodeURIComponent(texte.id))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          if (data && data.valide) {
-            afficherBandeauValidation(data.date, data.pourcentage);
-          }
-        })
-        .catch(function() {});
-    }
-
-    function afficherBandeauValidation(dateStr, pourcentage) {
-      var container = document.getElementById('texteContainer');
-      if (!container) return;
-      if (container.querySelector('.validation-texte-info')) return;
-
-      var ligne = document.createElement('div');
-      ligne.className = 'validation-texte-info';
-      ligne.style.fontStyle = 'italic';
-      ligne.style.marginBottom = '12px';
-      ligne.style.padding = '8px 12px';
-      ligne.style.opacity = '.9';
-      ligne.style.fontSize = '.95em';
-      ligne.style.borderLeft = '3px solid #2d6a4f';
-
-      var texte = 'Vous avez validé ce texte';
-      if (dateStr) texte += ' le ' + dateStr;
-      if (typeof pourcentage === 'number') texte += ' (' + pourcentage + ' %)';
-
-      ligne.textContent = texte;
-
-      container.insertBefore(ligne, container.firstChild);
-    }
-
-    // ============================================================
-    // VERSION ALTERNATIVE (fichier suffixé "(...)")
-    // ============================================================
-   function verifierVersionParenthese(texte) {
-  if (!texte || !texte.titre) return;
-  var tous = DataManager.getTousLesTextesComplets();  // ← au lieu de textesData
-  var alt = null;
-  var titrePrincipal = texte.titre;
-
-  for (var i = 0; i < tous.length; i++) {
-    var t = tous[i];
-    if (!t.titre) continue;
-    var re = new RegExp('^' + echapperRegexPourRegex(titrePrincipal) + '\\s*\\(([^)]+)\\)\\s*$');
-    var m = t.titre.match(re);
-    if (m) {
-      alt = { id: t.id, titre: t.titre, suffixe: m[1].trim() };
-      break;
-    }
-  }
-
-  if (alt) {
-    document.querySelectorAll('.btn-imprimer-alternative').forEach(function(btn) {
-      btn.textContent = 'Imprimer la version ' + alt.suffixe;
-      btn.style.display = 'inline-block';
-    });
-    window._altTexteId = alt.id;
-    window._altTexteTitre = alt.titre;
-    window._altTexteSuffixe = alt.suffixe;
-  }
-}
-
-   function imprimerVersionParenthese() {
-  if (!window._altTexteId) {
-    alert('Aucune version alternative disponible.');
-    return;
-  }
-  // Passe la liste COMPLÈTE pour que imprimerTexte puisse trouver le texte
-  var tous = DataManager.getTousLesTextesComplets();
-  imprimerTexte(window._altTexteId, window._altTexteTitre, tous);
-}
-
-    // ============================================================
-    // ANNOTATIONS
-    // ============================================================
-    function togglePanneauAnnotation() {
-      var panneau = document.getElementById('panneauAnnotation');
-      var btn = document.getElementById('btnAnnotationFlottant');
-      var ouvert = panneau.classList.toggle('ouvert');
-      btn.classList.toggle('ouvert', ouvert);
-      if (ouvert && !annotationChargee && texteActuel) {
-        chargerAnnotation(texteActuel.id);
-      }
-    }
-
-    function chargerAnnotation(texteId) {
-      var nom = getNomUtilisateurCourant();
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-      var ta = document.getElementById('annotationTextarea');
-      var statut = document.getElementById('annotationStatut');
-      if (!ta) return;
-      ta.value = '';
-      if (statut) statut.textContent = 'Chargement...';
-
-      fetch(base + '?action=getAnnotation&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          ta.value = (data && data.annotation) ? data.annotation : '';
-          annotationChargee = true;
-          if (statut) statut.textContent = '';
-        })
-        .catch(function() { if (statut) statut.textContent = 'Erreur de chargement.'; });
-    }
-
-    function enregistrerAnnotation() {
-      if (!texteActuel) return;
-      var nom = getNomUtilisateurCourant();
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-      var ta = document.getElementById('annotationTextarea');
-      var statut = document.getElementById('annotationStatut');
-      if (!ta) return;
-      var valeur = ta.value;
-      if (statut) statut.textContent = 'Enregistrement...';
-
-      fetch(base + '?action=saveAnnotation'
-        + '&nom=' + encodeURIComponent(nom)
-        + '&texteId=' + encodeURIComponent(texteActuel.id)
-        + '&titre=' + encodeURIComponent(texteActuel.titre || '')
-        + '&annotation=' + encodeURIComponent(valeur))
-        .then(function(r) { return r.json(); })
-        .then(function() {
-          if (statut) statut.textContent = valeur.trim() === '' ? 'Note supprimée.' : '✓ Enregistré.';
-        })
-        .catch(function() { if (statut) statut.textContent = 'Erreur d\'enregistrement.'; });
-    }
-
-    function construireHtmlTexte(texte, imagesTheme) {
-      imagesTheme = imagesTheme || {};
-      var contenu = texte.contenu || '';
-      if (!contenu) return '<p><em>Texte vide.</em></p>';
-
-      var ordreBlocs = texte.ordreBlocs || [];
-      var parts = contenu.split(' | ');
-
-      var paragraphesArray = [];
-      var quizTexte = '', openTexte = '', ordreTexte = '', carteTexte = '', relierTexte = '', ttTexte = '', vfTexte = '', copierTexte = '';
-
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
-        else if (part.startsWith('qs:')) openTexte = openTexte ? openTexte + '\n\n' + part : part;
-        else if (part.startsWith('o:')) ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
-        else if (part.startsWith('r:')) carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
-        else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
-        else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
-        else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-        else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
-        else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subParas = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subParas.forEach(function(sub) { paragraphesArray.push(sub.trim()); });
-          }
-        }
-      });
-
-      var quizsParsed = quizTexte ? parserQuizs(quizTexte) : [];
-      var opensParsed = [];
-      if (openTexte) {
-        openTexte.split('\n\n').forEach(function(bloc) {
-          var t = bloc.replace(/^qs:\s*/i, '').trim();
-          if (t) opensParsed.push(t);
-        });
-      }
-      var ordresParsed = [];
-      if (ordreTexte) {
-        ordreTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserOrdre(bloc);
-          if (p && p.elements.length > 0) ordresParsed.push(p);
-        });
-      }
-      var cartesParsed = carteTexte ? parserCartes(carteTexte) : [];
-      var reliersParsed = [];
-      if (relierTexte) {
-        relierTexte.split('\n\n').forEach(function(bloc) {
-          var p = parserRelier(bloc);
-          if (p && p.paires.length > 0) reliersParsed.push(p);
-        });
-      }
-      var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
-      var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
-      var copiersParsed = copierTexte ? parserCopier(copierTexte) : [];
-
-      var blocsOrdonnes = [];
-      if (ordreBlocs.length > 0) {
-        ordreBlocs.forEach(function(item) {
-          var p = item.split(':');
-          var type = p[0];
-          var idx = p.length > 1 ? parseInt(p[1]) : 0;
-          if (type === 'texte' && paragraphesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'texte', data: paragraphesArray[idx] });
-          else if (type === 'quiz' && quizsParsed[idx]) blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
-          else if (type === 'open' && opensParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
-          else if (type === 'ordre' && ordresParsed[idx]) blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
-          else if (type === 'carte' && cartesParsed[idx]) blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
-          else if (type === 'relier' && reliersParsed[idx]) blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
-          else if (type === 'tt' && ttsParsed[idx]) blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-          else if (type === 'vf' && vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-          else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
-        });
-      } else {
-        paragraphesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'texte', data: s }); });
-        quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
-        opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
-        ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
-        if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-        ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
-        cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
-        reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
-        copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
-      }
-
-      var textePourCompter = '';
-      blocsOrdonnes.forEach(function(b) { if (b.type === 'texte') textePourCompter += ' ' + b.data; });
-      var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-      var tempsLecture = Math.max(1, Math.round(nbMots / 14));
-      texte._nbMots = nbMots;
-      texte._tempsLecture = tempsLecture;
-
-      window._relierPaires = {};
-      var relierCountPourStockage = 0;
-      blocsOrdonnes.forEach(function(b) {
-        if (b.type === 'relier') {
-          var map = {};
-          (b.data.paires || []).forEach(function(p) { map[p.gauche] = p.droite; });
-          window._relierPaires[relierCountPourStockage] = map;
-          relierCountPourStockage++;
-        }
-      });
-
-      var numeroTexte = extraireNumeroTexte(texte.titre);
-      var titreAffiche = extraireTitreSansNumero(texte.titre);
-      var numeroHtml = (numeroTexte !== Infinity)
-        ? '<span class="numero-texte">' + numeroTexte + '</span>'
-        : '';
-
-      var html = '';
-      html += '<div class="bandeau-titre"><div class="ligne-titre">' + numeroHtml + '<h1>' + echapperHtml(titreAffiche) + '</h1></div></div>';
-
-      html += '<div class="texte-zone">';
-      blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type !== 'texte') return;
-        html += '<div class="paragraphe">';
-        var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
-        var bufferTexte = '';
-
-        function flushParagraphe() {
-          if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-          var blocs = decouperEnBlocsTexte(bufferTexte);
-          blocs.forEach(function(bloc) {
-            html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
-          });
-          bufferTexte = '';
-        }
-
-        lignesPara.forEach(function(l) {
-          var trimmed = l.trim();
-          var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
-          if (imgMatch) {
-            flushParagraphe();
-            var nomImg = imgMatch[1];
-            var opt1 = (imgMatch[2] || '').toLowerCase();
-            var opt2 = (imgMatch[3] || '').toLowerCase();
-            var position = 'centre', taille = 'moyen';
-            [opt1, opt2].forEach(function(o) {
-              if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
-              else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
-            });
-            var url = imagesTheme[nomImg];
-            if (!url) html += '<div class="img-manquante">[image manquante : ' + echapperHtml(nomImg) + ']</div>';
-            else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
-            return;
-          }
-          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
-        });
-        flushParagraphe();
-        html += '</div>';
-      });
-      html += '</div>';
-
-      html += construireExercicesPourFeuille(blocsOrdonnes);
       return html;
     }
-
-    function construireBlocARetenir(texte) {
-      var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      if (aRetenirClean.length === 0) return '';
-      var html = '<div class="bloc-a-retenir"><div class="bloc-a-retenir-titre">À retenir</div><ul class="bloc-a-retenir-liste">';
-      aRetenirClean.forEach(function(phrase) { html += '<li>' + echapperHtml(phrase) + '</li>'; });
-      html += '</ul></div>';
-      return html;
-    }
-
-    function arabiserDans(container) {
-      if (!container) return;
-      var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-      var noeuds = [];
-      var n;
-      while ((n = walker.nextNode())) { if (/[\u0600-\u06FF]/.test(n.nodeValue || '')) noeuds.push(n); }
-      noeuds.forEach(function(texteNode) {
-        var parent = texteNode.parentNode;
-        if (!parent) return;
-        if (parent.classList && parent.classList.contains('arabe')) return;
-        if (parent.classList && parent.classList.contains('copier-mot')) return;
-        var txt = texteNode.nodeValue;
-        var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
-        var parts = txt.split(regex);
-        var frag = document.createDocumentFragment();
-        parts.forEach(function(part) {
-          if (part === '') return;
-          if (/[\u0600-\u06FF]/.test(part)) {
-            var span = document.createElement('span');
-            span.className = 'arabe';
-            span.setAttribute('lang', 'ar');
-            span.textContent = part;
-            frag.appendChild(span);
-          } else frag.appendChild(document.createTextNode(part));
-        });
-        parent.replaceChild(frag, texteNode);
-      });
-    }
-
-    function afficherFilAriane(texte) {
-      var html = '';
-      html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
-      html += '<a href="/medit/présentation.html">Tous les textes</a>';
-
-      var themeMeta = themesData[texte.categorie] || {};
-      var section = (themeMeta.theme || '').trim();
-
-      if (section) {
-        html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
-      }
-
-      if (texte.categorie) {
-        html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
-      }
-
-      html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
-
-      var el = document.getElementById('filAriane');
-      if (el) el.innerHTML = html;
-    }
-
-    function construireNavDansTheme(texte) {
-      if (!texte.categorie) return {};
-      var memeTheme = textesData.filter(function(c) { return (c.categorie || '') === (texte.categorie || ''); });
-      memeTheme = trierAlphabetique(memeTheme);
-      var indexActuel = -1;
-      for (var i = 0; i < memeTheme.length; i++) if (String(memeTheme[i].id) === String(texte.id)) { indexActuel = i; break; }
-      return {
-        liste: memeTheme,
-        index: indexActuel,
-        precedent: indexActuel > 0 ? memeTheme[indexActuel - 1] : null,
-        suivant: indexActuel !== -1 && indexActuel < memeTheme.length - 1 ? memeTheme[indexActuel + 1] : null
-      };
-    }
-
-    function construireBlocAutresThemesMemeTheme(texte) {
-      if (!texte.categorie) return '';
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-      if (!themeActuel) return '';
-      var autresThemes = [];
-      for (var titre in themesData) {
-        if (titre === texte.categorie) continue;
-        var meta = themesData[titre];
-        if ((meta.theme || '').trim() === themeActuel) {
-          autresThemes.push({
-            titre: titre,
-            couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '',
-            auteur: meta.auteur || '',
-            date: meta.date || '',
-            niveau: meta.niveau || 1,
-            pourcentage: 0,
-            couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (autresThemes.length === 0) return '';
-      autresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Dans la même section « ' + echapperHtml(themeActuel) + ' »</div>';
-      html += '<div class="bloc-bas-sous-titre">' + autresThemes.length + ' autre(s) thème(s) dans cette même section</div>';
-      html += '<div class="grille-couvertures">';
-      autresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocThemes(texte) {
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-
-      var themesAutresThemes = [];
-      for (var titre in themesData) {
-        var meta = themesData[titre];
-        var t = (meta.theme || '').trim() || 'Sans thème';
-        if (t !== themeActuel) {
-          themesAutresThemes.push({
-            titre: titre,
-            couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '',
-            auteur: meta.auteur || '',
-            date: meta.date || '',
-            niveau: meta.niveau || 1,
-            pourcentage: 0,
-            couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (themesAutresThemes.length === 0) return '';
-      themesAutresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Thème des autres sections</div>';
-      html += '<div class="bloc-bas-sous-titre">' + themesAutresThemes.length + ' thèmes(s) dans d\'autres sections</div>';
-      html += '<div class="grille-couvertures">';
-      themesAutresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireZoneBasPage(texte) {
-      return construireBlocAutresThemesMemeTheme(texte) + construireBlocThemes(texte);
-    }
-
-    function construireZoneBasTexte(texte) {
-      var nav = construireNavDansTheme(texte);
-      var html = '<div class="zone-bas-texte"><div class="nav-bas-texte">';
-      if (nav.precedent) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
-        html += '<span class="nav-label">← Précédent</span><span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder"><span class="nav-label">← Précédent</span><span class="nav-titre">Début du texte</span></div>';
-      }
-      if (nav.suivant) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.suivant.id) + '" class="nav-suivant">';
-        html += '<span class="nav-label">Suivant →</span><span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder nav-suivant"><span class="nav-label">Suivant →</span><span class="nav-titre">Fin du texte</span></div>';
-      }
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocActions(texte) {
-      var html = '<div class="bloc-actions-texte">';
-      html += '<button class="btn-action-lateral btn-imprimer" style="border:1px solid var(--border);border-radius:0;box-shadow:none;" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le texte et le quiz</button>';
-      html += '<button class="btn-action-lateral btn-imprimer-alternative" style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" onclick="imprimerVersionParenthese()">Imprimer la version alternative</button>';
-      html += '</div>';
-      return html;
-    }
-
-    function construireZoneLaterale(texte) {
-      var nav = construireNavDansTheme(texte);
-      var themeInfo = themesData[texte.categorie] || {};
-      var html = '';
-      html += construireBlocActions(texte);
-      var niveau = texte.niveau || 0;
-      var tempsLecture = texte._tempsLecture || 1;
-      var dateEcrit = formatDateLongue(texte.date);
-      var dateModif = formatDateModifComplete(texte.dateModif);
-
-      html += '<div class="bloc-section">';
-      html += '  <div class="bloc-titre"><span class="icone"></span> Informations</div>';
-      html += '  <div class="bloc-meta-texte">';
-      html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Niveau</span><span class="meta-valeur">' + niveau + '</span></div>';
-      html += '    <div class="meta-ligne"><span class="meta-icone">⏱</span><span class="meta-label">Temps de lecture</span><span class="meta-valeur">' + tempsLecture + ' min</span></div>';
-      if (dateEcrit) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Écrit le</span><span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span></div>';
-      if (dateModif) html += '    <div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Modifié le</span><span class="meta-valeur">' + echapperHtml(dateModif) + '</span></div>';
-      html += '  </div>';
-      html += '</div>';
-
-      var vocabClean = texte._vocabClean || [];
-      if (vocabClean.length > 0) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">✎</span> Vocabulaire <span class="compteur">' + vocabClean.length + '</span></div>';
-        html += '  <div class="bloc-vocabulaire">';
-        vocabClean.forEach(function(mot) {
-          var motClean = mot.replace(/\s*=\s*/g, ' : ');
-          html += '<div class="vocab-mot">' + echapperHtml(motClean) + '</div>';
-        });
-        html += '  </div>';
-        html += '</div>';
-      }
-
-      var tagsClean = (texte.tags || [])
-        .map(function(t) { return String(t).trim(); })
-        .filter(function(t) { return t !== ''; });
-
-      if (tagsClean.length > 0) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">#</span> Tags (' + tagsClean.length + ')</div>';
-        html += '  <div class="bloc-tags">';
-        tagsClean.forEach(function(tag) {
-          html += '<a class="tag-item" href="/medit/tag.html?tag=' + encodeURIComponent(tag) + '">#' + echapperHtml(tag) + '</a>';
-        });
-        html += '  </div>';
-        html += '</div>';
-      }
-
-      if (texte.categorie) {
-        var couleur = themeInfo.couleur || '#2d6a4f';
-        var sousTitre = themeInfo.sousTitre || '';
-        var auteurTheme = themeInfo.auteur || '';
-        var dateTheme = themeInfo.date || '';
-        var couvertureTheme = themeInfo.couverture || '';
-
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">📖</span> Thème</div>';
-        html += '  <a class="encart-theme" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">';
-        html += construireCarteCouverture({
-          titre: texte.categorie,
-          couleur: couleur,
-          sousTitre: sousTitre,
-          auteur: auteurTheme,
-          date: dateTheme,
-          niveau: niveau,
-          couverture: couvertureTheme
-        }, { cliquable: false });
-        html += '    <div class="encart-texte"><div class="encart-label">Extrait du thème</div><div class="encart-nom-theme">' + echapperHtml(texte.categorie) + '</div><div class="encart-cta">Voir le thème →</div></div>';
-        html += '  </a>';
-        html += '</div>';
-      }
-
-      if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">🕮</span> Les sujets dans ce thème<span class="compteur">' + nav.liste.length + '</span></div>';
-        html += '  <div class="liste-textes">';
-        nav.liste.forEach(function(c) {
-          var estActuel = String(c.id) === String(texte.id);
-          if (estActuel) html += '<div class="item-texte actuel"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">●</span></div>';
-          else html += '<a class="item-texte" href="/medit/texte.html?id=' + encodeURIComponent(c.id) + '"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">→</span></a>';
-        });
-        html += '  </div></div>';
-      }
-
-      return html;
-    }
-
-    function construireZoneBasseMobile(texte) { return construireZoneLaterale(texte); }
-
-    function construireBlocNoteGlobale(texte) {
-      var html = '<div class="bloc-note-globale" id="blocNoteGlobale">';
-      html += '  <div class="note-titre">Résultat</div>';
-      html += '  <div class="note-lignes" id="noteLignes"></div>';
-      html += '  <div class="note-totale"><span>Total</span><span class="note-valeur" id="noteTotalValeur">0 / 0</span></div>';
-      html += '  <div class="note-actions">';
-      html += '    <button class="btn-revoir" id="btnRevoir" onclick="relireEtRefaire()" style="display:none;">Relire le texte et refaire les questions</button>';
-      html += '    <button class="btn-envoyer-final" id="btnEnvoyerFinal" onclick="envoyerToutesReponses(false)">Envoyer mes réponses</button>';
-      html += '  </div>';
-      html += '  <div class="envoi-statut" id="envoiStatut"></div>';
-      html += '</div>';
-      return html;
-    }
-
-    function chargerTexte() {
-      var params = new URLSearchParams(window.location.search);
-      var texteId = params.get('id');
-      if (!texteId) { afficherErreur('Aucun texte spécifié.'); return; }
-
-      DataManager.charger()
-        .then(function(data) {
-          textesData = data.tousLesTextes || data.textes || [];
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                theme: l.theme || '',
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                description: l.description || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
-              };
-            });
-          }
-
-          texteActuel = trouverTexte(texteId, textesData);
-
-          if (!texteActuel || !texteActuel.contenu) {
-            return DataManager.getTexteAsync(texteId).then(function(texteComplet) {
-              texteActuel = texteComplet;
-              var dejaPresent = false;
-              for (var i = 0; i < textesData.length; i++) {
-                if (String(textesData[i].id) === String(texteComplet.id)) {
-                  textesData[i] = Object.assign({}, textesData[i], texteComplet);
-                  texteActuel = textesData[i];
-                  dejaPresent = true;
-                  break;
-                }
-              }
-              if (!dejaPresent) textesData.push(texteComplet);
-              return texteActuel;
-            });
-          }
-          return texteActuel;
-        })
-        .then(function(texte) {
-          if (!texte) { afficherErreur('Texte introuvable.'); return; }
-          texteActuel = texte;
-          if (texte.categorie && typeof chargerImagesTheme === 'function') {
-            chargerImagesTheme(texte.categorie)
-              .then(function(images) { imagesTheme = images || {}; afficherTexte(texte); })
-              .catch(function() { imagesTheme = {}; afficherTexte(texte); });
-          } else afficherTexte(texte);
-        })
-        .catch(function(err) {
-          console.error(err);
-          afficherErreur('Erreur de chargement.');
-        });
-    }
-
-    function afficherTexte(texte) {
-      var container = document.getElementById('texteContainer');
-      var colonneLaterale = document.getElementById('colonneLaterale');
-      var zoneBasseMobile = document.getElementById('zoneBasseMobile');
-      var zoneBasPage = document.getElementById('zoneBasPage');
-
-      var contenuHtml = construireHtmlTexte(texte, imagesTheme);
-      var blocARetenirHtml = construireBlocARetenir(texte);
-      var blocNoteGlobale = construireBlocNoteGlobale(texte);
-      var zoneBasHtml = construireZoneBasTexte(texte);
-
-      container.innerHTML = '<div class="feuille-texte">' + contenuHtml + '</div>' + blocARetenirHtml + blocNoteGlobale + zoneBasHtml;
-
-      colonneLaterale.innerHTML = construireZoneLaterale(texte);
-      zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
-      zoneBasPage.innerHTML = construireZoneBasPage(texte);
-
-      arabiserDans(container);
-      afficherFilAriane(texte);
-
-      var btnRetour = document.getElementById('btnRetourTexte');
-      if (btnRetour) {
-        if (texte.categorie) {
-          btnRetour.href = '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie);
-          btnRetour.textContent = '← Retour au thème';
-        } else {
-          btnRetour.href = '/medit/index.html';
-          btnRetour.textContent = '← Retour à l\'accueil';
-        }
-      }
-
-      document.title = texte.titre + ' - Qiraat';
-
-      if (window._relierPaires) {
-        Object.keys(window._relierPaires).forEach(function(relierIdx) { setRelierPaires(parseInt(relierIdx), window._relierPaires[relierIdx]); });
-      }
-
-      majNoteGlobale();
-      initDragAndDropOrdre();
-
-      verifierValidationTexte(texte);
-      verifierVersionParenthese(texte);
-    }
-
-    function afficherErreur(message) {
-      document.getElementById('texteContainer').innerHTML = `
-        <div class="vide-texte">
-          <span class="icone">◈</span>
-          <h2>${message}</h2>
-          <p>Vérifiez le lien ou retournez à l'accueil.</p>
-          <a href="/medit/index.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour à l'accueil</a>
-        </div>
-      `;
-    }
-
-    function partagerReseau(reseau) {
-      var url = window.location.href;
-      var titre = texteActuel ? texteActuel.titre : (document.title || 'Qiraat');
-      var textePartage = titre + ' — Qiraat';
-      var u = encodeURIComponent(url);
-      var t = encodeURIComponent(textePartage);
-      var lien = '';
-      switch (reseau) {
-        case 'facebook': lien = 'https://www.facebook.com/sharer/sharer.php?u=' + u; break;
-        case 'x':        lien = 'https://twitter.com/intent/tweet?url=' + u + '&text=' + t; break;
-        case 'whatsapp': lien = 'https://wa.me/?text=' + t + '%20' + u; break;
-        case 'telegram': lien = 'https://t.me/share/url?url=' + u + '&text=' + t; break;
-        case 'linkedin': lien = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u; break;
-        case 'email':    lien = 'mailto:?subject=' + t + '&body=' + u; break;
-      }
-      if (lien) window.open(lien, '_blank', 'width=600,height=500,noopener,noreferrer');
-    }
-
-    function partagerNatif() {
-      var url = window.location.href;
-      var titre = texteActuel ? texteActuel.titre : (document.title || 'Qiraat');
-      if (navigator.share) {
-        navigator.share({ title: titre, text: titre + ' — Qiraat', url: url }).catch(function(){});
-      } else {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function() {
-            alert('Lien copié dans le presse-papiers.');
-          }).catch(function() { prompt('Copiez ce lien :', url); });
-        } else {
-          prompt('Copiez ce lien :', url);
-        }
-      }
-    }
-
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
-    else chargerTexte();
   </script>
 
 </body>
