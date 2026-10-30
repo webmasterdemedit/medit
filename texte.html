@@ -97,46 +97,6 @@
       }
       .partage-btn:hover { opacity: .6; }
 
-                  .texte-zone p {
-        text-align: justify;
-      }
-      .texte-zone p.p-avec-source {
-        padding-right: 130px;
-        box-sizing: border-box;
-        overflow: visible;
-      }
-            .texte-zone p {
-        text-align: justify;
-      }
-      .texte-zone p.p-avec-source {
-        position: relative;
-        padding-right: 130px;
-        box-sizing: border-box;
-      }
-      .source-discrete {
-        position: absolute;
-        top: 0.1em;
-        right: 0;
-        width: 120px;
-        font-family: Georgia, serif;
-        font-style: italic;
-        font-size: 0.8em;
-        line-height: 1.2;
-        color: var(--text-muted, #888);
-        text-align: left;
-        white-space: normal;
-      }
-      @media (max-width: 1100px) {
-        .texte-zone p.p-avec-source {
-          padding-right: 0;
-        }
-        .source-discrete {
-          position: static;
-          width: auto;
-          display: inline;
-          font-size: 0.85em;
-        }
-      }
       @media (max-width: 900px) {
         .partage-btn { padding: 0 3px; }
         .partage-btn svg { width: 15px; height: 15px; }
@@ -410,7 +370,7 @@
       return titre.replace(/^\s*\d+\s+/, '').trim();
     }
 
-        function rendreSources(texte) {
+    function rendreSources(texte) {
       if (!/\[[^\]]+\]/.test(texte)) return texte;
       var matchSource = texte.match(/\[([^\]]+)\]\.?/);
       if (!matchSource) return texte;
@@ -435,13 +395,6 @@
       var phrase = texteSansSource.substring(idxDebutPhrase);
       return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
     }
-
-    function rendreSourcesDiscretes(texte) {
-  if (!texte) return texte;
-  return texte.replace(/\(source:\s*([^)]+)\)/gi, function(m, contenu) {
-    return '<span class="source-discrete">' + contenu.trim() + '</span>';
-  });
-}
 
     function rendreCitations(texte) {
       if (!texte) return texte;
@@ -1761,14 +1714,11 @@
         var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-                        function flushParagraphe() {
+        function flushParagraphe() {
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
           var blocs = decouperEnBlocsTexte(bufferTexte);
           blocs.forEach(function(bloc) {
-            var contientSourceDiscrète = /\(source:\s*[^)]+\)/i.test(bloc);
-            var rendu = rendreSourcesDiscretes(rendreSources(rendreCitations(bloc)));
-            var classe = contientSourceDiscrète ? ' class="p-avec-source"' : '';
-            html += '<p' + classe + '>' + rendu + '</p>';
+            html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
           });
           bufferTexte = '';
         }
