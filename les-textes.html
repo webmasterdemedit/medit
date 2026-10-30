@@ -34,6 +34,30 @@
       font-weight: 300;
     }
 
+    .barre-recherche {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .barre-recherche input {
+      flex: 1;
+      padding: 9px 14px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      outline: none;
+      box-sizing: border-box;
+    }
+    .barre-recherche input:focus { border-color: var(--text-secondary); }
+    .compteur-resultats {
+      font-size: 12px;
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+
     .barre-tri {
       display: flex;
       flex-wrap: wrap;
@@ -114,7 +138,6 @@
       border-color: var(--text-secondary);
     }
 
-    /* Couverture : image + barre de progression en bas */
     .carte-blog .blog-couverture {
       flex: 0 0 90px;
       display: flex;
@@ -152,7 +175,6 @@
       color: rgba(255,255,255,0.85);
     }
 
-    /* Barre de progression horizontale SOUS l'image */
     .carte-blog .blog-couverture .progression-couverture {
       flex: 0 0 3px;
       width: 100%;
@@ -245,11 +267,6 @@
       color: var(--text-muted);
     }
 
-    /* ============================================================
-       Colonne de droite : bandeau validation (si validé) + date création
-       La date de création est TOUJOURS affichée.
-       Le bandeau "Vous avez validé..." est à GAUCHE de la date.
-       ============================================================ */
     .carte-blog .blog-date {
       flex: 0 0 auto;
       display: flex;
@@ -261,7 +278,6 @@
       white-space: nowrap;
     }
 
-    /* Bandeau "Vous avez validé ce texte" (à gauche de la date) */
     .carte-blog .blog-date .bandeau-validation-texte {
       font-style: italic;
       font-size: 11px;
@@ -272,7 +288,6 @@
       white-space: normal;
     }
 
-    /* Bloc date de création (comportement d'origine) */
     .carte-blog .blog-date .bloc-date {
       display: flex;
       flex-direction: column;
@@ -350,6 +365,11 @@
     <h1>Derniers textes publiés</h1>
     <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
 
+    <div class="barre-recherche">
+      <input type="text" id="rechercheTextes" placeholder="Rechercher un titre, un thème, un tag, un extrait..." />
+      <span class="compteur-resultats" id="compteurResultats"></span>
+    </div>
+
     <div class="barre-tri" id="barreTri">
       <div class="tri-groupe">
         <label for="triTheme">Thème</label>
@@ -414,6 +434,7 @@
     var themesData = {};
     var niveauEtudiant = 0;
     var nomEtudiant = '';
+    var rechercheActive = '';
 
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
@@ -438,6 +459,10 @@
 
     function normaliserComparaison(str) {
       return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function normaliserRecherche(str) {
+      return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
     }
 
     function formatDateRelative(dateStr) {
@@ -623,7 +648,23 @@
       document.getElementById('triTheme').value = '';
       document.getElementById('triTag').value = '';
       document.getElementById('triAnnee').value = '';
+      var input = document.getElementById('rechercheTextes');
+      if (input) input.value = '';
+      rechercheActive = '';
       afficherBlog();
+    }
+
+    function brancherRecherche() {
+      var input = document.getElementById('rechercheTextes');
+      if (!input) return;
+      var timer = null;
+      input.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(function() {
+          rechercheActive = input.value.trim();
+          afficherBlog();
+        }, 150);
+      });
     }
 
     function afficherBlog() {
@@ -660,12 +701,29 @@
         });
       }
 
+      if (rechercheActive) {
+        var r = normaliserRecherche(rechercheActive);
+        accessibles = accessibles.filter(function(t) {
+          if (normaliserRecherche(t.titre).indexOf(r) !== -1) return true;
+          if (normaliserRecherche(t.categorie).indexOf(r) !== -1) return true;
+          if (normaliserRecherche(t.description || t.extrait).indexOf(r) !== -1) return true;
+          if ((t.tags || []).some(function(tag) { return normaliserRecherche(tag).indexOf(r) !== -1; })) return true;
+          return false;
+        });
+      }
+
       accessibles.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
         if (da !== db) return db - da;
         return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
       });
+
+      var compteurEl = document.getElementById('compteurResultats');
+      if (compteurEl) {
+        if (rechercheActive) compteurEl.textContent = accessibles.length + ' résultat(s)';
+        else compteurEl.textContent = '';
+      }
 
       var container = document.getElementById('contenu');
       var html = '<div class="grille-themes" id="listeBlog">';
@@ -754,7 +812,6 @@
         ? '<div class="blog-numero">' + numero + '</div>'
         : '<div class="blog-numero">◆</div>';
 
-      // === Couverture : image + barre de progression en bas ===
       var themeMeta = themesData[texte.categorie] || {};
       var couleurTheme = themeMeta.couleur || '#2d6a4f';
       var couvertureTheme = themeMeta.couverture || '';
@@ -773,14 +830,11 @@
           '</div>' +
         '</div>';
 
-      // === Colonne de droite : bandeau validation (gauche) + date création (droite) ===
-      // Bandeau : seulement si validé
       var bandeauValidationHtml = '';
       if (estValide && dateValidation) {
         bandeauValidationHtml = '<div class="bandeau-validation-texte">Vous avez validé ce texte le ' + escapeHtml(dateValidation) + '</div>';
       }
 
-      // Date de création : TOUJOURS affichée
       var dateCreationHtml = '';
       if (dateAjout) {
         dateCreationHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
@@ -818,6 +872,7 @@
     }
 
     function demarrer() {
+      brancherRecherche();
       chargerTextes();
     }
 
