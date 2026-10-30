@@ -96,6 +96,28 @@
         flex: 0 0 auto;
       }
       .partage-btn:hover { opacity: .6; }
+            .texte-zone p {
+        text-align: justify;
+      }
+      .texte-zone p.p-avec-source {
+        position: relative;
+        padding-right: 130px;
+        box-sizing: border-box;
+      }
+      .source-discrete {
+        position: absolute;
+        top: 0.15em;
+        right: 0;
+        width: 120px;
+        font-family: Georgia, serif;
+        font-style: italic;
+        font-size: 0.8em;
+        line-height: 1.25;
+        color: var(--text-muted, #888);
+        text-align: left;
+        white-space: normal;
+        box-sizing: border-box;
+      }
 
       @media (max-width: 900px) {
         .partage-btn { padding: 0 3px; }
@@ -394,6 +416,13 @@
       var avantPhrase = texteSansSource.substring(0, idxDebutPhrase);
       var phrase = texteSansSource.substring(idxDebutPhrase);
       return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
+    }
+
+        function rendreSourcesDiscretes(texte) {
+      if (!texte) return texte;
+      return texte.replace(/\(source:\s*([^)]+)\)/gi, function(m, contenu) {
+        return '<span class="source-discrete">' + contenu.trim() + '</span>';
+      });
     }
 
     function rendreCitations(texte) {
@@ -1714,11 +1743,14 @@
         var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-        function flushParagraphe() {
+                function flushParagraphe() {
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
           var blocs = decouperEnBlocsTexte(bufferTexte);
           blocs.forEach(function(bloc) {
-            html += '<p>' + rendreSources(rendreCitations(bloc)) + '</p>';
+            var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
+            var rendu = rendreSourcesDiscretes(rendreSources(rendreCitations(bloc)));
+            var classe = contientSource ? ' class="p-avec-source"' : '';
+            html += '<p' + classe + '>' + rendu + '</p>';
           });
           bufferTexte = '';
         }
