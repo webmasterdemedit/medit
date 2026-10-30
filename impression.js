@@ -122,6 +122,12 @@ function rendreSources(texte) {
   var phrase = texteSansSource.substring(idxDebutPhrase);
   return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
 }
+function rendreSourcesDiscretes(texte) {
+  if (!texte) return texte;
+  return texte.replace(/\(source:\s*([^)]+)\)/gi, function(m, contenu) {
+    return '<span class="source-discrete">' + contenu.trim() + '</span>';
+  });
+}
 
 function rendreCitations(texte) {
   if (!texte) return texte;
@@ -531,6 +537,27 @@ body {
 }
 .paragraphe p:last-child { margin-bottom: 0; }
 
+/* ---- Source discrète (source:...) ---- */
+.paragraphe p.p-avec-source {
+  position: relative;
+  padding-right: 130px;
+}
+.source-discrete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 9.5pt;
+  line-height: 1.25;
+  color: #6a5d47;
+  text-align: left;
+  white-space: normal;
+  padding-top: 2px;
+  border-top: 0.5px solid #c9bda3;
+}
+
 .paragraphe.lettrine p:first-child::first-letter {
   font-family:'Georgia',serif; font-size:3.1em; float:left; line-height:0.82;
   padding:4px 8px 0 0; color:#2a241c; font-weight:700;
@@ -833,11 +860,14 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
 
-      function flushParagraphe() {
+            function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
-          printHtml += '<p>' + appliquerGrasItalique(rendreSources(rendreCitations(bloc))) + '</p>';
+          var contientSourceDiscrète = /\(source:\s*[^)]+\)/i.test(bloc);
+          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
+          var classe = contientSourceDiscrète ? ' class="p-avec-source"' : '';
+          printHtml += '<p' + classe + '>' + rendu + '</p>';
         });
         bufferTexte = '';
       }
