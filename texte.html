@@ -97,10 +97,18 @@
       }
       .partage-btn:hover { opacity: .6; }
 
-            .source-discrete {
+                  .texte-zone p {
+        text-align: justify;
+      }
+      .texte-zone p.p-avec-source {
+        padding-right: 130px;
+        box-sizing: border-box;
+        overflow: visible;
+      }
+      .source-discrete {
         float: right;
         width: 0;
-        margin-right: -110px;
+        margin-right: -130px;
         font-family: Georgia, serif;
         font-style: italic;
         font-size: 0.8em;
@@ -109,7 +117,10 @@
         text-align: left;
         white-space: normal;
       }
-                   @media (max-width: 1100px) {
+      @media (max-width: 1100px) {
+        .texte-zone p.p-avec-source {
+          padding-right: 0;
+        }
         .source-discrete {
           float: none;
           width: auto;
@@ -1744,11 +1755,14 @@
         var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-        function flushParagraphe() {
+                function flushParagraphe() {
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
           var blocs = decouperEnBlocsTexte(bufferTexte);
           blocs.forEach(function(bloc) {
-            html += '<p>' + rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))) + '</p>';
+            var contientSourceDiscrète = /\(source:\s*[^)]+\)/i.test(bloc);
+            var rendu = rendreSourcesDiscretes(rendreSources(rendreCitations(bloc)));
+            var classe = contientSourceDiscrète ? ' class="p-avec-source"' : '';
+            html += '<p' + classe + '>' + rendu + '</p>';
           });
           bufferTexte = '';
         }
