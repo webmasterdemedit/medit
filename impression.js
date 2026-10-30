@@ -1034,7 +1034,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   printHtml += `
     <div class="pied-page">
-      <span class="pied-centre">Qiraat &mdash; W. Khan</span>
+      <span class="pied-centre">Association Va.& Vi.e ; Qiraat.fr &mdash; W. Khan</span>
       <span class="pied-ecrit">Écrit le ${dateCreationStr || '—'}</span>
       <span class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</span>
     </div>
