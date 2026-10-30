@@ -58,9 +58,9 @@
     // Texte à droite : titre + sous-titre
     html += '<div class="contenu-theme">';
     html += '<div class="titre-wrapper">';
-    html += '<span class="titre-theme">' + _escapeHtml(titre) + '</span>';
+    html += '<span class="titre-theme" style="font-size:15px !important; line-height:1.15;">' + _escapeHtml(titre) + '</span>';
     if (sousTitre) {
-      html += '<span class="sous-titre-theme">' + _escapeHtml(sousTitre) + '</span>';
+      html += '<span class="sous-titre-theme" style="font-size:10px !important; line-height:1.25;">' + _escapeHtml(sousTitre) + '</span>';
     }
     html += '</div>';
     html += '</div>';
