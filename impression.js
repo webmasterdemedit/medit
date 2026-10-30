@@ -123,6 +123,13 @@ function rendreSources(texte) {
   return avantPhrase + '<span class="source-marge">' + contenuSource + '</span>' + phrase;
 }
 
+function rendreSourcesDiscretes(texte) {
+  if (!texte) return texte;
+  return texte.replace(/\(source:\s*([^)]+)\)/gi, function(m, contenu) {
+    return '<span class="source-discrete">' + contenu.trim() + '</span>';
+  });
+}
+
 function rendreCitations(texte) {
   if (!texte) return texte;
   if (texte.indexOf('"') === -1 && texte.indexOf('“') === -1 && texte.indexOf('”') === -1 && texte.indexOf('«') === -1) return texte;
@@ -531,6 +538,27 @@ body {
 }
 .paragraphe p:last-child { margin-bottom: 0; }
 
+/* ---- Source discrète (source:...) ---- */
+.paragraphe p.p-avec-source {
+  position: relative;
+  padding-right: 130px;
+}
+.source-discrete {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 120px;
+  font-family: 'Georgia', serif;
+  font-style: italic;
+  font-size: 9.5pt;
+  line-height: 1.25;
+  color: #6a5d47;
+  text-align: left;
+  white-space: normal;
+  padding-top: 2px;
+  border-top: 0.5px solid #c9bda3;
+}
+
 .paragraphe.lettrine p:first-child::first-letter {
   font-family:'Georgia',serif; font-size:3.1em; float:left; line-height:0.82;
   padding:4px 8px 0 0; color:#2a241c; font-weight:700;
@@ -638,7 +666,6 @@ body {
   direction: ltr;
 }
 
-/* Ligne pointillée à gauche */
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
@@ -648,7 +675,6 @@ body {
   order: 0;
 }
 
-/* Flèche fine en contour, entre la ligne pointillée et le texte arabe */
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
@@ -663,7 +689,6 @@ body {
   overflow: visible;
 }
 
-/* Texte arabe à droite */
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.6em;
@@ -782,7 +807,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       jGroupe++;
     }
     if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
-    var base = consignesBase[typeCourant];
+        var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
       blocCourant._consigne = consigneFinale;
@@ -837,7 +862,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
-          printHtml += '<p>' + appliquerGrasItalique(rendreSources(rendreCitations(bloc))) + '</p>';
+          var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
+          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
+          var classe = contientSource ? ' class="p-avec-source"' : '';
+          printHtml += '<p' + classe + '>' + rendu + '</p>';
         });
         bufferTexte = '';
       }
