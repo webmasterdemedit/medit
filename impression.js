@@ -472,7 +472,7 @@ body {
 
 .arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif !important;
-  font-size: 1.9em; line-height: 1; vertical-align: middle;
+  font-size: 2.1em; line-height: 1; vertical-align: middle;
 }
 
 .page { max-width:100%; padding: 0; background:#faf7f0; overflow: visible; }
@@ -691,7 +691,7 @@ body {
 
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 1.9em;
+  font-size: 2.1em;
   line-height: 1.05;
   color: #1f1a13;
   direction: rtl;
