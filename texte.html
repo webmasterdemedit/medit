@@ -273,38 +273,6 @@
         color: var(--text-muted);
         min-height: 14px;
       }
-            /* === SURLIGNEUR === */
-      .btn-surligneur-flottant {
-        position: fixed;
-        bottom: 24px;
-        right: 78px;
-        width: 44px;
-        height: 44px;
-        border-radius: 50%;
-        border: 1px solid var(--border);
-        background: var(--bg-paper);
-        color: var(--text);
-        font-size: 20px;
-        cursor: pointer;
-        z-index: 9000;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background .15s, border-color .15s;
-      }
-      .btn-surligneur-flottant:hover { background: var(--bg-hover); border-color: var(--border-hover); }
-      .btn-surligneur-flottant.actif {
-        background: #fff3a3;
-        border-color: #e6d24a;
-      }
-      .surlignage {
-        background-color: #fff3a3;
-        border-radius: 2px;
-        padding: 0 1px;
-      }
-      body.mode-surligneur .texte-zone {
-        cursor: text;
-      }
     </style>
 
     <div id="texteContainer" class="colonne-principale">
@@ -332,7 +300,7 @@
       </div>
     </div>
   </div>
-    <button class="btn-surligneur-flottant" id="btnSurligneurFlottant" onclick="toggleModeSurligneur()" title="Surligner du texte">🖍</button>
+
   <button class="btn-annotation-flottant" id="btnAnnotationFlottant" onclick="togglePanneauAnnotation()" title="Ajouter une note sur ce texte">✏</button>
 
   <div class="panneau-annotation" id="panneauAnnotation">
@@ -2189,10 +2157,7 @@
 
       verifierValidationTexte(texte);
       verifierVersionParenthese(texte);
-            window._surlignages = [];
-      chargerSurlignages(texte.id);
     }
-    
 
     function afficherErreur(message) {
       document.getElementById('texteContainer').innerHTML = `
@@ -2238,118 +2203,7 @@
         }
       }
     }
-    /* === SURLIGNEUR === */
-    var surligneurActif = false;
-    var surlignagesCharge = false;
 
-    function toggleModeSurligneur() {
-      surligneurActif = !surligneurActif;
-      var btn = document.getElementById('btnSurligneurFlottant');
-      if (btn) btn.classList.toggle('actif', surligneurActif);
-      document.body.classList.toggle('mode-surligneur', surligneurActif);
-    }
-
-    function chargerSurlignages(texteId) {
-      var nom = getNomUtilisateurCourant();
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-      fetch(base + '?action=getSurlignage&nom=' + encodeURIComponent(nom) + '&texteId=' + encodeURIComponent(texteId))
-        .then(function(r) { return r.json(); })
-        .then(function(data) {
-          surlignagesCharge = true;
-          var zone = document.querySelector('.texte-zone');
-          if (!zone) return;
-          (data && data.surlignages ? data.surlignages : []).forEach(function(sel) {
-            appliquerSurlignageParSelection(zone, sel);
-          });
-        })
-        .catch(function() { surlignagesCharge = true; });
-    }
-
-    function appliquerSurlignageParSelection(zone, sel) {
-      // sel = { debut: indexTexte, fin: indexTexte }
-      var walker = document.createTreeWalker(zone, NodeFilter.SHOW_TEXT, null, false);
-      var compteur = 0;
-      var noeuds = [];
-      var n;
-      while ((n = walker.nextNode())) {
-        noeuds.push({ node: n, debut: compteur, fin: compteur + n.nodeValue.length });
-        compteur += n.nodeValue.length;
-      }
-      var debut = sel.debut, fin = sel.fin;
-      noeuds.forEach(function(info) {
-        if (info.fin <= debut || info.debut >= fin) return;
-        var d = Math.max(0, debut - info.debut);
-        var f = Math.min(info.node.nodeValue.length, fin - info.debut);
-        if (d >= f) return;
-        var node = info.node;
-        var texte = node.nodeValue;
-        var avant = texte.slice(0, d);
-        var milieu = texte.slice(d, f);
-        var apres = texte.slice(f);
-        var span = document.createElement('span');
-        span.className = 'surlignage';
-        span.textContent = milieu;
-        var parent = node.parentNode;
-        parent.insertBefore(document.createTextNode(avant), node);
-        parent.insertBefore(span, node);
-        parent.insertBefore(document.createTextNode(apres), node);
-        parent.removeChild(node);
-      });
-    }
-
-    function surlignerSelection() {
-      if (!surligneurActif) return;
-      var sel = window.getSelection();
-      if (!sel || sel.rangeCount === 0 || sel.isCollapsed) return;
-      var range = sel.getRangeAt(0);
-      var zone = document.querySelector('.texte-zone');
-      if (!zone || !zone.contains(range.commonAncestorContainer)) return;
-
-      // Calcul des positions absolues dans .texte-zone
-      var preRange = range.cloneRange();
-      preRange.selectNodeContents(zone);
-      preRange.setEnd(range.startContainer, range.startOffset);
-      var debut = preRange.toString().length;
-      var longueur = range.toString().length;
-      var fin = debut + longueur;
-      if (longueur === 0) return;
-
-      // Surligner visuellement
-      try {
-        var span = document.createElement('span');
-        span.className = 'surlignage';
-        span.appendChild(range.extractContents());
-        range.insertNode(span);
-      } catch(e) { return; }
-
-      sel.removeAllRanges();
-
-      // Sauvegarder
-      sauvegarderSurlignage({ debut: debut, fin: fin });
-    }
-
-    function sauvegarderSurlignage(sel) {
-      if (!texteActuel) return;
-      var nom = getNomUtilisateurCourant();
-      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
-
-      var liste = window._surlignages || [];
-      liste.push(sel);
-      window._surlignages = liste;
-
-      fetch(base + '?action=saveSurlignage'
-        + '&nom=' + encodeURIComponent(nom)
-        + '&texteId=' + encodeURIComponent(texteActuel.id)
-        + '&surlignages=' + encodeURIComponent(JSON.stringify(liste)))
-        .catch(function(){});
-    }
-
-    document.addEventListener('mouseup', function(e) {
-      if (!surligneurActif) return;
-      var zone = document.querySelector('.texte-zone');
-      if (!zone || !zone.contains(e.target)) return;
-      setTimeout(surlignerSelection, 10);
-    });
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
     else chargerTexte();
   </script>
