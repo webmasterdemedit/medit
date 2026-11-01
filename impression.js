@@ -691,7 +691,7 @@ body {
 
 .copier-texte-arabe {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.6em;
+  font-size: 1.9em;
   line-height: 1.05;
   color: #1f1a13;
   direction: rtl;
