@@ -138,7 +138,6 @@
       border-color: var(--text-secondary);
     }
 
-    /* ---------- Couverture (fallback si pas d'images) ---------- */
     .carte-blog .blog-couverture {
       flex: 0 0 90px;
       display: flex;
@@ -193,80 +192,6 @@
       background: var(--text);
     }
 
-    /* ---------- Miniatures des images du post ---------- */
-    .carte-blog .blog-miniatures {
-      flex: 0 0 auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;      /* centrage vertical */
-      gap: 6px;
-      padding: 12px 10px;
-      background: var(--bg);
-      border-right: 1px solid var(--border);
-      box-sizing: border-box;
-      min-width: 90px;
-      max-width: 140px;
-      position: relative;
-    }
-
-    .carte-blog .blog-miniatures .miniature {
-      width: 64px;
-      height: 64px;
-      object-fit: cover;
-      display: block;
-      border: 1px solid var(--border);
-      background: #f5f5f5;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.06);
-    }
-
-    .carte-blog .blog-miniatures .miniature-fallback {
-      width: 64px;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Georgia', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.9);
-      border: 1px solid var(--border);
-      box-sizing: border-box;
-    }
-
-    .carte-blog .blog-miniatures .miniature-plus {
-      width: 64px;
-      height: 24px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Roboto', sans-serif;
-      font-size: 12px;
-      color: var(--text-secondary);
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      box-sizing: border-box;
-    }
-
-    .carte-blog .blog-miniatures .progression-couverture {
-      position: absolute;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      height: 3px;
-      background: var(--border);
-      overflow: hidden;
-    }
-
-    .carte-blog .blog-miniatures .progression-couverture .progression-remplissage {
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      background: var(--text);
-    }
-
-    /* ---------- Corps de la carte ---------- */
     .carte-blog .blog-centre {
       display: flex;
       gap: 20px;
@@ -387,39 +312,10 @@
 
       .carte-blog .blog-couverture { flex: 0 0 64px; }
 
-      /* Miniatures : horizontales en haut de la carte */
-      .carte-blog .blog-miniatures {
-        flex: 1 0 100%;
-        flex-direction: row;
-        flex-wrap: wrap;
-        align-items: center;
-        justify-content: center;
-        padding: 8px;
-        gap: 4px;
-        min-width: 0;
-        max-width: 100%;
-        border-right: none;
-        border-bottom: 1px solid var(--border);
-      }
-      .carte-blog .blog-miniatures .miniature,
-      .carte-blog .blog-miniatures .miniature-fallback {
-        width: 44px;
-        height: 44px;
-        font-size: 16px;
-      }
-      .carte-blog .blog-miniatures .miniature-plus {
-        width: 44px;
-        height: 20px;
-        font-size: 11px;
-      }
-
-      .carte-blog { flex-wrap: wrap; }
-
       .carte-blog .blog-centre {
         flex-wrap: wrap;
         gap: 12px;
         padding: 14px;
-        flex: 1 0 100%;
       }
 
       .carte-blog .blog-numero {
@@ -540,9 +436,6 @@
     var nomEtudiant = '';
     var rechercheActive = '';
 
-    // Cache des images par catégorie (nomImage -> url)
-    var imagesParCategorie = {};
-
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
       var match = titre.match(/^\s*(\d+)\s+/);
@@ -609,62 +502,6 @@
       return String(d.getFullYear());
     }
 
-    // ============================================================
-    // EXTRACTION DES NOMS D'IMAGES D'UN TEXTE
-    // On lit `paragraphes` (présent dans la liste) et éventuellement
-    // `contenu` (si présent). Format : img:nomImage[:position[:taille]]
-    // ============================================================
-    function extraireImagesTexte(texte) {
-      var noms = [];
-      var vus = {};
-
-      function scanner(str) {
-        if (!str) return;
-        var lignes = String(str).split('\n');
-        for (var i = 0; i < lignes.length; i++) {
-          var l = lignes[i].trim();
-          var m = l.match(/^img:([^:\s]+)/i);
-          if (m) {
-            var nom = m[1];
-            if (!vus[nom]) { vus[nom] = true; noms.push(nom); }
-          }
-        }
-      }
-
-      // paragraphes : tableau ou chaîne (selon comment DataManager l'expose)
-      if (Array.isArray(texte.paragraphes)) {
-        texte.paragraphes.forEach(scanner);
-      } else if (typeof texte.paragraphes === 'string') {
-        scanner(texte.paragraphes);
-      }
-      // contenu complet (si disponible)
-      scanner(texte.contenu);
-
-      return noms;
-    }
-
-    // ============================================================
-    // PRÉCHARGEMENT DES IMAGES PAR CATÉGORIE
-    // ============================================================
-    function prechargerImagesCategories(categories) {
-      var uniques = {};
-      categories.forEach(function(c) { if (c) uniques[c] = true; });
-      var liste = Object.keys(uniques);
-
-      // On garde DataManager.chargerImagesTheme (cache mémoire + localStorage)
-      var promesses = liste.map(function(cat) {
-        return DataManager.chargerImagesTheme(cat)
-          .then(function(images) {
-            imagesParCategorie[cat] = images || {};
-          })
-          .catch(function() {
-            imagesParCategorie[cat] = {};
-          });
-      });
-
-      return Promise.all(promesses);
-    }
-
     function chargerTextes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
@@ -714,12 +551,8 @@
           });
         });
 
-        // Précharger les images de toutes les catégories présentes
-        var cats = textesData.map(function(t) { return t.categorie; });
-        return prechargerImagesCategories(cats).then(function() {
-          initialiserFiltres();
-          afficherBlog();
-        });
+        initialiserFiltres();
+        afficherBlog();
       }).catch(function(error) {
         console.error('Erreur chargement:', error);
         var cache = DataManager.getCacheForce(id);
@@ -739,11 +572,8 @@
               };
             });
           }
-          var cats = textesData.map(function(t) { return t.categorie; });
-          prechargerImagesCategories(cats).then(function() {
-            initialiserFiltres();
-            afficherBlog();
-          });
+          initialiserFiltres();
+          afficherBlog();
         } else {
           document.getElementById('loader').style.display = 'none';
           document.getElementById('contenu').innerHTML = `
@@ -932,67 +762,6 @@
       return { valide: valide, date: valide ? meilleureDate : '' };
     }
 
-    // ============================================================
-    // CONSTRUCTION DE LA ZONE GAUCHE (miniatures ou couverture)
-    // ============================================================
-    function construireZoneGauche(texte, estValide) {
-      var themeMeta = themesData[texte.categorie] || {};
-      var couleurTheme = themeMeta.couleur || '#2d6a4f';
-      var couvertureTheme = themeMeta.couverture || '';
-
-      var nomsImages = extraireImagesTexte(texte);
-      var imagesCat = imagesParCategorie[texte.categorie] || {};
-
-      // Filtrer : ne garder que celles dont l'URL est résolue OU fallback initiale
-      // On garde tout de même celles non résolues (fallback initiale)
-      if (nomsImages.length > 0) {
-        var max = 3;
-        var visibles = nomsImages.slice(0, max);
-        var reste = nomsImages.length - visibles.length;
-
-        var minisHtml = '';
-        visibles.forEach(function(nom) {
-          var url = imagesCat[nom];
-          if (url) {
-            minisHtml += '<img class="miniature" src="' + escapeHtml(url) + '" alt="" loading="lazy">';
-          } else {
-            // Fallback : initiale du nom sur fond couleur du thème
-            minisHtml += '<div class="miniature-fallback" style="background:' + couleurTheme + ';">' +
-                         escapeHtml(nom.charAt(0).toUpperCase()) + '</div>';
-          }
-        });
-
-        if (reste > 0) {
-          minisHtml += '<div class="miniature-plus">+' + reste + '</div>';
-        }
-
-        // Progression de validation conservée (barre en bas)
-        var largeurProgression = estValide ? '100%' : '0%';
-        var progressionHtml =
-          '<div class="progression-couverture">' +
-            '<div class="progression-remplissage" style="width:' + largeurProgression + ';"></div>' +
-          '</div>';
-
-        return '<div class="blog-miniatures">' + minisHtml + progressionHtml + '</div>';
-      }
-
-      // Fallback : ancienne couverture thème
-      var couvertureContenuHtml = couvertureTheme
-        ? '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">'
-        : '<div class="couverture-fallback" style="background:' + couleurTheme + ';">◆</div>';
-
-      var largeurProgression2 = estValide ? '100%' : '0%';
-
-      return (
-        '<div class="blog-couverture">' +
-          '<div class="couverture-contenu">' + couvertureContenuHtml + '</div>' +
-          '<div class="progression-couverture">' +
-            '<div class="progression-remplissage" style="width:' + largeurProgression2 + ';"></div>' +
-          '</div>' +
-        '</div>'
-      );
-    }
-
     function construireCarteBlog(texte) {
       var numero = extraireNumeroTexte(texte.titre);
       var titreAffiche = extraireTitreSansNumero(texte.titre);
@@ -1043,7 +812,23 @@
         ? '<div class="blog-numero">' + numero + '</div>'
         : '<div class="blog-numero">◆</div>';
 
-      var zoneGaucheHtml = construireZoneGauche(texte, estValide);
+      var themeMeta = themesData[texte.categorie] || {};
+      var couleurTheme = themeMeta.couleur || '#2d6a4f';
+      var couvertureTheme = themeMeta.couverture || '';
+
+      var couvertureContenuHtml = couvertureTheme
+        ? '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">'
+        : '<div class="couverture-fallback">◆</div>';
+
+      var largeurProgression = estValide ? '100%' : '0%';
+
+      var couvertureHtml =
+        '<div class="blog-couverture">' +
+          '<div class="couverture-contenu">' + couvertureContenuHtml + '</div>' +
+          '<div class="progression-couverture">' +
+            '<div class="progression-remplissage" style="width:' + largeurProgression + ';"></div>' +
+          '</div>' +
+        '</div>';
 
       var bandeauValidationHtml = '';
       if (estValide && dateValidation) {
@@ -1066,7 +851,7 @@
       return `
         <div class="carte-blog"
              onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
-          ${zoneGaucheHtml}
+          ${couvertureHtml}
           <div class="blog-centre">
             ${numeroHtml}
             <div class="blog-corps">
