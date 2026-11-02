@@ -5,6 +5,8 @@
 // ============================================================
 
 function imprimerTexte(texteId, titre, textesData) {
+  console.log('🔵 imprimerTexte APPELÉ', { texteId: texteId, titre: titre, textesDataLength: textesData ? textesData.length : null });
+
   if (typeof textesData === 'undefined' || textesData === null) {
     textesData = (typeof window !== 'undefined' && window.textesData) ? window.textesData : [];
   }
@@ -23,10 +25,20 @@ function imprimerTexte(texteId, titre, textesData) {
     }
   }
 
-  if (!texte) { alert('Texte "' + titre + '" non trouvé.'); return; }
+  if (!texte) {
+    console.warn('🔵 imprimerTexte : texte introuvable pour id=', texteId);
+    alert('Texte "' + titre + '" non trouvé.');
+    return;
+  }
+
+  console.log('🔵 imprimerTexte : texte trouvé =', texte.titre, '| contenu length =', (texte.contenu || '').length);
 
   var contenu = texte.contenu || '';
-  if (!contenu) { alert('Ce texte ne contient pas de contenu à imprimer.'); return; }
+  if (!contenu) {
+    console.warn('🔵 imprimerTexte : contenu vide → affichage du message d\'erreur');
+    alert('Ce texte ne contient pas de contenu à imprimer.');
+    return;
+  }
 
   var couvertureTheme = recupererCouvertureTheme(texte.categorie);
 
@@ -42,8 +54,27 @@ function imprimerTexte(texteId, titre, textesData) {
 // Réutilise la même mise en page que imprimerTexte.
 // ============================================================
 function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe) {
-  if (!texteOriginal) { alert('Texte original introuvable.'); return; }
-  if (!contenuAlternatif) { alert('Contenu alternatif vide.'); return; }
+  console.log('🟢 imprimerContenuAlternatif APPELÉ', {
+    texteOriginal: texteOriginal,
+    texteOriginalType: typeof texteOriginal,
+    texteOriginalId: texteOriginal ? texteOriginal.id : null,
+    texteOriginalTitre: texteOriginal ? texteOriginal.titre : null,
+    texteOriginalCategorie: texteOriginal ? texteOriginal.categorie : null,
+    contenuAlternatifLength: contenuAlternatif ? contenuAlternatif.length : null,
+    contenuAlternatifApercu: contenuAlternatif ? contenuAlternatif.substring(0, 80) : null,
+    suffixe: suffixe
+  });
+
+  if (!texteOriginal) {
+    console.warn('🟢 imprimerContenuAlternatif : texteOriginal manquant');
+    alert('Texte original introuvable.');
+    return;
+  }
+  if (!contenuAlternatif) {
+    console.warn('🟢 imprimerContenuAlternatif : contenuAlternatif vide');
+    alert('Contenu alternatif vide.');
+    return;
+  }
 
   var couvertureTheme = recupererCouvertureTheme(texteOriginal.categorie);
 
@@ -53,9 +84,19 @@ function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe) {
     texteCopie.titre = (texteOriginal.titre || '') + ' (' + suffixe + ')';
   }
 
+  console.log('🟢 imprimerContenuAlternatif : texteCopie prêt', {
+    titre: texteCopie.titre,
+    categorie: texteCopie.categorie,
+    niveau: texteCopie.niveau,
+    contenuLength: texteCopie.contenu.length,
+    ordreBlocs: texteCopie.ordreBlocs
+  });
+
   chargerImagesTheme(texteOriginal.categorie).then(function(images) {
+    console.log('🟢 imprimerContenuAlternatif : images chargées =', Object.keys(images || {}).length);
     genererImpression(texteCopie, contenuAlternatif, images || {}, couvertureTheme);
-  }).catch(function() {
+  }).catch(function(err) {
+    console.warn('🟢 imprimerContenuAlternatif : échec chargement images, fallback', err);
     genererImpression(texteCopie, contenuAlternatif, {}, couvertureTheme);
   });
 }
@@ -301,10 +342,22 @@ function parserCopierPourImpression(copierTexte) {
 // GÉNÉRATION IMPRESSION
 // ============================================================
 function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
+  console.log('🖨️ genererImpression APPELÉ', {
+    titre: texte ? texte.titre : null,
+    categorie: texte ? texte.categorie : null,
+    niveau: texte ? texte.niveau : null,
+    contenuLength: contenu ? contenu.length : null,
+    contenuApercu: contenu ? contenu.substring(0, 100) : null,
+    ordreBlocs: texte ? texte.ordreBlocs : null,
+    imagesThemeCount: imagesTheme ? Object.keys(imagesTheme).length : 0
+  });
+
   imagesTheme = imagesTheme || {};
   couvertureTheme = couvertureTheme || '';
   var ordreBlocs = texte.ordreBlocs || [];
   var parts = contenu.split(' | ');
+
+  console.log('🖨️ genererImpression : découpage en', parts.length, 'part(s)');
 
   var paragraphesArray = [];
   var quizTexte = '';
@@ -334,6 +387,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
       }
     }
   });
+
+  console.log('🖨️ genererImpression : paragraphesArray =', paragraphesArray.length, '| quiz =', quizTexte ? 'oui' : 'non');
 
   var quizsParsed = quizTexte ? parserQuizsPourImpression(quizTexte) : [];
   var opensParsed = [];
@@ -406,6 +461,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     copiersParsed.forEach(function(c) { nouveaux.push({ type: 'copier', data: c }); });
     blocsOrdonnes = nouveaux;
   }
+
+  console.log('🖨️ genererImpression : blocsOrdonnes =', blocsOrdonnes.length, '| types =', blocsOrdonnes.map(function(b) { return b.type; }).join(','));
 
   var nbTotalQuestions = 0;
   blocsOrdonnes.forEach(function(bloc) {
@@ -1042,6 +1099,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 </body>
 </html>`;
 
+  console.log('🖨️ genererImpression : HTML généré, longueur =', printHtml.length);
+
   var iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
   iframe.style.right = '0';
@@ -1090,6 +1149,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
     } catch (e) {}
+    console.log('🖨️ genererImpression : lancement de window.print()');
     iframe.contentWindow.print();
     setTimeout(function() { document.body.removeChild(iframe); }, 1000);
   }, 1500);
