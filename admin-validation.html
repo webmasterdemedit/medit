@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#2d6a4f" />
+  <title>Validation manuelle - Qiraat</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+  <style>
+    .page-admin {
+      max-width: 820px;
+      margin: 0 auto;
+      padding: 40px 24px 60px;
+    }
+    .page-admin h1 {
+      font-family: 'Georgia', serif;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+    .page-admin .sous-titre {
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 300;
+      margin-bottom: 28px;
+    }
+
+    .bloc-selection {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    .bloc-selection .champ { flex: 1 1 200px; min-width: 160px; }
+
+    .champ { margin-bottom: 0; }
+    .champ label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+    .champ select,
+    .champ input[type="date"] {
+      width: 100%;
+      padding: 9px 12px;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      box-sizing: border-box;
+      outline: none;
+    }
+    .champ select:focus,
+    .champ input:focus { border-color: var(--text-secondary); }
+
+    /* Résumé */
+    .resume {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 12px;
+      border: 1px solid var(--border);
+      padding: 12px 16px;
+      background: var(--bg-hover);
+      margin-bottom: 24px;
+      font-size: 14px;
+      color: var(--text);
+    }
+    .resume .compteur strong { font-size: 16px; }
+    .resume .pct {
+      font-family: 'Georgia', serif;
+      font-size: 20px;
+      font-weight: 700;
+    }
+    .resume .pct.ok { color: #2d6a4f; }
+    .resume .pct.ko { color: #a4243b; }
+
+    /* Liste des exercices */
+    .liste-exos { display: flex; flex-direction: column; gap: 10px; }
+
+    .exo-admin {
+      border: 1px solid var(--border);
+      padding: 12px 14px;
+      background: var(--bg);
+    }
+    .exo-admin .exo-entete {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+    .exo-admin .exo-type {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
+      padding: 2px 6px;
+    }
+    .exo-admin .exo-num {
+      font-family: 'Georgia', serif;
+      font-weight: 700;
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+    .exo-admin .exo-question {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.45;
+      margin-bottom: 6px;
+    }
+    .exo-admin .exo-attendu {
+      font-size: 12px;
+      color: var(--text-secondary);
+      font-style: italic;
+      margin-bottom: 8px;
+    }
+    .exo-admin .exo-attendu strong { font-style: normal; color: var(--text); }
+
+    .exo-admin .exo-actions {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+    .exo-admin .btn-etat {
+      padding: 5px 14px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text-secondary);
+      font-family: 'Roboto', sans-serif;
+      font-size: 13px;
+      cursor: pointer;
+    }
+    .exo-admin .btn-etat:hover { background: var(--bg-hover); color: var(--text); }
+    .exo-admin .btn-etat.actif-ok {
+      background: rgba(45,106,79,.12);
+      border-color: #2d6a4f;
+      color: #2d6a4f;
+      font-weight: 500;
+    }
+    .exo-admin .btn-etat.actif-ko {
+      background: rgba(164,36,59,.10);
+      border-color: #a4243b;
+      color: #a4243b;
+      font-weight: 500;
+    }
+
+    .exo-admin.exo-ouvert .open-input {
+      width: 100%;
+      min-height: 50px;
+      padding: 8px;
+      border: 1px dashed var(--border);
+      background: transparent;
+      color: var(--text-muted);
+      font-family: 'Roboto', sans-serif;
+      font-size: 12px;
+      box-sizing: border-box;
+      margin-bottom: 8px;
+    }
+
+    /* Bouton valider */
+    .btn-valider {
+      margin-top: 24px;
+      padding: 12px 28px;
+      border: 1px solid var(--border);
+      background: transparent;
+      color: var(--text);
+      font-family: 'Roboto', sans-serif;
+      font-size: 14px;
+      cursor: pointer;
+    }
+    .btn-valider:hover { background: var(--bg-hover); }
+    .btn-valider:disabled { opacity: .4; cursor: default; }
+
+    .statut {
+      margin-top: 16px;
+      font-size: 13px;
+      min-height: 20px;
+      line-height: 1.4;
+    }
+    .statut.ok  { color: #2d6a4f; }
+    .statut.err { color: #a4243b; }
+
+    .vide {
+      text-align: center;
+      padding: 32px 16px;
+      color: var(--text-muted);
+      font-size: 14px;
+      border: 1px dashed var(--border);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="page-admin">
+    <h1>Validation manuelle</h1>
+    <p class="sous-titre">
+      Choisissez un élève et un texte. Tous les exercices du texte apparaissent ci-dessous ;
+      cochez <strong>OK</strong> / <strong>KO</strong> selon votre correction, puis validez.
+    </p>
+
+    <div class="bloc-selection">
+      <div class="champ">
+        <label for="eleve">Élève</label>
+        <select id="eleve"><option value="">— Chargement… —</option></select>
+      </div>
+      <div class="champ">
+        <label for="texte">Texte</label>
+        <select id="texte"><option value="">— Chargement… —</option></select>
+      </div>
+      <div class="champ">
+        <label for="date">Date</label>
+        <input type="date" id="date" />
+      </div>
+    </div>
+
+    <div class="resume" id="resume" style="display:none;">
+      <div class="compteur">Correction : <strong id="compteurBonnes">0</strong> / <strong id="compteurTotal">0</strong></div>
+      <div class="pct" id="compteurPct">0 %</div>
+    </div>
+
+    <div id="zoneExos">
+      <div class="vide">Sélectionnez un texte pour afficher ses exercices.</div>
+    </div>
+
+    <button class="btn-valider" id="btnValider" onclick="validerCorrection()" style="display:none;">
+      Valider la correction
+    </button>
+    <div class="statut" id="statut"></div>
+  </div>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script>
+    var SCRIPT = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+
+    // Date du jour par défaut
+    (function() {
+      var d = new Date();
+      var iso = d.getFullYear() + '-' +
+                String(d.getMonth() + 1).padStart(2, '0') + '-' +
+                String(d.getDate()).padStart(2, '0');
+      document.getElementById('date').value = iso;
+    })();
+
+    // État de la correction courante
+    var etat = {
+      exercices: [],   // { type, question, attendu, etat: null|'ok'|'ko', ouvertInput: null }
+      bonnes: 0,
+      total: 0
+    };
+
+    // ============================================================
+    // PARSERS (copiés de texte.html, indépendants)
+    // ============================================================
+    var LETTRES = ['A','B','C','D','E','F'];
+
+    function normaliserComparaison(str) {
+      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    }
+
+    function parserQuizs(quizTexte) {
+      var lignes = quizTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var quizs = [];
+      var currentQuiz = null;
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        if (ligne.match(/^q:/i)) {
+          if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
+          currentQuiz = { question: ligne.replace(/^q:\s*/i, '').trim() || 'Question', reponses: [] };
+        } else if (currentQuiz) {
+          var isCorrect = false;
+          var texteRep = ligne;
+          if (/^v\s/i.test(ligne) || /^-v-\s*/.test(ligne)) { isCorrect = true; texteRep = ligne.replace(/^v\s+|-v-\s*/i, '').trim(); }
+          else if (/^f\s/i.test(ligne) || /^-f-\s*/.test(ligne)) { texteRep = ligne.replace(/^f\s+|-f-\s*/i, '').trim(); }
+          if (texteRep) currentQuiz.reponses.push({ texte: texteRep, lettre: LETTRES[currentQuiz.reponses.length] || '?', correcte: isCorrect });
+        }
+      }
+      if (currentQuiz && currentQuiz.reponses.length > 0) quizs.push(currentQuiz);
+      return quizs;
+    }
+
+    function parserOrdre(ordreTexte) {
+      var lignes = ordreTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var elements = [];
+      var consigne = 'Remettre dans l\'ordre';
+      for (var i = 0; i < lignes.length; i++) {
+        var ligne = lignes[i];
+        var match = ligne.match(/^(\d+)\s+(.+)/);
+        if (match) elements.push(match[2]);
+        else if (elements.length === 0 && ligne.length > 0) consigne = ligne.replace(/^o:\s*/i, '').trim() || consigne;
+      }
+      return { elements: elements, consigne: consigne };
+    }
+
+    function parserCartes(carteTexte) {
+      var lignes = carteTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var cartes = [];
+      var current = null;
+      for (var i = 0; i < lignes.length; i++) {
+        var l = lignes[i];
+        if (l.toLowerCase().startsWith('r:')) {
+          if (current) cartes.push(current);
+          current = { recto: l.replace(/^r:\s*/i, '').trim(), verso: '' };
+        } else if (l.toLowerCase().startsWith('v:') && current) {
+          current.verso = l.replace(/^v:\s*/i, '').trim();
+        }
+      }
+      if (current) cartes.push(current);
+      return cartes;
+    }
+
+    function parserRelier(relierTexte) {
+      var lignes = relierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      if (lignes.length === 0) return null;
+      var consigne = lignes[0].replace(/^l:\s*/i, '').trim() || 'Relie les éléments';
+      var paires = [];
+      for (var i = 1; i < lignes.length; i++) {
+        var idx = lignes[i].indexOf('-');
+        if (idx === -1) continue;
+        var gauche = lignes[i].substring(0, idx).trim();
+        var droite = lignes[i].substring(idx + 1).trim();
+        if (gauche && droite) paires.push({ gauche: gauche, droite: droite });
+      }
+      if (paires.length === 0) return null;
+      return { consigne: consigne, paires: paires };
+    }
+
+    function parserTextesTrous(ttTexte) {
+      var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var resultats = [];
+      lignes.forEach(function(ligne) {
+        if (!/^tt:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^tt:\s*/i, '').trim();
+        var match = contenu.match(/\/([^\/]+)\//);
+        if (!match) return;
+        var mot = match[1].trim();
+        var idx = contenu.indexOf('/' + mot + '/');
+        var avant = contenu.substring(0, idx).trim();
+        var apres = contenu.substring(idx + mot.length + 2).trim();
+        resultats.push({ avant: avant, mot: mot, apres: apres });
+      });
+      return resultats;
+    }
+
+    function parserVraiFaux(vfTexte) {
+      var lignes = vfTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var questions = [];
+      lignes.forEach(function(ligne) {
+        if (!/^vf:/i.test(ligne)) return;
+        var contenu = ligne.replace(/^vf:\s*/i, '').trim();
+        var match = contenu.match(/\(([vf])\)\s*$/i);
+        if (!match) return;
+        var reponse = match[1].toLowerCase();
+        var question = contenu.replace(/\s*\([vf]\)\s*$/i, '').trim();
+        if (question === '') return;
+        questions.push({ question: question, reponse: reponse });
+      });
+      return questions;
+    }
+
+    function parserCopier(copierTexte) {
+      if (!copierTexte) return [];
+      var lignes = copierTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+      var blocs = [];
+      lignes.forEach(function(ligne) {
+        var contenu = ligne.replace(/^c:\s*/i, '').trim();
+        if (!contenu) return;
+        var mots = contenu.split(',').map(function(m) { return m.trim(); }).filter(function(m) { return m !== ''; });
+        if (mots.length > 0) blocs.push({ mots: mots });
+      });
+      return blocs;
+    }
+
+    // ============================================================
+    // EXTRACTION DES EXERCICES depuis le contenu
+    // ============================================================
+    function extraireExercices(contenu) {
+      if (!contenu) return [];
+      var parts = contenu.split(' | ');
+      var quizTexte = '', openTexte = '', ordreTexte = '', carteTexte = '', relierTexte = '', ttTexte = '', vfTexte = '', copierTexte = '';
+
+      parts.forEach(function(part) {
+        part = part.trim();
+        if (part.startsWith('q:')) quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
+        else if (part.startsWith('qs:')) openTexte = openTexte ? openTexte + '\n\n' + part : part;
+        else if (part.startsWith('o:')) ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
+        else if (part.startsWith('r:')) carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
+        else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
+        else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
+        else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
+        else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
+      });
+
+      var exos = [];
+
+      // Quiz
+      var quizs = quizTexte ? parserQuizs(quizTexte) : [];
+      quizs.forEach(function(q, qi) {
+        var bonne = null;
+        q.reponses.forEach(function(r) { if (r.correcte) bonne = r; });
+        exos.push({
+          type: 'quiz',
+          ref: 'quiz-' + qi,
+          question: q.question,
+          attendu: bonne ? (bonne.lettre + '. ' + bonne.texte) : '(pas de bonne réponse marquée)',
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Vrai/Faux
+      var vfs = vfTexte ? parserVraiFaux(vfTexte) : [];
+      vfs.forEach(function(v, vi) {
+        exos.push({
+          type: 'vf',
+          ref: 'vf-' + vi,
+          question: v.question,
+          attendu: v.reponse === 'v' ? 'VRAI' : 'FAUX',
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Textes à trous
+      var tts = ttTexte ? parserTextesTrous(ttTexte) : [];
+      tts.forEach(function(t, ti) {
+        exos.push({
+          type: 'tt',
+          ref: 'tt-' + ti,
+          question: (t.avant ? t.avant + ' ' : '') + '[…]' + (t.apres ? ' ' + t.apres : ''),
+          attendu: t.mot,
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Relier
+      var reliers = [];
+      if (relierTexte) {
+        relierTexte.split('\n\n').forEach(function(bloc) {
+          var p = parserRelier(bloc);
+          if (p && p.paires.length > 0) reliers.push(p);
+        });
+      }
+      reliers.forEach(function(r, ri) {
+        var pairesTxt = r.paires.map(function(p) { return p.gauche + ' → ' + p.droite; }).join(' ; ');
+        exos.push({
+          type: 'relier',
+          ref: 'relier-' + ri,
+          question: r.consigne,
+          attendu: pairesTxt,
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Ordre
+      var ordres = [];
+      if (ordreTexte) {
+        ordreTexte.split('\n\n').forEach(function(bloc) {
+          var p = parserOrdre(bloc);
+          if (p && p.elements.length > 0) ordres.push(p);
+        });
+      }
+      ordres.forEach(function(o, oi) {
+        exos.push({
+          type: 'ordre',
+          ref: 'ordre-' + oi,
+          question: o.consigne,
+          attendu: o.elements.map(function(e, i) { return (i+1) + '. ' + e; }).join(' ; '),
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Cartes
+      var cartes = carteTexte ? parserCartes(carteTexte) : [];
+      cartes.forEach(function(c, ci) {
+        exos.push({
+          type: 'carte',
+          ref: 'carte-' + ci,
+          question: 'Recto : ' + c.recto,
+          attendu: c.verso,
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Copier
+      var copiers = copierTexte ? parserCopier(copierTexte) : [];
+      copiers.forEach(function(c, ci) {
+        exos.push({
+          type: 'copier',
+          ref: 'copier-' + ci,
+          question: 'Recopier : ' + c.mots.join(', '),
+          attendu: c.mots.join(', '),
+          etat: null,
+          ouvertInput: null
+        });
+      });
+
+      // Questions ouvertes
+      if (openTexte) {
+        openTexte.split('\n\n').forEach(function(bloc, oi) {
+          var t = bloc.replace(/^qs:\s*/i, '').trim();
+          if (!t) return;
+          exos.push({
+            type: 'open',
+            ref: 'open-' + oi,
+            question: t,
+            attendu: '(réponse libre — à juger)',
+            etat: null,
+            ouvertInput: null
+          });
+        });
+      }
+
+      return exos;
+    }
+
+    // ============================================================
+    // CHARGEMENT INITIAL
+    // ============================================================
+    Promise.all([
+      fetch(SCRIPT + '?action=adminValidation').then(function(r){ return r.json(); }),
+      fetch(SCRIPT + '?action=getTextesTous').then(function(r){ return r.json(); })
+    ]).then(function(res) {
+      // Inscrits
+      var selE = document.getElementById('eleve');
+      var inscrits = (res[0] && res[0].inscrits) ? res[0].inscrits : [];
+      selE.innerHTML = '<option value="">— Choisir —</option>';
+      if (inscrits.length === 0) {
+        selE.innerHTML = '<option value="">— Aucun inscrit —</option>';
+      } else {
+        inscrits.forEach(function(i) {
+          var opt = document.createElement('option');
+          opt.value = i.nom;
+          opt.textContent = i.nom + (i.niveau ? ' (niv. ' + i.niveau + ')' : '');
+          selE.appendChild(opt);
+        });
+      }
+
+      // Textes
+      var selT = document.getElementById('texte');
+      var textes = (res[1] && res[1].textes) ? res[1].textes.slice() : [];
+      textes.sort(function(a, b) {
+        return (a.titre || '').localeCompare(b.titre || '', 'fr', { sensitivity: 'base' });
+      });
+      selT.innerHTML = '<option value="">— Choisir —</option>';
+      textes.forEach(function(t) {
+        var opt = document.createElement('option');
+        opt.value = t.id;
+        opt.textContent = t.titre + (t.categorie ? ' — ' + t.categorie : '');
+        opt.dataset.titre = t.titre || '';
+        selT.appendChild(opt);
+      });
+
+      selT.addEventListener('change', function() {
+        chargerExercices(selT.value);
+      });
+    }).catch(function(err) {
+      console.error(err);
+      document.getElementById('zoneExos').innerHTML =
+        '<div class="vide">Erreur de chargement : ' + err.message + '</div>';
+    });
+
+    // ============================================================
+    // CHARGEMENT DES EXERCICES D'UN TEXTE
+    // ============================================================
+    function chargerExercices(texteId) {
+      var zone = document.getElementById('zoneExos');
+      var resume = document.getElementById('resume');
+      var btn = document.getElementById('btnValider');
+      var statut = document.getElementById('statut');
+      statut.textContent = '';
+      statut.className = 'statut';
+
+      if (!texteId) {
+        zone.innerHTML = '<div class="vide">Sélectionnez un texte pour afficher ses exercices.</div>';
+        resume.style.display = 'none';
+        btn.style.display = 'none';
+        etat = { exercices: [], bonnes: 0, total: 0 };
+        return;
+      }
+
+      zone.innerHTML = '<div class="vide">Chargement du texte…</div>';
+
+      fetch(SCRIPT + '?action=getTexte&id=' + encodeURIComponent(texteId))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          if (!d || !d.texte) {
+            zone.innerHTML = '<div class="vide">Texte introuvable.</div>';
+            return;
+          }
+          var exercices = extraireExercices(d.texte.contenu || '');
+          etat = { exercices: exercices, bonnes: 0, total: exercices.length };
+
+          if (exercices.length === 0) {
+            zone.innerHTML = '<div class="vide">Ce texte n\'a aucun exercice.</div>';
+            resume.style.display = 'none';
+            btn.style.display = 'none';
+            return;
+          }
+
+          rendreExercices();
+          resume.style.display = 'flex';
+          btn.style.display = 'inline-block';
+          majResume();
+        })
+        .catch(function(err) {
+          zone.innerHTML = '<div class="vide">Erreur : ' + err.message + '</div>';
+        });
+    }
+
+    // ============================================================
+    // AFFICHAGE DES EXERCICES
+    // ============================================================
+    function rendreExercices() {
+      var zone = document.getElementById('zoneExos');
+      var html = '<div class="liste-exos">';
+
+      etat.exercices.forEach(function(exo, idx) {
+        var typeLabel = exo.type.toUpperCase();
+        var classeOuvert = (exo.type === 'open') ? ' exo-ouvert' : '';
+        html += '<div class="exo-admin' + classeOuvert + '" data-idx="' + idx + '">';
+        html += '  <div class="exo-entete">';
+        html += '    <span class="exo-num">#' + (idx + 1) + '</span>';
+        html += '    <span class="exo-type">' + typeLabel + '</span>';
+        html += '  </div>';
+        html += '  <div class="exo-question">' + escapeHtml(exo.question) + '</div>';
+        html += '  <div class="exo-attendu">Attendu : <strong>' + escapeHtml(exo.attendu) + '</strong></div>';
+
+        if (exo.type === 'open') {
+          html += '  <textarea class="open-input" placeholder="Réponse de l\'élève (recopier depuis la page imprimée)..." oninput="majOpen(' + idx + ', this.value)">' + escapeHtml(exo.ouvertInput || '') + '</textarea>';
+        }
+
+        html += '  <div class="exo-actions">';
+        html += '    <button class="btn-etat' + (exo.etat === 'ok' ? ' actif-ok' : '') + '" onclick="setEtat(' + idx + ', \'ok\')">✓ OK</button>';
+        html += '    <button class="btn-etat' + (exo.etat === 'ko' ? ' actif-ko' : '') + '" onclick="setEtat(' + idx + ', \'ko\')">✗ KO</button>';
+        html += '  </div>';
+        html += '</div>';
+      });
+
+      html += '</div>';
+      zone.innerHTML = html;
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ============================================================
+    // INTERACTIONS
+    // ============================================================
+    function setEtat(idx, valeur) {
+      var exo = etat.exercices[idx];
+      if (!exo) return;
+      // Toggle : recliquer sur le même bouton l'annule
+      exo.etat = (exo.etat === valeur) ? null : valeur;
+
+      var el = document.querySelector('.exo-admin[data-idx="' + idx + '"]');
+      if (el) {
+        var btns = el.querySelectorAll('.btn-etat');
+        btns.forEach(function(b, i) {
+          b.classList.remove('actif-ok', 'actif-ko');
+        });
+        if (exo.etat === 'ok') btns[0].classList.add('actif-ok');
+        if (exo.etat === 'ko') btns[1].classList.add('actif-ko');
+      }
+      majResume();
+    }
+
+    function majOpen(idx, valeur) {
+      if (etat.exercices[idx]) etat.exercices[idx].ouvertInput = valeur;
+    }
+
+    function majResume() {
+      var bonnes = 0;
+      etat.exercices.forEach(function(e) { if (e.etat === 'ok') bonnes++; });
+      var total = etat.exercices.length;
+      var pct = total > 0 ? Math.round((bonnes / total) * 100) : 0;
+
+      document.getElementById('compteurBonnes').textContent = bonnes;
+      document.getElementById('compteurTotal').textContent = total;
+      var pctEl = document.getElementById('compteurPct');
+      pctEl.textContent = pct + ' %';
+      pctEl.className = 'pct ' + (pct >= 65 ? 'ok' : 'ko');
+    }
+
+    // ============================================================
+    // VALIDATION → saveTentative
+    // ============================================================
+    function validerCorrection() {
+      var nom = document.getElementById('eleve').value;
+      var selT = document.getElementById('texte');
+      var texteId = selT.value;
+      var titre = selT.options[selT.selectedIndex] ? selT.options[selT.selectedIndex].dataset.titre : '';
+      var date = document.getElementById('date').value;
+      var statut = document.getElementById('statut');
+      var btn = document.getElementById('btnValider');
+
+      if (!nom) {
+        statut.className = 'statut err';
+        statut.textContent = 'Choisissez un élève.';
+        return;
+      }
+      if (!texteId) {
+        statut.className = 'statut err';
+        statut.textContent = 'Choisissez un texte.';
+        return;
+      }
+      if (etat.exercices.length === 0) {
+        statut.className = 'statut err';
+        statut.textContent = 'Aucun exercice à corriger.';
+        return;
+      }
+
+      // Vérifier que tous les exercices ont un état
+      var nonTraites = 0;
+      etat.exercices.forEach(function(e) { if (!e.etat) nonTraites++; });
+      if (nonTraites > 0) {
+        statut.className = 'statut err';
+        statut.textContent = nonTraites + ' exercice(s) non corrigé(s). Cochez OK ou KO partout.';
+        return;
+      }
+
+      var bonnes = 0;
+      var detailsArr = [];
+      var choixQcmArr = [];
+      var questionsOuvertesArr = [];
+
+      etat.exercices.forEach(function(e, i) {
+        if (e.etat === 'ok') bonnes++;
+        if (e.type === 'quiz') choixQcmArr.push((e.etat === 'ok' ? 'V' : 'F') + ':' + (i + 1));
+        if (e.type === 'open' && e.ouvertInput) {
+          questionsOuvertesArr.push('Q' + (i + 1) + ': ' + e.ouvertInput);
+        }
+        detailsArr.push({
+          type: e.type,
+          question: e.question,
+          attendu: e.attendu,
+          etat: e.etat
+        });
+      });
+
+      var total = etat.exercices.length;
+      var details = {
+        manuel: true,
+        dateValidation: date,
+        exercices: detailsArr
+      };
+
+      btn.disabled = true;
+      statut.className = 'statut';
+      statut.textContent = 'Envoi…';
+
+      var url = SCRIPT + '?action=saveTentative'
+              + '&nom=' + encodeURIComponent(nom)
+              + '&texteId=' + encodeURIComponent(texteId)
+              + '&titre=' + encodeURIComponent(titre)
+              + '&bonnes=' + bonnes
+              + '&total=' + total
+              + '&choixQcm=' + encodeURIComponent(choixQcmArr.join('|'))
+              + '&reponseOuverte=' + encodeURIComponent(questionsOuvertesArr.join('\n\n'))
+              + '&details=' + encodeURIComponent(JSON.stringify(details));
+
+      fetch(url)
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          btn.disabled = false;
+          if (d && d.success) {
+            statut.className = 'statut ok';
+            statut.textContent = '✓ Corrigé : ' + nom + ' — ' + titre +
+                                 ' — ' + bonnes + '/' + total + ' = ' + d.pourcentage + ' %';
+          } else {
+            statut.className = 'statut err';
+            statut.textContent = 'Erreur : ' + (d.message || 'inconnue');
+          }
+        })
+        .catch(function(err) {
+          btn.disabled = false;
+          statut.className = 'statut err';
+          statut.textContent = 'Erreur réseau : ' + err.message;
+        });
+    }
+  </script>
+</body>
+</html>
