@@ -436,9 +436,6 @@
     var nomEtudiant = '';
     var rechercheActive = '';
 
-    // Cache des images par catégorie : { cat: { nomImage: url } }
-    var imagesParCategorie = {};
-
     function extraireNumeroTexte(titre) {
       if (!titre) return Infinity;
       var match = titre.match(/^\s*(\d+)\s+/);
@@ -505,61 +502,6 @@
       return String(d.getFullYear());
     }
 
-    // ============================================================
-    // EXTRAIRE LA PREMIÈRE IMAGE DU CORPS DU TEXTE
-    // Lit `paragraphes` (tableau ou chaîne) et `contenu` si présent.
-    // Format des lignes images : img:nomImage[:position[:taille]]
-    // ============================================================
-    function extrairePremiereImageTexte(texte) {
-      if (!texte) return null;
-
-      function scanner(str) {
-        if (!str) return null;
-        var lignes = String(str).split('\n');
-        for (var i = 0; i < lignes.length; i++) {
-          var l = lignes[i].trim();
-          var m = l.match(/^img:([^:\s]+)/i);
-          if (m) return m[1];
-        }
-        return null;
-      }
-
-      var nom = null;
-      if (Array.isArray(texte.paragraphes)) {
-        for (var i = 0; i < texte.paragraphes.length; i++) {
-          nom = scanner(texte.paragraphes[i]);
-          if (nom) return nom;
-        }
-      } else if (typeof texte.paragraphes === 'string') {
-        nom = scanner(texte.paragraphes);
-        if (nom) return nom;
-      }
-      nom = scanner(texte.contenu);
-      return nom;
-    }
-
-    // ============================================================
-    // PRÉCHARGER LES IMAGES DE TOUTES LES CATÉGORIES PRÉSENTES
-    // Utilise DataManager.chargerImagesTheme (cache mémoire + localStorage)
-    // ============================================================
-    function prechargerImagesCategories(categories) {
-      var uniques = {};
-      categories.forEach(function(c) { if (c) uniques[c] = true; });
-      var liste = Object.keys(uniques);
-
-      var promesses = liste.map(function(cat) {
-        return DataManager.chargerImagesTheme(cat)
-          .then(function(images) {
-            imagesParCategorie[cat] = images || {};
-          })
-          .catch(function() {
-            imagesParCategorie[cat] = {};
-          });
-      });
-
-      return Promise.all(promesses);
-    }
-
     function chargerTextes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
@@ -609,13 +551,8 @@
           });
         });
 
-        // Précharger les images de toutes les catégories présentes,
-        // puis afficher (pour que la 1ère image du post soit résolue)
-        var cats = textesData.map(function(t) { return t.categorie; });
-        return prechargerImagesCategories(cats).then(function() {
-          initialiserFiltres();
-          afficherBlog();
-        });
+        initialiserFiltres();
+        afficherBlog();
       }).catch(function(error) {
         console.error('Erreur chargement:', error);
         var cache = DataManager.getCacheForce(id);
@@ -635,11 +572,8 @@
               };
             });
           }
-          var cats = textesData.map(function(t) { return t.categorie; });
-          prechargerImagesCategories(cats).then(function() {
-            initialiserFiltres();
-            afficherBlog();
-          });
+          initialiserFiltres();
+          afficherBlog();
         } else {
           document.getElementById('loader').style.display = 'none';
           document.getElementById('contenu').innerHTML = `
@@ -882,23 +816,9 @@
       var couleurTheme = themeMeta.couleur || '#2d6a4f';
       var couvertureTheme = themeMeta.couverture || '';
 
-      // === MODIFICATION : 1ère image du corps du texte en priorité ===
-      var premiereImageNom = extrairePremiereImageTexte(texte);
-      var imagesCat = imagesParCategorie[texte.categorie] || {};
-      var premiereImageUrl = premiereImageNom ? imagesCat[premiereImageNom] : null;
-
-      var couvertureContenuHtml;
-      if (premiereImageUrl) {
-        // On affiche la première image du post
-        couvertureContenuHtml = '<img src="' + escapeHtml(premiereImageUrl) + '" alt="" loading="lazy">';
-      } else if (couvertureTheme) {
-        // Fallback : couverture du thème
-        couvertureContenuHtml = '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">';
-      } else {
-        // Fallback final : losange
-        couvertureContenuHtml = '<div class="couverture-fallback" style="background:' + couleurTheme + ';">◆</div>';
-      }
-      // === FIN MODIFICATION ===
+      var couvertureContenuHtml = couvertureTheme
+        ? '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">'
+        : '<div class="couverture-fallback">◆</div>';
 
       var largeurProgression = estValide ? '100%' : '0%';
 
