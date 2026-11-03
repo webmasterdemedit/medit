@@ -228,16 +228,30 @@
     // Récupère les écrits depuis le thème, où qu'ils soient rangés
     // (infos[0].ecrits en priorité, puis infos.ecrits, puis l.ecrits)
     function extraireEcrits(l) {
-      if (!l) return [];
-      if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
-        return parseEcrits(l.infos[0].ecrits);
-      }
-      if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
-        return parseEcrits(l.infos.ecrits);
-      }
-      return parseEcrits(l.ecrits);
-    }
+  if (!l) return [];
 
+  // Cas 1 : infos est un tableau d'écrits directement
+  // (chaque élément a un "titre" et un "contenu")
+  if (Array.isArray(l.infos) && l.infos.length > 0 &&
+      l.infos[0] && (l.infos[0].titre !== undefined || l.infos[0].contenu !== undefined)) {
+    return l.infos.filter(function(e) {
+      return e && (e.titre || e.contenu);
+    });
+  }
+
+  // Cas 2 : infos[0].ecrits (ancien format)
+  if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
+    return parseEcrits(l.infos[0].ecrits);
+  }
+
+  // Cas 3 : infos.ecrits (objet)
+  if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
+    return parseEcrits(l.infos.ecrits);
+  }
+
+  // Cas 4 : l.ecrits (fallback)
+  return parseEcrits(l.ecrits);
+}
     // ============================================================
     // Statut validé / non validé (basé sur Tentatives)
     // ============================================================
