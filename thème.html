@@ -225,33 +225,39 @@
       }
     }
 
-    // Récupère les écrits depuis le thème, où qu'ils soient rangés
-    // (infos[0].ecrits en priorité, puis infos.ecrits, puis l.ecrits)
+    // ============================================================
+    // Récupère les écrits depuis le thème, où qu'ils soient rangés.
+    // Cas gérés :
+    //   1) l.infos est directement un tableau d'écrits [{titre, contenu}]
+    //   2) l.infos[0].ecrits (ancien format)
+    //   3) l.infos.ecrits (objet)
+    //   4) l.ecrits (fallback)
+    // ============================================================
     function extraireEcrits(l) {
-  if (!l) return [];
+      if (!l) return [];
 
-  // Cas 1 : infos est un tableau d'écrits directement
-  // (chaque élément a un "titre" et un "contenu")
-  if (Array.isArray(l.infos) && l.infos.length > 0 &&
-      l.infos[0] && (l.infos[0].titre !== undefined || l.infos[0].contenu !== undefined)) {
-    return l.infos.filter(function(e) {
-      return e && (e.titre || e.contenu);
-    });
-  }
+      // Cas 1 : infos est un tableau d'écrits directement
+      if (Array.isArray(l.infos) && l.infos.length > 0 &&
+          l.infos[0] && (l.infos[0].titre !== undefined || l.infos[0].contenu !== undefined)) {
+        return l.infos.filter(function(e) {
+          return e && (e.titre || e.contenu);
+        });
+      }
 
-  // Cas 2 : infos[0].ecrits (ancien format)
-  if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
-    return parseEcrits(l.infos[0].ecrits);
-  }
+      // Cas 2 : infos[0].ecrits
+      if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
+        return parseEcrits(l.infos[0].ecrits);
+      }
 
-  // Cas 3 : infos.ecrits (objet)
-  if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
-    return parseEcrits(l.infos.ecrits);
-  }
+      // Cas 3 : infos.ecrits (objet)
+      if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
+        return parseEcrits(l.infos.ecrits);
+      }
 
-  // Cas 4 : l.ecrits (fallback)
-  return parseEcrits(l.ecrits);
-}
+      // Cas 4 : l.ecrits
+      return parseEcrits(l.ecrits);
+    }
+
     // ============================================================
     // Statut validé / non validé (basé sur Tentatives)
     // ============================================================
@@ -294,9 +300,12 @@
     function construireInfosHtml(infos) {
       if (!infos) return '';
 
-      // Si infos est un tableau (cas où le GS renvoie [{...}]),
-      // on prend le premier élément comme objet.
       if (Array.isArray(infos)) {
+        // Si c'est un tableau d'écrits (éléments avec titre/contenu),
+        // on n'affiche rien ici : les écrits ont leur propre bloc.
+        if (infos[0] && (infos[0].titre !== undefined || infos[0].contenu !== undefined)) {
+          return '';
+        }
         infos = infos[0] || {};
       }
 
@@ -333,17 +342,25 @@
     function construireInfosCompletes(themeInfo) {
       var infos = {};
 
-      // Gestion du cas tableau : on prend le premier élément
       var sourceInfos = themeInfo.infos;
+
       if (Array.isArray(sourceInfos)) {
-        sourceInfos = sourceInfos[0] || {};
+        // Si tableau d'écrits → pas d'infos texte à extraire
+        if (sourceInfos[0] && (sourceInfos[0].titre !== undefined || sourceInfos[0].contenu !== undefined)) {
+          sourceInfos = {};
+        } else {
+          // Ancien format : [{...}] → premier élément
+          sourceInfos = sourceInfos[0] || {};
+        }
       }
 
       if (sourceInfos && typeof sourceInfos === 'object') {
         for (var k in sourceInfos) {
+          if (k === 'ecrits') continue;
           infos[k] = sourceInfos[k];
         }
       }
+
       if (themeInfo.sousTitre && !infos['sous-titre']) infos['sous-titre'] = themeInfo.sousTitre;
       if (themeInfo.date && !infos['date'])             infos['date'] = themeInfo.date;
       if (themeInfo.auteur && !infos['auteur'])         infos['auteur'] = themeInfo.auteur;
