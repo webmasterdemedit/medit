@@ -111,77 +111,6 @@
       font-size: 10px;
     }
 
-    /* ---- Progression ---- */
-    .progression-theme {
-      font-style: italic;
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 6px;
-      text-align: center;
-      line-height: 1.4;
-    }
-
-    /* ---- Écrits du thème ---- */
-    .ecrits-theme {
-      margin-top: 10px;
-      padding: 10px 12px;
-      border-left: 3px solid var(--accent, #2d6a4f);
-      background: var(--bg-hover, #f5f7f5);
-      border-radius: 4px;
-    }
-
-    .ecrits-titre {
-      font-family: 'Georgia', serif;
-      font-size: 13px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-      letter-spacing: 0.3px;
-    }
-
-    .ecrit-item {
-      margin-bottom: 6px;
-      font-size: 12px;
-    }
-
-    .ecrit-item:last-child {
-      margin-bottom: 0;
-    }
-
-    .ecrit-item summary {
-      cursor: pointer;
-      font-weight: 500;
-      color: var(--text);
-      padding: 3px 0;
-      list-style: none;
-      position: relative;
-      padding-left: 14px;
-    }
-
-    .ecrit-item summary::before {
-      content: '▸';
-      position: absolute;
-      left: 0;
-      transition: transform 0.2s;
-      color: var(--accent, #2d6a4f);
-    }
-
-    .ecrit-item[open] summary::before {
-      transform: rotate(90deg);
-    }
-
-    .ecrit-item summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .ecrit-contenu {
-      padding: 6px 0 4px 14px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      white-space: pre-wrap;
-      font-size: 12px;
-    }
-
     .vide-themes {
       grid-column: 1 / -1;
       text-align: center;
@@ -336,27 +265,12 @@
     }
 
     // ============================================================
-    // Parse sûr du champ "ecrits" (JSON string ou array)
-    // ============================================================
-    function parseEcrits(val) {
-      if (!val) return [];
-      try {
-        if (typeof val === 'string') {
-          var arr = JSON.parse(val);
-          return Array.isArray(arr) ? arr : [];
-        }
-        return Array.isArray(val) ? val : [];
-      } catch (e) {
-        return [];
-      }
-    }
-
-    // ============================================================
     // Statut validé par texte (basé sur Tentatives)
     // ============================================================
     function estTexteValide(texteId) {
       var r = toutesLesReponses[String(texteId)];
       if (!r) return false;
+      // toutesLesReponses peut contenir un objet (compat) ou un tableau
       if (Array.isArray(r)) {
         for (var i = 0; i < r.length; i++) {
           if ((r[i].pourcentage || 0) >= 65) return true;
@@ -402,12 +316,12 @@
               preRequis: l.preRequis || '',
               auteur: l.auteur || '',
               niveau: parseInt(l.niveau) || 0,
-              couverture: l.couverture || '',
-              ecrits: parseEcrits(l.ecrits)
+              couverture: l.couverture || ''
             };
           });
         }
 
+        // Construit toutesLesReponses à partir des tentatives
         toutesLesReponses = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
@@ -442,8 +356,7 @@
                 preRequis: l.preRequis || '',
                 auteur: l.auteur || '',
                 niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || '',
-                ecrits: parseEcrits(l.ecrits)
+                couverture: l.couverture || ''
               };
             });
           }
@@ -548,8 +461,7 @@
           date: meta.date || '',
           auteur: meta.auteur || '',
           niveau: meta.niveau || 1,
-          couverture: meta.couverture || '',
-          ecrits: meta.ecrits || []
+          couverture: meta.couverture || ''
         };
       });
 
@@ -595,37 +507,15 @@
                 : '')
           + '</div>';
 
+        // Phrase de progression en dessous de la carte, sans cadre, en italique
         var phraseProgression = ''
-          + '<div class="progression-theme">'
+          + '<div style="font-style: italic; font-size: 12px; color: var(--text-secondary); margin-top: 6px; text-align: center; line-height: 1.4;">'
           +   'Vous avez complété ' + theme.pourcentage + ' %'
           +   ' — il vous reste ' + theme.restants + ' texte' + (theme.restants > 1 ? 's' : '')
           +   '.'
           + '</div>';
 
-        // ---- Bloc écrits (fichiers "x ..." du livret) ----
-        var ecritsHtml = '';
-        if (theme.ecrits && theme.ecrits.length > 0) {
-          var itemsHtml = theme.ecrits.map(function(e) {
-            var titreEcrit = escapeHtml(e.titre || 'Écrit');
-            var contenuEcrit = escapeHtml(e.contenu || '');
-            return '<details class="ecrit-item">'
-              + '<summary>' + titreEcrit + '</summary>'
-              + '<div class="ecrit-contenu">' + contenuEcrit + '</div>'
-              + '</details>';
-          }).join('');
-
-          ecritsHtml = '<div class="ecrits-theme">'
-            + '<div class="ecrits-titre">✍ Pourquoi ce thème ?</div>'
-            + itemsHtml
-            + '</div>';
-        }
-
-        html += '<div class="carte-avec-bas">'
-          + carteHtml
-          + basHtml
-          + phraseProgression
-          + ecritsHtml
-          + '</div>';
+        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + phraseProgression + '</div>';
       });
       html += '</div>';
 
