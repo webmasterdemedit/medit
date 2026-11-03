@@ -154,7 +154,8 @@
       'description': true,
       'couleur': true,
       'couverture': true,
-      'couverture-url': true
+      'couverture-url': true,
+      'ecrits': true
     };
 
     var ORDRE_PREFERE = [
@@ -220,6 +221,19 @@
       }
     }
 
+    // Récupère les écrits depuis le thème, où qu'ils soient rangés
+    // (infos[0].ecrits en priorité, puis infos.ecrits, puis l.ecrits)
+    function extraireEcrits(l) {
+      if (!l) return [];
+      if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
+        return parseEcrits(l.infos[0].ecrits);
+      }
+      if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
+        return parseEcrits(l.infos.ecrits);
+      }
+      return parseEcrits(l.ecrits);
+    }
+
     // ============================================================
     // Statut validé / non validé (basé sur Tentatives)
     // ============================================================
@@ -261,6 +275,15 @@
     // ============================================================
     function construireInfosHtml(infos) {
       if (!infos) return '';
+
+      // Si infos est un tableau (cas où le GS renvoie [{...}]),
+      // on prend le premier élément comme objet.
+      if (Array.isArray(infos)) {
+        infos = infos[0] || {};
+      }
+
+      if (typeof infos !== 'object') return '';
+
       var html = '';
       var vus = {};
 
@@ -269,6 +292,7 @@
         if (CHAMPS_RESERVES[k]) continue;
         if (vus[k]) continue;
         if (infos[k] === undefined || infos[k] === null || infos[k] === '') continue;
+        if (typeof infos[k] === 'object') continue;
         html += '<div class="pre-requis"><strong>' +
           echapperHtml(capitaliser(k)) + ' :</strong> ' +
           echapperHtml(infos[k]) + '</div>';
@@ -278,6 +302,7 @@
       for (var cle in infos) {
         if (vus[cle] || CHAMPS_RESERVES[cle]) continue;
         if (infos[cle] === undefined || infos[cle] === null || infos[cle] === '') continue;
+        if (typeof infos[cle] === 'object') continue;
         html += '<div class="pre-requis"><strong>' +
           echapperHtml(capitaliser(cle)) + ' :</strong> ' +
           echapperHtml(infos[cle]) + '</div>';
@@ -289,9 +314,16 @@
 
     function construireInfosCompletes(themeInfo) {
       var infos = {};
-      if (themeInfo.infos && typeof themeInfo.infos === 'object') {
-        for (var k in themeInfo.infos) {
-          infos[k] = themeInfo.infos[k];
+
+      // Gestion du cas tableau : on prend le premier élément
+      var sourceInfos = themeInfo.infos;
+      if (Array.isArray(sourceInfos)) {
+        sourceInfos = sourceInfos[0] || {};
+      }
+
+      if (sourceInfos && typeof sourceInfos === 'object') {
+        for (var k in sourceInfos) {
+          infos[k] = sourceInfos[k];
         }
       }
       if (themeInfo.sousTitre && !infos['sous-titre']) infos['sous-titre'] = themeInfo.sousTitre;
@@ -353,7 +385,7 @@
               niveau:     parseInt(l.niveau) || 0,
               couverture: l.couverture || '',
               infos:      l.infos || null,
-              ecrits:     parseEcrits(l.ecrits)
+              ecrits:     extraireEcrits(l)
             };
           });
         }
@@ -393,7 +425,7 @@
                 niveau:     parseInt(l.niveau) || 0,
                 couverture: l.couverture || '',
                 infos:      l.infos || null,
-                ecrits:     parseEcrits(l.ecrits)
+                ecrits:     extraireEcrits(l)
               };
             });
           }
