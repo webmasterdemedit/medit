@@ -745,7 +745,7 @@ body {
 
 <hr class="filet">
 
-<div class="temps-lecture-haut">Temps de lecture estimé : ${tempsLecture} min</div>
+<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
