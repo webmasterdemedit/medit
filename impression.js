@@ -669,7 +669,7 @@ body {
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
-  height: 14px;
+  height: 15px;
   min-width: 120px;
   border-bottom: 0.8px dotted #8a7d68;
   order: 0;
