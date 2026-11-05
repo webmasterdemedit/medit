@@ -669,7 +669,7 @@ body {
 .copier-ligne-pointillee {
   flex: 1 1 auto;
   display: block;
-  height: 15px;
+  height: 20px;
   min-width: 120px;
   border-bottom: 0.8px dotted #8a7d68;
   order: 0;
@@ -745,7 +745,7 @@ body {
 
 <hr class="filet">
 
-<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
+<div class="temps-lecture-haut">Temps de lecture estimé : ${tempsLecture} min</div>
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
@@ -917,7 +917,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
-      for (var ol = 0; ol < 3; ol++) printHtml += '<div class="open-ligne"></div>';
+      for (var ol = 0; ol < 5; ol++) printHtml += '<div class="open-ligne"></div>';
       printHtml += '</div></div>';
     } else if (bloc.type === 'tt') {
       ouvrirZoneExercices();
