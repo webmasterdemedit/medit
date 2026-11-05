@@ -1577,13 +1577,29 @@
     }
 
     function imprimerVersionParenthese() {
-      if (!window._altTexteId) {
-        alert('Aucune version alternative disponible.');
-        return;
-      }
-      var tous = DataManager.getTousLesTextesComplets();
-      imprimerTexte(window._altTexteId, window._altTexteTitre, tous);
+  if (!window._altTexteId) {
+    alert('Aucune version alternative disponible.');
+    return;
+  }
+  if (!texteActuel) {
+    alert('Texte original introuvable.');
+    return;
+  }
+
+  DataManager.getTexteAsync(window._altTexteId).then(function(texteAlt) {
+    if (!texteAlt || !texteAlt.contenu) {
+      alert('Contenu alternatif introuvable.');
+      return;
     }
+    imprimerContenuAlternatif(
+      texteActuel,              // texte original
+      texteAlt.contenu,         // contenu de la version alternative
+      window._altTexteSuffixe   // suffixe, ex. "débutant"
+    );
+  }).catch(function() {
+    alert('Erreur lors du chargement de la version alternative.');
+  });
+}
 
     function togglePanneauAnnotation() {
       var panneau = document.getElementById('panneauAnnotation');
