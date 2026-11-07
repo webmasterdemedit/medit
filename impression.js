@@ -219,7 +219,7 @@ function parserCartesPourImpression(carteTexte) {
     }
   }
   if (current) cartes.push(current);
-  return cartes;
+  return cartes; // <-- retourne désormais un TABLEAU
 }
 
 function parserRelierPourImpression(relierTexte) {
@@ -474,6 +474,19 @@ body {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif !important;
   font-size: 2.1em; line-height: 1; vertical-align: middle;
 }
+/* Taille identique (absolue) pour tout texte arabe dans les exercices */
+.exo-texte .arabe,
+.exo-texte-vf .arabe,
+.tt-phrase-print .arabe,
+.quiz-rep .arabe,
+.ordre-cell-texte .arabe,
+.relier-ligne-item .arabe,
+.consigne-exo .arabe {
+  font-size: 22pt !important;
+  line-height: 1.05;
+  vertical-align: middle;
+  display: inline-block;
+}
 
 .page { max-width:100%; padding: 0; background:#faf7f0; overflow: visible; }
 
@@ -630,7 +643,21 @@ body {
 .open-lignes { margin-top:4px; margin-left:26px; }
 .open-ligne { border-bottom:0.5px dotted #b0a48f; height:24px; margin-bottom:16px; }
 
-.carte-ligne-courte { margin-top:4px; margin-left:26px; width:50%; border-bottom:0.5px dotted #b0a48f; height:16px; }
+/* ---- Cartes r/v : verso sur la même ligne que l'énoncé, en colonnes ---- */
+.cartes-grille { margin:4px 0 4px 26px; }
+.cartes-ligne { display:flex; flex-wrap:nowrap; gap:14px; margin-bottom:8px; align-items:baseline; }
+.cartes-item { display:flex; align-items:baseline; gap:6px; }
+.cartes-item .carte-recto { font-size:10.5pt; white-space:nowrap; }
+.cartes-item .carte-vers-ligne {
+  display:inline-block;
+  min-width:70px;
+  max-width:110px;
+  border-bottom:0.5px dotted #b0a48f;
+  height:13px;
+  flex:0 0 auto;
+}
+.cartes-ligne[data-cols="2"] .cartes-item { width:calc(50% - 7px); }
+.cartes-ligne[data-cols="3"] .cartes-item { width:calc(33.333% - 10px); }
 
 .ordre-grille { margin:4px 0 4px 26px; display:grid; grid-template-columns:auto auto;
   column-gap:12px; row-gap:3px; font-size:10.5pt; }
@@ -655,31 +682,30 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-/* ---- Recopier : ligne pointillée, flèche fine en contour, puis texte arabe ---- */
+/* ---- Recopier : ligne pointillée SOUS toute la ligne (y compris le texte arabe) ---- */
 .bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  display: block;
   min-height: 38px;
   direction: ltr;
 }
 
 .copier-ligne-pointillee {
-  flex: 1 1 auto;
-  display: block;
-  height: 15px;
-  min-width: 120px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  width: 100%;
+  min-height: 30px;
+  padding-bottom: 2px;
   border-bottom: 0.8px dotted #8a7d68;
-  order: 0;
 }
 
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  order: 1;
 }
 
 .copier-fleche-apres svg {
@@ -697,7 +723,6 @@ body {
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
-  order: 2;
 }
 
 .copier-texte-arabe .copier-mot {
@@ -833,17 +858,18 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<span class="exo-texte" style="flex:1;">';
       printHtml += '<div class="bloc-copier-inline">';
       printHtml += '  <div class="copier-ligne-inline">';
-      printHtml += '    <span class="copier-ligne-pointillee"></span>';
-      printHtml += '    <span class="copier-fleche-apres">';
-      printHtml += '      <svg viewBox="0 0 38 18" xmlns="http://www.w3.org/2000/svg">';
-      printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
-      printHtml += '      </svg>';
-      printHtml += '    </span>';
-      printHtml += '    <span class="copier-texte-arabe">';
+      printHtml += '    <div class="copier-ligne-pointillee">';
+      printHtml += '      <span class="copier-fleche-apres">';
+      printHtml += '        <svg viewBox="0 0 38 18" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '          <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
+      printHtml += '        </svg>';
+      printHtml += '      </span>';
+      printHtml += '      <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
       }
-      printHtml += '    </span>';
+      printHtml += '      </span>';
+      printHtml += '    </div>';
       printHtml += '  </div>';
       printHtml += '</div>';
       printHtml += '</span>';
@@ -975,15 +1001,26 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '</div>';
     } else if (bloc.type === 'carte') {
       ouvrirZoneExercices();
-      var c = bloc.data;
+      var cartesArr = bloc.data;
       exoNum++;
       printHtml += '<div class="exo">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + c.recto + '</span>';
+      printHtml += '<span class="exo-texte">Complétez le verso :</span>';
       printHtml += '</div>';
-      printHtml += '<div class="carte-ligne-courte"></div>';
+
+      var parLigne = cartesArr.length === 1 ? 1 : (cartesArr.length === 2 ? 2 : 3);
+      for (var ci = 0; ci < cartesArr.length; ci += parLigne) {
+        printHtml += '<div class="cartes-ligne" data-cols="' + parLigne + '">';
+        for (var cj = ci; cj < Math.min(ci + parLigne, cartesArr.length); cj++) {
+          printHtml += '<div class="cartes-item">';
+          printHtml += '<span class="carte-recto">' + cartesArr[cj].recto + ' →</span>';
+          printHtml += '<span class="carte-vers-ligne"></span>';
+          printHtml += '</div>';
+        }
+        printHtml += '</div>';
+      }
       printHtml += '</div>';
     } else if (bloc.type === 'relier') {
       ouvrirZoneExercices();
