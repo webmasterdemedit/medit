@@ -78,6 +78,25 @@ function recupererCouvertureTheme(categorie) {
   return '';
 }
 
+// Retourne le nom de section (colonne A de la feuille Thèmes) pour une catégorie
+function recupererSectionTheme(categorie) {
+  if (!categorie) return '';
+  try {
+    if (typeof DataManager !== 'undefined' && typeof DataManager.getTousLesThemes === 'function') {
+      var themes = DataManager.getTousLesThemes() || [];
+      for (var i = 0; i < themes.length; i++) {
+        if (themes[i].titre === categorie) return (themes[i].theme || '').trim();
+      }
+    }
+  } catch (e) {}
+  try {
+    if (typeof window !== 'undefined' && window.themesData && window.themesData[categorie]) {
+      return (window.themesData[categorie].theme || '').trim();
+    }
+  } catch (e) {}
+  return '';
+}
+
 function extraireNumeroTexte(titre) {
   if (!titre) return Infinity;
   var match = titre.match(/^\s*(\d+)\s+/);
@@ -454,6 +473,13 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
+  // ---- Ligne "Rappel sur un … de …" (même logique que texte.html) ----
+  var nomSection = recupererSectionTheme(texte.categorie);
+  var nomTheme = texte.categorie || '';
+  var ligneRappel = 'Rappel';
+  if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
+  else if (nomTheme) ligneRappel += ' de ' + nomTheme;
+
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
 
@@ -493,17 +519,31 @@ body {
 .temps-lecture-haut { text-align:center; font-size:9pt; color:#8a7d68; font-style:italic; margin-bottom:10px; letter-spacing:0.5px; font-family:'Georgia',serif; }
 .temps-lecture-haut::before { content:"❧ "; font-style:normal; color:#a89a80; margin-right:4px; }
 
+/* ---- Bandeau titre (3 lignes : Niveau / Titre / Rappel) ---- */
 .bandeau-titre { text-align:center; padding: 6px 0 4px; margin-bottom: 6px; }
 .bandeau-titre .ligne-titre { display:flex; flex-direction:column; align-items:center; gap:6px; }
+
+.bandeau-titre .meta-niveau {
+  font-family:'Georgia',serif;
+  font-size: 9pt;
+  font-style: italic;
+  color:#8a7d68;
+  letter-spacing: 0.8px;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
 .bandeau-titre h1 {
   font-family:'Georgia','Playfair Display',serif; font-size:20pt; font-weight:700;
   color:#1f1a13; letter-spacing:1.5px; text-transform:uppercase; line-height:1.15;
   margin:0; text-align:center;
 }
+
 .bandeau-titre .meta-droite {
   font-family:'Georgia',serif; font-style:italic; font-size:10pt; color:#8a7d68;
   letter-spacing:0.5px; margin-top:2px;
 }
+
 .sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 2px; width:60%; }
 .sous-titre-filets::before, .sous-titre-filets::after { content:""; flex:1; border-top:0.7px solid #b0a48f; }
 
@@ -530,7 +570,8 @@ body {
 
 .corps-contenu { padding: 0; }
 
-.texte-zone { margin-top: 6px; margin-bottom: 10px; }
+/* Espace avant le texte (comme sur texte.html : 32px) */
+.texte-zone { margin-top: 32px; margin-bottom: 10px; }
 .paragraphe { margin-bottom: 10px; break-inside: auto; page-break-inside: auto; }
 .paragraphe p {
   font-size: 12.8pt; margin-bottom: 6px; text-align: justify;
@@ -750,10 +791,11 @@ body {
 <div class="bandeau-titre">
   <div class="ligne-titre">
     ${couvertureHtml}
+    <div class="meta-niveau">Niveau ${texte.niveau || 0}</div>
     ${numeroHtml}
     <h1>${titreAffiche || 'Lecture'}</h1>
     <div class="sous-titre-filets"></div>
-    <div class="meta-droite">${texte.categorie ? texte.categorie + ' — ' : ''}Niveau ${texte.niveau || 0}</div>
+    <div class="meta-droite">${ligneRappel}</div>
   </div>
 </div>
 
