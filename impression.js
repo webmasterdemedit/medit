@@ -1074,11 +1074,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
     var idPost = texte.id || '';
 
+    var idPost = texte.id || '';
+
   printHtml += `
     <div class="pied-page">
-      <span class="pied-centre"><span lang="ar" dir="rtl">الكتاب والحكمة</span> &mdash; Niveau ${texte.niveau || 0}</span>
-      <span class="pied-ecrit">Écrit le ${dateCreationStr || '—'}</span>
-      <span class="imprime-le">${idPost}</span>
+      Association Va.& Vi.e ; kitaabwalhkma.fr - par W. Khan. Écrit le ${dateCreationStr || '—'}, et imprimé le ${dateImpressionStr} à ${heureImpressionStr}. n°${idPost}
     </div>
   </div>
 </body>
