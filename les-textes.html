@@ -5,347 +5,115 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Derniers textes publiés - Qiraat</title>
+  <title>Derniers rappels publiés - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    .page-blog {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 20px 30px 40px;
-    }
-
+    /* ===== PAGE BLOG ===== */
+    .page-blog { max-width: 860px; margin: 0 auto; padding: 20px 30px 40px; }
     .page-blog h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
+      font-family: 'Georgia', serif; font-size: 28px; font-weight: 700;
+      color: var(--text); margin-bottom: 4px; letter-spacing: .5px;
     }
-
     .page-blog .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
+      font-size: 15px; color: var(--text-secondary);
+      margin-bottom: 24px; font-weight: 300;
     }
 
-    .barre-recherche {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 16px;
-    }
+    /* ===== BARRE RECHERCHE ===== */
+    .barre-recherche { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
     .barre-recherche input {
-      flex: 1;
-      padding: 9px 14px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'Roboto', sans-serif;
-      font-size: 13px;
-      outline: none;
-      box-sizing: border-box;
+      flex: 1; padding: 9px 14px; border: 1px solid var(--border);
+      background: var(--bg); color: var(--text);
+      font-family: 'Roboto', sans-serif; font-size: 13px; outline: none;
     }
     .barre-recherche input:focus { border-color: var(--text-secondary); }
-    .compteur-resultats {
-      font-size: 12px;
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
+    .compteur-resultats { font-size: 12px; color: var(--text-muted); white-space: nowrap; }
 
+    /* ===== BARRE TRI ===== */
     .barre-tri {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-bottom: 24px;
-      padding-bottom: 18px;
-      border-bottom: 1px solid var(--border);
+      display: flex; flex-wrap: wrap; gap: 10px; align-items: center;
+      margin-bottom: 24px; padding-bottom: 18px; border-bottom: 1px solid var(--border);
     }
-
-    .tri-groupe {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
+    .tri-groupe { display: flex; align-items: center; gap: 6px; font-size: 13px; color: var(--text-secondary); }
     .tri-groupe label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
+      font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: var(--text-muted);
     }
-
     .tri-groupe select {
-      font-family: 'Roboto', sans-serif;
-      font-size: 13px;
-      padding: 6px 10px;
-      border: 1px solid var(--border);
-      background: var(--bg);
-      color: var(--text);
-      cursor: pointer;
-      outline: none;
+      font-family: 'Roboto', sans-serif; font-size: 13px; padding: 6px 10px;
+      border: 1px solid var(--border); background: var(--bg); color: var(--text); cursor: pointer; outline: none;
     }
-
-    .tri-groupe select:hover,
-    .tri-groupe select:focus {
-      border-color: var(--text-secondary);
-    }
-
+    .tri-groupe select:hover, .tri-groupe select:focus { border-color: var(--text-secondary); }
     .tri-reset {
-      font-size: 12px;
-      padding: 6px 12px;
-      border: 1px solid var(--border);
-      background: transparent;
-      color: var(--text-secondary);
-      cursor: pointer;
-      font-family: 'Roboto', sans-serif;
+      font-size: 12px; padding: 6px 12px; border: 1px solid var(--border);
+      background: transparent; color: var(--text-secondary); cursor: pointer; font-family: 'Roboto', sans-serif;
+    }
+    .tri-reset:hover { color: var(--text); border-color: var(--text-secondary); }
+
+    /* ===== LISTE BLOG — plus de cadre, juste des filets ===== */
+    .liste-blog { display: flex; flex-direction: column; }
+    .post-blog {
+      display: flex; gap: 20px; padding: 22px 0;
+      border-bottom: 1px solid var(--border);
+      text-decoration: none; color: inherit; cursor: pointer;
+      transition: background .15s;
+    }
+    .post-blog:first-child { border-top: 1px solid var(--border); }
+    .post-blog:hover { background: var(--bg-hover); }
+
+    /* Image couverture du thème — à gauche, format livre, sans cadre */
+    .post-blog .post-couverture {
+      flex: 0 0 96px; width: 96px; height: 144px;
+      overflow: hidden; background: var(--bg-hover);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .post-blog .post-couverture img {
+      width: 100%; height: 100%; object-fit: cover; display: block;
+    }
+    .post-blog .post-couverture .fallback {
+      font-family: 'Georgia', serif; font-size: 28px; font-weight: 700;
+      color: var(--text-muted); opacity: .6;
     }
 
-    .tri-reset:hover {
-      color: var(--text);
-      border-color: var(--text-secondary);
+    /* Corps du post */
+    .post-blog .post-corps { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+    .post-blog .post-titre {
+      font-family: 'Georgia', serif; font-size: 18px; font-weight: 700;
+      color: var(--text); line-height: 1.3;
+    }
+    .post-blog .post-meta {
+      display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+      font-size: 12px; color: var(--text-secondary);
+    }
+    .post-blog .post-meta span {
+      font-size: 11px; padding: 2px 8px; border: 1px solid var(--border); color: var(--text-secondary);
+    }
+    .post-blog .post-extrait {
+      font-size: 13px; color: var(--text-secondary); line-height: 1.5;
+      display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .post-blog .post-categorie {
+      font-size: 11px; letter-spacing: 1px; text-transform: uppercase; color: var(--text-muted);
+    }
+    .post-blog .post-validation {
+      font-style: italic; font-size: 11px; color: var(--text-secondary); margin-top: 2px;
     }
 
-    .page-blog .grille-themes {
-      display: flex;
-      flex-direction: column;
-      gap: 14px;
-    }
+    /* ===== VIDES ===== */
+    .vide-themes { text-align: center; padding: 60px 20px; color: var(--text-secondary); }
+    .vide-themes .icone { font-size: 32px; display: block; margin-bottom: 12px; color: var(--text-muted); }
 
-    .carte-blog {
-      display: flex;
-      gap: 0;
-      padding: 0;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      cursor: pointer;
-      transition: background 0.15s, border-color 0.15s;
-      text-decoration: none;
-      color: inherit;
-      box-sizing: border-box;
-      overflow: hidden;
-    }
-
-    .carte-blog:hover {
-      background: var(--bg-hover);
-      border-color: var(--text-secondary);
-    }
-
-    .carte-blog .blog-couverture {
-      flex: 0 0 90px;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      position: relative;
-      background: #f5f5f5;
-    }
-
-    .carte-blog .blog-couverture .couverture-contenu {
-      flex: 1 1 auto;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .carte-blog .blog-couverture img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
-    }
-
-    .carte-blog .blog-couverture .couverture-fallback {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Georgia', serif;
-      font-size: 24px;
-      font-weight: 700;
-      color: rgba(255,255,255,0.85);
-    }
-
-    .carte-blog .blog-couverture .progression-couverture {
-      flex: 0 0 3px;
-      width: 100%;
-      height: 3px;
-      background: var(--border);
-      position: relative;
-      overflow: hidden;
-    }
-
-    .carte-blog .blog-couverture .progression-couverture .progression-remplissage {
-      position: absolute;
-      top: 0;
-      left: 0;
-      bottom: 0;
-      background: var(--text);
-    }
-
-    .carte-blog .blog-centre {
-      display: flex;
-      gap: 20px;
-      flex: 1;
-      min-width: 0;
-      padding: 18px 20px;
-      box-sizing: border-box;
-    }
-
-    .carte-blog .blog-numero {
-      flex: 0 0 48px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-family: 'Georgia', serif;
-      font-size: 22px;
-      font-weight: 700;
-      color: var(--text-muted);
-      border-right: 1px solid var(--border);
-      padding-right: 14px;
-      box-sizing: border-box;
-    }
-
-    .carte-blog .blog-corps {
-      flex: 1;
-      min-width: 0;
-    }
-
-    .carte-blog .blog-titre {
-      font-family: 'Georgia', serif;
-      font-size: 17px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 6px;
-      line-height: 1.3;
-    }
-
-    .carte-blog .blog-meta {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      align-items: center;
-      font-size: 12px;
-      color: var(--text-secondary);
-    }
-
-    .carte-blog .blog-meta .badge-icone,
-    .carte-blog .blog-meta .niveau-badge,
-    .carte-blog .blog-meta .mots {
-      font-size: 11px;
-      padding: 2px 8px;
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-    }
-
-    .carte-blog .blog-extrait {
-      margin-top: 8px;
-      font-size: 13px;
-      color: var(--text-secondary);
-      line-height: 1.5;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    .carte-blog .blog-categorie {
-      display: inline-block;
-      margin-top: 8px;
-      font-size: 11px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      color: var(--text-muted);
-    }
-
-    .carte-blog .blog-date {
-      flex: 0 0 auto;
-      display: flex;
-      align-items: flex-start;
-      gap: 16px;
-      padding-left: 14px;
-      border-left: 1px solid var(--border);
-      box-sizing: border-box;
-      white-space: nowrap;
-    }
-
-    .carte-blog .blog-date .bandeau-validation-texte {
-      font-style: italic;
-      font-size: 11px;
-      color: var(--text-secondary);
-      line-height: 1.4;
-      text-align: right;
-      max-width: 200px;
-      white-space: normal;
-    }
-
-    .carte-blog .blog-date .bloc-date {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      text-align: right;
-      font-size: 11px;
-      color: var(--text-muted);
-    }
-
-    .carte-blog .blog-date .date-label {
-      font-weight: 600;
-      color: var(--text-secondary);
-    }
-
-    .carte-blog .blog-date .date-validation {
-      color: var(--text);
-    }
-
+    /* ===== RESPONSIVE ===== */
     @media (max-width: 700px) {
       .page-blog { padding: 12px 16px 30px; }
       .page-blog h1 { font-size: 22px; }
-
-      .carte-blog .blog-couverture { flex: 0 0 64px; }
-
-      .carte-blog .blog-centre {
-        flex-wrap: wrap;
-        gap: 12px;
-        padding: 14px;
-      }
-
-      .carte-blog .blog-numero {
-        flex: 0 0 36px;
-        font-size: 18px;
-        padding-right: 10px;
-      }
-
-      .carte-blog .blog-date {
-        flex: 1 0 100%;
-        align-items: center;
-        justify-content: flex-start;
-        border-left: none;
-        border-top: 1px solid var(--border);
-        padding-left: 0;
-        padding-top: 8px;
-        flex-direction: row-reverse;
-        gap: 12px;
-      }
-
-      .carte-blog .blog-date .bandeau-validation-texte {
-        text-align: left;
-        max-width: none;
-      }
-
-      .carte-blog .blog-date .bloc-date {
-        text-align: left;
-        flex-direction: row;
-        gap: 6px;
-      }
+      .post-blog { gap: 14px; padding: 16px 0; }
+      .post-blog .post-couverture { flex: 0 0 64px; width: 64px; height: 96px; }
+      .post-blog .post-titre { font-size: 16px; }
+      .post-blog .post-extrait { -webkit-line-clamp: 3; }
     }
   </style>
 
@@ -353,17 +121,14 @@
     var xhr = new XMLHttpRequest();
     xhr.open('GET', '/medit/header.html', false);
     xhr.send();
-    if (xhr.status === 200) {
-      document.write(xhr.responseText);
-    }
+    if (xhr.status === 200) document.write(xhr.responseText);
   </script>
 </head>
 <body>
 
   <div class="page page-blog">
-
-    <h1>Derniers textes publiés</h1>
-    <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
+    <h1>Derniers rappels publiés</h1>
+    <p class="sous-titre-page">Les rappels les plus récents, tous thèmes confondus. Cliquez sur un rappel pour le lire.</p>
 
     <div class="barre-recherche">
       <input type="text" id="rechercheTextes" placeholder="Rechercher un titre, un thème, un tag, un extrait..." />
@@ -373,21 +138,15 @@
     <div class="barre-tri" id="barreTri">
       <div class="tri-groupe">
         <label for="triTheme">Thème</label>
-        <select id="triTheme" onchange="appliquerTri()">
-          <option value="">Tous</option>
-        </select>
+        <select id="triTheme" onchange="afficherBlog()"><option value="">Tous</option></select>
       </div>
       <div class="tri-groupe">
         <label for="triTag">Tag</label>
-        <select id="triTag" onchange="appliquerTri()">
-          <option value="">Tous</option>
-        </select>
+        <select id="triTag" onchange="afficherBlog()"><option value="">Tous</option></select>
       </div>
       <div class="tri-groupe">
         <label for="triAnnee">Année</label>
-        <select id="triAnnee" onchange="appliquerTri()">
-          <option value="">Toutes</option>
-        </select>
+        <select id="triAnnee" onchange="afficherBlog()"><option value="">Toutes</option></select>
       </div>
       <button class="tri-reset" onclick="reinitialiserTri()">Réinitialiser</button>
     </div>
@@ -395,32 +154,24 @@
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Chargement des textes...</p>
+        <p>Chargement des rappels...</p>
       </div>
     </div>
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
     </div>
-
   </div>
 
   <div id="footer-container"></div>
 
   <script>
     fetch('/medit/footer.html')
-      .then(function(response) { return response.text(); })
-      .then(function(data) {
-        document.getElementById('footer-container').innerHTML = data;
-      })
-      .catch(function(error) {
-        console.error('Erreur chargement footer:', error);
-        document.getElementById('footer-container').innerHTML = `
-          <footer class="site-footer">
-            <div class="footer-devise">"La méditation est la clé qui ouvre les portes de l'intelligence du cœur."</div>
-            <div class="footer-copy">© ${new Date().getFullYear()} Qiraat</div>
-          </footer>
-        `;
+      .then(function(r) { return r.text(); })
+      .then(function(data) { document.getElementById('footer-container').innerHTML = data; })
+      .catch(function() {
+        document.getElementById('footer-container').innerHTML =
+          '<footer class="site-footer"><div class="footer-devise">"La méditation est la clé qui ouvre les portes de l\'intelligence du cœur."</div><div class="footer-copy">© ' + new Date().getFullYear() + ' Qiraat</div></footer>';
       });
   </script>
 
@@ -429,84 +180,62 @@
   <script src="/medit/data-manager.js"></script>
 
   <script>
-    var toutesLesReponses = {};
-    var textesData = [];
-    var themesData = {};
-    var niveauEtudiant = 0;
-    var nomEtudiant = '';
-    var rechercheActive = '';
+    var toutesLesReponses = {}, textesData = [], themesData = {}, niveauEtudiant = 0, rechercheActive = '';
 
-    function extraireNumeroTexte(titre) {
-      if (!titre) return Infinity;
-      var match = titre.match(/^\s*(\d+)\s+/);
-      return match ? parseInt(match[1], 10) : Infinity;
+    function escapeHtml(s) {
+      return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
-
-    function extraireTitreSansNumero(titre) {
-      if (!titre) return '';
-      return titre.replace(/^\s*\d+\s+/, '').trim();
+    function normaliser(s) {
+      return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
     }
-
-    function escapeHtml(str) {
-      if (str === null || str === undefined) return '';
-      return String(str)
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#39;');
+    function anneeDe(d) {
+      if (!d) return '';
+      var x = new Date(d); return isNaN(x.getTime()) ? '' : String(x.getFullYear());
     }
-
-    function normaliserComparaison(str) {
-      return String(str).toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    function dateRelative(d) {
+      if (!d) return '';
+      var x = new Date(d); if (isNaN(x.getTime())) return '';
+      var j = Math.floor((new Date() - x) / 86400000);
+      if (j < 0) j = 0;
+      if (j === 0) return "Aujourd'hui";
+      if (j === 1) return 'Hier';
+      if (j < 7) return 'Il y a ' + j + ' jours';
+      if (j < 30) return 'Il y a ' + Math.floor(j/7) + ' sem.';
+      if (j < 365) return 'Il y a ' + Math.floor(j/30) + ' mois';
+      return x.toLocaleDateString('fr-FR', { day:'2-digit', month:'long', year:'numeric' });
     }
-
-    function normaliserRecherche(str) {
-      return String(str || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+    function numeroTitre(t) {
+      var m = (t || '').match(/^\s*(\d+)\s+/); return m ? parseInt(m[1], 10) : Infinity;
     }
+    function titreSansNumero(t) { return (t || '').replace(/^\s*\d+\s+/, '').trim(); }
 
-    function formatDateRelative(dateStr) {
-      if (!dateStr) return '';
-      var d = new Date(dateStr);
-      if (isNaN(d.getTime())) return '';
-
-      var maintenant = new Date();
-      var diffMs = maintenant - d;
-      var diffJours = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-
-      if (diffJours < 0) diffJours = 0;
-      if (diffJours === 0) return "Aujourd'hui";
-      if (diffJours === 1) return 'Hier';
-      if (diffJours < 7) return 'Il y a ' + diffJours + ' jours';
-      if (diffJours < 30) return 'Il y a ' + Math.floor(diffJours / 7) + ' sem.';
-      if (diffJours < 365) return 'Il y a ' + Math.floor(diffJours / 30) + ' mois';
-
-      return d.toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'long', year: 'numeric'
+    function infoValidation(id) {
+      var r = toutesLesReponses[String(id)];
+      if (!r || !r.length) return { valide: false, date: '' };
+      var best = -1, date = '';
+      r.forEach(function(x) {
+        var p = x.pourcentage || 0;
+        if (p > best) { best = p; date = x.date || ''; }
       });
+      return { valide: best >= 65, date: best >= 65 ? date : '' };
     }
 
-    function formatDateComplete(dateStr) {
-      if (!dateStr) return '';
-      var d = new Date(dateStr);
-      if (isNaN(d.getTime())) return '';
-      return d.toLocaleDateString('fr-FR', {
-        day: '2-digit', month: 'long', year: 'numeric'
-      });
-    }
-
-    function anneeDe(dateStr) {
-      if (!dateStr) return '';
-      var d = new Date(dateStr);
-      if (isNaN(d.getTime())) return '';
-      return String(d.getFullYear());
+    function compterExercices(t) {
+      var types = ['quiz:','open:','ordre:','carte:','relier:','tt:','vf:','copier:'];
+      var ob = t.ordreBlocs || [], n = 0;
+      if (ob.length) {
+        ob.forEach(function(o) {
+          for (var i = 0; i < types.length; i++) if (o.indexOf(types[i]) === 0) { n++; return; }
+        });
+      } else {
+        if (t.hasQuiz) n++;
+        if (t.hasQuestion) n++;
+      }
+      return n;
     }
 
     function chargerTextes() {
-      var id = (typeof getIdUtilisateur === 'function')
-        ? getIdUtilisateur()
-        : (localStorage.getItem('etudiant_id') || 'invite');
-      nomEtudiant = id;
+      var id = (typeof getIdUtilisateur === 'function') ? getIdUtilisateur() : (localStorage.getItem('etudiant_id') || 'invite');
       var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
 
       Promise.all([
@@ -515,373 +244,168 @@
           .then(function(r) { return r.json(); })
           .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
           .catch(function() { return []; })
-      ]).then(function(resultats) {
-        var data = resultats[0];
-        var tentatives = resultats[1];
-
+      ]).then(function(res) {
+        var data = res[0], tentatives = res[1];
         niveauEtudiant = data.niveau || 0;
         textesData = data.tousLesTextes || data.textes || [];
 
         themesData = {};
-        if (data.themes && Array.isArray(data.themes)) {
-          data.themes.forEach(function(l) {
-            themesData[l.titre] = {
-              couleur: l.couleur || '#2d6a4f',
-              sousTitre: l.sousTitre || '',
-              date: l.date || '',
-              auteur: l.auteur || '',
-              niveau: parseInt(l.niveau) || 0,
-              couverture: l.couverture || ''
-            };
-          });
-        }
+        (data.themes || []).forEach(function(l) {
+          themesData[l.titre] = {
+            couleur: l.couleur || '#2d6a4f',
+            couverture: l.couverture || ''
+          };
+        });
 
         toutesLesReponses = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
-          if (!toutesLesReponses[k]) toutesLesReponses[k] = [];
-          toutesLesReponses[k].push({
-            texteId: t.texteId,
-            titre: t.titre,
-            bonnes: t.bonnes,
-            total: t.total,
-            pourcentage: t.pourcentage,
-            date: t.date || '',
-            valide: (t.pourcentage >= 65) ? 'valide' : 'non-valide'
-          });
+          (toutesLesReponses[k] = toutesLesReponses[k] || []).push(t);
         });
 
         initialiserFiltres();
         afficherBlog();
-      }).catch(function(error) {
-        console.error('Erreur chargement:', error);
+      }).catch(function() {
         var cache = DataManager.getCacheForce(id);
-        if (cache) {
-          niveauEtudiant = cache.niveau || 0;
-          textesData = cache.tousLesTextes || cache.textes || [];
-          if (cache.themes && Array.isArray(cache.themes)) {
-            themesData = {};
-            cache.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
-              };
-            });
-          }
-          initialiserFiltres();
-          afficherBlog();
-        } else {
+        if (!cache) {
           document.getElementById('loader').style.display = 'none';
-          document.getElementById('contenu').innerHTML = `
-            <div class="vide-themes">
-              <span class="icone">⚠</span>
-              <h2>Erreur de chargement</h2>
-              <p>Vérifiez votre connexion internet.</p>
-              <button onclick="DataManager.rafraichir(); location.reload();"
-                      style="margin-top:12px;padding:10px 24px;background:transparent;border:1px solid var(--border);cursor:pointer;color:var(--text);">
-                Réessayer
-              </button>
-            </div>
-          `;
+          document.getElementById('contenu').innerHTML =
+            '<div class="vide-themes"><span class="icone">⚠</span><h2>Erreur de chargement</h2><p>Vérifiez votre connexion.</p></div>';
+          return;
         }
+        niveauEtudiant = cache.niveau || 0;
+        textesData = cache.tousLesTextes || cache.textes || [];
+        (cache.themes || []).forEach(function(l) {
+          themesData[l.titre] = { couleur: l.couleur || '#2d6a4f', couverture: l.couverture || '' };
+        });
+        initialiserFiltres();
+        afficherBlog();
       });
     }
 
     function initialiserFiltres() {
-      var accessibles = textesData.filter(function(t) {
-        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
+      var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
+
+      var themes = {}, tags = {}, annees = {};
+      acc.forEach(function(t) {
+        var c = (t.categorie || '').trim();
+        if (c) themes[normaliser(c)] = c;
+        (t.tags || []).forEach(function(g) { var b = String(g).trim(); if (b) tags[normaliser(b)] = b; });
+        var a = anneeDe(t.date); if (a) annees[a] = true;
       });
 
-      var themes = {};
-      accessibles.forEach(function(t) {
-        var cat = (t.categorie || '').trim();
-        if (cat) themes[normaliserComparaison(cat)] = cat;
-      });
-      var selTheme = document.getElementById('triTheme');
-      Object.keys(themes).sort(function(a, b) {
-        return themes[a].localeCompare(themes[b], 'fr', { sensitivity: 'base' });
-      }).forEach(function(k) {
-        var opt = document.createElement('option');
-        opt.value = themes[k];
-        opt.textContent = themes[k];
-        selTheme.appendChild(opt);
-      });
-
-      var tagsMap = {};
-      accessibles.forEach(function(t) {
-        (t.tags || []).forEach(function(tag) {
-          var brut = String(tag).trim();
-          if (brut) tagsMap[normaliserComparaison(brut)] = brut;
-        });
-      });
-      var selTag = document.getElementById('triTag');
-      Object.keys(tagsMap).sort(function(a, b) {
-        return tagsMap[a].localeCompare(tagsMap[b], 'fr', { sensitivity: 'base' });
-      }).forEach(function(k) {
-        var opt = document.createElement('option');
-        opt.value = tagsMap[k];
-        opt.textContent = '#' + tagsMap[k];
-        selTag.appendChild(opt);
-      });
-
-      var annees = {};
-      accessibles.forEach(function(t) {
-        var a = anneeDe(t.date);
-        if (a) annees[a] = true;
-      });
-      var selAnnee = document.getElementById('triAnnee');
-      Object.keys(annees).sort(function(a, b) { return b - a; }).forEach(function(a) {
-        var opt = document.createElement('option');
-        opt.value = a;
-        opt.textContent = a;
-        selAnnee.appendChild(opt);
-      });
+      function remplir(id, map, prefix, tri) {
+        var sel = document.getElementById(id);
+        Object.keys(map).sort(tri || function(a, b) { return map[a].localeCompare(map[b], 'fr', { sensitivity: 'base' }); })
+          .forEach(function(k) {
+            var o = document.createElement('option');
+            o.value = map[k]; o.textContent = (prefix || '') + map[k];
+            sel.appendChild(o);
+          });
+      }
+      remplir('triTheme', themes);
+      remplir('triTag', tags, '#');
+      remplir('triAnnee', annees, '', function(a, b) { return b - a; });
     }
-
-    function appliquerTri() { afficherBlog(); }
 
     function reinitialiserTri() {
       document.getElementById('triTheme').value = '';
       document.getElementById('triTag').value = '';
       document.getElementById('triAnnee').value = '';
-      var input = document.getElementById('rechercheTextes');
-      if (input) input.value = '';
+      var i = document.getElementById('rechercheTextes'); if (i) i.value = '';
       rechercheActive = '';
       afficherBlog();
     }
 
-    function brancherRecherche() {
-      var input = document.getElementById('rechercheTextes');
-      if (!input) return;
-      var timer = null;
-      input.addEventListener('input', function() {
-        clearTimeout(timer);
-        timer = setTimeout(function() {
-          rechercheActive = input.value.trim();
-          afficherBlog();
-        }, 150);
-      });
-    }
-
     function afficherBlog() {
-      var loader = document.getElementById('loader');
-      if (loader) loader.style.display = 'none';
+      var loader = document.getElementById('loader'); if (loader) loader.style.display = 'none';
 
-      var filtreTheme = document.getElementById('triTheme').value;
-      var filtreTag = document.getElementById('triTag').value;
-      var filtreAnnee = document.getElementById('triAnnee').value;
+      var ft = document.getElementById('triTheme').value;
+      var fg = document.getElementById('triTag').value;
+      var fa = document.getElementById('triAnnee').value;
 
-      var accessibles = textesData.filter(function(t) {
-        return (parseInt(t.niveau) || 1) <= niveauEtudiant;
-      });
-
-      if (filtreTheme) {
-        var cibleTheme = normaliserComparaison(filtreTheme);
-        accessibles = accessibles.filter(function(t) {
-          return normaliserComparaison(t.categorie || '') === cibleTheme;
-        });
-      }
-
-      if (filtreTag) {
-        var cibleTag = normaliserComparaison(filtreTag);
-        accessibles = accessibles.filter(function(t) {
-          return (t.tags || []).some(function(x) {
-            return normaliserComparaison(x) === cibleTag;
-          });
-        });
-      }
-
-      if (filtreAnnee) {
-        accessibles = accessibles.filter(function(t) {
-          return anneeDe(t.date) === filtreAnnee;
-        });
-      }
-
+      var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
+      if (ft) { var c = normaliser(ft); acc = acc.filter(function(t) { return normaliser(t.categorie) === c; }); }
+      if (fg) { var g = normaliser(fg); acc = acc.filter(function(t) { return (t.tags || []).some(function(x) { return normaliser(x) === g; }); }); }
+      if (fa) acc = acc.filter(function(t) { return anneeDe(t.date) === fa; });
       if (rechercheActive) {
-        var r = normaliserRecherche(rechercheActive);
-        accessibles = accessibles.filter(function(t) {
-          if (normaliserRecherche(t.titre).indexOf(r) !== -1) return true;
-          if (normaliserRecherche(t.categorie).indexOf(r) !== -1) return true;
-          if (normaliserRecherche(t.description || t.extrait).indexOf(r) !== -1) return true;
-          if ((t.tags || []).some(function(tag) { return normaliserRecherche(tag).indexOf(r) !== -1; })) return true;
-          return false;
+        var r = normaliser(rechercheActive);
+        acc = acc.filter(function(t) {
+          return normaliser(t.titre).indexOf(r) !== -1
+              || normaliser(t.categorie).indexOf(r) !== -1
+              || normaliser(t.description || t.extrait).indexOf(r) !== -1
+              || (t.tags || []).some(function(x) { return normaliser(x).indexOf(r) !== -1; });
         });
       }
 
-      accessibles.sort(function(a, b) {
+      acc.sort(function(a, b) {
         var da = a.date ? new Date(a.date).getTime() : 0;
         var db = b.date ? new Date(b.date).getTime() : 0;
-        if (da !== db) return db - da;
-        return extraireNumeroTexte(b.titre) - extraireNumeroTexte(a.titre);
+        return da !== db ? db - da : numeroTitre(b.titre) - numeroTitre(a.titre);
       });
 
-      var compteurEl = document.getElementById('compteurResultats');
-      if (compteurEl) {
-        if (rechercheActive) compteurEl.textContent = accessibles.length + ' résultat(s)';
-        else compteurEl.textContent = '';
-      }
+      var comp = document.getElementById('compteurResultats');
+      if (comp) comp.textContent = rechercheActive ? acc.length + ' résultat(s)' : '';
 
       var container = document.getElementById('contenu');
-      var html = '<div class="grille-themes" id="listeBlog">';
-
-      if (accessibles.length === 0) {
-        html += `
-          <div class="vide-themes">
-            <span class="icone">◈</span>
-            <h2>Aucun texte disponible</h2>
-          </div>
-        `;
-      } else {
-        accessibles.forEach(function(texte) {
-          html += construireCarteBlog(texte);
-        });
+      if (!acc.length) {
+        container.innerHTML = '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun rappel disponible</h2></div>';
+        return;
       }
 
+      var html = '<div class="liste-blog">';
+      acc.forEach(function(t) { html += cartePost(t); });
       html += '</div>';
       container.innerHTML = html;
     }
 
-    function infoValidationTexte(texteId) {
-      var reponses = toutesLesReponses[String(texteId)];
-      if (!reponses || reponses.length === 0) return { valide: false, date: '' };
-
-      var meilleurPct = -1;
-      var meilleureDate = '';
-      for (var i = 0; i < reponses.length; i++) {
-        var pct = reponses[i].pourcentage || 0;
-        if (pct > meilleurPct) {
-          meilleurPct = pct;
-          meilleureDate = reponses[i].date || '';
-        }
-      }
-      var valide = meilleurPct >= 65;
-      return { valide: valide, date: valide ? meilleureDate : '' };
-    }
-
-    function construireCarteBlog(texte) {
-      var numero = extraireNumeroTexte(texte.titre);
-      var titreAffiche = extraireTitreSansNumero(texte.titre);
-      var categorie = (texte.categorie || 'Sans catégorie').trim();
-      var mots = texte.mots || 0;
-
-      var validation = infoValidationTexte(texte.id);
-      var estValide = validation.valide;
-      var dateValidation = validation.date;
-      var dateAjout = texte.date || '';
-
-      var TYPES_EXERCICES = [
-        { prefix: 'quiz:',   label: 'QCM' },
-        { prefix: 'open:',   label: 'Ouverte' },
-        { prefix: 'ordre:',  label: 'Ordre' },
-        { prefix: 'carte:',  label: 'Carte' },
-        { prefix: 'relier:', label: 'Relier' },
-        { prefix: 'tt:',     label: 'Trous' },
-        { prefix: 'vf:',     label: 'VF' },
-        { prefix: 'copier:', label: 'Copier' }
-      ];
-
-      var ordreBlocs = texte.ordreBlocs || [];
-      var detailParts = [];
-      var nbExercices = 0;
-
-      if (ordreBlocs.length > 0) {
-        TYPES_EXERCICES.forEach(function(type) {
-          var count = 0;
-          ordreBlocs.forEach(function(ob) {
-            if (ob.indexOf(type.prefix) === 0) count++;
-          });
-          if (count > 0) {
-            nbExercices++;
-            detailParts.push(count + ' ' + type.label);
-          }
-        });
-      } else {
-        if (texte.hasQuiz)     { nbExercices++; detailParts.push('1 QCM'); }
-        if (texte.hasQuestion) { nbExercices++; detailParts.push('1 Ouverte'); }
-      }
-
-      var detailExercices = detailParts.join(' · ');
-      var extrait = texte.description || texte.extrait || '';
+    function cartePost(t) {
+      var meta = themesData[t.categorie] || {};
+      var couv = meta.couverture || '';
+      var validation = infoValidation(t.id);
+      var nbExo = compterExercices(t);
+      var numero = numeroTitre(t.titre);
+      var titre = titreSansNumero(t.titre);
+      var extrait = t.description || t.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
-      var numeroHtml = (numero !== Infinity)
-        ? '<div class="blog-numero">' + numero + '</div>'
-        : '<div class="blog-numero">◆</div>';
+      var couvHtml = couv
+        ? '<img src="' + escapeHtml(couv) + '" alt="" loading="lazy">'
+        : '<div class="fallback">◆</div>';
 
-      var themeMeta = themesData[texte.categorie] || {};
-      var couleurTheme = themeMeta.couleur || '#2d6a4f';
-      var couvertureTheme = themeMeta.couverture || '';
+      var bandeau = validation.valide && validation.date
+        ? '<div class="post-validation">Vous avez validé ce rappel le ' + escapeHtml(validation.date) + '</div>'
+        : '';
 
-      var couvertureContenuHtml = couvertureTheme
-        ? '<img src="' + escapeHtml(couvertureTheme) + '" alt="" loading="lazy">'
-        : '<div class="couverture-fallback">◆</div>';
-
-      var largeurProgression = estValide ? '100%' : '0%';
-
-      var couvertureHtml =
-        '<div class="blog-couverture">' +
-          '<div class="couverture-contenu">' + couvertureContenuHtml + '</div>' +
-          '<div class="progression-couverture">' +
-            '<div class="progression-remplissage" style="width:' + largeurProgression + ';"></div>' +
-          '</div>' +
-        '</div>';
-
-      var bandeauValidationHtml = '';
-      if (estValide && dateValidation) {
-        bandeauValidationHtml = '<div class="bandeau-validation-texte">Vous avez validé ce texte le ' + escapeHtml(dateValidation) + '</div>';
-      }
-
-      var dateCreationHtml = '';
-      if (dateAjout) {
-        dateCreationHtml = '<span class="date-validation">' + formatDateRelative(dateAjout) + '</span>';
-      }
-
-      var colDateHtml =
-        '<div class="blog-date">' +
-          bandeauValidationHtml +
-          '<div class="bloc-date">' +
-            dateCreationHtml +
-          '</div>' +
-        '</div>';
-
-      return `
-        <div class="carte-blog"
-             onclick="window.location.href='/medit/texte.html?id=${encodeURIComponent(texte.id)}'">
-          ${couvertureHtml}
-          <div class="blog-centre">
-            ${numeroHtml}
-            <div class="blog-corps">
-              <div class="blog-titre">${escapeHtml(titreAffiche)}</div>
-              <div class="blog-meta">
-                <span class="niveau-badge">Niveau ${texte.niveau}</span>
-                ${nbExercices > 0 ? '<span class="badge-icone">Nbr exercices : ' + nbExercices + '</span>' : ''}
-                ${detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : ''}
-                ${mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : ''}
-              </div>
-              ${extrait ? '<div class="blog-extrait">' + escapeHtml(extrait) + '</div>' : ''}
-              <span class="blog-categorie">#${escapeHtml(categorie)}</span>
-            </div>
-            ${colDateHtml}
-          </div>
-        </div>
-      `;
+      return '<a class="post-blog" href="/medit/texte.html?id=' + encodeURIComponent(t.id) + '">'
+        + '<div class="post-couverture">' + couvHtml + '</div>'
+        + '<div class="post-corps">'
+        +   '<div class="post-titre">' + (numero !== Infinity ? numero + ' — ' : '') + escapeHtml(titre) + '</div>'
+        +   '<div class="post-meta">'
+        +     '<span>Niveau ' + (t.niveau || 1) + '</span>'
+        +     (nbExo ? '<span>' + nbExo + ' exercice' + (nbExo > 1 ? 's' : '') + '</span>' : '')
+        +     (t.mots ? '<span>' + t.mots + ' mots</span>' : '')
+        +     (t.date ? '<span>' + dateRelative(t.date) + '</span>' : '')
+        +   '</div>'
+        +   (extrait ? '<div class="post-extrait">' + escapeHtml(extrait) + '</div>' : '')
+        +   '<div class="post-categorie">#' + escapeHtml((t.categorie || 'Sans catégorie').trim()) + '</div>'
+        +   bandeau
+        + '</div>'
+        + '</a>';
     }
 
-    function demarrer() {
-      brancherRecherche();
-      chargerTextes();
+    function brancherRecherche() {
+      var input = document.getElementById('rechercheTextes'); if (!input) return;
+      var timer = null;
+      input.addEventListener('input', function() {
+        clearTimeout(timer);
+        timer = setTimeout(function() { rechercheActive = input.value.trim(); afficherBlog(); }, 150);
+      });
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
-    } else {
-      demarrer();
-    }
+    function demarrer() { brancherRecherche(); chargerTextes(); }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', demarrer);
+    else demarrer();
   </script>
-
 </body>
 </html>
