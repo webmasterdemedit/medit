@@ -1,37 +1,46 @@
-/* ============================================================
-   CARTE-COUVERTURE — version "thème" (aucun cadre)
-   ============================================================ */
-.carte-couverture.carte-theme-lien,
-.carte-couverture.carte-theme-lien:hover,
-.carte-couverture.carte-theme-lien:focus {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  width: auto !important;
-  max-width: none !important;
-  height: auto !important;
-  aspect-ratio: auto !important;
-  padding: 2px 4px !important;
-  margin: 0 !important;
-  display: inline-flex !important;
-  align-items: center !important;
-  gap: 0 !important;
-  overflow: visible !important;
-}
+// ============================================================
+// couverture.js — Lien-thème minimal : #Titre
+// # jaune + titre coloré (couleur du thème)
+// ============================================================
 
-.carte-couverture.carte-theme-lien .titre-theme {
-  border: none !important;
-  padding: 0 !important;
-  margin: 0 !important;
-  background: transparent !important;
-  text-decoration: none !important;
-}
+(function() {
+  'use strict';
 
-.carte-couverture.carte-theme-lien:hover .titre-theme {
-  text-decoration: underline !important;
-}
+  function _escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
 
-.carte-couverture.carte-theme-lien.verrouille {
-  opacity: .45 !important;
-  pointer-events: none !important;
-}
+  function construireCarteCouverture(theme, options) {
+    theme = theme || {};
+    options = options || {};
+
+    var titre      = theme.titre || theme.nom || '';
+    var couleur    = theme.couleur || '#2d6a4f';
+    var verrouille = theme.verrouille || theme.disponible === false;
+    var estActuel  = !!options.actuel;
+    var cliquable  = options.cliquable !== false;
+
+    var lien = options.lien || ('/medit/thème.html?cat=' + encodeURIComponent(titre));
+    var tag = (estActuel || !cliquable) ? 'div' : 'a';
+
+    var attrs = '';
+    if (tag === 'a') attrs = ' href="' + lien + '" title="' + _escapeHtml(titre) + '"';
+
+    var html = '';
+    html += '<' + tag + ' class="lien-theme' + (verrouille ? ' verrouille' : '') + (estActuel ? ' actuelle' : '') + '"' + attrs + '>';
+    if (verrouille) html += '<span class="lien-theme-cadenas">🔒︎</span>';
+    html += '<span class="lien-theme-hashtag">#</span>';
+    html += '<span class="lien-theme-titre" style="color:' + couleur + '!important;">' + _escapeHtml(titre) + '</span>';
+    html += '</' + tag + '>';
+    return html;
+  }
+
+  window.construireCarteCouverture = construireCarteCouverture;
+
+})();
