@@ -2150,25 +2150,20 @@
       /* Temps de lecture */
       html += '<div class="temps-lecture-haut">Temps d\'application estimé : ' + tempsLecture + ' min</div>';
 
-      /* Bandeau titre */
+            /* Bandeau titre */
+      var nomSection = (themesData[texte.categorie] && themesData[texte.categorie].theme) ? themesData[texte.categorie].theme.trim() : '';
+      var nomTheme = texte.categorie || '';
+      var ligneRappel = 'Rappel';
+      if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
+      else if (nomTheme) ligneRappel += ' de ' + nomTheme;
+
       html += '<div class="bandeau-titre"><div class="ligne-titre">';
+      html += '<div class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</div>';
       html += numeroHtml;
       html += '<h1>' + echapperHtml(titreAffiche || 'Lecture') + '</h1>';
       html += '<div class="sous-titre-filets"></div>';
-       var nomSection = (themesData[texte.categorie] && themesData[texte.categorie].theme) ? themesData[texte.categorie].theme.trim() : '';
-      var nomTheme = texte.categorie || '';
-      var ligneRappel = 'Rappel';
-      if (nomSection && nomTheme) ligneRappel += ' sur un « ' + nomSection + ' » de « ' + nomTheme + ' »';
-      else if (nomTheme) ligneRappel += ' de « ' + nomTheme + ' »';
-
-      html += '<div class="meta-droite">';
-      html += echapperHtml(ligneRappel);
-      html += '<br><span class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</span>';
-      html += '</div>';
+      html += '<div class="meta-droite">' + echapperHtml(ligneRappel) + '</div>';
       html += '</div></div>';
-
-      
-
       /* Tags */
       if (tagsClean.length > 0) {
         html += '<div class="tags-haut">';
