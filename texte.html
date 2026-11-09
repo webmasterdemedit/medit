@@ -2023,6 +2023,14 @@
     /* ============================================================
        CONSTRUCTION DU TEXTE — reprend les classes de impression.js
        ============================================================ */
+
+    function appliquerGrasItalique(texte) {
+  if (!texte || texte.indexOf('*') === -1) return texte;
+  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+  return texte;
+}
     function construireHtmlTexte(texte, imagesTheme) {
       imagesTheme = imagesTheme || {};
       var contenu = texte.contenu || '';
