@@ -2155,7 +2155,16 @@
       html += numeroHtml;
       html += '<h1>' + echapperHtml(titreAffiche || 'Lecture') + '</h1>';
       html += '<div class="sous-titre-filets"></div>';
-      html += '<div class="meta-droite">' + (texte.categorie ? echapperHtml(texte.categorie) + ' — ' : '') + 'Niveau ' + (texte.niveau || 0) + '</div>';
+       var nomSection = (themesData[texte.categorie] && themesData[texte.categorie].theme) ? themesData[texte.categorie].theme.trim() : '';
+      var nomTheme = texte.categorie || '';
+      var ligneRappel = 'Rappel';
+      if (nomSection && nomTheme) ligneRappel += ' sur un « ' + nomSection + ' » de « ' + nomTheme + ' »';
+      else if (nomTheme) ligneRappel += ' de « ' + nomTheme + ' »';
+
+      html += '<div class="meta-droite">';
+      html += echapperHtml(ligneRappel);
+      html += '<br><span class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</span>';
+      html += '</div>';
       html += '</div></div>';
 
       
