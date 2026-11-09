@@ -1078,7 +1078,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
   printHtml += `
     <div class="pied-page">
-      Association Va.& Vi.e ; kitaabwalhkma.fr - par W. Khan. Écrit le ${dateCreationStr || '—'}, et imprimé le ${dateImpressionStr} à ${heureImpressionStr}. n°${idPost}
+      Association Va.& Vi.e ; kitaabwalhikmah.fr - par W. Khan. Écrit le ${dateCreationStr || '—'}, et imprimé le ${dateImpressionStr} à ${heureImpressionStr}. n°${idPost}
     </div>
   </div>
 </body>
