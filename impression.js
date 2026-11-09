@@ -784,8 +784,6 @@ body {
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>
 
-<hr class="filet">
-
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
 
 <div class="bandeau-titre">
@@ -1074,11 +1072,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     printHtml += '</div>';
   }
 
+    var idPost = texte.id || '';
+
   printHtml += `
     <div class="pied-page">
-      <span class="pied-centre">Association Va.& Vi.e ; Qiraat.fr &mdash; W. Khan</span>
+      <span class="pied-centre"><span lang="ar" dir="rtl">الكتاب والحكمة</span> &mdash; Niveau ${texte.niveau || 0}</span>
       <span class="pied-ecrit">Écrit le ${dateCreationStr || '—'}</span>
-      <span class="imprime-le">Imprimé le ${dateImpressionStr} à ${heureImpressionStr}</span>
+      <span class="imprime-le">${idPost}</span>
     </div>
   </div>
 </body>
