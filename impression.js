@@ -2,6 +2,11 @@
 // IMPRESSION - Qiraat
 // Fichier autonome : génère une page imprimable pour un texte
 // Dépend de : DataManager (data-manager.js)
+//
+// NOUVEAU : support du zoom d'impression via texte.zoom
+//   - zoom: 83% en tête de fichier → colonne Zoom dans Sheets
+//   - appliqué via "body { zoom: 0.83 }" dans le <style>
+//   - bandeau d'avertissement si zoom < 100% (décocher "Ajuster à la page")
 // ============================================================
 
 function imprimerTexte(texteId, titre, textesData) {
@@ -52,6 +57,7 @@ function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe) {
   if (suffixe) {
     texteCopie.titre = (texteOriginal.titre || '') + ' (' + suffixe + ')';
   }
+  // Le zoom est hérité de texteOriginal via Object.assign
 
   chargerImagesTheme(texteOriginal.categorie).then(function(images) {
     genererImpression(texteCopie, contenuAlternatif, images || {}, couvertureTheme);
@@ -303,6 +309,14 @@ function parserCopierPourImpression(copierTexte) {
 function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   imagesTheme = imagesTheme || {};
   couvertureTheme = couvertureTheme || '';
+
+  // --- ZOOM D'IMPRESSION ---
+  var zoomTexte = parseFloat(texte.zoom) || 100;
+  if (zoomTexte < 50) zoomTexte = 50;
+  if (zoomTexte > 100) zoomTexte = 100;
+  var zoomActif = zoomTexte < 100;
+  var zoomCss = zoomActif ? 'body { zoom: ' + (zoomTexte / 100) + '; }' : '';
+
   var ordreBlocs = texte.ordreBlocs || [];
   var parts = contenu.split(' | ');
 
@@ -465,6 +479,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.6cm 1.7cm 1.6cm 1.7cm; size: A4; }
+${zoomCss}
 body {
   font-family: 'Georgia', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
   background:#faf7f0; color:#2a241c; font-size:11.5pt; line-height:1.5;
@@ -720,6 +735,19 @@ body {
 .zone-memo .memo-liste li::before { content:"❧"; position:absolute; left:0;
   color:#a89a80; font-size:8pt; top:3px; }
 
+/* ---- Bandeau zoom (rappel pour l'impression) ---- */
+.zoom-avertissement {
+  margin: 8px 0 14px;
+  padding: 6px 10px;
+  font-size: 8.5pt;
+  font-style: italic;
+  color: #8a7d68;
+  text-align: center;
+  border-top: 0.5px dotted #c9bda3;
+  border-bottom: 0.5px dotted #c9bda3;
+  letter-spacing: 0.3px;
+}
+
 .pied-page { text-align:center; font-size:8pt; color:#8a7d68; margin: 18px 0 6px;
   padding-top:8px; border-top:0.6px solid #d6cbb4;
   display:flex; justify-content:center; align-items:center; gap:16px; }
@@ -746,6 +774,8 @@ body {
 <hr class="filet">
 
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
+
+${zoomActif ? '<div class="zoom-avertissement">Mise à l\'échelle automatique : ' + zoomTexte + ' % — dans la boîte d\'impression, décochez « Ajuster à la page » pour conserver ce réglage.</div>' : ''}
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
