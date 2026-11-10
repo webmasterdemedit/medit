@@ -2031,6 +2031,19 @@
   texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
   return texte;
 }
+        // ============================================================
+    // Remplacement des formules religieuses par les symboles arabes
+    // - saws / sws       → ﷺ  (U+FDFA)
+    // - swt / jjl        → ﷻ  (U+FDFB)
+    // - ra  / rda        → ؓ  (U+0613)
+    // ============================================================
+    function embellirFormulesReligieuses(texte) {
+      if (!texte) return texte;
+      texte = texte.replace(/\b(saws|sws|sallallahu alayhi wa sallam|صلى الله عليه وسلم)\b/gi, 'ﷺ');
+      texte = texte.replace(/\b(swt|jjl|subhanahou wa ta'ala|subhanahu wa ta'ala|jalla jalaluhou)\b/gi, 'ﷻ');
+      texte = texte.replace(/\b(ra|rda|radi Allahou anhou|radhi Allahou anhou)\b/gi, 'ؓ');
+      return texte;
+    }
     function construireHtmlTexte(texte, imagesTheme) {
       imagesTheme = imagesTheme || {};
       var contenu = texte.contenu || '';
