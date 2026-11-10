@@ -651,6 +651,22 @@ body {
   break-inside:avoid; page-break-inside:avoid; }
 .exo:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
 
+/* Exercices "Recopier" : pas de trait de séparation + espace réduit */
+.exo.exo-copier {
+  border-bottom: none;
+  margin-bottom: 4px;
+  padding-bottom: 2px;
+}
+.exo.exo-copier + .exo.exo-copier {
+  margin-top: 0;
+}
+.exo.exo-copier .bloc-copier-inline {
+  margin-top: 0;
+}
+.exo.exo-copier .copier-ligne-inline {
+  min-height: 30px;
+}
+
 .consigne-exo { font-size:8.8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
   letter-spacing:1.2px; margin-bottom:5px; margin-top:0; padding:0;
   page-break-after:avoid; break-after:avoid; font-family:'Georgia',serif; }
@@ -874,7 +890,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var mots = bloc.data.mots;
-      printHtml += '<div class="exo">';
+      printHtml += '<div class="exo exo-copier">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
