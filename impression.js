@@ -734,12 +734,9 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 8px;
-  height: 3px;
-  background-image: radial-gradient(circle, #8a7d68 1.5px, transparent 1.5px);
-  background-size: 16px 3px;   /* ← valeur par défaut, ou remplacée par le JS */
-  background-repeat: repeat-x;
-  background-position: left center;
+  bottom: 9px;
+  height: 0;
+  border-bottom: 0.8px dotted #8a7d68;
   z-index: 0;
   pointer-events: none;
 }
@@ -1157,18 +1154,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         }
       });
       parent.replaceChild(frag, texteNode);
-    });
-
-        // Ajuste l'espacement des points selon la largeur du mot arabe
-    var lignesCopier = iframeDoc2.querySelectorAll('.copier-ligne-inline');
-    lignesCopier.forEach(function(ligne) {
-      var motArabe = ligne.querySelector('.copier-texte-arabe');
-      var pointille = ligne.querySelector('.copier-ligne-pointillee');
-      if (!motArabe || !pointille) return;
-      var largeurMot = motArabe.getBoundingClientRect().width;
-      // environ 5 points sur la largeur du mot, borné entre 12 et 40 px
-      var espace = Math.max(12, Math.min(40, largeurMot / 5));
-      pointille.style.backgroundSize = espace + 'px 3px';
     });
     try {
       iframeDoc2.title = nomFichierPdf;
