@@ -1158,6 +1158,18 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       });
       parent.replaceChild(frag, texteNode);
     });
+
+        // Ajuste l'espacement des points selon la largeur du mot arabe
+    var lignesCopier = iframeDoc2.querySelectorAll('.copier-ligne-inline');
+    lignesCopier.forEach(function(ligne) {
+      var motArabe = ligne.querySelector('.copier-texte-arabe');
+      var pointille = ligne.querySelector('.copier-ligne-pointillee');
+      if (!motArabe || !pointille) return;
+      var largeurMot = motArabe.getBoundingClientRect().width;
+      // environ 5 points sur la largeur du mot, borné entre 12 et 40 px
+      var espace = Math.max(12, Math.min(40, largeurMot / 5));
+      pointille.style.backgroundSize = espace + 'px 3px';
+    });
     try {
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
