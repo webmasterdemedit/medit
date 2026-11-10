@@ -772,6 +772,7 @@ body {
   overflow: visible;
 }
 
+/* Modèle plein à recopier */
 .copier-texte-arabe {
   font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
@@ -787,6 +788,33 @@ body {
 .copier-texte-arabe .copier-mot {
   display: inline-block;
   white-space: nowrap;
+  direction: rtl;
+}
+
+/* Mot en pointillé (à tracer) — placé à gauche du modèle */
+.copier-texte-arabe-pointille {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copier-texte-arabe-pointille svg {
+  display: block;
+  overflow: visible;
+}
+
+.copier-texte-arabe-pointille text {
+  font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-weight: 400;
+  fill: none;
+  stroke: #b0a48f;
+  stroke-width: 0.7;
+  stroke-dasharray: 3 3;
+  stroke-linejoin: round;
+  stroke-linecap: round;
   direction: rtl;
 }
 
@@ -911,6 +939,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var mots = bloc.data.mots;
+      var motComplet = mots.join(' ');
       printHtml += '<div class="exo exo-copier">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
@@ -924,6 +953,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
+      // Mot en pointillé (à tracer) — à gauche du modèle
+      printHtml += '    <span class="copier-texte-arabe-pointille">';
+      printHtml += '      <svg height="44" xmlns="http://www.w3.org/2000/svg">';
+      printHtml += '        <text x="0" y="34" text-anchor="start" xml:space="preserve">' + motComplet + '</text>';
+      printHtml += '      </svg>';
+      printHtml += '    </span>';
+      // Modèle plein
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
@@ -1155,6 +1191,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
       if (parent.classList && parent.classList.contains('copier-mot')) return;
+      if (parent.tagName && parent.tagName.toLowerCase() === 'text') return;
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
       var parts = txt.split(regex);
