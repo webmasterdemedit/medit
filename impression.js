@@ -906,10 +906,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
 
-      function flushParagraphe() {
+            function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
         blocs.forEach(function(bloc) {
+          bloc = embellirFormulesReligieuses(bloc);
           var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
           var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
           var classe = contientSource ? ' class="p-avec-source"' : '';
@@ -917,7 +918,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         });
         bufferTexte = '';
       }
-
       lignesPara.forEach(function(l) {
         var trimmed = l.trim();
         var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
