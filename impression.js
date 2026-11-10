@@ -116,6 +116,14 @@ function appliquerGrasItalique(texte) {
   return texte;
 }
 
+function embellirFormulesReligieuses(texte) {
+  if (!texte) return texte;
+  texte = texte.replace(/\b(saws|sws|sallallahu alayhi wa sallam|صلى الله عليه وسلم)\b/gi, 'ﷺ');
+  texte = texte.replace(/\b(swt|jjl|subhanahou wa ta'ala|subhanahu wa ta'ala|jalla jalaluhou)\b/gi, 'ﷻ');
+  texte = texte.replace(/\b(ra|rda|radi Allahou anhou|radhi Allahou anhou)\b/gi, 'ؓ');
+  return texte;
+}
+
 function rendreSources(texte) {
   if (!/\[[^\]]+\]/.test(texte)) return texte;
   var matchSource = texte.match(/\[([^\]]+)\]\.?/);
