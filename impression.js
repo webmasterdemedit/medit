@@ -663,9 +663,6 @@ body {
 .exo.exo-copier .bloc-copier-inline {
   margin-top: 0;
 }
-.exo.exo-copier .copier-ligne-inline {
-  min-height: 30px;
-}
 
 .consigne-exo { font-size:8.8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
   letter-spacing:1.2px; margin-bottom:5px; margin-top:0; padding:0;
@@ -720,31 +717,37 @@ body {
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
-/* ---- Recopier : ligne pointillée, flèche fine en contour, puis texte arabe ---- */
+/* ---- Recopier : ligne pointillée qui va jusqu'à droite et passe DERRIÈRE le texte arabe ---- */
 .bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
+  position: relative;
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  min-height: 38px;
+  min-height: 30px;
   direction: ltr;
 }
 
 .copier-ligne-pointillee {
-  flex: 1 1 auto;
-  display: block;
-  height: 15px;
-  min-width: 120px;
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 6px;
+  height: 0;
   border-bottom: 0.8px dotted #8a7d68;
-  order: 0;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
   align-items: center;
-  order: 1;
+  position: relative;
+  z-index: 1;
+  background: #faf7f0;
 }
 
 .copier-fleche-apres svg {
@@ -762,7 +765,9 @@ body {
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
-  order: 2;
+  position: relative;
+  z-index: 1;
+  background: #faf7f0;
 }
 
 .copier-texte-arabe .copier-mot {
