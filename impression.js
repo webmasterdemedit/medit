@@ -734,9 +734,12 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 9px;
-  height: 0;
-  border-bottom: 0.8px dotted #8a7d68;
+  bottom: 8px;
+  height: 3px;
+  background-image: radial-gradient(circle, #8a7d68 1.5px, transparent 1.5px);
+  background-size: 16px 3px;   /* ← valeur par défaut, ou remplacée par le JS */
+  background-repeat: repeat-x;
+  background-position: left center;
   z-index: 0;
   pointer-events: none;
 }
