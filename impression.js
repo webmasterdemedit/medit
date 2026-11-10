@@ -667,7 +667,7 @@ body {
 /* Exercices "Recopier" : pas de trait de séparation + espace réduit */
 .exo.exo-copier {
   border-bottom: none;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   padding-bottom: 2px;
 }
 .exo.exo-copier + .exo.exo-copier {
@@ -739,7 +739,7 @@ body {
   align-items: center;
   justify-content: flex-end;
   gap: 10px;
-  min-height: 30px;
+  min-height: 36px;
   direction: ltr;
 }
 
