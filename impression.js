@@ -734,7 +734,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 6px;
+  bottom: 8px;
   height: 0;
   border-bottom: 0.8px dotted #8a7d68;
   z-index: 0;
