@@ -527,9 +527,22 @@ body {
 .temps-lecture-haut { text-align:center; font-size:9pt; color:#8a7d68; font-style:italic; margin-bottom:10px; letter-spacing:0.5px; font-family:'Georgia',serif; }
 .temps-lecture-haut::before { content:"❧ "; font-style:normal; color:#a89a80; margin-right:4px; }
 
-/* ---- Bandeau titre (3 lignes : Niveau / Titre / Rappel) ---- */
-.bandeau-titre { text-align:center; padding: 6px 0 4px; margin-bottom: 6px; }
-.bandeau-titre .ligne-titre { display:flex; flex-direction:column; align-items:center; gap:6px; }
+/* ---- Bandeau titre : couverture à GAUCHE, titre à droite ---- */
+.bandeau-titre { padding: 6px 0 4px; margin-bottom: 6px; }
+.bandeau-titre .ligne-titre {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+}
+.bandeau-titre .bloc-titre-centre {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  flex: 1;
+}
 
 .bandeau-titre .meta-niveau {
   font-family:'Georgia',serif;
@@ -555,8 +568,8 @@ body {
 .sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 2px; width:60%; }
 .sous-titre-filets::before, .sous-titre-filets::after { content:""; flex:1; border-top:0.7px solid #b0a48f; }
 
-.couverture-mini { display:block; width:44px; height:60px; object-fit:cover; border-radius:1px;
-  border:0.5px solid #b0a48f; box-shadow:0 1px 3px rgba(60,45,25,0.15); }
+.couverture-mini { display:block; width:58px; height:80px; object-fit:cover; border-radius:1px;
+  border:0.5px solid #b0a48f; box-shadow:0 1px 3px rgba(60,45,25,0.15); flex-shrink:0; }
 
 .numero-texte { display:inline-block; background:#2a241c; color:#faf7f0; font-family:'Georgia',serif;
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
@@ -816,11 +829,13 @@ body {
 <div class="bandeau-titre">
   <div class="ligne-titre">
     ${couvertureHtml}
-    <div class="meta-niveau">Niveau ${texte.niveau || 0}</div>
-    ${numeroHtml}
-    <h1>${titreAffiche || 'Lecture'}</h1>
-    <div class="sous-titre-filets"></div>
-    <div class="meta-droite">${ligneRappel}</div>
+    <div class="bloc-titre-centre">
+      <div class="meta-niveau">Niveau ${texte.niveau || 0}</div>
+      ${numeroHtml}
+      <h1>${titreAffiche || 'Lecture'}</h1>
+      <div class="sous-titre-filets"></div>
+      <div class="meta-droite">${ligneRappel}</div>
+    </div>
   </div>
 </div>
 
