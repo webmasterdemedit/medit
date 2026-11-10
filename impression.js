@@ -747,7 +747,6 @@ body {
   align-items: center;
   position: relative;
   z-index: 1;
-  background: #faf7f0;
 }
 
 .copier-fleche-apres svg {
@@ -767,7 +766,6 @@ body {
   flex: 0 0 auto;
   position: relative;
   z-index: 1;
-  background: #faf7f0;
 }
 
 .copier-texte-arabe .copier-mot {
