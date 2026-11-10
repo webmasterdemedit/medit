@@ -2426,18 +2426,24 @@
         html += '</div></div>';
       }
 
-      if (texte.categorie) {
+            if (texte.categorie) {
         var couleur = themeInfo.couleur || '#2d6a4f';
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">📖</span> Source de la citation principale</div>';
-        html += '<a class="encart-theme" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">';
+        html += '<div class="bloc-section">';
+        html += '  <div class="bloc-titre"><span class="icone">📖</span> Source de la citation principale</div>';
+
+        /* Lien-hashtag cliquable (#Bukhari) */
         html += construireCarteCouverture({
-          titre: texte.categorie, couleur: couleur,
-          sousTitre: themeInfo.sousTitre || '', auteur: themeInfo.auteur || '',
-          date: themeInfo.date || '', niveau: niveau,
-          couverture: themeInfo.couverture || ''
-        }, { cliquable: false });
-        html += '<div class="encart-texte"><div class="encart-label">Basé sur </div><div class="encart-nom-theme">' + echapperHtml(texte.categorie) + '</div><div class="encart-cta">Voir le thème →</div></div>';
-        html += '</a></div>';
+          titre: texte.categorie,
+          couleur: couleur
+        }, {
+          cliquable: true,
+          lien: '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie)
+        });
+
+        /* Texte "Voir les autres rappels là-dessus →" sous le hashtag */
+        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels là-dessus →</a>';
+
+        html += '</div>';
       }
 
       if (nav.liste && nav.liste.length > 1) {
