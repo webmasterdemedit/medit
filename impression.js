@@ -774,7 +774,7 @@ body {
 
 .copier-texte-arabe {
   font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.4em;
+  font-size: 2.2em;
   line-height: 1.05;
   color: #1f1a13;
   direction: rtl;
