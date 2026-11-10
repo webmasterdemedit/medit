@@ -495,6 +495,9 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 <html>
 <head>
 <meta charset="UTF-8">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 <title>${texte.titre || 'Lecture'} - ${texte.categorie || ''} - Niveau ${texte.niveau || 0}</title>
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -770,7 +773,7 @@ body {
 }
 
 .copier-texte-arabe {
-  font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.4em;
   line-height: 1.05;
   color: #1f1a13;
