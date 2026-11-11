@@ -850,7 +850,7 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 24px;
+  gap: 18px;
   min-height: 36px;
   direction: rtl;
   flex-wrap: nowrap;
