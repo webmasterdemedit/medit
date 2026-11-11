@@ -354,7 +354,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   var ttTexte = '';
   var vfTexte = '';
   var copierTexte = '';
-  var pointTexte = '';
+  var pointTexte = texte.point || '';
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -365,7 +365,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
     else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
     else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-    else if (part.startsWith('pnt:')) pointTexte = pointTexte ? pointTexte + '\n' + part : part;
     else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
     else {
       var cleanText = part.replace(/\r\n/g, '\n').trim();
