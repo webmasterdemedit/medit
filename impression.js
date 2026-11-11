@@ -1032,7 +1032,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var motP = bloc.data.mot;
-      var nbRep = 10;
+      var nbRep = 30;
       printHtml += '<div class="exo exo-point">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
