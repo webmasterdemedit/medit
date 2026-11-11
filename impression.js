@@ -853,7 +853,8 @@ body {
   gap: 10px;
   min-height: 36px;
   direction: rtl;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   max-width: 100%;
 }
 
@@ -1037,7 +1038,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte" style="flex:1;">';
-      printHtml += '<div class="copier-ligne-point">';
+      printHtml += '<div class="copier-ligne-point" data-nb="' + nbRep + '">';
       for (var rp = 0; rp < nbRep; rp++) {
         var classe = (rp === 0) ? 'copier-mot-kfg copier-mot-kfg-modele' : 'copier-mot-kfg';
         printHtml += '<span class="' + classe + '">' + motP + '</span>';
@@ -1288,6 +1289,26 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       });
       parent.replaceChild(frag, texteNode);
     });
+
+    // Rogner les répétitions qui dépassent la largeur disponible
+    var lignesPoint = iframeDoc2.querySelectorAll('.copier-ligne-point');
+    lignesPoint.forEach(function(ligne) {
+      var spans = ligne.querySelectorAll('.copier-mot-kfg');
+      if (spans.length === 0) return;
+      var largeurMax = ligne.clientWidth;
+      var gap = 10;
+      var cumul = 0;
+      for (var i = 0; i < spans.length; i++) {
+        cumul += spans[i].offsetWidth + (i > 0 ? gap : 0);
+        if (cumul > largeurMax) {
+          for (var j = i; j < spans.length; j++) {
+            if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
+          }
+          break;
+        }
+      }
+    });
+
     try {
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
