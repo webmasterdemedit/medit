@@ -852,7 +852,7 @@ body {
   align-items: center;
   justify-content: flex-start;
   gap: 24px;
-  min-height: 36px;
+  min-height: 42px;
   direction: rtl;
   flex-wrap: nowrap;
   overflow: hidden;
@@ -862,7 +862,7 @@ body {
 
 .copier-mot-kfg {
   font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.2em;
+  font-size: 2.7em;
   line-height: 1.05;
   color: #8a7d68;
   direction: rtl;
