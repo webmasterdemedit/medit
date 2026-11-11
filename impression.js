@@ -850,19 +850,16 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-end;
-  gap: 24px;
-  min-height: 42px;
-  direction: ltr;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  gap: 10px;
+  min-height: 36px;
+  direction: rtl;
+  flex-wrap: wrap;
   max-width: 100%;
-  width: 100%;
 }
 
 .copier-mot-kfg {
   font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.7em;
+  font-size: 2.2em;
   line-height: 1.05;
   color: #8a7d68;
   direction: rtl;
@@ -1034,13 +1031,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var motP = bloc.data.mot;
-      var nbRep = 20;
+      var nbRep = 10;
       printHtml += '<div class="exo exo-point">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte" style="flex:1;">';
-      printHtml += '<div class="copier-ligne-point" data-nb="' + nbRep + '">';
+      printHtml += '<div class="copier-ligne-point">';
       for (var rp = 0; rp < nbRep; rp++) {
         var classe = (rp === 0) ? 'copier-mot-kfg copier-mot-kfg-modele' : 'copier-mot-kfg';
         printHtml += '<span class="' + classe + '">' + motP + '</span>';
@@ -1291,33 +1288,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       });
       parent.replaceChild(frag, texteNode);
     });
-
-    // Rogner les répétitions qui dépassent la largeur disponible
-        // Rogner les répétitions qui dépassent la largeur disponible
-        var lignesPoint = iframeDoc2.querySelectorAll('.copier-ligne-point');
-    lignesPoint.forEach(function(ligne) {
-      var spans = ligne.querySelectorAll('.copier-mot-kfg');
-      if (spans.length === 0) return;
-
-      var largeurMax = ligne.clientWidth;
-      var gap = 24;
-
-      if (spans[0].offsetWidth > largeurMax) return;
-
-      var cumul = spans[0].offsetWidth;
-      var indexMax = 0;
-      for (var i = 1; i < spans.length; i++) {
-        var ajout = gap + spans[i].offsetWidth;
-        if (cumul + ajout > largeurMax) break;
-        cumul += ajout;
-        indexMax = i;
-      }
-
-      for (var j = spans.length - 1; j > indexMax; j--) {
-        if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
-      }
-    });
-
     try {
       iframeDoc2.title = nomFichierPdf;
       iframe.contentWindow.document.title = nomFichierPdf;
