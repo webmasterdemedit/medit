@@ -498,8 +498,18 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>${texte.titre || 'Lecture'} - ${texte.categorie || ''} - Niveau ${texte.niveau || 0}</title>
 <style>
+/* ============================================================
+   POLICE POINTILLÉE — KFGQPC Alphabet Dotted
+   ============================================================ */
+@font-face {
+  font-family: 'KFGQPC Alphabet Dotted';
+  src: url('https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts/kfgqpc-alphabet-dotted-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.6cm 1.7cm 1.6cm 1.7cm; size: A4; }
 body {
@@ -772,6 +782,7 @@ body {
   overflow: visible;
 }
 
+/* Modèle plein à recopier */
 .copier-texte-arabe {
   font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
@@ -788,6 +799,25 @@ body {
   display: inline-block;
   white-space: nowrap;
   direction: rtl;
+}
+
+/* Mot en pointillé (à tracer) — placé à gauche du modèle, avec KFGQPC */
+.copier-texte-arabe-pointille {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copier-mot-pointille {
+  font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 2.2em;
+  line-height: 1.05;
+  color: #8a7d68;
+  direction: rtl;
+  white-space: nowrap;
 }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
@@ -911,6 +941,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var mots = bloc.data.mots;
+      var motComplet = mots.join(' ');
       printHtml += '<div class="exo exo-copier">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
@@ -924,6 +955,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
+      // Mot en pointillé (à tracer) — à gauche du modèle
+      printHtml += '    <span class="copier-texte-arabe-pointille">';
+      printHtml += '      <span class="copier-mot-pointille">' + motComplet + '</span>';
+      printHtml += '    </span>';
+      // Modèle plein
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
@@ -1155,6 +1191,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
       if (parent.classList && parent.classList.contains('copier-mot')) return;
+      if (parent.classList && parent.classList.contains('copier-mot-pointille')) return;
+      if (parent.tagName && parent.tagName.toLowerCase() === 'text') return;
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
       var parts = txt.split(regex);
