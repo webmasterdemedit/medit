@@ -473,13 +473,13 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   blocsOrdonnes.forEach(function(bloc) {
     if (bloc.type === 'copier') {
       var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-      nbExercices += Math.max(1, motsCopier) * 15;
+      nbExercices += Math.max(1, motsCopier) * 8;
     } else if (bloc.type === 'point') {
-      nbExercices += 25;
-    } else if (bloc.type === 'quiz') {
       nbExercices += 6;
+    } else if (bloc.type === 'quiz') {
+      nbExercices += 9;
     } else if (bloc.type === 'open') {
-      nbExercices += 20;
+      nbExercices += 30;
     } else if (bloc.type === 'tt') {
       nbExercices += 6;
     } else if (bloc.type === 'vf') {
