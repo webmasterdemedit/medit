@@ -857,6 +857,7 @@ body {
   flex-wrap: nowrap;
   overflow: hidden;
   max-width: 100%;
+  width: 100%;
 }
 
 .copier-mot-kfg {
@@ -1292,23 +1293,28 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     });
 
     // Rogner les répétitions qui dépassent la largeur disponible
+        // Rogner les répétitions qui dépassent la largeur disponible
     var lignesPoint = iframeDoc2.querySelectorAll('.copier-ligne-point');
     lignesPoint.forEach(function(ligne) {
       var spans = ligne.querySelectorAll('.copier-mot-kfg');
       if (spans.length === 0) return;
+
       var largeurMax = ligne.clientWidth;
       var gap = 24;
-      var cumul = 0;
-      var indexMax = spans.length - 1;
-      for (var i = 0; i < spans.length; i++) {
-        var w = spans[i].offsetWidth;
-        var ajout = (i > 0 ? gap : 0) + w;
-        if (cumul + ajout > largeurMax) {
-          indexMax = i - 1;
-          break;
-        }
+
+      // Si même le premier mot ne tient pas, on le laisse (il sera coupé mais visible au moins partiellement)
+      if (spans[0].offsetWidth > largeurMax) return;
+
+      var cumul = spans[0].offsetWidth;
+      var indexMax = 0;
+      for (var i = 1; i < spans.length; i++) {
+        var ajout = gap + spans[i].offsetWidth;
+        if (cumul + ajout > largeurMax) break;
         cumul += ajout;
+        indexMax = i;
       }
+
+      // Supprimer tous les mots APRÈS indexMax (à gauche en RTL)
       for (var j = spans.length - 1; j > indexMax; j--) {
         if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
       }
