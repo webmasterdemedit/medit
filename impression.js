@@ -329,7 +329,7 @@ function parserPointPourImpression(pointTexte) {
   var lignes = pointTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var blocs = [];
   lignes.forEach(function(ligne) {
-    var contenu = ligne.replace(/^pnt:\s*/i, '').trim();
+    var contenu = ligne.replace(/^\s*pnt:\s*/i, '').trim();
     if (!contenu) return;
     blocs.push({ mot: contenu });
   });
@@ -850,11 +850,11 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
   min-height: 36px;
   direction: rtl;
-  flex-wrap: nowrap;
-  overflow: hidden;
+  flex-wrap: wrap;
+  max-width: 100%;
 }
 
 .copier-mot-kfg {
@@ -869,8 +869,8 @@ body {
 
 .copier-mot-kfg.copier-mot-kfg-modele {
   color: #000;
-  -webkit-text-stroke: 1.4px #000;
-  text-shadow: 0 0 1px #000, 0 0 1px #000, 0 0 1px #000;
+  -webkit-text-stroke: 2px #000;
+  text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
 }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
@@ -1031,7 +1031,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var motP = bloc.data.mot;
-      var nbRep = 6;
+      var nbRep = 10;
       printHtml += '<div class="exo exo-point">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
