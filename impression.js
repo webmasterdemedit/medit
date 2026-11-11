@@ -451,7 +451,21 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     blocsOrdonnes = nouveaux;
   }
 
-    var textePourCompter = '';
+  var nbTotalQuestions = 0;
+  blocsOrdonnes.forEach(function(bloc) {
+    if (bloc.type === 'quiz') nbTotalQuestions++;
+    else if (bloc.type === 'open') nbTotalQuestions++;
+    else if (bloc.type === 'tt') nbTotalQuestions++;
+    else if (bloc.type === 'carte') nbTotalQuestions++;
+    else if (bloc.type === 'ordre') nbTotalQuestions++;
+    else if (bloc.type === 'relier') nbTotalQuestions++;
+    else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
+    else if (bloc.type === 'copier') nbTotalQuestions++;
+    else if (bloc.type === 'point') nbTotalQuestions++;
+  });
+
+  // === CALCUL DU TEMPS (texte + exercices) ===
+  var textePourCompter = '';
   blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
   var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
 
@@ -481,6 +495,15 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 
   var totalEquiv = nbMots + nbExercices;
   var minutesTotal = Math.max(1, Math.round(totalEquiv / 14));
+
+  var tempsLecture;
+  if (minutesTotal >= 60) {
+    var h = Math.floor(minutesTotal / 60);
+    var m = minutesTotal % 60;
+    tempsLecture = h + ' h' + (m > 0 ? ' ' + (m < 10 ? '0' + m : m) : '');
+  } else {
+    tempsLecture = minutesTotal + ' min';
+  }
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
   var vocabClean = [];
@@ -863,16 +886,19 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 10px;
-  min-height: 36px;
+  justify-content: flex-start;
+  gap: 24px;
+  min-height: 42px;
   direction: rtl;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
+  overflow: hidden;
   max-width: 100%;
+  width: 100%;
 }
 
 .copier-mot-kfg {
   font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
-  font-size: 2.2em;
+  font-size: 2.7em;
   line-height: 1.05;
   color: #8a7d68;
   direction: rtl;
@@ -923,7 +949,7 @@ body {
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>
 
-<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
+<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
