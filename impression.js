@@ -850,10 +850,10 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  justify-content: flex-start;
+  justify-content: flex-end;
   gap: 24px;
   min-height: 42px;
-  direction: rtl;
+  direction: ltr;
   flex-wrap: nowrap;
   overflow: hidden;
   max-width: 100%;
@@ -1294,7 +1294,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
 
     // Rogner les répétitions qui dépassent la largeur disponible
         // Rogner les répétitions qui dépassent la largeur disponible
-    var lignesPoint = iframeDoc2.querySelectorAll('.copier-ligne-point');
+        var lignesPoint = iframeDoc2.querySelectorAll('.copier-ligne-point');
     lignesPoint.forEach(function(ligne) {
       var spans = ligne.querySelectorAll('.copier-mot-kfg');
       if (spans.length === 0) return;
@@ -1302,7 +1302,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var largeurMax = ligne.clientWidth;
       var gap = 24;
 
-      // Si même le premier mot ne tient pas, on le laisse (il sera coupé mais visible au moins partiellement)
       if (spans[0].offsetWidth > largeurMax) return;
 
       var cumul = spans[0].offsetWidth;
@@ -1314,7 +1313,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
         indexMax = i;
       }
 
-      // Supprimer tous les mots APRÈS indexMax (à gauche en RTL)
       for (var j = spans.length - 1; j > indexMax; j--) {
         if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
       }
