@@ -476,7 +476,7 @@ blocsOrdonnes.forEach(function(bloc) {
     var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
     nbExercices += Math.max(1, motsCopier) * 10;
   } else if (bloc.type === 'point') {
-    // 1 mot répété = ~32 mots de lecture
+    // 1 mot répété = ~8 mots de lecture
     nbExercices += 8;
   } else if (bloc.type === 'quiz') {
     nbExercices += 5;
