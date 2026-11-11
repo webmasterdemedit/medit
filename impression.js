@@ -850,7 +850,8 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 18px;
+  justify-content: flex-start;
+  gap: 24px;
   min-height: 36px;
   direction: rtl;
   flex-wrap: nowrap;
@@ -1032,7 +1033,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var motP = bloc.data.mot;
-      var nbRep = 30;
+      var nbRep = 20;
       printHtml += '<div class="exo exo-point">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
@@ -1298,14 +1299,18 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var largeurMax = ligne.clientWidth;
       var gap = 24;
       var cumul = 0;
+      var indexMax = spans.length - 1;
       for (var i = 0; i < spans.length; i++) {
-        cumul += spans[i].offsetWidth + (i > 0 ? gap : 0);
-        if (cumul > largeurMax) {
-          for (var j = i; j < spans.length; j++) {
-            if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
-          }
+        var w = spans[i].offsetWidth;
+        var ajout = (i > 0 ? gap : 0) + w;
+        if (cumul + ajout > largeurMax) {
+          indexMax = i - 1;
           break;
         }
+        cumul += ajout;
+      }
+      for (var j = spans.length - 1; j > indexMax; j--) {
+        if (spans[j].parentNode) spans[j].parentNode.removeChild(spans[j]);
       }
     });
 
