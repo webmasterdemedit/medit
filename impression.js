@@ -464,39 +464,38 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     else if (bloc.type === 'point') nbTotalQuestions++;
   });
 
- var textePourCompter = '';
-blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
-var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+   var textePourCompter = '';
+  blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
+  var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
 
-// Compter les exercices comme des équivalents-mots
-var nbExercices = 0;
-blocsOrdonnes.forEach(function(bloc) {
-  if (bloc.type === 'copier') {
-    // 1 mot à recopier = ~10 mots de lecture (temps d'écriture)
-    var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-    nbExercices += Math.max(1, motsCopier) * 10;
-  } else if (bloc.type === 'point') {
-    // 1 mot répété = ~8 mots de lecture
-    nbExercices += 8;
-  } else if (bloc.type === 'quiz') {
-    nbExercices += 5;
-  } else if (bloc.type === 'open') {
-    nbExercices += 15;
-  } else if (bloc.type === 'tt') {
-    nbExercices += 5;
-  } else if (bloc.type === 'vf') {
-    nbExercices += 5 * (bloc.data.length || 1);
-  } else if (bloc.type === 'ordre') {
-    nbExercices += 8;
-  } else if (bloc.type === 'carte') {
-    nbExercices += 8;
-  } else if (bloc.type === 'relier') {
-    nbExercices += 8;
-  }
-});
+  // Compter les exercices comme des équivalents-mots
+  var nbExercices = 0;
+  blocsOrdonnes.forEach(function(bloc) {
+    if (bloc.type === 'copier') {
+      var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+      nbExercices += Math.max(1, motsCopier) * 30;
+    } else if (bloc.type === 'point') {
+      nbExercices += 50;
+    } else if (bloc.type === 'quiz') {
+      nbExercices += 10;
+    } else if (bloc.type === 'open') {
+      nbExercices += 30;
+    } else if (bloc.type === 'tt') {
+      nbExercices += 10;
+    } else if (bloc.type === 'vf') {
+      nbExercices += 8 * (bloc.data.length || 1);
+    } else if (bloc.type === 'ordre') {
+      nbExercices += 15;
+    } else if (bloc.type === 'carte') {
+      nbExercices += 15;
+    } else if (bloc.type === 'relier') {
+      nbExercices += 15;
+    }
+  });
 
-var totalEquiv = nbMots + nbExercices;
-var tempsLecture = Math.max(1, Math.round(totalEquiv / 14));
+  var totalEquiv = nbMots + nbExercices;
+  var tempsLecture = Math.max(1, Math.round(totalEquiv / 14));
+
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
   var vocabClean = [];
