@@ -850,7 +850,7 @@ body {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 18px;
+  gap: 24px;
   min-height: 36px;
   direction: rtl;
   flex-wrap: nowrap;
@@ -1296,7 +1296,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       var spans = ligne.querySelectorAll('.copier-mot-kfg');
       if (spans.length === 0) return;
       var largeurMax = ligne.clientWidth;
-      var gap = 10;
+      var gap = 24;
       var cumul = 0;
       for (var i = 0; i < spans.length; i++) {
         cumul += spans[i].offsetWidth + (i > 0 ? gap : 0);
