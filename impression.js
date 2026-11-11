@@ -451,51 +451,36 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     blocsOrdonnes = nouveaux;
   }
 
-  var nbTotalQuestions = 0;
-  blocsOrdonnes.forEach(function(bloc) {
-    if (bloc.type === 'quiz') nbTotalQuestions++;
-    else if (bloc.type === 'open') nbTotalQuestions++;
-    else if (bloc.type === 'tt') nbTotalQuestions++;
-    else if (bloc.type === 'carte') nbTotalQuestions++;
-    else if (bloc.type === 'ordre') nbTotalQuestions++;
-    else if (bloc.type === 'relier') nbTotalQuestions++;
-    else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
-    else if (bloc.type === 'copier') nbTotalQuestions++;
-    else if (bloc.type === 'point') nbTotalQuestions++;
-  });
-
-   var textePourCompter = '';
+    var textePourCompter = '';
   blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
   var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
 
-  // Compter les exercices comme des équivalents-mots
   var nbExercices = 0;
   blocsOrdonnes.forEach(function(bloc) {
     if (bloc.type === 'copier') {
       var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-      nbExercices += Math.max(1, motsCopier) * 30;
+      nbExercices += Math.max(1, motsCopier) * 15;
     } else if (bloc.type === 'point') {
-      nbExercices += 50;
+      nbExercices += 25;
     } else if (bloc.type === 'quiz') {
-      nbExercices += 10;
+      nbExercices += 6;
     } else if (bloc.type === 'open') {
-      nbExercices += 30;
+      nbExercices += 20;
     } else if (bloc.type === 'tt') {
-      nbExercices += 10;
+      nbExercices += 6;
     } else if (bloc.type === 'vf') {
-      nbExercices += 8 * (bloc.data.length || 1);
+      nbExercices += 5 * (bloc.data.length || 1);
     } else if (bloc.type === 'ordre') {
-      nbExercices += 15;
+      nbExercices += 10;
     } else if (bloc.type === 'carte') {
-      nbExercices += 15;
+      nbExercices += 10;
     } else if (bloc.type === 'relier') {
-      nbExercices += 15;
+      nbExercices += 10;
     }
   });
 
   var totalEquiv = nbMots + nbExercices;
-  var tempsLecture = Math.max(1, Math.round(totalEquiv / 14));
-
+  var minutesTotal = Math.max(1, Math.round(totalEquiv / 14));
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
   var vocabClean = [];
