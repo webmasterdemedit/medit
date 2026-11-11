@@ -868,9 +868,9 @@ body {
 }
 
 .copier-mot-kfg.copier-mot-kfg-modele {
-  color: #1f1a13;
-  -webkit-text-stroke: 0.6px #1f1a13;
-  text-shadow: 0 0 0.4px #1f1a13;
+  color: #000;
+  -webkit-text-stroke: 1.4px #000;
+  text-shadow: 0 0 1px #000, 0 0 1px #000, 0 0 1px #000;
 }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
