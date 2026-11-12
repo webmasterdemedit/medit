@@ -810,10 +810,11 @@ body {
 .copier-ligne-inline {
   position: relative;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: flex-end;
   gap: 10px;
-  min-height: 36px;
+  min-height: 44px;
+  padding-bottom: 10px;
   direction: ltr;
 }
 
@@ -821,9 +822,9 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 9px;
+  bottom: 6px;
   height: 0;
-  border-bottom: 0.8px dotted #8a7d68;
+  border-bottom: 1px dotted #6a5d47;
   z-index: 0;
   pointer-events: none;
 }
@@ -831,9 +832,11 @@ body {
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  background: #faf7f0;
+  padding: 0 2px;
 }
 
 .copier-fleche-apres svg {
@@ -847,13 +850,15 @@ body {
 .copier-texte-arabe {
   font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
-  line-height: 1.35;
+  line-height: 1;
   color: #1f1a13;
   direction: rtl;
   white-space: nowrap;
   flex: 0 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: 2;
+  background: #faf7f0;
+  padding: 0 4px;
 }
 
 .copier-texte-arabe .copier-mot {
@@ -862,20 +867,22 @@ body {
   direction: rtl;
 }
 
-/* Mot en pointillé (à tracer) — placé à gauche du modèle, avec KFGQPC */
+/* Mot en pointillé (à tracer) — placé à gauche du modèle */
 .copier-texte-arabe-pointille {
   flex: 0 0 auto;
   position: relative;
-  z-index: 1;
+  z-index: 2;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: center;
+  background: #faf7f0;
+  padding: 0 4px;
 }
 
 .copier-mot-pointille {
   font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
-  line-height: 1.05;
+  line-height: 1;
   color: #8a7d68;
   direction: rtl;
   white-space: nowrap;
