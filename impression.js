@@ -324,6 +324,18 @@ function parserCopierPourImpression(copierTexte) {
   return blocs;
 }
 
+function parserPointPourImpression(pointTexte) {
+  if (!pointTexte) return [];
+  var lignes = pointTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+  var blocs = [];
+  lignes.forEach(function(ligne) {
+    var contenu = ligne.replace(/^\s*pnt:\s*/i, '').trim();
+    if (!contenu) return;
+    blocs.push({ mot: contenu });
+  });
+  return blocs;
+}
+
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // ============================================================
@@ -342,6 +354,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   var ttTexte = '';
   var vfTexte = '';
   var copierTexte = '';
+  var pointTexte = texte.point || '';
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -388,6 +401,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   var ttsParsed = ttTexte ? parserTextesTrousPourImpression(ttTexte) : [];
   var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
   var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
+  var pointsParsed = pointTexte ? parserPointPourImpression(pointTexte) : [];
 
   var blocsOrdonnes = [];
 
@@ -415,6 +429,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
         blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
       } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
+      } else if (type === 'point' && pointsParsed[idx]) {
+        blocsOrdonnes.push({ type: 'point', data: pointsParsed[idx] });
       }
     });
   }
@@ -431,6 +447,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     cartesParsed.forEach(function(c) { nouveaux.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { nouveaux.push({ type: 'relier', data: r }); });
     copiersParsed.forEach(function(c) { nouveaux.push({ type: 'copier', data: c }); });
+    pointsParsed.forEach(function(p) { nouveaux.push({ type: 'point', data: p }); });
     blocsOrdonnes = nouveaux;
   }
 
@@ -444,12 +461,49 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     else if (bloc.type === 'relier') nbTotalQuestions++;
     else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
     else if (bloc.type === 'copier') nbTotalQuestions++;
+    else if (bloc.type === 'point') nbTotalQuestions++;
   });
 
+  // === CALCUL DU TEMPS (texte + exercices) ===
   var textePourCompter = '';
   blocsOrdonnes.forEach(function(b) { if (b.type === 'paragraphe') textePourCompter += ' ' + b.data; });
   var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-  var tempsLecture = Math.max(1, Math.round(nbMots / 14));
+
+  var nbExercices = 0;
+  blocsOrdonnes.forEach(function(bloc) {
+    if (bloc.type === 'copier') {
+      var motsCopier = (bloc.data.mots || []).join(' ').split(/\s+/).filter(function(w) { return w.length > 0; }).length;
+      nbExercices += Math.max(1, motsCopier) * 8;
+    } else if (bloc.type === 'point') {
+      nbExercices += 6;
+    } else if (bloc.type === 'quiz') {
+      nbExercices += 9;
+    } else if (bloc.type === 'open') {
+      nbExercices += 30;
+    } else if (bloc.type === 'tt') {
+      nbExercices += 6;
+    } else if (bloc.type === 'vf') {
+      nbExercices += 5 * (bloc.data.length || 1);
+    } else if (bloc.type === 'ordre') {
+      nbExercices += 10;
+    } else if (bloc.type === 'carte') {
+      nbExercices += 10;
+    } else if (bloc.type === 'relier') {
+      nbExercices += 10;
+    }
+  });
+
+  var totalEquiv = nbMots + nbExercices;
+  var minutesTotal = Math.max(1, Math.round(totalEquiv / 14));
+
+  var tempsLecture;
+  if (minutesTotal >= 60) {
+    var h = Math.floor(minutesTotal / 60);
+    var m = minutesTotal % 60;
+    tempsLecture = h + ' h' + (m > 0 ? ' ' + (m < 10 ? '0' + m : m) : '');
+  } else {
+    tempsLecture = minutesTotal + ' min';
+  }
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
   var vocabClean = [];
@@ -498,8 +552,18 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
-<title>${texte.titre || 'Lecture'} - ${texte.categorie || ''} - Niveau ${texte.niveau || 0}</title>
 <style>
+/* ============================================================
+   POLICE POINTILLÉE — KFGQPC Alphabet Dotted
+   ============================================================ */
+@font-face {
+  font-family: 'KFGQPC Alphabet Dotted';
+  src: url('https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts/kfgqpc-alphabet-dotted-regular.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+  font-display: swap;
+}
+
 * { margin:0; padding:0; box-sizing:border-box; }
 @page { margin: 1.6cm 1.7cm 1.6cm 1.7cm; size: A4; }
 body {
@@ -680,6 +744,13 @@ body {
   margin-top: 0;
 }
 
+/* Exercices "Pointillé" (pnt:) */
+.exo.exo-point {
+  border-bottom: none;
+  margin-bottom: 8px;
+  padding-bottom: 2px;
+}
+
 .consigne-exo { font-size:8.8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
   letter-spacing:1.2px; margin-bottom:5px; margin-top:0; padding:0;
   page-break-after:avoid; break-after:avoid; font-family:'Georgia',serif; }
@@ -772,10 +843,11 @@ body {
   overflow: visible;
 }
 
+/* Modèle plein à recopier */
 .copier-texte-arabe {
   font-family: 'Playpen Sans Arabic', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
   font-size: 2.2em;
-  line-height: 1.05;
+  line-height: 1.35;
   color: #1f1a13;
   direction: rtl;
   white-space: nowrap;
@@ -788,6 +860,56 @@ body {
   display: inline-block;
   white-space: nowrap;
   direction: rtl;
+}
+
+/* Mot en pointillé (à tracer) — placé à gauche du modèle, avec KFGQPC */
+.copier-texte-arabe-pointille {
+  flex: 0 0 auto;
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.copier-mot-pointille {
+  font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 2.2em;
+  line-height: 1.05;
+  color: #8a7d68;
+  direction: rtl;
+  white-space: nowrap;
+}
+
+/* ---- Type "pnt:" : mot en KFGQPC répété sur toute la ligne ---- */
+.copier-ligne-point {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 24px;
+  min-height: 48px;
+  direction: rtl;
+  flex-wrap: nowrap;
+  overflow: hidden;
+  max-width: 100%;
+  width: 100%;
+}
+
+.copier-mot-kfg {
+  font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif;
+  font-size: 2.7em;
+  line-height: 1.05;
+  color: #8a7d68;
+  direction: rtl;
+  white-space: nowrap;
+  flex: 0 0 auto;
+}
+
+.copier-mot-kfg.copier-mot-kfg-modele {
+  color: #000;
+  -webkit-text-stroke: 2px #000;
+  text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
 }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
@@ -827,7 +949,7 @@ body {
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>
 
-<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture} min</div>
+<div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
@@ -876,7 +998,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     vf:     { sing: 'Cochez Vrai ou Faux :',      plur: 'Cochez Vrai ou Faux :' },
     ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
     relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' },
-    copier: { sing: 'Recopiez :',                 plur: 'Recopiez :' }
+    copier: { sing: 'Recopiez :',                 plur: 'Recopiez :' },
+    point:  { sing: 'Tracez le mot en pointillé :', plur: 'Tracez les mots en pointillé :' }
   };
 
   var iGroupe = 0;
@@ -911,6 +1034,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       ouvrirZoneExercices();
       exoNum++;
       var mots = bloc.data.mots;
+      var motComplet = mots.join(' ');
       printHtml += '<div class="exo exo-copier">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
@@ -924,12 +1048,39 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
+      // Mot en pointillé (à tracer) — à gauche du modèle
+      printHtml += '    <span class="copier-texte-arabe-pointille">';
+      printHtml += '      <span class="copier-mot-pointille">' + motComplet + '</span>';
+      printHtml += '    </span>';
+      // Modèle plein
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
       }
       printHtml += '    </span>';
       printHtml += '  </div>';
+      printHtml += '</div>';
+      printHtml += '</span>';
+      printHtml += '</div>';
+      printHtml += '</div>';
+      return;
+    }
+
+    if (bloc.type === 'point') {
+      ouvrirZoneExercices();
+      exoNum++;
+      var motP = bloc.data.mot;
+      var nbRep = 9;
+      printHtml += '<div class="exo exo-point">';
+      afficherConsigne(bloc);
+      printHtml += '<div class="exo-ligne">';
+      printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
+      printHtml += '<span class="exo-texte" style="flex:1;">';
+      printHtml += '<div class="copier-ligne-point">';
+      for (var rp = 0; rp < nbRep; rp++) {
+        var classe = (rp === 0) ? 'copier-mot-kfg copier-mot-kfg-modele' : 'copier-mot-kfg';
+        printHtml += '<span class="' + classe + '">' + motP + '</span>';
+      }
       printHtml += '</div>';
       printHtml += '</span>';
       printHtml += '</div>';
@@ -1155,6 +1306,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       if (!parent) return;
       if (parent.classList && parent.classList.contains('arabe')) return;
       if (parent.classList && parent.classList.contains('copier-mot')) return;
+      if (parent.classList && parent.classList.contains('copier-mot-pointille')) return;
+      if (parent.classList && parent.classList.contains('copier-mot-kfg')) return;
+      if (parent.tagName && parent.tagName.toLowerCase() === 'text') return;
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
       var parts = txt.split(regex);
