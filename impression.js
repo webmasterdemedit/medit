@@ -810,24 +810,24 @@ body {
 .copier-ligne-inline {
   position: relative;
   display: flex;
-  align-items: flex-end;      /* au lieu de center */
+  align-items: center;
   justify-content: flex-end;
   gap: 10px;
   min-height: 36px;
   direction: ltr;
-  padding-bottom: 4px;        /* marge sous le texte */
 }
 
 .copier-ligne-pointillee {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 2px;                /* plus près du bas */
+  bottom: 9px;
   height: 0;
-  border-bottom: 1px dotted #6a5d47;  /* plus foncé */
+  border-bottom: 0.8px dotted #8a7d68;
   z-index: 0;
   pointer-events: none;
 }
+
 .copier-fleche-apres {
   flex: 0 0 auto;
   display: flex;
