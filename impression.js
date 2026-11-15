@@ -987,6 +987,7 @@ body {
 
 ${noteHtml}
 
+${afficherTexte ? `
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
 
 <div class="bandeau-titre">
@@ -1002,9 +1003,10 @@ ${noteHtml}
   </div>
 </div>
 
-${afficherNote && tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
-${afficherNote && vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+` : ''}
 
 <div class="corps-contenu">
   <div class="texte-zone">
