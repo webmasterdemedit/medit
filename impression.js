@@ -4,7 +4,9 @@
 // Dépend de : DataManager (data-manager.js)
 // ============================================================
 
-function imprimerTexte(texteId, titre, textesData) {
+function imprimerTexte(texteId, titre, textesData, mode) {
+  mode = mode || 'complet';
+
   if (typeof textesData === 'undefined' || textesData === null) {
     textesData = (typeof window !== 'undefined' && window.textesData) ? window.textesData : [];
   }
@@ -31,9 +33,9 @@ function imprimerTexte(texteId, titre, textesData) {
   var couvertureTheme = recupererCouvertureTheme(texte.categorie);
 
   chargerImagesTheme(texte.categorie).then(function(images) {
-    genererImpression(texte, contenu, images || {}, couvertureTheme);
+    genererImpression(texte, contenu, images || {}, couvertureTheme, mode);
   }).catch(function() {
-    genererImpression(texte, contenu, {}, couvertureTheme);
+    genererImpression(texte, contenu, {}, couvertureTheme, mode);
   });
 }
 
@@ -41,7 +43,9 @@ function imprimerTexte(texteId, titre, textesData) {
 // IMPRESSION D'UN CONTENU ALTERNATIF (sans texteId en base)
 // Réutilise la même mise en page que imprimerTexte.
 // ============================================================
-function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe) {
+function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe, mode) {
+  mode = mode || 'complet';
+
   if (!texteOriginal) { alert('Texte original introuvable.'); return; }
   if (!contenuAlternatif) { alert('Contenu alternatif vide.'); return; }
 
@@ -54,9 +58,9 @@ function imprimerContenuAlternatif(texteOriginal, contenuAlternatif, suffixe) {
   }
 
   chargerImagesTheme(texteOriginal.categorie).then(function(images) {
-    genererImpression(texteCopie, contenuAlternatif, images || {}, couvertureTheme);
+    genererImpression(texteCopie, contenuAlternatif, images || {}, couvertureTheme, mode);
   }).catch(function() {
-    genererImpression(texteCopie, contenuAlternatif, {}, couvertureTheme);
+    genererImpression(texteCopie, contenuAlternatif, {}, couvertureTheme, mode);
   });
 }
 
@@ -338,10 +342,18 @@ function parserPointPourImpression(pointTexte) {
 
 // ============================================================
 // GÉNÉRATION IMPRESSION
+// mode : 'complet' (défaut) | 'exercices' | 'rappel'
 // ============================================================
-function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
+function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
+  mode = mode || 'complet';
   imagesTheme = imagesTheme || {};
   couvertureTheme = couvertureTheme || '';
+
+  var afficherTexte = (mode === 'complet' || mode === 'rappel');
+  var afficherExercices = (mode === 'complet' || mode === 'exercices');
+  var afficherRappel = (mode === 'complet' || mode === 'rappel');
+  var afficherNote = (mode !== 'rappel');
+
   var ordreBlocs = texte.ordreBlocs || [];
   var parts = contenu.split(' | ');
 
@@ -451,6 +463,12 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
     blocsOrdonnes = nouveaux;
   }
 
+  // === FILTRAGE SELON LE MODE ===
+  blocsOrdonnes = blocsOrdonnes.filter(function(bloc) {
+    if (bloc.type === 'paragraphe') return afficherTexte;
+    return afficherExercices;
+  });
+
   var nbTotalQuestions = 0;
   blocsOrdonnes.forEach(function(bloc) {
     if (bloc.type === 'quiz') nbTotalQuestions++;
@@ -529,13 +547,15 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
   var heureImpressionStr = dateImpression.toLocaleTimeString('fr-FR', { hour: '2-digit', minute: '2-digit' });
 
   var nomFichierPdf = (texte.titre || 'Lecture') + (texte.categorie ? ' - ' + texte.categorie : '') + ' - Niveau ' + (texte.niveau || 0);
+  if (mode === 'exercices') nomFichierPdf += ' - Exercices';
+  else if (mode === 'rappel') nomFichierPdf += ' - Rappel';
   nomFichierPdf = nomFichierPdf.replace(/[\\/:*?"<>|]/g, '-');
 
   var numeroTexte = extraireNumeroTexte(texte.titre);
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
-  // ---- Ligne "Rappel sur un … de …" (même logique que texte.html) ----
+  // ---- Ligne "Rappel sur un … de …" ----
   var nomSection = recupererSectionTheme(texte.categorie);
   var nomTheme = texte.categorie || '';
   var ligneRappel = 'Rappel';
@@ -544,6 +564,20 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme) {
 
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
+
+  // ---- Titre de la zone exercices : indique le titre du rappel ----
+  var titreZoneExercices = 'Exercices';
+  if (titreAffiche) titreZoneExercices = 'Exercices — ' + titreAffiche;
+
+  // ---- En-tête note/appréciation (masqué en mode rappel) ----
+  var noteHtml = '';
+  if (afficherNote) {
+    noteHtml = `
+<div class="note-haut">
+  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
+  <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
+</div>`;
+  }
 
   var printHtml = `<!DOCTYPE html>
 <html>
@@ -951,10 +985,7 @@ body {
   </div>
 </div>
 
-<div class="note-haut">
-  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
-  <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
-</div>
+${noteHtml}
 
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
 
@@ -987,7 +1018,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
     if (!zoneExercicesOuverte) {
       printHtml += '</div>';
       printHtml += '<div class="zone-exercices">';
-      printHtml += '<div class="titre-questions">Exercices</div>';
+      printHtml += '<div class="titre-questions">' + titreZoneExercices + '</div>';
       printHtml += '<div class="titre-questions-filets"></div>';
       zoneExercicesOuverte = true;
     }
@@ -1265,7 +1296,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
   }
   printHtml += '</div>';
 
-  if (aRetenirClean.length > 0) {
+  if (afficherRappel && aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
     printHtml += '<div class="memo-bloc">';
     printHtml += '<div class="titre-memo">À retenir</div>';
