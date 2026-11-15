@@ -2398,13 +2398,41 @@
     }
 
     function construireBlocActions(texte) {
-      var html = '<div class="bloc-actions-texte">';
-      html += '<button class="btn-action-lateral btn-imprimer" style="border:1px solid var(--border);border-radius:0;box-shadow:none;" onclick="imprimerTexte(\'' + texte.id + '\', \'' + (texte.titre || '').replace(/'/g, "\\'") + '\', textesData)">Imprimer le rappel avec des exercices</button>';
-      html += '<button class="btn-action-lateral btn-imprimer-alternative" style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" onclick="imprimerVersionParenthese()">Imprimer la version alternative</button>';
-      html += '</div>';
-      return html;
-    }
+  var titreEsc = (texte.titre || '').replace(/'/g, "\\'");
 
+  var html = '<div class="bloc-actions-texte">';
+
+  // Bouton 1 : impression complète (texte + exercices + rappel + note)
+  html += '<button class="btn-action-lateral btn-imprimer" '
+    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;" '
+    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'complet\')">'
+    + 'Imprimer le rappel avec des exercices'
+    + '</button>';
+
+  // Bouton 2 : impression des exercices uniquement (avec note + titre du rappel)
+  html += '<button class="btn-action-lateral btn-imprimer" '
+    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'exercices\')">'
+    + 'Imprimer les exercices'
+    + '</button>';
+
+  // Bouton 3 : impression du rappel uniquement (sans exercices, sans note)
+  html += '<button class="btn-action-lateral btn-imprimer" '
+    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'rappel\')">'
+    + 'Imprimer le rappel'
+    + '</button>';
+
+  // Bouton optionnel : version alternative (inchangé)
+  html += '<button class="btn-action-lateral btn-imprimer-alternative" '
+    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" '
+    + 'onclick="imprimerVersionParenthese()">'
+    + 'Imprimer la version alternative'
+    + '</button>';
+
+  html += '</div>';
+  return html;
+}
     function construireZoneLaterale(texte) {
       var nav = construireNavDansTheme(texte);
       var themeInfo = themesData[texte.categorie] || {};
