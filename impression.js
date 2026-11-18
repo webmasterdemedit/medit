@@ -674,14 +674,15 @@ body {
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
-.vocab-haut { margin:6px auto 10px; text-align:center; width:90%; padding:6px 0;
+.vocab-haut { margin:8px auto 12px; width:90%; padding:8px 0;
   border-top:0.6px dotted #c9bda3; border-bottom:0.6px dotted #c9bda3; }
-.vocab-haut .titre-memo { display:inline; font-weight:600; font-size:8.5pt; text-transform:uppercase;
-  letter-spacing:1.5px; color:#8a7d68; margin-right:8px; }
-.vocab-haut .memo-mot { display:inline-block; padding:1px 10px; margin:2px 3px;
-  background:transparent; font-size:9.5pt; color:#3a2e22; font-style:italic; line-height:1.4; }
-.vocab-haut .memo-mot::after { content:","; }
-.vocab-haut .memo-mot:last-child::after { content:""; }
+.vocab-haut .titre-memo { display:block; font-weight:600; font-size:8.5pt; text-transform:uppercase;
+  letter-spacing:1.5px; color:#8a7d68; margin-bottom:4px; text-align:center; }
+.vocab-haut .vocab-liste { list-style:none; padding:0; margin:0; text-align:center; }
+.vocab-haut .vocab-liste li { display:inline-block; padding:1px 10px; margin:2px 3px;
+  font-size:9.5pt; color:#3a2e22; line-height:1.5; }
+.vocab-haut .vocab-liste li .vocab-mot { font-style:italic; }
+.vocab-haut .vocab-liste li .vocab-def { font-style:normal; color:#5a4f3d; }
 
 .corps-contenu { padding: 0; }
 
@@ -996,7 +997,7 @@ ${afficherTexte ? `
   </div>
 </div>
 
-${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
+${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {   var sep = m.indexOf(':');  // le ":" sépare le mot de sa définition   if (sep !== -1) {     var mot = m.substring(0, sep).trim();     var def = m.substring(sep + 1).trim();     return '<li><span class="vocab-mot">' + mot + '</span> : <span class="vocab-def">' + def + '</span></li>';   }   return '<li><span class="vocab-mot">' + m + '</span></li>'; }).join('') + '</ul></div>' : ''}
 ` : ''}
 
 <div class="corps-contenu">
