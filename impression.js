@@ -531,8 +531,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
       if (m !== '') vocabClean.push(m);
     });
   });
-  var tagsClean = (texte.tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-
   var dateCreation = texte.date || '';
   var dateCreationStr = '';
   if (dateCreation) {
@@ -675,11 +673,6 @@ body {
 .numero-texte { display:inline-block; background:#2a241c; color:#faf7f0; font-family:'Georgia',serif;
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
-
-.tags-haut { margin-top:6px; margin-bottom:4px; text-align:center; }
-.tags-haut .memo-tag { display:inline-block; padding:2px 10px; margin:2px 3px;
-  background:transparent; border:0.5px solid #c9bda3; border-radius:12px;
-  font-size:9pt; color:#7a6d55; font-style:italic; }
 
 .vocab-haut { margin:6px auto 10px; text-align:center; width:90%; padding:6px 0;
   border-top:0.6px dotted #c9bda3; border-bottom:0.6px dotted #c9bda3; }
@@ -1002,8 +995,6 @@ ${afficherTexte ? `
     </div>
   </div>
 </div>
-
-${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
 
 ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 ` : ''}
