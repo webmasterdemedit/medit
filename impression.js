@@ -524,13 +524,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   }
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-  var vocabClean = [];
-  (texte.vocabulaire || []).forEach(function(item) {
-    String(item).split(',').forEach(function(mot) {
-      var m = mot.trim();
-      if (m !== '') vocabClean.push(m);
-    });
-  });
+ var vocabClean = [];
+(texte.vocabulaire || []).forEach(function(item) {
+  var m = String(item).trim();
+  if (m !== '') vocabClean.push(m);
+});
   var dateCreation = texte.date || '';
   var dateCreationStr = '';
   if (dateCreation) {
