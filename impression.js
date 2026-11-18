@@ -527,8 +527,10 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 
   var vocabClean = [];
   (texte.vocabulaire || []).forEach(function(item) {
-    var m = String(item).trim();
-    if (m !== '') vocabClean.push(m);
+    String(item).split(';').forEach(function(mot) {
+      var m = mot.trim();
+      if (m !== '') vocabClean.push(m);
+    });
   });
 
   var dateCreation = texte.date || '';
@@ -674,12 +676,12 @@ body {
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
-/* ---- Encadré vocabulaire (lexique) ---- */
+/* ---- Encadré vocabulaire (lexique) — 2 colonnes, compact ---- */
 .vocab-haut {
-  margin: 14px 0 10px;
-  width: 62%;
-  max-width: 380px;
-  padding: 10px 14px 12px;
+  margin: 10px 0 8px;
+  width: 55%;
+  max-width: 300px;
+  padding: 8px 12px 10px;
   background: #f6f1e6;
   border: 0.7px solid #c9bda3;
   border-left: 3px solid #6a5d47;
@@ -692,34 +694,39 @@ body {
   display: block;
   font-family: 'Georgia', serif;
   font-weight: 700;
-  font-size: 8.5pt;
+  font-size: 8pt;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #6a5d47;
   text-align: left;
-  margin-bottom: 6px;
-  padding-bottom: 4px;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
   border-bottom: 0.5px solid #c9bda3;
 }
 .vocab-haut .titre-memo::before {
   content: "❧  ";
   color: #a89a80;
-  font-size: 8pt;
+  font-size: 7.5pt;
 }
 .vocab-haut .vocab-liste {
   list-style: none;
   padding: 0;
   margin: 0;
   text-align: left;
+  column-count: 2;
+  column-gap: 14px;
+  column-rule: 0.5px dotted #c9bda3;
 }
 .vocab-haut .vocab-liste li {
   display: block;
-  font-size: 10pt;
-  line-height: 1.55;
+  font-size: 8.8pt;
+  line-height: 1.4;
   color: #2a241c;
-  margin-bottom: 2px;
-  padding-left: 12px;
-  text-indent: -12px;
+  margin-bottom: 3px;
+  padding-left: 9px;
+  text-indent: -9px;
+  break-inside: avoid;
+  page-break-inside: avoid;
 }
 .vocab-haut .vocab-liste li .vocab-mot {
   font-style: italic;
@@ -1045,8 +1052,12 @@ ${afficherTexte ? `
 </div>
 
 ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {
-  var sep = m.indexOf(':');
-  if (sep === -1) sep = m.indexOf('=');
+  var idxColon = m.indexOf(':');
+  var idxEgal = m.indexOf('=');
+  var sep = -1;
+  if (idxColon !== -1 && idxEgal !== -1) sep = Math.min(idxColon, idxEgal);
+  else if (idxColon !== -1) sep = idxColon;
+  else if (idxEgal !== -1) sep = idxEgal;
   if (sep !== -1) {
     var mot = m.substring(0, sep).trim();
     var def = m.substring(sep + 1).trim();
