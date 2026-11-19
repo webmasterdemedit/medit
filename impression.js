@@ -679,8 +679,8 @@ body {
 /* ---- Encadré vocabulaire (lexique) — 2 colonnes, compact ---- */
 .vocab-haut {
   margin: 10px 0 8px;
-  width: 55%;
-  max-width: 300px;
+  width: 100%;
+  max-width: none;
   padding: 8px 12px 10px;
   background: #f6f1e6;
   border: 0.7px solid #c9bda3;
