@@ -1064,12 +1064,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   if (idxColon !== -1 && idxEgal !== -1) sep = Math.min(idxColon, idxEgal);
   else if (idxColon !== -1) sep = idxColon;
   else if (idxEgal !== -1) sep = idxEgal;
-  if (sep !== -1) {
-    var mot = m.substring(0, sep).trim();
+    if (sep !== -1) {
+    var mot = majPremiereLettre(m.substring(0, sep).trim());
     var def = m.substring(sep + 1).trim();
     return '<li><span class="vocab-mot">' + mot + '</span> : <span class="vocab-def">' + def + '</span></li>';
   }
-  return '<li><span class="vocab-mot">' + m + '</span></li>';
+  return '<li><span class="vocab-mot">' + majPremiereLettre(m) + '</span></li>';
 }).join('') + '</ul></div>' : ''}
 ` : ''}
 
