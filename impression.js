@@ -578,6 +578,12 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
   }
+  function majPremiereLettre(s) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
 
   var printHtml = `<!DOCTYPE html>
 <html>
