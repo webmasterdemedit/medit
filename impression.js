@@ -355,11 +355,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var afficherNote = (mode !== 'rappel');
 
   var ordreBlocs = texte.ordreBlocs || [];
-if (typeof ordreBlocs === 'string') {
-  ordreBlocs = ordreBlocs.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s !== ''; });
-}
-var vfDejaAjoute = false;
-  console.log('ordreBlocs =', texte.ordreBlocs);
   var parts = contenu.split(' | ');
 
   var paragraphesArray = [];
@@ -442,10 +437,8 @@ var vfDejaAjoute = false;
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed.length > 0 && !vfDejaAjoute) {
-  vfDejaAjoute = true;
-  blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-       
+      } else if (type === 'vf' && vfsParsed.length > 0) {
+        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
       } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       } else if (type === 'point' && pointsParsed[idx]) {
@@ -531,14 +524,14 @@ var vfDejaAjoute = false;
   }
 
   var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-
   var vocabClean = [];
   (texte.vocabulaire || []).forEach(function(item) {
-    String(item).split(';').forEach(function(mot) {
+    String(item).split(',').forEach(function(mot) {
       var m = mot.trim();
       if (m !== '') vocabClean.push(m);
     });
   });
+  var tagsClean = (texte.tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
 
   var dateCreation = texte.date || '';
   var dateCreationStr = '';
@@ -585,12 +578,6 @@ var vfDejaAjoute = false;
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
   }
-  function majPremiereLettre(s) {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-
 
   var printHtml = `<!DOCTYPE html>
 <html>
@@ -689,67 +676,19 @@ body {
   font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
-/* ---- Encadré vocabulaire (lexique) — 2 colonnes, compact ---- */
-.vocab-haut {
-  margin: 10px 0 8px;
-  width: 100%;
-  max-width: none;
-  padding: 8px 12px 10px;
-  background: #f6f1e6;
-  border: 0.7px solid #c9bda3;
-  border-left: 3px solid #6a5d47;
-  box-shadow: 1px 1px 0 #e4dccb;
-  text-align: left;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-.vocab-haut .titre-memo {
-  display: block;
-  font-family: 'Georgia', serif;
-  font-weight: 700;
-  font-size: 8pt;
-  text-transform: uppercase;
-  letter-spacing: 2px;
-  color: #6a5d47;
-  text-align: left;
-  margin-bottom: 5px;
-  padding-bottom: 3px;
-  border-bottom: 0.5px solid #c9bda3;
-}
-.vocab-haut .titre-memo::before {
-  content: "❧  ";
-  color: #a89a80;
-  font-size: 7.5pt;
-}
-.vocab-haut .vocab-liste {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  text-align: left;
-  column-count: 2;
-  column-gap: 14px;
-  column-rule: 0.5px dotted #c9bda3;
-}
-.vocab-haut .vocab-liste li {
-  display: block;
-  font-size: 8.8pt;
-  line-height: 1.4;
-  color: #2a241c;
-  margin-bottom: 3px;
-  padding-left: 9px;
-  text-indent: -9px;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
-.vocab-haut .vocab-liste li .vocab-mot {
-  font-style: italic;
-  font-weight: 600;
-  color: #2a241c;
-}
-.vocab-haut .vocab-liste li .vocab-def {
-  font-style: normal;
-  color: #5a4f3d;
-}
+.tags-haut { margin-top:6px; margin-bottom:4px; text-align:center; }
+.tags-haut .memo-tag { display:inline-block; padding:2px 10px; margin:2px 3px;
+  background:transparent; border:0.5px solid #c9bda3; border-radius:12px;
+  font-size:9pt; color:#7a6d55; font-style:italic; }
+
+.vocab-haut { margin:6px auto 10px; text-align:center; width:90%; padding:6px 0;
+  border-top:0.6px dotted #c9bda3; border-bottom:0.6px dotted #c9bda3; }
+.vocab-haut .titre-memo { display:inline; font-weight:600; font-size:8.5pt; text-transform:uppercase;
+  letter-spacing:1.5px; color:#8a7d68; margin-right:8px; }
+.vocab-haut .memo-mot { display:inline-block; padding:1px 10px; margin:2px 3px;
+  background:transparent; font-size:9.5pt; color:#3a2e22; font-style:italic; line-height:1.4; }
+.vocab-haut .memo-mot::after { content:","; }
+.vocab-haut .memo-mot:last-child::after { content:""; }
 
 .corps-contenu { padding: 0; }
 
@@ -1064,20 +1003,9 @@ ${afficherTexte ? `
   </div>
 </div>
 
-${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {
-  var idxColon = m.indexOf(':');
-  var idxEgal = m.indexOf('=');
-  var sep = -1;
-  if (idxColon !== -1 && idxEgal !== -1) sep = Math.min(idxColon, idxEgal);
-  else if (idxColon !== -1) sep = idxColon;
-  else if (idxEgal !== -1) sep = idxEgal;
-    if (sep !== -1) {
-    var mot = majPremiereLettre(m.substring(0, sep).trim());
-    var def = m.substring(sep + 1).trim();
-    return '<li><span class="vocab-mot">' + mot + '</span> : <span class="vocab-def">' + def + '</span></li>';
-  }
-  return '<li><span class="vocab-mot">' + majPremiereLettre(m) + '</span></li>';
-}).join('') + '</ul></div>' : ''}
+${tagsClean.length > 0 ? '<div class="tags-haut">' + tagsClean.map(function(t) { return '<span class="memo-tag">#' + t + '</span>'; }).join('') + '</div>' : ''}
+
+${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>' + vocabClean.map(function(m) { return '<span class="memo-mot">' + m + '</span>'; }).join('') + '</div>' : ''}
 ` : ''}
 
 <div class="corps-contenu">
@@ -1386,7 +1314,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
   printHtml += `
     <div class="pied-page">
-      Association Va.& Vi.e ; PROGRAMME Kitab-wa-hikmat de W. Khan. Écrit le ${dateCreationStr || '—'}, et imprimé le ${dateImpressionStr} à ${heureImpressionStr}. n°${idPost}
+      Association Va.& Vi.e ; kitaabwalhikmah.fr - par W. Khan. Écrit le ${dateCreationStr || '—'}, et imprimé le ${dateImpressionStr} à ${heureImpressionStr}. n°${idPost}
     </div>
   </div>
 </body>
