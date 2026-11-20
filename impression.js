@@ -283,19 +283,15 @@ function parserRelierPourImpression(relierTexte) {
   return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
 }
 
+// Texte à trous : on garde la phrase entière, chaque /mot/ devient un trou
 function parserTextesTrousPourImpression(ttTexte) {
   var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var resultats = [];
   lignes.forEach(function(ligne) {
     if (!/^tt:/i.test(ligne)) return;
     var contenu = ligne.replace(/^tt:\s*/i, '').trim();
-    var match = contenu.match(/\/([^\/]+)\//);
-    if (!match) return;
-    var mot = match[1].trim();
-    var idx = contenu.indexOf('/' + mot + '/');
-    var avant = contenu.substring(0, idx).trim();
-    var apres = contenu.substring(idx + mot.length + 2).trim();
-    resultats.push({ avant: avant, mot: mot, apres: apres });
+    if (!/\/[^\/]+\//.test(contenu)) return;
+    resultats.push({ phrase: contenu });
   });
   return resultats;
 }
@@ -340,6 +336,33 @@ function parserPointPourImpression(pointTexte) {
   return blocs;
 }
 
+function parserColonnesPourImpression(txt) {
+  if (!txt) return [];
+  var tables = [];
+  String(txt).split('\n\n').forEach(function(bloc) {
+    var lignes = bloc.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
+    if (lignes.length === 0) return;
+    var nb = 3, consigne = '', cases = [];
+    lignes.forEach(function(l) {
+      var m = l.match(/^(\d+)\s*col:\s*(.*)$/i);
+      if (m) {
+        nb = Math.max(1, parseInt(m[1], 10));
+        consigne = m[2].trim();
+      } else if (/^case:/i.test(l)) {
+        var c = l.replace(/^case:\s*/i, '').trim();
+        if (c) cases.push(c);
+      }
+    });
+    if (cases.length > 0) tables.push({ nb: nb, consigne: consigne, cases: cases });
+  });
+  return tables;
+}
+
+function majPremiereLettre(s) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // mode : 'complet' (défaut) | 'exercices' | 'rappel'
@@ -354,7 +377,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var afficherRappel = (mode === 'complet' || mode === 'rappel');
   var afficherNote = (mode !== 'rappel');
 
+  // ordreBlocs peut arriver en tableau OU en chaîne "texte:0,quiz:0,..."
   var ordreBlocs = texte.ordreBlocs || [];
+  if (typeof ordreBlocs === 'string') {
+    ordreBlocs = ordreBlocs.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s !== ''; });
+  }
   var parts = contenu.split(' | ');
 
   var paragraphesArray = [];
@@ -367,6 +394,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var vfTexte = '';
   var copierTexte = '';
   var pointTexte = texte.point || '';
+  var colTexte = texte.colonnes || '';
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -414,14 +442,16 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var vfsParsed = vfTexte ? parserVraiFauxPourImpression(vfTexte) : [];
   var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
   var pointsParsed = pointTexte ? parserPointPourImpression(pointTexte) : [];
+  var colsParsed = parserColonnesPourImpression(colTexte);
 
   var blocsOrdonnes = [];
 
+  // === ORDRE EXACT DU FICHIER (tous types, y compris entre paragraphes) ===
   if (ordreBlocs.length > 0) {
     ordreBlocs.forEach(function(item) {
       var p = item.split(':');
       var type = p[0];
-      var idx = p.length > 1 ? parseInt(p[1]) : 0;
+      var idx = p.length > 1 ? parseInt(p[1], 10) : 0;
 
       if ((type === 'paragraphe' || type === 'slide' || type === 'texte') && paragraphesArray[idx] !== undefined) {
         blocsOrdonnes.push({ type: 'paragraphe', data: paragraphesArray[idx] });
@@ -437,29 +467,32 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed.length > 0) {
-        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+      } else if (type === 'vf' && vfsParsed[idx] !== undefined) {
+        blocsOrdonnes.push({ type: 'vf', data: [vfsParsed[idx]] });
       } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       } else if (type === 'point' && pointsParsed[idx]) {
         blocsOrdonnes.push({ type: 'point', data: pointsParsed[idx] });
+      } else if (type === 'col' && colsParsed[idx]) {
+        blocsOrdonnes.push({ type: 'col', data: colsParsed[idx] });
       }
     });
   }
 
-  var nbParas = blocsOrdonnes.filter(function(b) { return b.type === 'paragraphe'; }).length;
-  if (nbParas === 0) {
+  // Repli uniquement si ordreBlocs est vraiment vide
+  if (blocsOrdonnes.length === 0) {
     var nouveaux = [];
     paragraphesArray.forEach(function(s) { nouveaux.push({ type: 'paragraphe', data: s }); });
     quizsParsed.forEach(function(q) { nouveaux.push({ type: 'quiz', data: q }); });
     opensParsed.forEach(function(o) { nouveaux.push({ type: 'open', data: o }); });
     ttsParsed.forEach(function(t) { nouveaux.push({ type: 'tt', data: t }); });
-    if (vfsParsed.length > 0) nouveaux.push({ type: 'vf', data: vfsParsed });
+    vfsParsed.forEach(function(v) { nouveaux.push({ type: 'vf', data: [v] }); });
     ordresParsed.forEach(function(o) { nouveaux.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { nouveaux.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { nouveaux.push({ type: 'relier', data: r }); });
     copiersParsed.forEach(function(c) { nouveaux.push({ type: 'copier', data: c }); });
     pointsParsed.forEach(function(p) { nouveaux.push({ type: 'point', data: p }); });
+    colsParsed.forEach(function(c) { nouveaux.push({ type: 'col', data: c }); });
     blocsOrdonnes = nouveaux;
   }
 
@@ -480,6 +513,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
     else if (bloc.type === 'vf') nbTotalQuestions += bloc.data.length;
     else if (bloc.type === 'copier') nbTotalQuestions++;
     else if (bloc.type === 'point') nbTotalQuestions++;
+    else if (bloc.type === 'col') nbTotalQuestions += bloc.data.cases.length;
   });
 
   // === CALCUL DU TEMPS (texte + exercices) ===
@@ -508,6 +542,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
       nbExercices += 10;
     } else if (bloc.type === 'relier') {
       nbExercices += 10;
+    } else if (bloc.type === 'col') {
+      nbExercices += 6 * bloc.data.cases.length;
     }
   });
 
@@ -574,16 +610,10 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   if (afficherNote) {
     noteHtml = `
 <div class="note-haut">
-  <div class="note-haut-gauche"><strong>Points :</strong> ......... / ${nbTotalQuestions}</div>
+  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
   }
-  function majPremiereLettre(s) {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
-
 
   var printHtml = `<!DOCTYPE html>
 <html>
@@ -1007,6 +1037,32 @@ body {
   text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
 }
 
+/* ---- Tableau N colonnes (Ncol: / case:) ---- */
+.exo.exo-col { border-bottom: none; }
+.col-table {
+  display: grid;
+  margin: 6px 0 6px 26px;
+  border-top: 1.2px solid #2a241c;
+  border-left: 1.2px solid #2a241c;
+}
+.col-cell {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+  min-width: 0;
+  min-height: 42px;
+  padding: 6px 10px 6px 8px;
+  border-right: 1.2px solid #2a241c;
+  border-bottom: 1.2px solid #2a241c;
+}
+.col-trait {
+  flex: 1;
+  height: 0;
+  margin-bottom: 6px;
+  border-bottom: 1px dotted #6a5d47;
+}
+.col-mot { flex: 0 0 auto; font-size: 10.5pt; white-space: nowrap; }
+
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
@@ -1064,7 +1120,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   if (idxColon !== -1 && idxEgal !== -1) sep = Math.min(idxColon, idxEgal);
   else if (idxColon !== -1) sep = idxColon;
   else if (idxEgal !== -1) sep = idxEgal;
-    if (sep !== -1) {
+  if (sep !== -1) {
     var mot = majPremiereLettre(m.substring(0, sep).trim());
     var def = m.substring(sep + 1).trim();
     return '<li><span class="vocab-mot">' + mot + '</span> : <span class="vocab-def">' + def + '</span></li>';
@@ -1081,6 +1137,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   var zoneExercicesOuverte = false;
   var premierParagraphe = true;
 
+  // La zone "Exercices" s'ouvre au premier exercice. Les paragraphes
+  // qui suivent restent ensuite à leur place, dans l'ordre du fichier.
   function ouvrirZoneExercices() {
     if (!zoneExercicesOuverte) {
       printHtml += '</div>';
@@ -1104,23 +1162,24 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     ordre:  { sing: 'Remettez dans l\'ordre :',   plur: 'Remettez dans l\'ordre :' },
     relier: { sing: 'Reliez les éléments :',      plur: 'Reliez les éléments :' },
     copier: { sing: 'Recopiez :',                 plur: 'Recopiez :' },
-    point:  { sing: 'Tracez le mot en pointillé :', plur: 'Tracez les mots en pointillé :' }
+    point:  { sing: 'Tracez le mot en pointillé :', plur: 'Tracez les mots en pointillé :' },
+    col:    { sing: 'Recopiez dans le tableau :',   plur: 'Recopiez dans les tableaux :' }
   };
 
+  // Consignes : regroupées uniquement pour des blocs de même type CONSÉCUTIFS
   var iGroupe = 0;
   while (iGroupe < blocsOrdonnes.length) {
     var blocCourant = blocsOrdonnes[iGroupe];
     var typeCourant = typeLogique(blocCourant.type);
     if (typeCourant === 'paragraphe') { iGroupe++; continue; }
 
-    var nbConsecutifs = 1;
-    var jGroupe = iGroupe + 1;
+    var nbConsecutifs = 0;
+    var jGroupe = iGroupe;
     while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) {
-      nbConsecutifs++;
+      nbConsecutifs += (typeCourant === 'vf') ? blocsOrdonnes[jGroupe].data.length : 1;
       jGroupe++;
     }
-    if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
-        var base = consignesBase[typeCourant];
+    var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
       blocCourant._consigne = consigneFinale;
@@ -1134,6 +1193,27 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   }
 
   blocsOrdonnes.forEach(function(bloc) {
+
+    if (bloc.type === 'col') {
+      ouvrirZoneExercices();
+      exoNum++;
+      var colD = bloc.data;
+      printHtml += '<div class="exo exo-col">';
+      afficherConsigne(bloc);
+      printHtml += '<div class="exo-ligne"><span class="exo-num-inline">' + exoNum + '</span>';
+      if (colD.consigne) printHtml += '<span class="exo-texte">' + colD.consigne + '</span>';
+      printHtml += '</div>';
+      printHtml += '<div class="col-table" style="grid-template-columns:repeat(' + colD.nb + ', minmax(0, 1fr));">';
+      colD.cases.forEach(function(cTxt) {
+        printHtml += '<div class="col-cell"><span class="col-trait"></span><span class="col-mot">' + cTxt + '</span></div>';
+      });
+      var reste = colD.cases.length % colD.nb;
+      if (reste) {
+        for (var fv = 0; fv < colD.nb - reste; fv++) printHtml += '<div class="col-cell col-cell-vide"></div>';
+      }
+      printHtml += '</div></div>';
+      return;
+    }
 
     if (bloc.type === 'copier') {
       ouvrirZoneExercices();
@@ -1153,11 +1233,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
-      // Mot en pointillé (à tracer) — à gauche du modèle
       printHtml += '    <span class="copier-texte-arabe-pointille">';
       printHtml += '      <span class="copier-mot-pointille">' + motComplet + '</span>';
       printHtml += '    </span>';
-      // Modèle plein
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
@@ -1199,13 +1277,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
 
-            function flushParagraphe() {
+      function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
-        blocs.forEach(function(bloc) {
-          bloc = embellirFormulesReligieuses(bloc);
-          var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
-          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
+        blocs.forEach(function(blocTxt) {
+          blocTxt = embellirFormulesReligieuses(blocTxt);
+          var contientSource = /\(source:\s*[^)]+\)/i.test(blocTxt);
+          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(blocTxt))));
           var classe = contientSource ? ' class="p-avec-source"' : '';
           printHtml += '<p' + classe + '>' + rendu + '</p>';
         });
@@ -1269,9 +1347,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
-      if (tt.avant) printHtml += tt.avant + ' ';
-      printHtml += '<span class="tt-trou"></span>';
-      if (tt.apres) printHtml += ' ' + tt.apres;
+      printHtml += tt.phrase.replace(/\/[^\/]+\//g, '<span class="tt-trou"></span>');
       printHtml += '</span>';
       printHtml += '</div>';
       printHtml += '</div>';
@@ -1356,12 +1432,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     }
   });
 
-  if (zoneExercicesOuverte) {
-    printHtml += '</div>';
-  } else {
-    printHtml += '</div>';
-  }
   printHtml += '</div>';
+  if (zoneExercicesOuverte) printHtml += '</div>';
 
   if (afficherRappel && aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
@@ -1373,9 +1445,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '</div>';
   }
 
-    var idPost = texte.id || '';
-
-    var idPost = texte.id || '';
+  var idPost = texte.id || '';
 
   printHtml += `
     <div class="pied-page">
@@ -1416,9 +1486,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       if (parent.tagName && parent.tagName.toLowerCase() === 'text') return;
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
-      var parts = txt.split(regex);
+      var partsAr = txt.split(regex);
       var frag = iframeDoc2.createDocumentFragment();
-      parts.forEach(function(part) {
+      partsAr.forEach(function(part) {
         if (part === '') return;
         if (/[\u0600-\u06FF]/.test(part)) {
           var span = iframeDoc2.createElement('span');
