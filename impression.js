@@ -601,7 +601,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   if (afficherNote) {
     noteHtml = `
 <div class="note-haut">
-  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
+  <div class="note-haut-gauche"><strong>Points :</strong> ......... / ${nbTotalQuestions}</div>
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
   }
