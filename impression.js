@@ -840,8 +840,13 @@ body {
 .zone-exercices .titre-questions-filets::before,
 .zone-exercices .titre-questions-filets::after { content:""; flex:1; border-top:1.2px solid #2a241c; }
 
-.exo { margin-bottom:6px; padding-bottom:4px; border-bottom:0.5px dotted #d6cbb4;
-  break-inside:avoid; page-break-inside:avoid; }
+.exo {
+  margin-bottom: 6px;
+  padding-bottom: 0;
+  border-bottom: none;
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
 .exo:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
 
 /* Exercices "Recopier" : pas de trait de séparation + espace réduit */
