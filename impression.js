@@ -1073,7 +1073,6 @@ ${noteHtml}
 
 ${afficherTexte ? `
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
-` : ''}
 
 <div class="bandeau-titre">
   <div class="ligne-titre">
@@ -1088,7 +1087,7 @@ ${afficherTexte ? `
   </div>
 </div>
 
-${afficherTexte && vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {
+${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {
   var idxColon = m.indexOf(':');
   var idxEgal = m.indexOf('=');
   var sep = -1;
