@@ -529,7 +529,35 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
     return afficherExercices;
   });
 
-  var memoAffiche = afficherExercices ? memosParsed : [];
+  // === ﷺ ﷻ ؓ : formules religieuses aussi dans les questions et exercices ===
+  function emb(x) { return embellirFormulesReligieuses(x); }
+  blocsOrdonnes.forEach(function(b) {
+    var d = b.data;
+    if (b.type === 'quiz') {
+      d.question = emb(d.question);
+      d.reponses.forEach(function(r) { r.texte = emb(r.texte); });
+    } else if (b.type === 'open' || b.type === 'qcourt') {
+      b.data = emb(d);
+    } else if (b.type === 'tt') {
+      d.phrase = emb(d.phrase);
+    } else if (b.type === 'vf') {
+      b.data = d.map(function(x) { return emb(x); });
+    } else if (b.type === 'ordre') {
+      d.consigne = emb(d.consigne);
+      d.elements = d.elements.map(function(x) { return emb(x); });
+    } else if (b.type === 'carte') {
+      d.recto = emb(d.recto);
+    } else if (b.type === 'relier') {
+      d.consigne = emb(d.consigne);
+      d.paires.forEach(function(pr) { pr.gauche = emb(pr.gauche); pr.droite = emb(pr.droite); });
+      d.droitesMelangees.forEach(function(x) { x.droite = emb(x.droite); });
+    } else if (b.type === 'col') {
+      d.consigne = emb(d.consigne);
+      d.cases = d.cases.map(function(x) { return emb(x); });
+    }
+  });
+
+  var memoAffiche = (afficherExercices ? memosParsed : []).map(function(x) { return emb(x); });
 
   var nbTotalQuestions = 0;
   blocsOrdonnes.forEach(function(bloc) {
