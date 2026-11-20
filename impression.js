@@ -169,9 +169,13 @@ function rendreCitations(texte) {
   return texte;
 }
 
+// ============================================================
 // Rendu enrichi pour les questions d'exercices.
-// IMPORTANT : on n'appelle PAS rendreCitations ici, sinon toute
-// citation « … » devient italique même sans *…* explicite.
+// On n'applique PAS rendreCitations ici : sinon toute citation
+// « … » ou "…" devient italique même sans *…* explicite.
+// On n'applique PAS rendreSources / rendreSourcesDiscretes non
+// plus (elles cassent la mise en page des questions courtes).
+// ============================================================
 function rendreQuestion(texte) {
   if (!texte) return '';
   texte = appliquerGrasItalique(texte);
@@ -581,16 +585,16 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
 
-// ---- Titre de la zone exercices ----
-// Si le titre contient déjà "examen", on n'ajoute pas le mot "Exercices".
-var titreZoneExercices = 'Exercices';
-if (titreAffiche) {
-  if (/examen/i.test(titreAffiche)) {
-    titreZoneExercices = titreAffiche;
-  } else {
-    titreZoneExercices = 'Exercices — ' + titreAffiche;
+  // ---- Titre de la zone exercices ----
+  // Si le titre contient déjà "examen", on n'ajoute pas le mot "Exercices".
+  var titreZoneExercices = 'Exercices';
+  if (titreAffiche) {
+    if (/examen/i.test(titreAffiche)) {
+      titreZoneExercices = titreAffiche;
+    } else {
+      titreZoneExercices = 'Exercices — ' + titreAffiche;
+    }
   }
-}
 
   // ---- En-tête note/appréciation (masqué en mode rappel) ----
   var noteHtml = '';
@@ -622,10 +626,15 @@ if (titreAffiche) {
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
-@page { margin: 1.6cm 1.7cm 1.6cm 1.7cm; size: A4; }
+/* ============================================================
+   NIVEAU 2 — INTENSIF (manuel scolaire)
+   Marges réduites, polices 10–10,8 pt, espacements divisés par ~2.
+   Le "90 % manuel" à l'impression n'est plus nécessaire.
+   ============================================================ */
+@page { margin: 1.1cm 1.2cm 1.1cm 1.2cm; size: A4; }
 body {
   font-family: 'Georgia', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
-  background:#faf7f0; color:#2a241c; font-size:11.5pt; line-height:1.5;
+  background:#faf7f0; color:#2a241c; font-size:10pt; line-height:1.35;
 }
 
 .arabe, [lang="ar"] {
@@ -636,75 +645,75 @@ body {
 .page { max-width:100%; padding: 0; background:#faf7f0; overflow: visible; }
 
 /* ---- En-tête élève ---- */
-.entete-eleve { margin-bottom: 4px; padding: 4px 0 2px; font-size: 9.5pt; color:#4a3f31; }
+.entete-eleve { margin-bottom: 2px; padding: 2px 0; font-size: 9pt; color:#4a3f31; }
 .entete-eleve .ligne-eleve { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .entete-eleve span { white-space: nowrap; }
 .entete-eleve strong { font-weight: 600; color:#3a2e22; letter-spacing:0.2px; }
 
-.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 2px 0 6px; font-size: 10pt; }
+.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 0 0 4px; font-size: 9.5pt; }
 .note-haut strong { font-weight: 600; color:#3a2e22; }
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite .ligne-pointillee { display:inline-block; flex:1; border-bottom:0.6px dotted #b0a48f; height:12px; }
 
-.filet { border: none; border-top: 1.6px solid #2a241c; border-bottom: 0.6px solid #b0a48f; height: 4px; margin: 10px 0 14px; }
+.filet { border: none; border-top: 1.6px solid #2a241c; border-bottom: 0.6px solid #b0a48f; height: 4px; margin: 6px 0 8px; }
 
-.temps-lecture-haut { text-align:center; font-size:9pt; color:#8a7d68; font-style:italic; margin-bottom:10px; letter-spacing:0.5px; font-family:'Georgia',serif; }
+.temps-lecture-haut { text-align:center; font-size:8.5pt; color:#8a7d68; font-style:italic; margin-bottom:6px; letter-spacing:0.5px; font-family:'Georgia',serif; }
 .temps-lecture-haut::before { content:"❧ "; font-style:normal; color:#a89a80; margin-right:4px; }
 
 /* ---- Bandeau titre : couverture à GAUCHE, titre à droite ---- */
-.bandeau-titre { padding: 6px 0 4px; margin-bottom: 6px; }
+.bandeau-titre { padding: 2px 0; margin-bottom: 4px; }
 .bandeau-titre .ligne-titre {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 14px;
 }
 .bandeau-titre .bloc-titre-centre {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 2px;
   flex: 1;
 }
 
 .bandeau-titre .meta-niveau {
   font-family:'Georgia',serif;
-  font-size: 9pt;
+  font-size: 8.5pt;
   font-style: italic;
   color:#8a7d68;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 
 .bandeau-titre h1 {
-  font-family:'Georgia','Playfair Display',serif; font-size:20pt; font-weight:700;
-  color:#1f1a13; letter-spacing:1.5px; text-transform:uppercase; line-height:1.15;
+  font-family:'Georgia','Playfair Display',serif; font-size:16pt; font-weight:700;
+  color:#1f1a13; letter-spacing:1.2px; text-transform:uppercase; line-height:1.15;
   margin:0; text-align:center;
 }
 
 .bandeau-titre .meta-droite {
-  font-family:'Georgia',serif; font-style:italic; font-size:10pt; color:#8a7d68;
-  letter-spacing:0.5px; margin-top:2px;
+  font-family:'Georgia',serif; font-style:italic; font-size:9.5pt; color:#8a7d68;
+  letter-spacing:0.5px; margin-top:1px;
 }
 
-.sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 2px; width:60%; }
+.sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:4px auto 1px; width:60%; }
 .sous-titre-filets::before, .sous-titre-filets::after { content:""; flex:1; border-top:0.7px solid #b0a48f; }
 
-.couverture-mini { display:block; width:58px; height:80px; object-fit:cover; border-radius:1px;
+.couverture-mini { display:block; width:52px; height:72px; object-fit:cover; border-radius:1px;
   border:0.5px solid #b0a48f; box-shadow:0 1px 3px rgba(60,45,25,0.15); flex-shrink:0; }
 
 .numero-texte { display:inline-block; background:#2a241c; color:#faf7f0; font-family:'Georgia',serif;
-  font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
+  font-size:11pt; font-weight:bold; line-height:1; padding:3px 9px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
 /* ---- Encadré vocabulaire (lexique) — 2 colonnes, compact ---- */
 .vocab-haut {
-  margin: 10px 0 8px;
+  margin: 6px 0 6px;
   width: 100%;
   max-width: none;
-  padding: 8px 12px 10px;
+  padding: 6px 10px 8px;
   background: #f6f1e6;
   border: 0.7px solid #c9bda3;
   border-left: 3px solid #6a5d47;
@@ -717,19 +726,19 @@ body {
   display: block;
   font-family: 'Georgia', serif;
   font-weight: 700;
-  font-size: 8pt;
+  font-size: 7.5pt;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #6a5d47;
   text-align: left;
-  margin-bottom: 5px;
-  padding-bottom: 3px;
+  margin-bottom: 3px;
+  padding-bottom: 2px;
   border-bottom: 0.5px solid #c9bda3;
 }
 .vocab-haut .titre-memo::before {
   content: "❧  ";
   color: #a89a80;
-  font-size: 7.5pt;
+  font-size: 7pt;
 }
 .vocab-haut .vocab-liste {
   list-style: none;
@@ -737,17 +746,17 @@ body {
   margin: 0;
   text-align: left;
   column-count: 2;
-  column-gap: 14px;
+  column-gap: 12px;
   column-rule: 0.5px dotted #c9bda3;
 }
 .vocab-haut .vocab-liste li {
   display: block;
-  font-size: 8.8pt;
-  line-height: 1.4;
+  font-size: 8.2pt;
+  line-height: 1.35;
   color: #2a241c;
-  margin-bottom: 3px;
-  padding-left: 9px;
-  text-indent: -9px;
+  margin-bottom: 1px;
+  padding-left: 8px;
+  text-indent: -8px;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -763,29 +772,28 @@ body {
 
 .corps-contenu { padding: 0; }
 
-/* Espace avant le texte (comme sur texte.html : 32px) */
-.texte-zone { margin-top: 32px; margin-bottom: 10px; }
-.paragraphe { margin-bottom: 10px; break-inside: auto; page-break-inside: auto; }
+.texte-zone { margin-top: 14px; margin-bottom: 6px; }
+.paragraphe { margin-bottom: 6px; break-inside: auto; page-break-inside: auto; }
 .paragraphe p {
-  font-size: 12.8pt; margin-bottom: 6px; text-align: justify;
-  text-indent: 1.4em; line-height: 1.6; hyphens: auto;
+  font-size: 10.8pt; margin-bottom: 4px; text-align: justify;
+  text-indent: 1.2em; line-height: 1.42; hyphens: auto;
 }
 .paragraphe p:last-child { margin-bottom: 0; }
 
 /* ---- Source discrète (source:...) ---- */
 .paragraphe p.p-avec-source {
   position: relative;
-  padding-right: 130px;
+  padding-right: 120px;
 }
 .source-discrete {
   position: absolute;
   top: 0;
   right: 0;
-  width: 120px;
+  width: 110px;
   font-family: 'Georgia', serif;
   font-style: italic;
-  font-size: 9.5pt;
-  line-height: 1.25;
+  font-size: 9pt;
+  line-height: 1.2;
   color: #6a5d47;
   text-align: left;
   white-space: normal;
@@ -794,53 +802,53 @@ body {
 }
 
 .paragraphe.lettrine p:first-child::first-letter {
-  font-family:'Georgia',serif; font-size:3.1em; float:left; line-height:0.82;
-  padding:4px 8px 0 0; color:#2a241c; font-weight:700;
+  font-family:'Georgia',serif; font-size:2.9em; float:left; line-height:0.82;
+  padding:3px 6px 0 0; color:#2a241c; font-weight:700;
 }
 
 .paragraphe p .source-marge, .texte-zone p .source-marge {
-  float:right; display:inline-block; margin:6px 0 6px 16px; padding:4px 0 0 0;
-  font-family:'Georgia',serif; font-size:11pt; font-weight:700; font-style:italic;
-  color:#6a5d47; text-align:right; max-width:23%; line-height:1.25;
+  float:right; display:inline-block; margin:4px 0 4px 12px; padding:3px 0 0 0;
+  font-family:'Georgia',serif; font-size:10pt; font-weight:700; font-style:italic;
+  color:#6a5d47; text-align:right; max-width:23%; line-height:1.2;
   text-indent:0; white-space:normal; vertical-align:top;
-  border-top:0.5px solid #c9bda3; padding-top:4px;
+  border-top:0.5px solid #c9bda3; padding-top:3px;
 }
 .paragraphe p em, .texte-zone p em { font-style:italic; white-space:pre-line; }
 .paragraphe::after { content:""; display:table; clear:both; }
 
 .paragraphe p em, .texte-zone p em { color:#3a2e22; }
 
-.print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
+.print-img { display:block; height:auto; border:none; margin:8px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
 .print-img-centre { margin-left:auto; margin-right:auto; }
-.print-img-gauche { float:left; margin:6px 16px 10px 0; }
-.print-img-droite { float:right; margin:6px 0 10px 16px; }
-.print-img-petit  { max-width:110px; }
-.print-img-moyen  { max-width:180px; }
-.print-img-grand  { max-width:230px; }
-.img-manquante { display:block; padding:8px; border:1px dashed #c9bda3; color:#8a7d68;
-  font-size:9pt; text-align:center; margin:8px 0; font-style:italic; }
+.print-img-gauche { float:left; margin:4px 12px 8px 0; }
+.print-img-droite { float:right; margin:4px 0 8px 12px; }
+.print-img-petit  { max-width:95px; }
+.print-img-moyen  { max-width:160px; }
+.print-img-grand  { max-width:210px; }
+.img-manquante { display:block; padding:6px; border:1px dashed #c9bda3; color:#8a7d68;
+  font-size:8.5pt; text-align:center; margin:6px 0; font-style:italic; }
 
-.zone-exercices { margin-top: 22px; }
+.zone-exercices { margin-top: 10px; }
 .zone-exercices .titre-questions {
-  font-family:'Georgia',serif; font-size:13pt; font-weight:700; color:#2a241c;
+  font-family:'Georgia',serif; font-size:12pt; font-weight:700; color:#2a241c;
   letter-spacing:2px; text-transform:uppercase; text-align:center;
-  margin: 0 0 4px; padding: 0;
+  margin: 0 0 2px; padding: 0;
 }
 .zone-exercices .titre-questions-filets { display:flex; align-items:center; justify-content:center;
-  gap:12px; width:55%; margin:0 auto 18px; }
+  gap:12px; width:55%; margin:0 auto 10px; }
 .zone-exercices .titre-questions-filets::before,
 .zone-exercices .titre-questions-filets::after { content:""; flex:1; border-top:1.2px solid #2a241c; }
 
-.exo { margin-bottom:14px; padding-bottom:10px; border-bottom:0.5px dotted #d6cbb4;
+.exo { margin-bottom:6px; padding-bottom:4px; border-bottom:0.5px dotted #d6cbb4;
   break-inside:avoid; page-break-inside:avoid; }
 .exo:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
 
 /* Exercices "Recopier" : pas de trait de séparation + espace réduit */
 .exo.exo-copier {
   border-bottom: none;
-  margin-bottom: 8px;
-  padding-bottom: 2px;
+  margin-bottom: 5px;
+  padding-bottom: 1px;
 }
 .exo.exo-copier + .exo.exo-copier {
   margin-top: 0;
@@ -852,74 +860,74 @@ body {
 /* Exercices "Pointillé" (pnt:) */
 .exo.exo-point {
   border-bottom: none;
-  margin-bottom: 8px;
-  padding-bottom: 2px;
+  margin-bottom: 5px;
+  padding-bottom: 1px;
 }
 
-.consigne-exo { font-size:8.8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
-  letter-spacing:1.2px; margin-bottom:5px; margin-top:0; padding:0;
+.consigne-exo { font-size:8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
+  letter-spacing:1px; margin-bottom:2px; margin-top:0; padding:0;
   page-break-after:avoid; break-after:avoid; font-family:'Georgia',serif; }
-.consigne-exo::before { content:"❧  "; color:#a89a80; font-size:8pt; margin-right:2px; }
+.consigne-exo::before { content:"❧  "; color:#a89a80; font-size:7.5pt; margin-right:2px; }
 
-.exo-ligne { display:flex; align-items:baseline; gap:8px; margin-top:3px; }
+.exo-ligne { display:flex; align-items:baseline; gap:6px; margin-top:2px; }
 
 .exo-num-inline {
   display:inline-flex; align-items:center; justify-content:center;
-  width:17px; height:17px;
+  width:15px; height:15px;
   background:transparent; color:#2a241c;
   border:0.9px solid #2a241c; border-radius:50%;
-  font-weight:700; font-size:8.5pt; flex-shrink:0;
+  font-weight:700; font-size:7.8pt; flex-shrink:0;
   font-family:'Georgia',serif;
   line-height:1;
-  padding-bottom:1.2px;
+  padding-bottom:1px;
   transform: translateY(-0.5px);
 }
-.exo-texte { flex:1; font-size:10.5pt; line-height:1.5; }
+.exo-texte { flex:1; font-size:10pt; line-height:1.35; }
 
-.quiz-reponses { margin-left:26px; margin-top:4px; }
-.quiz-rep { display:block; margin-bottom:2px; font-size:10.5pt; }
-.quiz-case { display:inline-block; width:10px; height:10px; border:0.9px solid #4a3f31;
-  margin-right:6px; vertical-align:middle; background:#faf7f0; border-radius:1px; }
+.quiz-reponses { margin-left:22px; margin-top:2px; }
+.quiz-rep { display:block; margin-bottom:0; font-size:10pt; line-height:1.3; }
+.quiz-case { display:inline-block; width:9px; height:9px; border:0.9px solid #4a3f31;
+  margin-right:5px; vertical-align:middle; background:#faf7f0; border-radius:1px; }
 
-.open-lignes { margin-top:4px; margin-left:26px; }
-.open-ligne { border-bottom:0.5px dotted #b0a48f; height:24px; margin-bottom:16px; }
+.open-lignes { margin-top:2px; margin-left:22px; }
+.open-ligne { border-bottom:0.5px dotted #b0a48f; height:18px; margin-bottom:8px; }
 
-.carte-ligne-courte { margin-top:4px; margin-left:26px; width:50%; border-bottom:0.5px dotted #b0a48f; height:16px; }
+.carte-ligne-courte { margin-top:2px; margin-left:22px; width:50%; border-bottom:0.5px dotted #b0a48f; height:14px; }
 
-.ordre-grille { margin:4px 0 4px 26px; display:grid; grid-template-columns:auto auto;
-  column-gap:12px; row-gap:3px; font-size:10.5pt; }
+.ordre-grille { margin:2px 0 2px 22px; display:grid; grid-template-columns:auto auto;
+  column-gap:8px; row-gap:1px; font-size:10pt; }
 .ordre-cell-texte { white-space:nowrap; }
-.ordre-cell-pointille { white-space:nowrap; color:#6a5d47; align-self:center; font-size:9.5pt; font-style:italic; }
+.ordre-cell-pointille { white-space:nowrap; color:#6a5d47; align-self:center; font-size:9pt; font-style:italic; }
 .ordre-lettre { font-weight:700; color:#2a241c; }
 
-.tt-phrase-print { flex:1; font-size:10.8pt; line-height:1.6; }
-.tt-phrase-print .tt-trou { display:inline-block; min-width:90px; border-bottom:0.9px solid #4a3f31;
-  text-align:center; padding:0 6px; }
+.tt-phrase-print { flex:1; font-size:10pt; line-height:1.4; }
+.tt-phrase-print .tt-trou { display:inline-block; min-width:80px; border-bottom:0.9px solid #4a3f31;
+  text-align:center; padding:0 5px; }
 
-.exo-texte-vf { font-size:10.5pt; line-height:1.5; flex:1; }
-.vf-ligne .vf-cases { font-size:9.5pt; white-space:nowrap; margin-left:6px; flex-shrink:0; color:#4a3f31; }
+.exo-texte-vf { font-size:10pt; line-height:1.35; flex:1; }
+.vf-ligne .vf-cases { font-size:9pt; white-space:nowrap; margin-left:6px; flex-shrink:0; color:#4a3f31; }
 
-.relier-zone-lignes { position:relative; margin:6px 0 6px 26px; max-width:100%; }
-.relier-lignes-grid { display:flex; justify-content:space-between; align-items:center; gap:60px; }
-.relier-col-lignes { flex:1; display:flex; flex-direction:column; gap:5px; }
-.relier-ligne-item { display:flex; align-items:center; gap:6px; font-size:10.5pt; padding:1px 0; min-height:16px; }
+.relier-zone-lignes { position:relative; margin:3px 0 3px 22px; max-width:100%; }
+.relier-lignes-grid { display:flex; justify-content:space-between; align-items:center; gap:50px; }
+.relier-col-lignes { flex:1; display:flex; flex-direction:column; gap:2px; }
+.relier-ligne-item { display:flex; align-items:center; gap:6px; font-size:10pt; padding:0; min-height:14px; }
 .relier-col-lignes.gauche .relier-ligne-item { justify-content:flex-end; text-align:right; }
 .relier-col-lignes.droite .relier-ligne-item { justify-content:flex-start; text-align:left; }
-.relier-point { width:8px; height:8px; border:1px solid #4a3f31; border-radius:50%;
+.relier-point { width:7px; height:7px; border:1px solid #4a3f31; border-radius:50%;
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
 /* ---- Recopier : ligne pointillée qui va jusqu'à droite et passe DERRIÈRE le texte arabe ---- */
-.bloc-copier-inline { width:100%; margin-top:4px; }
+.bloc-copier-inline { width:100%; margin-top:2px; }
 
 .copier-ligne-inline {
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  gap: 10px;
-  min-height: 44px;
-  padding-bottom: 10px;
+  gap: 8px;
+  min-height: 38px;
+  padding-bottom: 8px;
   direction: ltr;
 }
 
@@ -927,7 +935,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 6px;
+  bottom: 5px;
   height: 0;
   border-bottom: 1px dotted #6a5d47;
   z-index: 0;
@@ -946,8 +954,8 @@ body {
 
 .copier-fleche-apres svg {
   display: block;
-  width: 38px;
-  height: 18px;
+  width: 34px;
+  height: 16px;
   overflow: visible;
 }
 
@@ -999,8 +1007,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 24px;
-  min-height: 48px;
+  gap: 20px;
+  min-height: 42px;
   direction: rtl;
   flex-wrap: nowrap;
   overflow: hidden;
@@ -1024,25 +1032,25 @@ body {
   text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
 }
 
-.zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
+.zone-memo { margin: 10px 0 6px; padding: 8px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
-.zone-memo .titre-memo { font-weight:700; font-size:9pt; text-transform:uppercase;
-  letter-spacing:2px; color:#6a5d47; margin-bottom:8px; text-align:center; font-family:'Georgia',serif; }
+.zone-memo .titre-memo { font-weight:700; font-size:8pt; text-transform:uppercase;
+  letter-spacing:2px; color:#6a5d47; margin-bottom:5px; text-align:center; font-family:'Georgia',serif; }
 .zone-memo .titre-memo::before { content:"✦  "; color:#a89a80; margin-right:2px; }
 .zone-memo .titre-memo::after { content:"  ✦"; color:#a89a80; margin-left:2px; }
 .zone-memo .memo-bloc { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
-.zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:4px; padding-left:16px;
-  position:relative; line-height:1.55; }
+.zone-memo .memo-liste li { font-size:9.5pt; margin-bottom:2px; padding-left:14px;
+  position:relative; line-height:1.4; }
 .zone-memo .memo-liste li::before { content:"❧"; position:absolute; left:0;
-  color:#a89a80; font-size:8pt; top:3px; }
+  color:#a89a80; font-size:7.5pt; top:2px; }
 
-.pied-page { text-align:center; font-size:8pt; color:#8a7d68; margin: 18px 0 6px;
-  padding-top:8px; border-top:0.6px solid #d6cbb4;
+.pied-page { text-align:center; font-size:7pt; color:#8a7d68; margin: 8px 0 2px;
+  padding-top:4px; border-top:0.6px solid #d6cbb4;
   display:flex; justify-content:center; align-items:center; gap:16px; }
 .pied-page .pied-centre { font-style:italic; color:#6a5d47; letter-spacing:0.5px; }
-.pied-page .pied-ecrit, .pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#a89a80; }
+.pied-page .pied-ecrit, .pied-page .imprime-le { font-style:italic; font-size:6.8pt; color:#a89a80; }
 </style>
 </head>
 <body>
