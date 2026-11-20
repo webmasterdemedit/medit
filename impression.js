@@ -581,9 +581,10 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
 
-  // ---- Titre de la zone exercices : indique le titre du rappel ----
-  var titreZoneExercices = 'Exercices';
-  if (titreAffiche) titreZoneExercices = 'Exercices — ' + titreAffiche;
+// ---- Titre de la zone exercices : "Examen" si le titre commence par "examen", sinon "Exercices" ----
+var motZone = /^\s*examen/i.test(titreAffiche || '') ? 'Examen' : 'Exercices';
+var titreZoneExercices = motZone;
+if (titreAffiche) titreZoneExercices = motZone + ' — ' + titreAffiche;
 
   // ---- En-tête note/appréciation (masqué en mode rappel) ----
   var noteHtml = '';
