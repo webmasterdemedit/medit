@@ -644,9 +644,14 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   if (afficherNote) {
     noteHtml = `
 <div class="note-haut">
-  <div class="note-haut-gauche"><strong>Points :</strong> ......... / ${nbTotalQuestions}</div>
+  <div class="note-haut-gauche"><strong>Note :</strong> ......... / ${nbTotalQuestions}</div>
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
+  }
+
+  var noteSur20Html = '';
+  if (afficherNote) {
+    noteSur20Html = '<div class="note-sur-20"><span class="note-sur-20-label">Note</span><span class="note-sur-20-total">/ 20</span></div>';
   }
 
   var printHtml = `<!DOCTYPE html>
@@ -1097,6 +1102,39 @@ body {
 }
 .col-mot { flex: 0 0 auto; font-size: 10.5pt; white-space: nowrap; }
 
+/* ---- Cadre de note sur 20 (en haut à droite) ---- */
+.entete-titre { position: relative; }
+.entete-titre.avec-note { padding-right: 84px; }
+.note-sur-20 {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 74px;
+  height: 56px;
+  border: 1.4px solid #2a241c;
+  border-radius: 10px;
+  background: #fffdf8;
+  box-sizing: border-box;
+}
+.note-sur-20-label {
+  position: absolute;
+  top: 4px;
+  left: 8px;
+  font-size: 6.5pt;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: #8a7d68;
+}
+.note-sur-20-total {
+  position: absolute;
+  right: 8px;
+  bottom: 5px;
+  font-family: 'Georgia', serif;
+  font-size: 14pt;
+  font-weight: 700;
+  color: #2a241c;
+}
+
 /* ---- Partie mémorisation ---- */
 .zone-memorisation { margin-top: 22px; }
 .memo-consigne { text-align:center; font-style:italic; font-size:9.5pt; color:#6a5d47; margin:-8px 0 8px; }
@@ -1143,6 +1181,8 @@ body {
 ${noteHtml}
 
 ${afficherTexte ? `
+<div class="entete-titre${afficherNote ? ' avec-note' : ''}">
+${noteSur20Html}
 <div class="temps-lecture-haut">Temps d'application estimé : ${tempsLecture}</div>
 
 <div class="bandeau-titre">
@@ -1156,6 +1196,7 @@ ${afficherTexte ? `
       <div class="meta-droite">${ligneRappel}</div>
     </div>
   </div>
+</div>
 </div>
 
 ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocabulaire</div><ul class="vocab-liste">' + vocabClean.map(function(m) {
