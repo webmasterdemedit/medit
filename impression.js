@@ -355,6 +355,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var afficherNote = (mode !== 'rappel');
 
   var ordreBlocs = texte.ordreBlocs || [];
+if (typeof ordreBlocs === 'string') {
+  ordreBlocs = ordreBlocs.split(',').map(function(s){ return s.trim(); }).filter(function(s){ return s !== ''; });
+}
+var vfDejaAjoute = false;
+  console.log('ordreBlocs =', texte.ordreBlocs);
   var parts = contenu.split(' | ');
 
   var paragraphesArray = [];
@@ -437,8 +442,10 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed.length > 0) {
-        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+      } else if (type === 'vf' && vfsParsed.length > 0 && !vfDejaAjoute) {
+  vfDejaAjoute = true;
+  blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+       
       } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       } else if (type === 'point' && pointsParsed[idx]) {
