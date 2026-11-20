@@ -358,6 +358,16 @@ function parserColonnesPourImpression(txt) {
   return tables;
 }
 
+function parserMemoPourImpression(txt) {
+  if (!txt) return [];
+  var items = [];
+  String(txt).split('\n').forEach(function(l) {
+    var c = l.trim().replace(/^m:\s*/i, '').trim();
+    if (c) items.push(c);
+  });
+  return items;
+}
+
 function majPremiereLettre(s) {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -395,6 +405,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var copierTexte = '';
   var pointTexte = texte.point || '';
   var colTexte = texte.colonnes || '';
+  var memoTexte = texte.memo || '';
 
   parts.forEach(function(part) {
     part = part.trim();
@@ -443,6 +454,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var copiersParsed = copierTexte ? parserCopierPourImpression(copierTexte) : [];
   var pointsParsed = pointTexte ? parserPointPourImpression(pointTexte) : [];
   var colsParsed = parserColonnesPourImpression(colTexte);
+  var memosParsed = parserMemoPourImpression(memoTexte);
 
   var blocsOrdonnes = [];
 
@@ -502,6 +514,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
     return afficherExercices;
   });
 
+  var memoAffiche = afficherExercices ? memosParsed : [];
+
   var nbTotalQuestions = 0;
   blocsOrdonnes.forEach(function(bloc) {
     if (bloc.type === 'quiz') nbTotalQuestions++;
@@ -546,6 +560,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
       nbExercices += 6 * bloc.data.cases.length;
     }
   });
+
+  nbExercices += 10 * memoAffiche.length;
 
   var totalEquiv = nbMots + nbExercices;
   var minutesTotal = Math.max(1, Math.round(totalEquiv / 14));
@@ -835,15 +851,19 @@ body {
   font-size:9pt; text-align:center; margin:8px 0; font-style:italic; }
 
 .zone-exercices { margin-top: 22px; }
-.zone-exercices .titre-questions {
+.zone-exercices .titre-questions,
+.zone-memorisation .titre-questions {
   font-family:'Georgia',serif; font-size:13pt; font-weight:700; color:#2a241c;
   letter-spacing:2px; text-transform:uppercase; text-align:center;
   margin: 0 0 4px; padding: 0;
 }
-.zone-exercices .titre-questions-filets { display:flex; align-items:center; justify-content:center;
+.zone-exercices .titre-questions-filets,
+.zone-memorisation .titre-questions-filets { display:flex; align-items:center; justify-content:center;
   gap:12px; width:55%; margin:0 auto 18px; }
 .zone-exercices .titre-questions-filets::before,
-.zone-exercices .titre-questions-filets::after { content:""; flex:1; border-top:1.2px solid #2a241c; }
+.zone-exercices .titre-questions-filets::after,
+.zone-memorisation .titre-questions-filets::before,
+.zone-memorisation .titre-questions-filets::after { content:""; flex:1; border-top:1.2px solid #2a241c; }
 
 .exo { margin-bottom:14px; padding-bottom:10px; border-bottom:0.5px dotted #d6cbb4;
   break-inside:avoid; page-break-inside:avoid; }
@@ -1058,6 +1078,17 @@ body {
   border-bottom: 1px dotted #6a5d47;
 }
 .col-mot { flex: 0 0 auto; font-size: 10.5pt; white-space: nowrap; }
+
+/* ---- Partie mémorisation ---- */
+.zone-memorisation { margin-top: 22px; }
+.memo-consigne { text-align:center; font-style:italic; font-size:9.5pt; color:#6a5d47; margin:-8px 0 8px; }
+.memo-reserve { text-align:right; font-size:7.5pt; text-transform:uppercase; letter-spacing:1px; color:#8a7d68; margin-bottom:2px; }
+.memo-item { display:flex; align-items:baseline; gap:8px; padding:6px 0; border-bottom:0.5px dotted #d6cbb4;
+  break-inside:avoid; page-break-inside:avoid; }
+.memo-item:last-child { border-bottom:none; }
+.memo-texte { flex:1; font-size:10.5pt; line-height:1.5; }
+.memo-cases { display:flex; gap:12px; flex-shrink:0; font-size:9pt; color:#4a3f31; white-space:nowrap; }
+.memo-choix { display:inline-flex; align-items:center; gap:4px; }
 
 .zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
@@ -1429,7 +1460,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   });
 
   printHtml += '</div>';
-  if (zoneExercicesOuverte) printHtml += '</div>';
+  printHtml += '</div>';
 
   if (afficherRappel && aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
@@ -1438,6 +1469,27 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '<ul class="memo-liste">';
     aRetenirClean.forEach(function(phrase) { printHtml += '<li>' + phrase + '</li>'; });
     printHtml += '</ul></div>';
+    printHtml += '</div>';
+  }
+
+  // ---- PARTIE MÉMORISATION (toujours à la fin) ----
+  if (memoAffiche.length > 0) {
+    printHtml += '<div class="zone-memorisation">';
+    printHtml += '<div class="titre-questions">Partie mémorisation</div>';
+    printHtml += '<div class="titre-questions-filets"></div>';
+    printHtml += '<div class="memo-consigne">À réciter à l\'enseignant au moment de rendre la copie.</div>';
+    printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant</div>';
+    memoAffiche.forEach(function(q, i) {
+      printHtml += '<div class="memo-item">';
+      printHtml += '<span class="exo-num-inline">' + (i + 1) + '</span>';
+      printHtml += '<span class="memo-texte">' + q + '</span>';
+      printHtml += '<span class="memo-cases">';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Appris</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Partiellement appris</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Non appris</span>';
+      printHtml += '</span>';
+      printHtml += '</div>';
+    });
     printHtml += '</div>';
   }
 
