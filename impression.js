@@ -603,7 +603,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 
   // ---- Titre de la zone exercices : indique le titre du rappel ----
   var titreZoneExercices = 'Exercices';
-  if (titreAffiche) titreZoneExercices = 'Exercices — ' + titreAffiche;
+  if (titreAffiche && mode !== 'complet') titreZoneExercices = 'Exercices — ' + titreAffiche;
 
   // ---- En-tête note/appréciation (masqué en mode rappel) ----
   var noteHtml = '';
