@@ -169,20 +169,6 @@ function rendreCitations(texte) {
   return texte;
 }
 
-// ============================================================
-// Rendu enrichi pour les questions d'exercices.
-// On n'applique PAS rendreCitations ici : sinon toute citation
-// « … » ou "…" devient italique même sans *…* explicite.
-// On n'applique PAS rendreSources / rendreSourcesDiscretes non
-// plus (elles cassent la mise en page des questions courtes).
-// ============================================================
-function rendreQuestion(texte) {
-  if (!texte) return '';
-  texte = appliquerGrasItalique(texte);
-  texte = embellirFormulesReligieuses(texte);
-  return texte;
-}
-
 function decouperEnBlocsTexte(buffer) {
   var lignes = buffer.split('\n');
   var blocs = [];
@@ -297,15 +283,19 @@ function parserRelierPourImpression(relierTexte) {
   return { consigne: consigne, paires: paires, droitesMelangees: droitesUniques };
 }
 
-// Texte à trous : on garde la phrase entière, chaque /mot/ devient un trou
 function parserTextesTrousPourImpression(ttTexte) {
   var lignes = ttTexte.split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
   var resultats = [];
   lignes.forEach(function(ligne) {
     if (!/^tt:/i.test(ligne)) return;
     var contenu = ligne.replace(/^tt:\s*/i, '').trim();
-    if (!/\/[^\/]+\//.test(contenu)) return;
-    resultats.push({ phrase: contenu });
+    var match = contenu.match(/\/([^\/]+)\//);
+    if (!match) return;
+    var mot = match[1].trim();
+    var idx = contenu.indexOf('/' + mot + '/');
+    var avant = contenu.substring(0, idx).trim();
+    var apres = contenu.substring(idx + mot.length + 2).trim();
+    resultats.push({ avant: avant, mot: mot, apres: apres });
   });
   return resultats;
 }
@@ -350,11 +340,6 @@ function parserPointPourImpression(pointTexte) {
   return blocs;
 }
 
-function majPremiereLettre(s) {
-  if (!s) return s;
-  return s.charAt(0).toUpperCase() + s.slice(1);
-}
-
 // ============================================================
 // GÉNÉRATION IMPRESSION
 // mode : 'complet' (défaut) | 'exercices' | 'rappel'
@@ -369,11 +354,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var afficherRappel = (mode === 'complet' || mode === 'rappel');
   var afficherNote = (mode !== 'rappel');
 
-  // ordreBlocs peut arriver en tableau OU en chaîne "texte:0,quiz:0,..."
   var ordreBlocs = texte.ordreBlocs || [];
-  if (typeof ordreBlocs === 'string') {
-    ordreBlocs = ordreBlocs.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s !== ''; });
-  }
   var parts = contenu.split(' | ');
 
   var paragraphesArray = [];
@@ -436,12 +417,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 
   var blocsOrdonnes = [];
 
-  // === ORDRE EXACT DU FICHIER (tous types, y compris entre paragraphes) ===
   if (ordreBlocs.length > 0) {
     ordreBlocs.forEach(function(item) {
       var p = item.split(':');
       var type = p[0];
-      var idx = p.length > 1 ? parseInt(p[1], 10) : 0;
+      var idx = p.length > 1 ? parseInt(p[1]) : 0;
 
       if ((type === 'paragraphe' || type === 'slide' || type === 'texte') && paragraphesArray[idx] !== undefined) {
         blocsOrdonnes.push({ type: 'paragraphe', data: paragraphesArray[idx] });
@@ -457,8 +437,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
         blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
       } else if (type === 'tt' && ttsParsed[idx]) {
         blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-      } else if (type === 'vf' && vfsParsed[idx] !== undefined) {
-        blocsOrdonnes.push({ type: 'vf', data: [vfsParsed[idx]] });
+      } else if (type === 'vf' && vfsParsed.length > 0) {
+        blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
       } else if (type === 'copier' && copiersParsed[idx]) {
         blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
       } else if (type === 'point' && pointsParsed[idx]) {
@@ -467,14 +447,14 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
     });
   }
 
-  // Repli uniquement si ordreBlocs est vraiment vide
-  if (blocsOrdonnes.length === 0) {
+  var nbParas = blocsOrdonnes.filter(function(b) { return b.type === 'paragraphe'; }).length;
+  if (nbParas === 0) {
     var nouveaux = [];
     paragraphesArray.forEach(function(s) { nouveaux.push({ type: 'paragraphe', data: s }); });
     quizsParsed.forEach(function(q) { nouveaux.push({ type: 'quiz', data: q }); });
     opensParsed.forEach(function(o) { nouveaux.push({ type: 'open', data: o }); });
     ttsParsed.forEach(function(t) { nouveaux.push({ type: 'tt', data: t }); });
-    vfsParsed.forEach(function(v) { nouveaux.push({ type: 'vf', data: [v] }); });
+    if (vfsParsed.length > 0) nouveaux.push({ type: 'vf', data: vfsParsed });
     ordresParsed.forEach(function(o) { nouveaux.push({ type: 'ordre', data: o }); });
     cartesParsed.forEach(function(c) { nouveaux.push({ type: 'carte', data: c }); });
     reliersParsed.forEach(function(r) { nouveaux.push({ type: 'relier', data: r }); });
@@ -585,16 +565,9 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
 
-  // ---- Titre de la zone exercices ----
-  // Si le titre contient déjà "examen", on n'ajoute pas le mot "Exercices".
+  // ---- Titre de la zone exercices : indique le titre du rappel ----
   var titreZoneExercices = 'Exercices';
-  if (titreAffiche) {
-    if (/examen/i.test(titreAffiche)) {
-      titreZoneExercices = titreAffiche;
-    } else {
-      titreZoneExercices = 'Exercices — ' + titreAffiche;
-    }
-  }
+  if (titreAffiche) titreZoneExercices = 'Exercices — ' + titreAffiche;
 
   // ---- En-tête note/appréciation (masqué en mode rappel) ----
   var noteHtml = '';
@@ -605,6 +578,12 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
 </div>`;
   }
+  function majPremiereLettre(s) {
+  if (!s) return s;
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
+
 
   var printHtml = `<!DOCTYPE html>
 <html>
@@ -626,15 +605,10 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
-/* ============================================================
-   NIVEAU 2 — INTENSIF (manuel scolaire)
-   Marges réduites, polices 10–10,8 pt, espacements divisés par ~2.
-   Le "90 % manuel" à l'impression n'est plus nécessaire.
-   ============================================================ */
-@page { margin: 1.1cm 1.2cm 1.1cm 1.2cm; size: A4; }
+@page { margin: 1.6cm 1.7cm 1.6cm 1.7cm; size: A4; }
 body {
   font-family: 'Georgia', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
-  background:#faf7f0; color:#2a241c; font-size:10pt; line-height:1.35;
+  background:#faf7f0; color:#2a241c; font-size:11.5pt; line-height:1.5;
 }
 
 .arabe, [lang="ar"] {
@@ -645,75 +619,75 @@ body {
 .page { max-width:100%; padding: 0; background:#faf7f0; overflow: visible; }
 
 /* ---- En-tête élève ---- */
-.entete-eleve { margin-bottom: 2px; padding: 2px 0; font-size: 9pt; color:#4a3f31; }
+.entete-eleve { margin-bottom: 4px; padding: 4px 0 2px; font-size: 9.5pt; color:#4a3f31; }
 .entete-eleve .ligne-eleve { display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
 .entete-eleve span { white-space: nowrap; }
 .entete-eleve strong { font-weight: 600; color:#3a2e22; letter-spacing:0.2px; }
 
-.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 0 0 4px; font-size: 9.5pt; }
+.note-haut { display: flex; justify-content: space-between; align-items: baseline; gap: 30px; padding: 2px 0 6px; font-size: 10pt; }
 .note-haut strong { font-weight: 600; color:#3a2e22; }
 .note-haut .note-haut-droite { flex: 1; display: flex; align-items: baseline; gap: 4px; }
 .note-haut .note-haut-droite .ligne-pointillee { display:inline-block; flex:1; border-bottom:0.6px dotted #b0a48f; height:12px; }
 
-.filet { border: none; border-top: 1.6px solid #2a241c; border-bottom: 0.6px solid #b0a48f; height: 4px; margin: 6px 0 8px; }
+.filet { border: none; border-top: 1.6px solid #2a241c; border-bottom: 0.6px solid #b0a48f; height: 4px; margin: 10px 0 14px; }
 
-.temps-lecture-haut { text-align:center; font-size:8.5pt; color:#8a7d68; font-style:italic; margin-bottom:6px; letter-spacing:0.5px; font-family:'Georgia',serif; }
+.temps-lecture-haut { text-align:center; font-size:9pt; color:#8a7d68; font-style:italic; margin-bottom:10px; letter-spacing:0.5px; font-family:'Georgia',serif; }
 .temps-lecture-haut::before { content:"❧ "; font-style:normal; color:#a89a80; margin-right:4px; }
 
 /* ---- Bandeau titre : couverture à GAUCHE, titre à droite ---- */
-.bandeau-titre { padding: 2px 0; margin-bottom: 4px; }
+.bandeau-titre { padding: 6px 0 4px; margin-bottom: 6px; }
 .bandeau-titre .ligne-titre {
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 14px;
+  gap: 16px;
 }
 .bandeau-titre .bloc-titre-centre {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
   flex: 1;
 }
 
 .bandeau-titre .meta-niveau {
   font-family:'Georgia',serif;
-  font-size: 8.5pt;
+  font-size: 9pt;
   font-style: italic;
   color:#8a7d68;
   letter-spacing: 0.8px;
   text-transform: uppercase;
-  margin-bottom: 1px;
+  margin-bottom: 2px;
 }
 
 .bandeau-titre h1 {
-  font-family:'Georgia','Playfair Display',serif; font-size:16pt; font-weight:700;
-  color:#1f1a13; letter-spacing:1.2px; text-transform:uppercase; line-height:1.15;
+  font-family:'Georgia','Playfair Display',serif; font-size:20pt; font-weight:700;
+  color:#1f1a13; letter-spacing:1.5px; text-transform:uppercase; line-height:1.15;
   margin:0; text-align:center;
 }
 
 .bandeau-titre .meta-droite {
-  font-family:'Georgia',serif; font-style:italic; font-size:9.5pt; color:#8a7d68;
-  letter-spacing:0.5px; margin-top:1px;
+  font-family:'Georgia',serif; font-style:italic; font-size:10pt; color:#8a7d68;
+  letter-spacing:0.5px; margin-top:2px;
 }
 
-.sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:4px auto 1px; width:60%; }
+.sous-titre-filets { display:flex; align-items:center; justify-content:center; gap:10px; margin:6px auto 2px; width:60%; }
 .sous-titre-filets::before, .sous-titre-filets::after { content:""; flex:1; border-top:0.7px solid #b0a48f; }
 
-.couverture-mini { display:block; width:52px; height:72px; object-fit:cover; border-radius:1px;
+.couverture-mini { display:block; width:58px; height:80px; object-fit:cover; border-radius:1px;
   border:0.5px solid #b0a48f; box-shadow:0 1px 3px rgba(60,45,25,0.15); flex-shrink:0; }
 
 .numero-texte { display:inline-block; background:#2a241c; color:#faf7f0; font-family:'Georgia',serif;
-  font-size:11pt; font-weight:bold; line-height:1; padding:3px 9px; border-radius:1px;
+  font-size:12pt; font-weight:bold; line-height:1; padding:4px 11px; border-radius:1px;
   letter-spacing:1px; white-space:nowrap; }
 
 /* ---- Encadré vocabulaire (lexique) — 2 colonnes, compact ---- */
 .vocab-haut {
-  margin: 6px 0 6px;
+  margin: 10px 0 8px;
   width: 100%;
   max-width: none;
-  padding: 6px 10px 8px;
+  padding: 8px 12px 10px;
   background: #f6f1e6;
   border: 0.7px solid #c9bda3;
   border-left: 3px solid #6a5d47;
@@ -726,19 +700,19 @@ body {
   display: block;
   font-family: 'Georgia', serif;
   font-weight: 700;
-  font-size: 7.5pt;
+  font-size: 8pt;
   text-transform: uppercase;
   letter-spacing: 2px;
   color: #6a5d47;
   text-align: left;
-  margin-bottom: 3px;
-  padding-bottom: 2px;
+  margin-bottom: 5px;
+  padding-bottom: 3px;
   border-bottom: 0.5px solid #c9bda3;
 }
 .vocab-haut .titre-memo::before {
   content: "❧  ";
   color: #a89a80;
-  font-size: 7pt;
+  font-size: 7.5pt;
 }
 .vocab-haut .vocab-liste {
   list-style: none;
@@ -746,17 +720,17 @@ body {
   margin: 0;
   text-align: left;
   column-count: 2;
-  column-gap: 12px;
+  column-gap: 14px;
   column-rule: 0.5px dotted #c9bda3;
 }
 .vocab-haut .vocab-liste li {
   display: block;
-  font-size: 8.2pt;
-  line-height: 1.35;
+  font-size: 8.8pt;
+  line-height: 1.4;
   color: #2a241c;
-  margin-bottom: 1px;
-  padding-left: 8px;
-  text-indent: -8px;
+  margin-bottom: 3px;
+  padding-left: 9px;
+  text-indent: -9px;
   break-inside: avoid;
   page-break-inside: avoid;
 }
@@ -772,28 +746,29 @@ body {
 
 .corps-contenu { padding: 0; }
 
-.texte-zone { margin-top: 14px; margin-bottom: 6px; }
-.paragraphe { margin-bottom: 6px; break-inside: auto; page-break-inside: auto; }
+/* Espace avant le texte (comme sur texte.html : 32px) */
+.texte-zone { margin-top: 32px; margin-bottom: 10px; }
+.paragraphe { margin-bottom: 10px; break-inside: auto; page-break-inside: auto; }
 .paragraphe p {
-  font-size: 10.8pt; margin-bottom: 4px; text-align: justify;
-  text-indent: 1.2em; line-height: 1.42; hyphens: auto;
+  font-size: 12.8pt; margin-bottom: 6px; text-align: justify;
+  text-indent: 1.4em; line-height: 1.6; hyphens: auto;
 }
 .paragraphe p:last-child { margin-bottom: 0; }
 
 /* ---- Source discrète (source:...) ---- */
 .paragraphe p.p-avec-source {
   position: relative;
-  padding-right: 120px;
+  padding-right: 130px;
 }
 .source-discrete {
   position: absolute;
   top: 0;
   right: 0;
-  width: 110px;
+  width: 120px;
   font-family: 'Georgia', serif;
   font-style: italic;
-  font-size: 9pt;
-  line-height: 1.2;
+  font-size: 9.5pt;
+  line-height: 1.25;
   color: #6a5d47;
   text-align: left;
   white-space: normal;
@@ -802,58 +777,53 @@ body {
 }
 
 .paragraphe.lettrine p:first-child::first-letter {
-  font-family:'Georgia',serif; font-size:2.9em; float:left; line-height:0.82;
-  padding:3px 6px 0 0; color:#2a241c; font-weight:700;
+  font-family:'Georgia',serif; font-size:3.1em; float:left; line-height:0.82;
+  padding:4px 8px 0 0; color:#2a241c; font-weight:700;
 }
 
 .paragraphe p .source-marge, .texte-zone p .source-marge {
-  float:right; display:inline-block; margin:4px 0 4px 12px; padding:3px 0 0 0;
-  font-family:'Georgia',serif; font-size:10pt; font-weight:700; font-style:italic;
-  color:#6a5d47; text-align:right; max-width:23%; line-height:1.2;
+  float:right; display:inline-block; margin:6px 0 6px 16px; padding:4px 0 0 0;
+  font-family:'Georgia',serif; font-size:11pt; font-weight:700; font-style:italic;
+  color:#6a5d47; text-align:right; max-width:23%; line-height:1.25;
   text-indent:0; white-space:normal; vertical-align:top;
-  border-top:0.5px solid #c9bda3; padding-top:3px;
+  border-top:0.5px solid #c9bda3; padding-top:4px;
 }
 .paragraphe p em, .texte-zone p em { font-style:italic; white-space:pre-line; }
 .paragraphe::after { content:""; display:table; clear:both; }
 
 .paragraphe p em, .texte-zone p em { color:#3a2e22; }
 
-.print-img { display:block; height:auto; border:none; margin:8px 0; page-break-inside:avoid; break-inside:avoid;
+.print-img { display:block; height:auto; border:none; margin:12px 0; page-break-inside:avoid; break-inside:avoid;
   border-radius:1px; box-shadow:0 1px 4px rgba(60,45,25,0.12); }
 .print-img-centre { margin-left:auto; margin-right:auto; }
-.print-img-gauche { float:left; margin:4px 12px 8px 0; }
-.print-img-droite { float:right; margin:4px 0 8px 12px; }
-.print-img-petit  { max-width:95px; }
-.print-img-moyen  { max-width:160px; }
-.print-img-grand  { max-width:210px; }
-.img-manquante { display:block; padding:6px; border:1px dashed #c9bda3; color:#8a7d68;
-  font-size:8.5pt; text-align:center; margin:6px 0; font-style:italic; }
+.print-img-gauche { float:left; margin:6px 16px 10px 0; }
+.print-img-droite { float:right; margin:6px 0 10px 16px; }
+.print-img-petit  { max-width:110px; }
+.print-img-moyen  { max-width:180px; }
+.print-img-grand  { max-width:230px; }
+.img-manquante { display:block; padding:8px; border:1px dashed #c9bda3; color:#8a7d68;
+  font-size:9pt; text-align:center; margin:8px 0; font-style:italic; }
 
-.zone-exercices { margin-top: 10px; }
+.zone-exercices { margin-top: 22px; }
 .zone-exercices .titre-questions {
-  font-family:'Georgia',serif; font-size:12pt; font-weight:700; color:#2a241c;
+  font-family:'Georgia',serif; font-size:13pt; font-weight:700; color:#2a241c;
   letter-spacing:2px; text-transform:uppercase; text-align:center;
-  margin: 0 0 2px; padding: 0;
+  margin: 0 0 4px; padding: 0;
 }
 .zone-exercices .titre-questions-filets { display:flex; align-items:center; justify-content:center;
-  gap:12px; width:55%; margin:0 auto 10px; }
+  gap:12px; width:55%; margin:0 auto 18px; }
 .zone-exercices .titre-questions-filets::before,
 .zone-exercices .titre-questions-filets::after { content:""; flex:1; border-top:1.2px solid #2a241c; }
 
-.exo {
-  margin-bottom: 6px;
-  padding-bottom: 0;
-  border-bottom: none;
-  break-inside: avoid;
-  page-break-inside: avoid;
-}
+.exo { margin-bottom:14px; padding-bottom:10px; border-bottom:0.5px dotted #d6cbb4;
+  break-inside:avoid; page-break-inside:avoid; }
 .exo:last-child { border-bottom:none; margin-bottom:0; padding-bottom:0; }
 
 /* Exercices "Recopier" : pas de trait de séparation + espace réduit */
 .exo.exo-copier {
   border-bottom: none;
-  margin-bottom: 5px;
-  padding-bottom: 1px;
+  margin-bottom: 8px;
+  padding-bottom: 2px;
 }
 .exo.exo-copier + .exo.exo-copier {
   margin-top: 0;
@@ -865,74 +835,74 @@ body {
 /* Exercices "Pointillé" (pnt:) */
 .exo.exo-point {
   border-bottom: none;
-  margin-bottom: 5px;
-  padding-bottom: 1px;
+  margin-bottom: 8px;
+  padding-bottom: 2px;
 }
 
-.consigne-exo { font-size:8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
-  letter-spacing:1px; margin-bottom:2px; margin-top:0; padding:0;
+.consigne-exo { font-size:8.8pt; font-weight:700; color:#6a5d47; text-transform:uppercase;
+  letter-spacing:1.2px; margin-bottom:5px; margin-top:0; padding:0;
   page-break-after:avoid; break-after:avoid; font-family:'Georgia',serif; }
-.consigne-exo::before { content:"❧  "; color:#a89a80; font-size:7.5pt; margin-right:2px; }
+.consigne-exo::before { content:"❧  "; color:#a89a80; font-size:8pt; margin-right:2px; }
 
-.exo-ligne { display:flex; align-items:baseline; gap:6px; margin-top:2px; }
+.exo-ligne { display:flex; align-items:baseline; gap:8px; margin-top:3px; }
 
 .exo-num-inline {
   display:inline-flex; align-items:center; justify-content:center;
-  width:15px; height:15px;
+  width:17px; height:17px;
   background:transparent; color:#2a241c;
   border:0.9px solid #2a241c; border-radius:50%;
-  font-weight:700; font-size:7.8pt; flex-shrink:0;
+  font-weight:700; font-size:8.5pt; flex-shrink:0;
   font-family:'Georgia',serif;
   line-height:1;
-  padding-bottom:1px;
+  padding-bottom:1.2px;
   transform: translateY(-0.5px);
 }
-.exo-texte { flex:1; font-size:10pt; line-height:1.35; }
+.exo-texte { flex:1; font-size:10.5pt; line-height:1.5; }
 
-.quiz-reponses { margin-left:22px; margin-top:2px; }
-.quiz-rep { display:block; margin-bottom:0; font-size:10pt; line-height:1.3; }
-.quiz-case { display:inline-block; width:9px; height:9px; border:0.9px solid #4a3f31;
-  margin-right:5px; vertical-align:middle; background:#faf7f0; border-radius:1px; }
+.quiz-reponses { margin-left:26px; margin-top:4px; }
+.quiz-rep { display:block; margin-bottom:2px; font-size:10.5pt; }
+.quiz-case { display:inline-block; width:10px; height:10px; border:0.9px solid #4a3f31;
+  margin-right:6px; vertical-align:middle; background:#faf7f0; border-radius:1px; }
 
-.open-lignes { margin-top:2px; margin-left:22px; }
-.open-ligne { border-bottom:0.5px dotted #b0a48f; height:18px; margin-bottom:8px; }
+.open-lignes { margin-top:4px; margin-left:26px; }
+.open-ligne { border-bottom:0.5px dotted #b0a48f; height:24px; margin-bottom:16px; }
 
-.carte-ligne-courte { margin-top:2px; margin-left:22px; width:50%; border-bottom:0.5px dotted #b0a48f; height:14px; }
+.carte-ligne-courte { margin-top:4px; margin-left:26px; width:50%; border-bottom:0.5px dotted #b0a48f; height:16px; }
 
-.ordre-grille { margin:2px 0 2px 22px; display:grid; grid-template-columns:auto auto;
-  column-gap:8px; row-gap:1px; font-size:10pt; }
+.ordre-grille { margin:4px 0 4px 26px; display:grid; grid-template-columns:auto auto;
+  column-gap:12px; row-gap:3px; font-size:10.5pt; }
 .ordre-cell-texte { white-space:nowrap; }
-.ordre-cell-pointille { white-space:nowrap; color:#6a5d47; align-self:center; font-size:9pt; font-style:italic; }
+.ordre-cell-pointille { white-space:nowrap; color:#6a5d47; align-self:center; font-size:9.5pt; font-style:italic; }
 .ordre-lettre { font-weight:700; color:#2a241c; }
 
-.tt-phrase-print { flex:1; font-size:10pt; line-height:1.4; }
-.tt-phrase-print .tt-trou { display:inline-block; min-width:80px; border-bottom:0.9px solid #4a3f31;
-  text-align:center; padding:0 5px; }
+.tt-phrase-print { flex:1; font-size:10.8pt; line-height:1.6; }
+.tt-phrase-print .tt-trou { display:inline-block; min-width:90px; border-bottom:0.9px solid #4a3f31;
+  text-align:center; padding:0 6px; }
 
-.exo-texte-vf { font-size:10pt; line-height:1.35; flex:1; }
-.vf-ligne .vf-cases { font-size:9pt; white-space:nowrap; margin-left:6px; flex-shrink:0; color:#4a3f31; }
+.exo-texte-vf { font-size:10.5pt; line-height:1.5; flex:1; }
+.vf-ligne .vf-cases { font-size:9.5pt; white-space:nowrap; margin-left:6px; flex-shrink:0; color:#4a3f31; }
 
-.relier-zone-lignes { position:relative; margin:3px 0 3px 22px; max-width:100%; }
-.relier-lignes-grid { display:flex; justify-content:space-between; align-items:center; gap:50px; }
-.relier-col-lignes { flex:1; display:flex; flex-direction:column; gap:2px; }
-.relier-ligne-item { display:flex; align-items:center; gap:6px; font-size:10pt; padding:0; min-height:14px; }
+.relier-zone-lignes { position:relative; margin:6px 0 6px 26px; max-width:100%; }
+.relier-lignes-grid { display:flex; justify-content:space-between; align-items:center; gap:60px; }
+.relier-col-lignes { flex:1; display:flex; flex-direction:column; gap:5px; }
+.relier-ligne-item { display:flex; align-items:center; gap:6px; font-size:10.5pt; padding:1px 0; min-height:16px; }
 .relier-col-lignes.gauche .relier-ligne-item { justify-content:flex-end; text-align:right; }
 .relier-col-lignes.droite .relier-ligne-item { justify-content:flex-start; text-align:left; }
-.relier-point { width:7px; height:7px; border:1px solid #4a3f31; border-radius:50%;
+.relier-point { width:8px; height:8px; border:1px solid #4a3f31; border-radius:50%;
   background:#faf7f0; flex-shrink:0; box-sizing:border-box; }
 .relier-point.relier-point-partage { border-radius:0; }
 
 /* ---- Recopier : ligne pointillée qui va jusqu'à droite et passe DERRIÈRE le texte arabe ---- */
-.bloc-copier-inline { width:100%; margin-top:2px; }
+.bloc-copier-inline { width:100%; margin-top:4px; }
 
 .copier-ligne-inline {
   position: relative;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  gap: 8px;
-  min-height: 38px;
-  padding-bottom: 8px;
+  gap: 10px;
+  min-height: 44px;
+  padding-bottom: 10px;
   direction: ltr;
 }
 
@@ -940,7 +910,7 @@ body {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 5px;
+  bottom: 6px;
   height: 0;
   border-bottom: 1px dotted #6a5d47;
   z-index: 0;
@@ -959,8 +929,8 @@ body {
 
 .copier-fleche-apres svg {
   display: block;
-  width: 34px;
-  height: 16px;
+  width: 38px;
+  height: 18px;
   overflow: visible;
 }
 
@@ -1012,8 +982,8 @@ body {
   display: flex;
   align-items: center;
   justify-content: flex-start;
-  gap: 20px;
-  min-height: 42px;
+  gap: 24px;
+  min-height: 48px;
   direction: rtl;
   flex-wrap: nowrap;
   overflow: hidden;
@@ -1037,25 +1007,25 @@ body {
   text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
 }
 
-.zone-memo { margin: 10px 0 6px; padding: 8px 12px; background:#f4efe3;
+.zone-memo { margin: 20px 0 10px; padding: 12px 16px 12px; background:#f4efe3;
   border-top:0.6px solid #c9bda3; border-bottom:0.6px solid #c9bda3;
   break-inside:avoid; page-break-inside:avoid; }
-.zone-memo .titre-memo { font-weight:700; font-size:8pt; text-transform:uppercase;
-  letter-spacing:2px; color:#6a5d47; margin-bottom:5px; text-align:center; font-family:'Georgia',serif; }
+.zone-memo .titre-memo { font-weight:700; font-size:9pt; text-transform:uppercase;
+  letter-spacing:2px; color:#6a5d47; margin-bottom:8px; text-align:center; font-family:'Georgia',serif; }
 .zone-memo .titre-memo::before { content:"✦  "; color:#a89a80; margin-right:2px; }
 .zone-memo .titre-memo::after { content:"  ✦"; color:#a89a80; margin-left:2px; }
 .zone-memo .memo-bloc { margin-bottom:0; }
 .zone-memo .memo-liste { list-style:none; padding:0; margin:0; }
-.zone-memo .memo-liste li { font-size:9.5pt; margin-bottom:2px; padding-left:14px;
-  position:relative; line-height:1.4; }
+.zone-memo .memo-liste li { font-size:10.5pt; margin-bottom:4px; padding-left:16px;
+  position:relative; line-height:1.55; }
 .zone-memo .memo-liste li::before { content:"❧"; position:absolute; left:0;
-  color:#a89a80; font-size:7.5pt; top:2px; }
+  color:#a89a80; font-size:8pt; top:3px; }
 
-.pied-page { text-align:center; font-size:7pt; color:#8a7d68; margin: 8px 0 2px;
-  padding-top:4px; border-top:0.6px solid #d6cbb4;
+.pied-page { text-align:center; font-size:8pt; color:#8a7d68; margin: 18px 0 6px;
+  padding-top:8px; border-top:0.6px solid #d6cbb4;
   display:flex; justify-content:center; align-items:center; gap:16px; }
 .pied-page .pied-centre { font-style:italic; color:#6a5d47; letter-spacing:0.5px; }
-.pied-page .pied-ecrit, .pied-page .imprime-le { font-style:italic; font-size:6.8pt; color:#a89a80; }
+.pied-page .pied-ecrit, .pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#a89a80; }
 </style>
 </head>
 <body>
@@ -1094,7 +1064,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   if (idxColon !== -1 && idxEgal !== -1) sep = Math.min(idxColon, idxEgal);
   else if (idxColon !== -1) sep = idxColon;
   else if (idxEgal !== -1) sep = idxEgal;
-  if (sep !== -1) {
+    if (sep !== -1) {
     var mot = majPremiereLettre(m.substring(0, sep).trim());
     var def = m.substring(sep + 1).trim();
     return '<li><span class="vocab-mot">' + mot + '</span> : <span class="vocab-def">' + def + '</span></li>';
@@ -1111,8 +1081,6 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   var zoneExercicesOuverte = false;
   var premierParagraphe = true;
 
-  // La zone "Exercices" s'ouvre au premier exercice. Les paragraphes
-  // qui suivent restent ensuite à leur place, dans l'ordre du fichier.
   function ouvrirZoneExercices() {
     if (!zoneExercicesOuverte) {
       printHtml += '</div>';
@@ -1139,20 +1107,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     point:  { sing: 'Tracez le mot en pointillé :', plur: 'Tracez les mots en pointillé :' }
   };
 
-  // Consignes : regroupées uniquement pour des blocs de même type CONSÉCUTIFS
   var iGroupe = 0;
   while (iGroupe < blocsOrdonnes.length) {
     var blocCourant = blocsOrdonnes[iGroupe];
     var typeCourant = typeLogique(blocCourant.type);
     if (typeCourant === 'paragraphe') { iGroupe++; continue; }
 
-    var nbConsecutifs = 0;
-    var jGroupe = iGroupe;
+    var nbConsecutifs = 1;
+    var jGroupe = iGroupe + 1;
     while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) {
-      nbConsecutifs += (typeCourant === 'vf') ? blocsOrdonnes[jGroupe].data.length : 1;
+      nbConsecutifs++;
       jGroupe++;
     }
-    var base = consignesBase[typeCourant];
+    if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
+        var base = consignesBase[typeCourant];
     if (base) {
       var consigneFinale = (nbConsecutifs > 1) ? base.plur : base.sing;
       blocCourant._consigne = consigneFinale;
@@ -1185,9 +1153,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '        <path d="M 35 9 L 4 9 M 11 3 L 4 9 L 11 15" fill="none" stroke="#2a241c" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>';
       printHtml += '      </svg>';
       printHtml += '    </span>';
+      // Mot en pointillé (à tracer) — à gauche du modèle
       printHtml += '    <span class="copier-texte-arabe-pointille">';
       printHtml += '      <span class="copier-mot-pointille">' + motComplet + '</span>';
       printHtml += '    </span>';
+      // Modèle plein
       printHtml += '    <span class="copier-texte-arabe">';
       for (var cm = 0; cm < mots.length; cm++) {
         printHtml += '<span class="copier-mot">' + mots[cm] + '</span>' + (cm < mots.length - 1 ? ' ' : '');
@@ -1229,13 +1199,13 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       var lignesPara = bloc.data.split('\n');
       var bufferTexte = '';
 
-      function flushParagraphe() {
+            function flushParagraphe() {
         if (!bufferTexte.trim()) { bufferTexte = ''; return; }
         var blocs = decouperEnBlocsTexte(bufferTexte);
-        blocs.forEach(function(blocTxt) {
-          blocTxt = embellirFormulesReligieuses(blocTxt);
-          var contientSource = /\(source:\s*[^)]+\)/i.test(blocTxt);
-          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(blocTxt))));
+        blocs.forEach(function(bloc) {
+          bloc = embellirFormulesReligieuses(bloc);
+          var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
+          var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
           var classe = contientSource ? ' class="p-avec-source"' : '';
           printHtml += '<p' + classe + '>' + rendu + '</p>';
         });
@@ -1271,11 +1241,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + rendreQuestion(q.question) + '</span>';
+      printHtml += '<span class="exo-texte">' + q.question + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="quiz-reponses">';
       q.reponses.forEach(function(rep) {
-        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rendreQuestion(rep.texte) + '</span>';
+        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
       });
       printHtml += '</div></div>';
     } else if (bloc.type === 'open') {
@@ -1285,7 +1255,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + rendreQuestion(bloc.data) + '</span>';
+      printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
       for (var ol = 0; ol < 3; ol++) printHtml += '<div class="open-ligne"></div>';
@@ -1299,7 +1269,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
-      printHtml += rendreQuestion(tt.phrase).replace(/\/[^\/]+\//g, '<span class="tt-trou"></span>');
+      if (tt.avant) printHtml += tt.avant + ' ';
+      printHtml += '<span class="tt-trou"></span>';
+      if (tt.apres) printHtml += ' ' + tt.apres;
       printHtml += '</span>';
       printHtml += '</div>';
       printHtml += '</div>';
@@ -1312,7 +1284,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         if (idxVf === 0) afficherConsigne(bloc);
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-        printHtml += '<span class="exo-texte-vf">' + rendreQuestion(questionTexte) + '</span>';
+        printHtml += '<span class="exo-texte-vf">' + questionTexte + '</span>';
         printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
         printHtml += '</div>';
@@ -1333,11 +1305,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + rendreQuestion(consigne) + '</span>';
+      printHtml += '<span class="exo-texte">' + consigne + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="ordre-grille">';
       itemsMelanges.forEach(function(item, i) {
-        printHtml += '<div class="ordre-cell-texte"><span class="ordre-lettre">' + lettres[i] + '.</span> ' + rendreQuestion(item) + '</div>';
+        printHtml += '<div class="ordre-cell-texte"><span class="ordre-lettre">' + lettres[i] + '.</span> ' + item + '</div>';
         printHtml += '<div class="ordre-cell-pointille">n° ..........</div>';
       });
       printHtml += '</div>';
@@ -1350,7 +1322,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + rendreQuestion(c.recto) + '</span>';
+      printHtml += '<span class="exo-texte">' + c.recto + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="carte-ligne-courte"></div>';
       printHtml += '</div>';
@@ -1362,20 +1334,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + rendreQuestion(relierData.consigne) + '</span>';
+      printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="relier-zone-lignes">';
       printHtml += '<div class="relier-lignes-grid">';
       printHtml += '<div class="relier-col-lignes gauche">';
       for (var rg = 0; rg < relierData.paires.length; rg++) {
-        printHtml += '<div class="relier-ligne-item"><span>' + rendreQuestion(relierData.paires[rg].gauche) + '</span><span class="relier-point"></span></div>';
+        printHtml += '<div class="relier-ligne-item"><span>' + relierData.paires[rg].gauche + '</span><span class="relier-point"></span></div>';
       }
       printHtml += '</div>';
       printHtml += '<div class="relier-col-lignes droite">';
       for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
         var dItem = relierData.droitesMelangees[rd];
         var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
-        printHtml += '<div class="relier-ligne-item"><span class="' + classePoint + '"></span><span>' + rendreQuestion(dItem.droite) + '</span></div>';
+        printHtml += '<div class="relier-ligne-item"><span class="' + classePoint + '"></span><span>' + dItem.droite + '</span></div>';
       }
       printHtml += '</div>';
       printHtml += '</div>';
@@ -1384,8 +1356,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     }
   });
 
+  if (zoneExercicesOuverte) {
+    printHtml += '</div>';
+  } else {
+    printHtml += '</div>';
+  }
   printHtml += '</div>';
-  if (zoneExercicesOuverte) printHtml += '</div>';
 
   if (afficherRappel && aRetenirClean.length > 0) {
     printHtml += '<div class="zone-memo">';
@@ -1397,7 +1373,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '</div>';
   }
 
-  var idPost = texte.id || '';
+    var idPost = texte.id || '';
+
+    var idPost = texte.id || '';
 
   printHtml += `
     <div class="pied-page">
@@ -1438,9 +1416,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       if (parent.tagName && parent.tagName.toLowerCase() === 'text') return;
       var txt = texteNode.nodeValue;
       var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
-      var partsAr = txt.split(regex);
+      var parts = txt.split(regex);
       var frag = iframeDoc2.createDocumentFragment();
-      partsAr.forEach(function(part) {
+      parts.forEach(function(part) {
         if (part === '') return;
         if (/[\u0600-\u06FF]/.test(part)) {
           var span = iframeDoc2.createElement('span');
