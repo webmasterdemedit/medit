@@ -169,6 +169,20 @@ function rendreCitations(texte) {
   return texte;
 }
 
+// ============================================================
+// NOUVEAU : rendu enrichi pour les questions d'exercices
+// Applique gras, italique, formules religieuses et citations,
+// mais PAS les sources flottantes (source-marge / source-discrete)
+// qui cassent la mise en page des questions courtes.
+// ============================================================
+function rendreQuestion(texte) {
+  if (!texte) return '';
+  texte = appliquerGrasItalique(texte);
+  texte = embellirFormulesReligieuses(texte);
+  texte = rendreCitations(texte);
+  return texte;
+}
+
 function decouperEnBlocsTexte(buffer) {
   var lignes = buffer.split('\n');
   var blocs = [];
@@ -1241,11 +1255,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + q.question + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreQuestion(q.question) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="quiz-reponses">';
       q.reponses.forEach(function(rep) {
-        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rep.texte + '</span>';
+        printHtml += '<span class="quiz-rep"><span class="quiz-case"></span> ' + rep.lettre + '. ' + rendreQuestion(rep.texte) + '</span>';
       });
       printHtml += '</div></div>';
     } else if (bloc.type === 'open') {
@@ -1255,7 +1269,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreQuestion(bloc.data) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="open-lignes">';
       for (var ol = 0; ol < 3; ol++) printHtml += '<div class="open-ligne"></div>';
@@ -1269,7 +1283,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
-      printHtml += tt.phrase.replace(/\/[^\/]+\//g, '<span class="tt-trou"></span>');
+      printHtml += rendreQuestion(tt.phrase).replace(/\/[^\/]+\//g, '<span class="tt-trou"></span>');
       printHtml += '</span>';
       printHtml += '</div>';
       printHtml += '</div>';
@@ -1282,7 +1296,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         if (idxVf === 0) afficherConsigne(bloc);
         printHtml += '<div class="exo-ligne vf-ligne">';
         printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-        printHtml += '<span class="exo-texte-vf">' + questionTexte + '</span>';
+        printHtml += '<span class="exo-texte-vf">' + rendreQuestion(questionTexte) + '</span>';
         printHtml += '<span class="vf-cases">☐ V   ☐ F</span>';
         printHtml += '</div>';
         printHtml += '</div>';
@@ -1303,11 +1317,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + consigne + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreQuestion(consigne) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="ordre-grille">';
       itemsMelanges.forEach(function(item, i) {
-        printHtml += '<div class="ordre-cell-texte"><span class="ordre-lettre">' + lettres[i] + '.</span> ' + item + '</div>';
+        printHtml += '<div class="ordre-cell-texte"><span class="ordre-lettre">' + lettres[i] + '.</span> ' + rendreQuestion(item) + '</div>';
         printHtml += '<div class="ordre-cell-pointille">n° ..........</div>';
       });
       printHtml += '</div>';
@@ -1320,7 +1334,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + c.recto + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreQuestion(c.recto) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="carte-ligne-courte"></div>';
       printHtml += '</div>';
@@ -1332,20 +1346,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + relierData.consigne + '</span>';
+      printHtml += '<span class="exo-texte">' + rendreQuestion(relierData.consigne) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="relier-zone-lignes">';
       printHtml += '<div class="relier-lignes-grid">';
       printHtml += '<div class="relier-col-lignes gauche">';
       for (var rg = 0; rg < relierData.paires.length; rg++) {
-        printHtml += '<div class="relier-ligne-item"><span>' + relierData.paires[rg].gauche + '</span><span class="relier-point"></span></div>';
+        printHtml += '<div class="relier-ligne-item"><span>' + rendreQuestion(relierData.paires[rg].gauche) + '</span><span class="relier-point"></span></div>';
       }
       printHtml += '</div>';
       printHtml += '<div class="relier-col-lignes droite">';
       for (var rd = 0; rd < relierData.droitesMelangees.length; rd++) {
         var dItem = relierData.droitesMelangees[rd];
         var classePoint = dItem.partagee ? 'relier-point relier-point-partage' : 'relier-point';
-        printHtml += '<div class="relier-ligne-item"><span class="' + classePoint + '"></span><span>' + dItem.droite + '</span></div>';
+        printHtml += '<div class="relier-ligne-item"><span class="' + classePoint + '"></span><span>' + rendreQuestion(dItem.droite) + '</span></div>';
       }
       printHtml += '</div>';
       printHtml += '</div>';
