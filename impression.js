@@ -1042,8 +1042,6 @@ body {
 .col-table {
   display: grid;
   margin: 6px 0 6px 26px;
-  border-top: 1.2px solid #2a241c;
-  border-left: 1.2px solid #2a241c;
 }
 .col-cell {
   display: flex;
@@ -1052,8 +1050,6 @@ body {
   min-width: 0;
   min-height: 42px;
   padding: 6px 10px 6px 8px;
-  border-right: 1.2px solid #2a241c;
-  border-bottom: 1.2px solid #2a241c;
 }
 .col-trait {
   flex: 1;
