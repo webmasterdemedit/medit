@@ -289,13 +289,8 @@ function parserTextesTrousPourImpression(ttTexte) {
   lignes.forEach(function(ligne) {
     if (!/^tt:/i.test(ligne)) return;
     var contenu = ligne.replace(/^tt:\s*/i, '').trim();
-    var match = contenu.match(/\/([^\/]+)\//);
-    if (!match) return;
-    var mot = match[1].trim();
-    var idx = contenu.indexOf('/' + mot + '/');
-    var avant = contenu.substring(0, idx).trim();
-    var apres = contenu.substring(idx + mot.length + 2).trim();
-    resultats.push({ avant: avant, mot: mot, apres: apres });
+    if (!/\/[^\/]+\//.test(contenu)) return;
+    resultats.push({ phrase: contenu });
   });
   return resultats;
 }
@@ -1204,9 +1199,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><span class="titre-memo">Voca
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="tt-phrase-print">';
-      if (tt.avant) printHtml += tt.avant + ' ';
-      printHtml += '<span class="tt-trou"></span>';
-      if (tt.apres) printHtml += ' ' + tt.apres;
+      printHtml += tt.phrase.replace(/\/[^\/]+\//g, '<span class="tt-trou"></span>');
       printHtml += '</span>';
       printHtml += '</div>';
       printHtml += '</div>';
