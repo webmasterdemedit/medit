@@ -169,17 +169,13 @@ function rendreCitations(texte) {
   return texte;
 }
 
-// ============================================================
-// NOUVEAU : rendu enrichi pour les questions d'exercices
-// Applique gras, italique, formules religieuses et citations,
-// mais PAS les sources flottantes (source-marge / source-discrete)
-// qui cassent la mise en page des questions courtes.
-// ============================================================
+// Rendu enrichi pour les questions d'exercices.
+// IMPORTANT : on n'appelle PAS rendreCitations ici, sinon toute
+// citation « … » devient italique même sans *…* explicite.
 function rendreQuestion(texte) {
   if (!texte) return '';
   texte = appliquerGrasItalique(texte);
   texte = embellirFormulesReligieuses(texte);
-  texte = rendreCitations(texte);
   return texte;
 }
 
