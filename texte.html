@@ -2313,100 +2313,140 @@
     }
 
     function afficherTexte(texte) {
-      var container = document.getElementById('texteContainer');
-      var feuille = document.createElement('div');
-      feuille.className = 'feuille-texte';
+  var container = document.getElementById('texteContainer');
+  var feuille = document.createElement('div');
+  feuille.className = 'feuille-texte';
 
-      // --- Bandeau titre ---
-      var numTexte = extraireNumeroTexte(texte.titre);
-      var titreAff = extraireTitreSansNumero(texte.titre);
-      var numeroHtml = (numTexte !== Infinity)
-        ? '<span class="numero-texte">' + numTexte + '</span>'
-        : '';
-      var tagsHtml = '';
-      if (texte.tags && texte.tags.length > 0) {
-        tagsHtml = '<div class="tags-haut">';
-        texte.tags.forEach(function(t) { tagsHtml += '<span class="memo-tag">' + echapperHtml(t) + '</span>'; });
-        tagsHtml += '</div>';
-      }
-      var vocabHtml = '';
-      if (texte.vocabulaire && texte.vocabulaire.length > 0) {
-        vocabHtml = '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>';
-        texte.vocabulaire.forEach(function(m) { vocabHtml += '<span class="memo-mot">' + echapperHtml(m) + '</span>'; });
-        vocabHtml += '</div>';
-      }
+  // --- Bandeau titre ---
+  var numTexte = extraireNumeroTexte(texte.titre);
+  var titreAff = extraireTitreSansNumero(texte.titre);
+  var numeroHtml = (numTexte !== Infinity)
+    ? '<span class="numero-texte">' + numTexte + '</span>'
+    : '';
 
-      var bandeauHtml =
-        '<div class="entete-eleve"><div class="ligne-eleve">'
-          + '<span><strong>Élève :</strong> ' + echapperHtml(getNomUtilisateurCourant()) + '</span>'
-          + '<span><strong>Date :</strong> ' + (formatDateLongue(new Date().toISOString()) || '') + '</span>'
-        + '</div></div>'
-        + '<div class="bandeau-titre"><div class="ligne-titre">'
-          + numeroHtml
-          + '<h1>' + echapperHtml(titreAff) + '</h1>'
-          + (texte.categorie ? '<div class="meta-droite">' + echapperHtml(texte.categorie) + '</div>' : '')
-        + '</div></div>'
-        + tagsHtml
-        + vocabHtml
-        + '<hr class="filet">';
+  var tagsHtml = '';
+  if (texte.tags && texte.tags.length > 0) {
+    tagsHtml = '<div class="tags-haut">';
+    texte.tags.forEach(function(t) {
+      tagsHtml += '<span class="memo-tag">' + echapperHtml(t) + '</span>';
+    });
+    tagsHtml += '</div>';
+  }
 
-      // --- Détection mode cartes ---
-      var htmlCartes = detecterEtConstruireCartes(texte.contenu, feuille);
-      var modeCartes = (htmlCartes !== null);
+  var vocabHtml = '';
+  if (texte.vocabulaire && texte.vocabulaire.length > 0) {
+    vocabHtml = '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>';
+    texte.vocabulaire.forEach(function(m) {
+      vocabHtml += '<span class="memo-mot">' + echapperHtml(m) + '</span>';
+    });
+    vocabHtml += '</div>';
+  }
 
-      var corpsHtml;
-      if (modeCartes) {
-        corpsHtml = '<div class="texte-zone" id="zoneTexte">' + htmlCartes + '</div>';
-        var btn = document.getElementById('btnImprimerCartes');
-        if (btn) btn.style.display = 'inline-flex';
-      } else {
-        // --- Rendu normal : paragraphes + images ---
-        var blocs = decouperEnBlocsTexte(texte.contenu || '');
-        var htmlBlocs = '';
-        blocs.forEach(function(bloc) {
-          var ligneImg = bloc.match(/^\s*img:([^:]+)(?::([^:]+))?(?::([^:]+))?\s*$/i);
-          if (ligneImg) {
-            htmlBlocs += rendreImage(ligneImg[1].trim(), (ligneImg[2] || '').trim(), (ligneImg[3] || '').trim());
-            return;
-          }
-          var contenuRendu = appliquerGrasItalique(bloc);
-          contenuRendu = rendreCitations(contenuRendu);
-          contenuRendu = rendreSources(contenuRendu);
-          contenuRendu = rendreSourcesDiscretes(contenuRendu);
-          contenuRendu = embellirFormulesReligieuses(contenuRendu);
-          // Découpe en paragraphes
-          var paragraphes = contenuRendu.split(/\n{2,}/).filter(function(p) { return p.trim() !== ''; });
-          htmlBlocs += '<div class="paragraphe">';
-          paragraphes.forEach(function(p) { htmlBlocs += '<p>' + p.trim() + '</p>'; });
-          htmlBlocs += '</div>';
-        });
-        corpsHtml = '<div class="texte-zone" id="zoneTexte">' + htmlBlocs + '</div>';
-      }
+  var enteteHtml =
+    '<div class="entete-eleve"><div class="ligne-eleve">'
+      + '<span><strong>Élève :</strong> ' + echapperHtml(getNomUtilisateurCourant()) + '</span>'
+      + '<span><strong>Date :</strong> ' + (formatDateLongue(new Date().toISOString()) || '') + '</span>'
+    + '</div></div>';
 
-      // --- Zone mémo ---
-      var memoHtml = '';
-      if (!modeCartes && texte.aRetenir && texte.aRetenir.length > 0) {
-        memoHtml = '<div class="zone-memo"><div class="titre-memo">À retenir</div><ul class="memo-liste">';
-        texte.aRetenir.forEach(function(item) {
-          memoHtml += '<li>' + embellirFormulesReligieuses(appliquerGrasItalique(echapperHtml(item))) + '</li>';
-        });
-        memoHtml += '</ul></div>';
-      }
+  var noteHautHtml =
+    '<div class="note-haut">'
+      + '<span><strong>Note :</strong> ____ / ____</span>'
+      + '<span class="note-haut-droite"><strong>Observations :</strong><span class="ligne-pointillee"></span></span>'
+    + '</div>';
 
-      feuille.innerHTML = bandeauHtml + corpsHtml + memoHtml;
-      container.innerHTML = '';
-      container.appendChild(feuille);
+  var bandeauHtml =
+    enteteHtml
+    + noteHautHtml
+    + '<hr class="filet">'
+    + '<div class="bandeau-titre"><div class="ligne-titre">'
+      + numeroHtml
+      + '<h1>' + echapperHtml(titreAff) + '</h1>'
+      + (texte.categorie ? '<div class="meta-droite">' + echapperHtml(texte.categorie) + '</div>' : '')
+    + '</div></div>'
+    + tagsHtml
+    + vocabHtml;
 
-      // Bouton retour
-      var btnRetour = document.getElementById('btnRetourTexte');
-      if (btnRetour && texte.categorie) {
-        btnRetour.href = '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie);
-      }
+  // --- Corps du texte (rendu normal) ---
+  var blocs = decouperEnBlocsTexte(texte.contenu || '');
+  var htmlBlocs = '';
 
-      // Vérif validation
-      verifierValidationTexte(texte);
+  blocs.forEach(function(bloc) {
+    // Ligne image : img:nom:position:taille
+    var ligneImg = bloc.match(/^\s*img:([^:\n]+)(?::([^:\n]+))?(?::([^:\n]+))?\s*$/i);
+    if (ligneImg) {
+      htmlBlocs += rendreImage(
+        ligneImg[1].trim(),
+        (ligneImg[2] || '').trim(),
+        (ligneImg[3] || '').trim()
+      );
+      return;
     }
 
+    var contenuRendu = appliquerGrasItalique(bloc);
+    contenuRendu = rendreCitations(contenuRendu);
+    contenuRendu = rendreSources(contenuRendu);
+    contenuRendu = rendreSourcesDiscretes(contenuRendu);
+    contenuRendu = embellirFormulesReligieuses(contenuRendu);
+
+    // Découpe en paragraphes sur double saut de ligne
+    var paragraphes = contenuRendu.split(/\n{2,}/).filter(function(p) {
+      return p.trim() !== '';
+    });
+
+    htmlBlocs += '<div class="paragraphe">';
+    paragraphes.forEach(function(p) {
+      htmlBlocs += '<p>' + p.trim() + '</p>';
+    });
+    htmlBlocs += '</div>';
+  });
+
+  var corpsHtml = '<div class="texte-zone" id="zoneTexte">' + htmlBlocs + '</div>';
+
+  // --- Zone mémo (À retenir) ---
+  var memoHtml = '';
+  if (texte.aRetenir && texte.aRetenir.length > 0) {
+    memoHtml = '<div class="zone-memo"><div class="titre-memo">À retenir</div><ul class="memo-liste">';
+    texte.aRetenir.forEach(function(item) {
+      memoHtml += '<li>' + embellirFormulesReligieuses(appliquerGrasItalique(echapperHtml(item))) + '</li>';
+    });
+    memoHtml += '</ul></div>';
+  }
+
+  // --- Assemblage ---
+  feuille.innerHTML = bandeauHtml + corpsHtml + memoHtml;
+  container.innerHTML = '';
+  container.appendChild(feuille);
+
+  // --- Bouton retour ---
+  var btnRetour = document.getElementById('btnRetourTexte');
+  if (btnRetour && texte.categorie) {
+    btnRetour.href = '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie);
+  }
+
+  // === MODE CARTES : surcouche, sans rien casser ===
+  try {
+    var feuilleEl = document.querySelector('.feuille-texte');
+    if (feuilleEl && texte) {
+      var htmlCartes = detecterEtConstruireCartes(texte.contenu, feuilleEl, texte);
+      if (htmlCartes) {
+        var zoneTexte = feuilleEl.querySelector('.texte-zone');
+        if (zoneTexte) {
+          zoneTexte.innerHTML = htmlCartes;
+          var btn = document.getElementById('btnImprimerCartes');
+          if (btn) btn.style.display = 'inline-flex';
+          // En mode cartes, on masque la zone mémo (elle n'a pas de sens ici)
+          var memoEl = feuilleEl.querySelector('.zone-memo');
+          if (memoEl) memoEl.style.display = 'none';
+        }
+      }
+    }
+  } catch (e) {
+    console.warn('Mode cartes :', e);
+  }
+
+  // --- Vérification validation ---
+  verifierValidationTexte(texte);
+}
     if (document.readyState === 'loading') {
       document.addEventListener('DOMContentLoaded', demarrer);
     } else {
