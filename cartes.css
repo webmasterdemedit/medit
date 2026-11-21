@@ -1,0 +1,77 @@
+/* ============================================================
+   cartes.css — style des CARTES (textes contenant des ---)
+   À placer dans /medit/cartes.css
+   ============================================================ */
+
+:root {
+  /* Marge intérieure de chaque carte (mets 0 pour aucune marge du tout) */
+  --carte-padding: 4mm;
+}
+
+/* ---------- Affichage à l'écran ---------- */
+.feuille-texte .paragraphe:empty { display: none; }
+
+.cartes-grille { display: flex; flex-direction: column; gap: 14px; }
+
+.carte-impr {
+  border: 1px dashed var(--border-hover);
+  border-radius: 4px;
+  padding: 14px 18px;
+  background: var(--bg-paper);
+}
+.carte-impr .paragraphe:last-child { margin-bottom: 0; }
+.carte-impr .paragraphe p:last-child { margin-bottom: 0; }
+
+/* ---------- Zone d'impression (cachée hors écran) ---------- */
+#zoneImpressionCartes {
+  position: absolute;
+  left: -10000px;
+  top: 0;
+  width: 210mm;           /* A4 pleine largeur */
+  height: 296mm;          /* A4 pleine hauteur (1mm de moins pour éviter une page blanche) */
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0;
+  background: #fff;
+  color: #000;
+  box-sizing: border-box;
+}
+
+#zoneImpressionCartes .carte-cell {
+  border: 0.3mm dashed #888;
+  padding: var(--carte-padding);
+  margin: 0;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-family: 'Georgia', 'Palatino Linotype', serif;
+  line-height: 1.35;
+  background: #fff;
+  color: #000;
+}
+
+#zoneImpressionCartes .paragraphe { margin: 0 0 .6em; }
+#zoneImpressionCartes .paragraphe:empty { display: none; }
+#zoneImpressionCartes .paragraphe p {
+  font-size: inherit;
+  margin: 0 0 .5em;
+  text-align: justify;
+  line-height: inherit;
+}
+#zoneImpressionCartes img {
+  max-width: 100%;
+  max-height: 35%;
+  display: block;
+  margin: 0 auto;
+}
+
+/* ---------- À l'impression ---------- */
+@media print {
+  body.imprimer-cartes > *:not(#zoneImpressionCartes) { display: none !important; }
+
+  body.imprimer-cartes #zoneImpressionCartes {
+    position: static !important;
+    left: auto !important;
+    margin: 0 !important;
+  }
+}
