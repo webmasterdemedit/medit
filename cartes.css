@@ -1,15 +1,6 @@
-/* ============================================================
-   cartes.css — version compatible avec TON texte.html actuel
-   (celui qui imprime via #zoneImpressionCartes)
-   À mettre dans /medit/cartes.css
-   ============================================================ */
+/* cartes.css — affichage à l'écran des cartes (textes contenant des ---)
+   L'impression est gérée dans texte.html (iframe isolée). */
 
-:root {
-  /* Marge intérieure de chaque carte (0 = aucune) */
-  --carte-padding: 4mm;
-}
-
-/* ---------- Affichage à l'écran ---------- */
 .feuille-texte .paragraphe:empty { display: none; }
 
 .cartes-grille { display: flex; flex-direction: column; gap: 14px; }
@@ -17,86 +8,24 @@
 .carte-impr {
   border: 1px dashed var(--border-hover);
   border-radius: 4px;
-  padding: 14px 18px;
+  padding: 28px 24px;
   background: var(--bg-paper);
+  min-height: 140px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
 }
-.carte-impr .paragraphe:last-child { margin-bottom: 0; }
+
+.feuille-texte .carte-impr .paragraphe { width: 100%; margin-bottom: 8px; }
+.feuille-texte .carte-impr .paragraphe:last-child { margin-bottom: 0; }
+
+.feuille-texte .carte-impr .paragraphe p {
+  font-size: 18pt;
+  font-style: italic;
+  text-align: center;
+  text-indent: 0;
+  line-height: 1.5;
+}
 .carte-impr .paragraphe p:last-child { margin-bottom: 0; }
-
-/* ---------- Page d'impression sans aucune marge ----------
-   (page nommée : n'affecte QUE les cartes, pas tes autres impressions) */
-@page cartes {
-  size: A4 portrait;
-  margin: 0;
-}
-
-/* ---------- Zone d'impression (cachée hors écran) ---------- */
-#zoneImpressionCartes {
-  page: cartes;
-  position: absolute;
-  left: -10000px;
-  top: 0;
-  width: 210mm;
-  height: 296mm;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 0;
-  background: #fff;
-  color: #000;
-  box-sizing: border-box;
-}
-
-#zoneImpressionCartes .carte-cell {
-  border: 0.3mm dashed #888;
-  padding: var(--carte-padding);
-  margin: 0;
-  overflow: hidden;
-  box-sizing: border-box;
-  font-family: 'Georgia', 'Palatino Linotype', serif;
-  line-height: 1.35;
-  background: #fff;
-  color: #000;
-}
-
-#zoneImpressionCartes .paragraphe { margin: 0 0 .6em; }
-#zoneImpressionCartes .paragraphe:empty { display: none; }
-#zoneImpressionCartes .paragraphe p {
-  font-size: inherit;
-  margin: 0 0 .5em;
-  text-align: justify;
-  line-height: inherit;
-}
-#zoneImpressionCartes img {
-  max-width: 100%;
-  max-height: 35%;
-  display: block;
-  margin: 0 auto;
-}
-
-/* ---------- À l'impression : collé en haut à gauche de la feuille ---------- */
-@media print {
-  html:has(body.imprimer-cartes),
-  body.imprimer-cartes {
-    margin: 0 !important;
-    padding: 0 !important;
-    width: 210mm !important;
-    max-width: none !important;
-    min-width: 0 !important;
-    display: block !important;
-    background: #fff !important;
-  }
-
-  body.imprimer-cartes > *:not(#zoneImpressionCartes) { display: none !important; }
-
-  body.imprimer-cartes #zoneImpressionCartes {
-    position: absolute !important;
-    left: 0 !important;
-    top: 0 !important;
-    right: auto !important;
-    transform: none !important;
-    margin: 0 !important;
-    width: 210mm !important;
-    max-width: none !important;
-  }
-}
