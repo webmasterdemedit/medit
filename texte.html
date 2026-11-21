@@ -177,6 +177,32 @@
       text-indent: 0; white-space: normal; vertical-align: top;
       border-top: 0.5px solid var(--border-hover);
     }
+    /* ---- Mode CARTES (texte contenant des ---) ---- */
+.feuille-texte .paragraphe:empty { display: none; }
+.cartes-grille { display: flex; flex-direction: column; gap: 14px; }
+.carte-impr {
+  border: 1px dashed var(--border-hover); border-radius: 4px;
+  padding: 14px 18px; background: var(--bg-paper);
+}
+.carte-impr .paragraphe:last-child { margin-bottom: 0; }
+.carte-impr .paragraphe p:last-child { margin-bottom: 0; }
+
+#zoneImpressionCartes {
+  position: absolute; left: -10000px; top: 0;
+  width: 194mm; height: 281mm; display: grid;
+  background: #fff; color: #000; box-sizing: border-box;
+}
+#zoneImpressionCartes .carte-cell {
+  border: 0.3mm dashed #888; padding: 5mm; overflow: hidden;
+  box-sizing: border-box; font-family: 'Georgia', 'Palatino Linotype', serif;
+  line-height: 1.35; background: #fff; color: #000;
+}
+#zoneImpressionCartes .paragraphe { margin: 0 0 .6em; }
+#zoneImpressionCartes .paragraphe:empty { display: none; }
+#zoneImpressionCartes .paragraphe p {
+  font-size: inherit; margin: 0 0 .5em; text-align: justify; line-height: inherit;
+}
+#zoneImpressionCartes img { max-width: 100%; max-height: 35%; display: block; margin: 0 auto; }
 
     /* ---- Images ---- */
     .feuille-texte .print-img {
@@ -2183,8 +2209,22 @@
 
       
       /* Corps du texte */
+            /* Détection des séparateurs --- => mode CARTES */
+      var SEP_CARTE = /\s*-{3,}\s*/;
+      var nbSepCartes = 0;
+      blocsOrdonnes.forEach(function(b) {
+        if (b.type !== 'texte') return;
+        b.data.split('\n').forEach(function(l) {
+          var m = l.trim().split(SEP_CARTE);
+          if (m.length > 1) nbSepCartes += m.length - 1;
+        });
+      });
+      var modeCartes = nbSepCartes > 0;
+      texte._modeCartes = modeCartes;
+
       html += '<div class="texte-zone">';
-      var premierParagraphe = true;
+      if (modeCartes) html += '<div class="cartes-grille"><div class="carte-impr">';
+      var premierParagraphe = !modeCartes;
       blocsOrdonnes.forEach(function(bloc) {
         if (bloc.type !== 'texte') return;
         html += '<div class="paragraphe' + (premierParagraphe ? ' lettrine' : '') + '">';
@@ -2206,8 +2246,7 @@
           bufferTexte = '';
         }
 
-        lignesPara.forEach(function(l) {
-          var trimmed = l.trim();
+        lignesPara.forEach(function
           var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
           if (imgMatch) {
             flushParagraphe();
@@ -2224,11 +2263,23 @@
             else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
             return;
           }
-          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
+                    bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
+        }
+        lignesPara.forEach(function(l) {
+          var segs = l.trim().split(SEP_CARTE);
+          segs.forEach(function(seg, i) {
+            seg = seg.trim();
+            if (seg) traiterLigne(seg);
+            if (i < segs.length - 1) {
+              flushParagraphe();
+              html += '</div></div><div class="carte-impr"><div class="paragraphe">';
+            }
+          });
         });
         flushParagraphe();
         html += '</div>';
       });
+      if (modeCartes) html += '</div></div>';
       html += '</div>';
 
       
@@ -2423,6 +2474,14 @@
     + 'Imprimer le rappel'
     + '</button>';
 
+        // Bouton cartes (texte contenant des ---)
+  if (texte._modeCartes) {
+    html += '<button class="btn-action-lateral btn-imprimer" '
+      + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+      + 'onclick="imprimerCartes()">'
+      + 'Imprimer les cartes'
+      + '</button>';
+  }
   // Bouton optionnel : version alternative (inchangé)
   html += '<button class="btn-action-lateral btn-imprimer-alternative" '
     + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" '
@@ -2595,7 +2654,8 @@
       zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
       zoneBasPage.innerHTML = construireZoneBasPage(texte);
 
-      arabiserDans(container);
+            arabiserDans(container);
+      nettoyerCartesVides(container);
       afficherFilAriane(texte);
 
       var btnRetour = document.getElementById('btnRetourTexte');
@@ -2619,7 +2679,67 @@
       verifierValidationTexte(texte);
       verifierVersionParenthese(texte);
     }
+function nettoyerCartesVides(container) {
+  container.querySelectorAll('.carte-impr').forEach(function(c) {
+    if (!c.textContent.trim() && !c.querySelector('img')) c.parentNode.removeChild(c);
+  });
+}
 
+function imprimerCartes() {
+  var cartes = Array.prototype.slice.call(document.querySelectorAll('#texteContainer .carte-impr'));
+  if (!cartes.length) { alert('Aucune carte à imprimer.'); return; }
+
+  var cases = 2;
+  while (cases < cartes.length) cases *= 2;
+  var cols = cases <= 2 ? 1 : (cases <= 8 ? 2 : 4);
+  var rows = cases / cols;
+  var base = ({ 2: 14, 4: 12, 8: 10, 16: 8 })[cases] || 6;
+
+  var ancienne = document.getElementById('zoneImpressionCartes');
+  if (ancienne) ancienne.parentNode.removeChild(ancienne);
+
+  var zone = document.createElement('div');
+  zone.id = 'zoneImpressionCartes';
+  zone.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
+  zone.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
+  for (var i = 0; i < cases; i++) {
+    var cell = document.createElement('div');
+    cell.className = 'carte-cell';
+    if (cartes[i]) cell.innerHTML = cartes[i].innerHTML;
+    zone.appendChild(cell);
+  }
+  document.body.appendChild(zone);
+
+  /* Réduit la police de chaque carte jusqu'à ce que le texte tienne */
+  Array.prototype.forEach.call(zone.querySelectorAll('.carte-cell'), function(cell) {
+    var fs = base;
+    cell.style.fontSize = fs + 'pt';
+    while (cell.scrollHeight > cell.clientHeight + 1 && fs > 4) {
+      fs -= 0.5;
+      cell.style.fontSize = fs + 'pt';
+    }
+  });
+
+  var st = document.createElement('style');
+  st.id = 'styleImpressionCartes';
+  st.textContent = '@page { size: A4 portrait; margin: 8mm; }'
+    + '@media print {'
+    + ' html, body { background:#fff !important; margin:0 !important; padding:0 !important; }'
+    + ' body.imprimer-cartes > *:not(#zoneImpressionCartes) { display:none !important; }'
+    + ' body.imprimer-cartes #zoneImpressionCartes { position:static !important; left:auto !important; }'
+    + '}';
+  document.head.appendChild(st);
+  document.body.classList.add('imprimer-cartes');
+
+  function nettoyer() {
+    document.body.classList.remove('imprimer-cartes');
+    var z = document.getElementById('zoneImpressionCartes'); if (z) z.parentNode.removeChild(z);
+    var s2 = document.getElementById('styleImpressionCartes'); if (s2) s2.parentNode.removeChild(s2);
+    window.removeEventListener('afterprint', nettoyer);
+  }
+  window.addEventListener('afterprint', nettoyer);
+  setTimeout(function() { window.print(); }, 80);
+}
     function afficherErreur(message) {
       document.getElementById('texteContainer').innerHTML =
         '<div class="vide-texte">' +
