@@ -2669,47 +2669,57 @@ function imprimerCartes() {
   var cols = cases <= 2 ? 1 : (cases <= 8 ? 2 : 4);
   var rows = cases / cols;
   var base = ({ 2: 14, 4: 12, 8: 10, 16: 8 })[cases] || 6;
+  var padding = '4mm'; /* marge intérieure de chaque carte, mets '0' pour aucune */
 
-  var ancienne = document.getElementById('zoneImpressionCartes');
+  var css = ''
+    + '@page { size: A4 portrait; margin: 0; }'
+    + 'html, body { margin:0; padding:0; background:#fff; color:#000; }'
+    + '.grille { display:grid; width:210mm; height:296mm; margin:0; padding:0;'
+    + ' grid-template-columns:repeat(' + cols + ',1fr); grid-template-rows:repeat(' + rows + ',1fr); }'
+    + '.cell { box-sizing:border-box; overflow:hidden; padding:' + padding + ';'
+    + ' border:0.3mm dashed #888; font-family:Georgia,"Palatino Linotype",serif; line-height:1.35; }'
+    + '.paragraphe { margin:0 0 .6em; }'
+    + '.paragraphe:empty { display:none; }'
+    + '.paragraphe p { font-size:inherit; margin:0 0 .5em; text-align:justify; line-height:inherit; }'
+    + '.paragraphe p em { font-style:italic; }'
+    + '.arabe { font-family:"Amiri","Traditional Arabic","Janna LT Bold",serif; font-size:1.25em; }'
+    + '.source-discrete, .source-marge { font-style:italic; font-size:.8em; display:block; }'
+    + 'img { max-width:100%; max-height:35%; display:block; margin:0 auto; }';
+
+  var cellsHtml = '';
+  for (var i = 0; i < cases; i++) {
+    cellsHtml += '<div class="cell">' + (cartes[i] ? cartes[i].innerHTML : '') + '</div>';
+  }
+
+  var ancienne = document.getElementById('iframeImpressionCartes');
   if (ancienne) ancienne.parentNode.removeChild(ancienne);
 
-  var zone = document.createElement('div');
-  zone.id = 'zoneImpressionCartes';
-  zone.style.gridTemplateColumns = 'repeat(' + cols + ', 1fr)';
-  zone.style.gridTemplateRows = 'repeat(' + rows + ', 1fr)';
-  for (var i = 0; i < cases; i++) {
-    var cell = document.createElement('div');
-    cell.className = 'carte-cell';
-    if (cartes[i]) cell.innerHTML = cartes[i].innerHTML;
-    zone.appendChild(cell);
-  }
-  document.body.appendChild(zone);
+  var iframe = document.createElement('iframe');
+  iframe.id = 'iframeImpressionCartes';
+  iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;';
+  document.body.appendChild(iframe);
 
-  /* Réduit la police de chaque carte jusqu'à ce que le texte tienne */
-  Array.prototype.forEach.call(zone.querySelectorAll('.carte-cell'), function(cell) {
-    var fs = base;
-    cell.style.fontSize = fs + 'pt';
-    while (cell.scrollHeight > cell.clientHeight + 1 && fs > 4) {
-      fs -= 0.5;
+  var doc = iframe.contentWindow.document;
+  doc.open();
+  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cartes</title><style>' + css
+    + '</style></head><body><div class="grille">' + cellsHtml + '</div></body></html>');
+  doc.close();
+
+  setTimeout(function() {
+    Array.prototype.forEach.call(doc.querySelectorAll('.cell'), function(cell) {
+      var fs = base;
       cell.style.fontSize = fs + 'pt';
-    }
-  });
-
-  var st = document.createElement('style');
-  st.id = 'styleImpressionCartes';
-   st.textContent = '@page { size: A4 portrait; margin: 0; }'
-    + '@media print { html, body { background:#fff !important; margin:0 !important; padding:0 !important; } }';
-  document.head.appendChild(st);
-  document.body.classList.add('imprimer-cartes');
-
-  function nettoyer() {
-    document.body.classList.remove('imprimer-cartes');
-    var z = document.getElementById('zoneImpressionCartes'); if (z) z.parentNode.removeChild(z);
-    var s2 = document.getElementById('styleImpressionCartes'); if (s2) s2.parentNode.removeChild(s2);
-    window.removeEventListener('afterprint', nettoyer);
-  }
-  window.addEventListener('afterprint', nettoyer);
-  setTimeout(function() { window.print(); }, 80);
+      while (cell.scrollHeight > cell.clientHeight + 1 && fs > 4) {
+        fs -= 0.5;
+        cell.style.fontSize = fs + 'pt';
+      }
+    });
+    iframe.contentWindow.focus();
+    iframe.contentWindow.print();
+    setTimeout(function() {
+      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+    }, 60000);
+  }, 350);
 }
     function afficherErreur(message) {
       document.getElementById('texteContainer').innerHTML =
