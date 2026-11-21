@@ -2189,57 +2189,70 @@
        et renvoie le HTML.
        Retourne null si le contenu n'est PAS au format cartes.
        ============================================================ */
-    function detecterEtConstruireCartes(contenuBrut, feuilleEl) {
-      if (!contenuBrut) return null;
-      if (!/(^|\n)\s*-{3,}\s*(\n|$)/.test(contenuBrut)) return null;
+    function detecterEtConstruireCartes(contenuBrut, feuilleEl, texte) {
+  if (!contenuBrut) return null;
+  if (!texte) return null;
 
-      var morceaux = contenuBrut.split(/\n\s*-{3,}\s*\n/).map(function(p) {
-        return p.trim();
-      }).filter(function(p) { return p !== ''; });
+  // Sécurité : si le texte a des exercices, ce n'est pas un jeu de cartes
+  var aDesExercices = (texte.ordreBlocs && texte.ordreBlocs.length > 0)
+                   || texte.hasQuiz || texte.hasQuestion;
+  if (aDesExercices) return null;
 
-      if (morceaux.length < 2) return null;
+  // Détection STRICTE : ligne composée UNIQUEMENT de 3+ tirets
+  // (espaces autorisés autour), avec du texte avant ET après.
+  var lignes = contenuBrut.split('\n');
+  var indicesSep = [];
+  for (var i = 0; i < lignes.length; i++) {
+    if (/^\s*-{3,}\s*$/.test(lignes[i])) indicesSep.push(i);
+  }
+  if (indicesSep.length === 0) return null;
 
-      var N = morceaux.length;
+  // Il faut du texte avant le premier séparateur et après le dernier
+  var avantPremier = lignes.slice(0, indicesSep[0]).join('\n').trim();
+  var apresDernier = lignes.slice(indicesSep[indicesSep.length - 1] + 1).join('\n').trim();
+  if (!avantPremier || !apresDernier) return null;
 
-      // Grille adaptative : cols*rows >= N
-      var cols, rows;
-      if (N <= 2)       { cols = 2; rows = 1; }
-      else if (N <= 4)  { cols = 2; rows = 2; }
-      else if (N <= 8)  { cols = 4; rows = 2; }
-      else if (N <= 16) { cols = 4; rows = 4; }
-      else if (N <= 32) { cols = 8; rows = 4; }
-      else if (N <= 64) { cols = 8; rows = 8; }
-      else { cols = 10; rows = Math.ceil(N / 10); if (rows > 10) { cols = 12; rows = Math.ceil(N / 12); } }
+  // Découpe
+  var morceaux = contenuBrut.split(/\n\s*-{3,}\s*\n/).map(function(p) {
+    return p.trim();
+  }).filter(function(p) { return p !== ''; });
 
-      // Classes de densité pour l'impression
-      if (feuilleEl) {
-        feuilleEl.classList.add('mode-cartes');
-        if (N > 8 && N <= 16)  feuilleEl.classList.add('cartes-dense');
-        if (N > 16)            feuilleEl.classList.add('cartes-tres-dense');
-      }
+  if (morceaux.length < 2) return null;
 
-      var totalCellules = cols * rows;
+  var N = morceaux.length;
+  var cols, rows;
+  if (N <= 2)       { cols = 2; rows = 1; }
+  else if (N <= 4)  { cols = 2; rows = 2; }
+  else if (N <= 8)  { cols = 4; rows = 2; }
+  else if (N <= 16) { cols = 4; rows = 4; }
+  else if (N <= 32) { cols = 8; rows = 4; }
+  else if (N <= 64) { cols = 8; rows = 8; }
+  else { cols = 10; rows = Math.ceil(N / 10); if (rows > 10) { cols = 12; rows = Math.ceil(N / 12); } }
 
-      var html = '<div class="cartes-grille" style="grid-template-columns:repeat(' + cols + ',1fr);grid-template-rows:repeat(' + rows + ',1fr);">';
+  if (feuilleEl) {
+    feuilleEl.classList.add('mode-cartes');
+    if (N > 8 && N <= 16)  feuilleEl.classList.add('cartes-dense');
+    if (N > 16)            feuilleEl.classList.add('cartes-tres-dense');
+  }
 
-      morceaux.forEach(function(phrase, idx) {
-        var contenuRendu = appliquerGrasItalique(phrase);
-        contenuRendu = rendreCitations(contenuRendu);
-        contenuRendu = embellirFormulesReligieuses(contenuRendu);
-        html += '<div class="carte-item">'
-          + '<div class="carte-num">Carte ' + (idx + 1) + ' / ' + N + '</div>'
-          + '<div class="carte-texte"><p>' + contenuRendu + '</p></div>'
-          + '</div>';
-      });
+  var totalCellules = cols * rows;
+  var html = '<div class="cartes-grille" style="grid-template-columns:repeat(' + cols + ',1fr);grid-template-rows:repeat(' + rows + ',1fr);">';
 
-      // Complète avec des cellules vides pour garder la grille régulière
-      for (var v = N; v < totalCellules; v++) {
-        html += '<div class="carte-item carte-vide"></div>';
-      }
-
-      html += '</div>';
-      return html;
-    }
+  morceaux.forEach(function(phrase, idx) {
+    var contenuRendu = appliquerGrasItalique(phrase);
+    contenuRendu = rendreCitations(contenuRendu);
+    contenuRendu = embellirFormulesReligieuses(contenuRendu);
+    html += '<div class="carte-item">'
+      + '<div class="carte-num">Carte ' + (idx + 1) + ' / ' + N + '</div>'
+      + '<div class="carte-texte"><p>' + contenuRendu + '</p></div>'
+      + '</div>';
+  });
+  for (var v = N; v < totalCellules; v++) {
+    html += '<div class="carte-item carte-vide"></div>';
+  }
+  html += '</div>';
+  return html;
+}
 
     // Bouton d'impression des cartes
     function imprimerCartes() {
