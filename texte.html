@@ -219,7 +219,7 @@
       font-size: 8pt; top: 3px;
     }
 
-        /* ============================================================
+    /* ============================================================
        BARRE D'ACTION (partage + nav)
        ============================================================ */
     .barre-action-texte {
@@ -340,7 +340,6 @@
     }
     .popup-exercices .popup-exercices-fermer:hover { color: var(--text); }
 
-    /* Styles des exercices dans la popup (cohérents avec le reste) */
     .popup-exercices .exercices-zone { margin-top: 0; }
     .popup-exercices .titre-exercices {
       text-align: center; font-family: 'Georgia', serif;
@@ -375,7 +374,6 @@
     }
     .popup-exercices .exo-texte { flex: 1; font-size: 10.5pt; line-height: 1.5; }
 
-    /* Quiz */
     .popup-exercices .quiz-reponses { margin-left: 26px; margin-top: 4px; }
     .popup-exercices .quiz-rep {
       display: block; margin-bottom: 2px; font-size: 10.5pt;
@@ -406,7 +404,6 @@
       font-style: italic; color: var(--text-secondary); font-size: .9em;
     }
 
-    /* Open */
     .popup-exercices .open-textarea {
       width: 100%; min-height: 90px; margin: 8px 0;
       padding: 10px; border: 1px solid var(--border);
@@ -434,7 +431,6 @@
       margin-top: 6px; font-size: .9em; color: var(--text-secondary); min-height: 1em;
     }
 
-    /* TT */
     .popup-exercices .tt-phrase-print { flex: 1; font-size: 10.8pt; line-height: 1.6; }
     .popup-exercices .tt-input {
       display: inline-block; min-width: 100px; max-width: 160px;
@@ -450,7 +446,6 @@
       font-style: italic; color: var(--text-secondary); font-size: .9em;
     }
 
-    /* VF */
     .popup-exercices .vf-ligne { display: flex; align-items: center; gap: 6px; }
     .popup-exercices .exo-texte-vf { font-size: 10.5pt; line-height: 1.5; flex: 1; }
     .popup-exercices .vf-cases {
@@ -477,7 +472,6 @@
       font-style: italic; color: var(--text-secondary); font-size: .9em;
     }
 
-    /* Carte */
     .popup-exercices .carte-actions { margin-left: 26px; margin-top: 8px; }
     .popup-exercices .carte-btn-voir {
       background: transparent; border: 1px solid var(--border);
@@ -509,7 +503,6 @@
     }
     .popup-exercices .carte-choix button:disabled { cursor: default; }
 
-    /* Relier */
     .popup-exercices .relier-zone { position: relative; margin: 12px 0 8px 26px; max-width: 100%; }
     .popup-exercices .relier-grid { display: flex; justify-content: space-between; gap: 0; }
     .popup-exercices .relier-colonne {
@@ -544,7 +537,6 @@
       font-style: italic; color: var(--text-secondary); font-size: .9em;
     }
 
-    /* Ordre */
     .popup-exercices .ordre-grille {
       margin: 6px 0 4px 26px; display: flex; flex-direction: column; gap: 4px;
     }
@@ -583,7 +575,6 @@
       font-style: italic; color: var(--text-secondary); font-size: .9em;
     }
 
-    /* Copier */
     .popup-exercices .copier-actions { margin-left: 26px; margin-top: 8px; }
     .popup-exercices .copier-btn {
       display: inline-block; padding: 4px 14px; border-radius: 0;
@@ -611,7 +602,6 @@
       border-bottom: 1px dotted var(--border-hover);
     }
 
-    /* Note globale dans la popup */
     .popup-exercices .bloc-note-globale {
       margin-top: 24px; padding: 20px 0 0 0;
       border-top: 1px solid var(--border);
@@ -648,7 +638,7 @@
     .popup-exercices .btn-revoir:hover { background: var(--bg-hover); }
 
     /* ============================================================
-       POPUP RÉSULTAT (existant, conservé)
+       POPUP RÉSULTAT
        ============================================================ */
     .popup-resultat-overlay {
       position: fixed; inset: 0; z-index: 99999;
@@ -761,6 +751,142 @@
       .popup-exercices { padding: 22px 18px 20px; }
       .popup-exercices .popup-exercices-titre { font-size: 16px; }
     }
+
+    /* ============================================================
+       === MODE CARTES ===
+       Activé si le contenu du texte contient au moins un "---"
+       - À l'écran : grille fluide, lisible
+       - Le nombre de cartes/feuille à l'impression est calculé
+         en JS (2, 4, 8, 16, 32, 64 selon le nombre de "---")
+       - Tout tient sur UNE SEULE page A4 à l'impression
+       ============================================================ */
+
+    /* --- Écran --- */
+    .feuille-texte.mode-cartes .texte-zone {
+      margin-top: 20px;
+    }
+    .feuille-texte.mode-cartes .cartes-grille {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 14px;
+      margin-top: 8px;
+    }
+    .feuille-texte.mode-cartes .carte-item {
+      border: 1px solid var(--border);
+      padding: 18px 16px 14px;
+      background: var(--bg-paper);
+      display: flex;
+      flex-direction: column;
+      min-height: 130px;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+    .feuille-texte.mode-cartes .carte-item .carte-num {
+      font-family: 'Georgia', serif;
+      font-size: 8.5pt;
+      font-style: italic;
+      color: var(--text-muted);
+      letter-spacing: 0.5px;
+      margin-bottom: 10px;
+    }
+    .feuille-texte.mode-cartes .carte-item .carte-texte {
+      font-family: 'Georgia', serif;
+      font-size: 12.5pt;
+      line-height: 1.55;
+      text-align: center;
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .feuille-texte.mode-cartes .carte-item .carte-texte p {
+      margin: 0;
+      text-indent: 0;
+      text-align: center;
+    }
+    .feuille-texte.mode-cartes .carte-item.carte-vide {
+      border: 1px dashed var(--border);
+      background: transparent;
+      opacity: 0.35;
+    }
+
+    /* --- Impression : tout sur UNE page A4, grille adaptative --- */
+    @media print {
+      @page { size: A4 portrait; margin: 8mm; }
+
+      body.impression-cartes-only .site-header,
+      body.impression-cartes-only .site-footer,
+      body.impression-cartes-only .barre-action-texte,
+      body.impression-cartes-only .fil-ariane,
+      body.impression-cartes-only .colonne-laterale,
+      body.impression-cartes-only .zone-basse-mobile,
+      body.impression-cartes-only .zone-bas-page,
+      body.impression-cartes-only .devise,
+      body.impression-cartes-only .bandeau-titre,
+      body.impression-cartes-only .entete-eleve,
+      body.impression-cartes-only .note-haut,
+      body.impression-cartes-only .filet,
+      body.impression-cartes-only .temps-lecture-haut,
+      body.impression-cartes-only .tags-haut,
+      body.impression-cartes-only .vocab-haut,
+      body.impression-cartes-only .zone-memo,
+      body.impression-cartes-only .bloc-verifier-comprehension,
+      body.impression-cartes-only .btn-annotation-flottant,
+      body.impression-cartes-only .panneau-annotation,
+      body.impression-cartes-only .titre-exercices {
+        display: none !important;
+      }
+
+      .feuille-texte.mode-cartes .texte-zone {
+        margin: 0 !important;
+        padding: 0 !important;
+        height: 100vh !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        overflow: hidden;
+      }
+      .feuille-texte.mode-cartes .cartes-grille {
+        display: grid !important;
+        gap: 4mm !important;
+        width: 100% !important;
+        height: 100% !important;
+        page-break-after: avoid;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        /* grid-template-columns/rows injectés inline par le JS */
+      }
+      .feuille-texte.mode-cartes .carte-item {
+        border: 1px dashed #666 !important;
+        padding: 4mm !important;
+        min-height: 0 !important;
+        height: 100% !important;
+        box-shadow: none !important;
+        page-break-inside: avoid;
+        break-inside: avoid;
+        overflow: hidden;
+      }
+      .feuille-texte.mode-cartes .carte-item .carte-num {
+        font-size: 7pt !important;
+        margin-bottom: 3mm !important;
+      }
+      .feuille-texte.mode-cartes .carte-item .carte-texte {
+        font-size: 10pt !important;
+        line-height: 1.3 !important;
+      }
+      .feuille-texte.mode-cartes.cartes-dense .carte-item .carte-num {
+        font-size: 6pt !important;
+      }
+      .feuille-texte.mode-cartes.cartes-dense .carte-item .carte-texte {
+        font-size: 8pt !important;
+      }
+      .feuille-texte.mode-cartes.cartes-tres-dense .carte-item .carte-num {
+        font-size: 5.5pt !important;
+      }
+      .feuille-texte.mode-cartes.cartes-tres-dense .carte-item .carte-texte {
+        font-size: 7pt !important;
+      }
+    }
   </style>
 </head>
 <body>
@@ -770,6 +896,16 @@
 
     <div class="barre-action-texte">
       <a href="#" class="btn-retour" id="btnRetourTexte">← Retour au thème</a>
+
+      <!-- === MODE CARTES : bouton d'impression dédié (caché par défaut) === -->
+      <button id="btnImprimerCartes"
+              class="btn-retour"
+              style="display:none; margin-left:8px; cursor:pointer;"
+              onclick="imprimerCartes()"
+              title="Imprimer les cartes (tout tient sur une page)">
+        🖨️ Imprimer les cartes
+      </button>
+
       <div class="partage-social" id="partageSocial">
         <button class="btn-retour partage-btn" data-reseau="facebook" title="Partager sur Facebook" onclick="partagerReseau('facebook')">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 9h3V6h-3c-1.7 0-3 1.3-3 3v2H8v3h3v7h3v-7h3l1-3h-4V9c0-.6.4-1 1-1z"/></svg>
@@ -806,9 +942,6 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       POPUP : Vérifier sa compréhension
-       ============================================================ -->
   <div class="popup-exercices-overlay" id="popupExercicesOverlay">
     <div class="popup-exercices" id="popupExercices">
       <div class="popup-exercices-entete">
@@ -819,9 +952,6 @@
     </div>
   </div>
 
-  <!-- ============================================================
-       POPUP RÉSULTAT (existant)
-       ============================================================ -->
   <div id="popupResultatOverlay" class="popup-resultat-overlay">
     <div class="popup-resultat">
       <div class="popup-titre">Résultat</div>
@@ -888,7 +1018,6 @@
 
     var annotationChargee = false;
 
-    /* Contenu HTML des exercices, mis de côté pour la popup */
     var htmlExercicesPopup = '';
 
     function echapperHtml(str) {
@@ -1173,9 +1302,6 @@
       return blocs;
     }
 
-    /* ============================================================
-       CONSTRUCTION DES EXERCICES (HTML pour la popup)
-       ============================================================ */
     function construireExercicesPourFeuille(blocsOrdonnes) {
       var html = '';
       var exoNum = 0;
@@ -1386,9 +1512,6 @@
       return '<div class="exercices-zone"><div class="titre-exercices">Exercices</div>' + html + '</div>';
     }
 
-    /* ============================================================
-       INTERACTIONS (inchangées)
-       ============================================================ */
     function repondreQuiz(el) {
       var quizIdx = el.getAttribute('data-quiz-idx');
       var repIdx = el.getAttribute('data-rep-idx');
@@ -2021,649 +2144,261 @@
     }
 
     /* ============================================================
-       CONSTRUCTION DU TEXTE — reprend les classes de impression.js
+       HELPERS DE RENDU
        ============================================================ */
 
     function appliquerGrasItalique(texte) {
-  if (!texte || texte.indexOf('*') === -1) return texte;
-  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
-  return texte;
-}
-        // ============================================================
-    // Remplacement des formules religieuses par les symboles arabes
-    // - saws / sws       → ﷺ  (U+FDFA)
-    // - swt / jjl        → ﷻ  (U+FDFB)
-    // - ra  / rda        → ؓ  (U+0613)
-    // ============================================================
-    function embellirFormulesReligieuses(texte) {
-      if (!texte) return texte;
-      texte = texte.replace(/\b(saws|sws|sallallahu alayhi wa sallam|صلى الله عليه وسلم)\b/gi, 'ﷺ');
-      texte = texte.replace(/\b(swt|jjl|subhanahou wa ta'ala|subhanahu wa ta'ala|jalla jalaluhou)\b/gi, 'ﷻ');
-      texte = texte.replace(/\b(ra|rda|radi Allahou anhou|radhi Allahou anhou)\b/gi, 'ؓ');
+      if (!texte || texte.indexOf('*') === -1) return texte;
+      texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+      texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
       return texte;
     }
-    function construireHtmlTexte(texte, imagesTheme) {
-      imagesTheme = imagesTheme || {};
-      var contenu = texte.contenu || '';
-      if (!contenu) return '<div class="feuille-texte"><p><em>Texte vide.</em></p></div>';
 
-      var ordreBlocs = texte.ordreBlocs || [];
-      var parts = contenu.split(' | ');
+    // Remplacement des formules religieuses par les symboles arabes
+    // saws / sws → ﷺ ; swt / jjl → ﷻ ; ra / rda → ؓ
+    function embellirFormulesReligieuses(texte) {
+      if (!texte) return texte;
+      texte = texte.replace(/\b(saws|sws|sallallahu alayhi wa sallam)\b/gi, 'ﷺ');
+      texte = texte.replace(/\b(swt|subhanahu wa ta.ala|subhanahu wa ta'ala)\b/gi, 'ﷻ');
+      texte = texte.replace(/\b(ra|rda|radiyallahu anhu|radiyallahu anha)\b/gi, 'ؓ');
+      return texte;
+    }
 
-      var paragraphesArray = [];
-      var quizTexte = '', openTexte = '', ordreTexte = '', carteTexte = '', relierTexte = '', ttTexte = '', vfTexte = '', copierTexte = '';
+    // Détection d'un bloc image (ligne "img:nom:position:taille")
+    function rendreImage(nomFichier, position, taille) {
+      var src = '';
+      if (imagesTheme && imagesTheme[nomFichier]) src = imagesTheme[nomFichier];
+      if (!src) {
+        return '<span class="img-manquante">[image manquante : ' + echapperHtml(nomFichier) + ']</span>';
+      }
+      var classes = 'print-img';
+      if (position === 'gauche') classes += ' print-img-gauche';
+      else if (position === 'droite') classes += ' print-img-droite';
+      else if (position === 'centre') classes += ' print-img-centre';
+      if (taille === 'petit') classes += ' print-img-petit';
+      else if (taille === 'grand') classes += ' print-img-grand';
+      else classes += ' print-img-moyen';
+      return '<img src="' + src + '" alt="" class="' + classes + '">';
+    }
 
-      parts.forEach(function(part) {
-        part = part.trim();
-        if (part.startsWith('q:')) quizTexte = quizTexte ? quizTexte + '\n\n' + part : part;
-        else if (part.startsWith('qs:')) openTexte = openTexte ? openTexte + '\n\n' + part : part;
-        else if (part.startsWith('o:')) ordreTexte = ordreTexte ? ordreTexte + '\n\n' + part : part;
-        else if (part.startsWith('r:')) carteTexte = carteTexte ? carteTexte + '\n\n' + part : part;
-        else if (part.startsWith('l:')) relierTexte = relierTexte ? relierTexte + '\n\n' + part : part;
-        else if (part.startsWith('tt:')) ttTexte = ttTexte ? ttTexte + '\n' + part : part;
-        else if (part.startsWith('vf:')) vfTexte = vfTexte ? vfTexte + '\n' + part : part;
-        else if (part.startsWith('c:')) copierTexte = copierTexte ? copierTexte + '\n' + part : part;
-        else {
-          var cleanText = part.replace(/\r\n/g, '\n').trim();
-          if (cleanText) {
-            var subParas = cleanText.split(/\n\s*\n/).filter(function(s) { return s.trim() !== ''; });
-            subParas.forEach(function(sub) { paragraphesArray.push(sub.trim()); });
-          }
-        }
-      });
+    /* ============================================================
+       === MODE CARTES ===
+       Détecte "---" dans le contenu, découpe en cartes,
+       calcule la grille adaptative (2, 4, 8, 16, 32, 64),
+       et renvoie le HTML.
+       Retourne null si le contenu n'est PAS au format cartes.
+       ============================================================ */
+    function detecterEtConstruireCartes(contenuBrut, feuilleEl) {
+      if (!contenuBrut) return null;
+      if (!/(^|\n)\s*-{3,}\s*(\n|$)/.test(contenuBrut)) return null;
 
-      var quizsParsed = quizTexte ? parserQuizs(quizTexte) : [];
-      var opensParsed = [];
-      if (openTexte) openTexte.split('\n\n').forEach(function(bloc) {
-        var t = bloc.replace(/^qs:\s*/i, '').trim();
-        if (t) opensParsed.push(t);
-      });
-      var ordresParsed = [];
-      if (ordreTexte) ordreTexte.split('\n\n').forEach(function(bloc) {
-        var p = parserOrdre(bloc);
-        if (p && p.elements.length > 0) ordresParsed.push(p);
-      });
-      var cartesParsed = carteTexte ? parserCartes(carteTexte) : [];
-      var reliersParsed = [];
-      if (relierTexte) relierTexte.split('\n\n').forEach(function(bloc) {
-        var p = parserRelier(bloc);
-        if (p && p.paires.length > 0) reliersParsed.push(p);
-      });
-      var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
-      var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
-      var copiersParsed = copierTexte ? parserCopier(copierTexte) : [];
+      var morceaux = contenuBrut.split(/\n\s*-{3,}\s*\n/).map(function(p) {
+        return p.trim();
+      }).filter(function(p) { return p !== ''; });
 
-      var blocsOrdonnes = [];
-      if (ordreBlocs.length > 0) {
-        ordreBlocs.forEach(function(item) {
-          var p = item.split(':');
-          var type = p[0];
-          var idx = p.length > 1 ? parseInt(p[1]) : 0;
-          if (type === 'texte' && paragraphesArray[idx] !== undefined) blocsOrdonnes.push({ type: 'texte', data: paragraphesArray[idx] });
-          else if (type === 'quiz' && quizsParsed[idx]) blocsOrdonnes.push({ type: 'quiz', data: quizsParsed[idx] });
-          else if (type === 'open' && opensParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: opensParsed[idx] });
-          else if (type === 'ordre' && ordresParsed[idx]) blocsOrdonnes.push({ type: 'ordre', data: ordresParsed[idx] });
-          else if (type === 'carte' && cartesParsed[idx]) blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
-          else if (type === 'relier' && reliersParsed[idx]) blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
-          else if (type === 'tt' && ttsParsed[idx]) blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-          else if (type === 'vf' && vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-          else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
-        });
-      } else {
-        paragraphesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'texte', data: s }); });
-        quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
-        opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
-        ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
-        if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
-        ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
-        cartesParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'carte', data: c }); });
-        reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
-        copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
+      if (morceaux.length < 2) return null;
+
+      var N = morceaux.length;
+
+      // Grille adaptative : cols*rows >= N
+      var cols, rows;
+      if (N <= 2)       { cols = 2; rows = 1; }
+      else if (N <= 4)  { cols = 2; rows = 2; }
+      else if (N <= 8)  { cols = 4; rows = 2; }
+      else if (N <= 16) { cols = 4; rows = 4; }
+      else if (N <= 32) { cols = 8; rows = 4; }
+      else if (N <= 64) { cols = 8; rows = 8; }
+      else { cols = 10; rows = Math.ceil(N / 10); if (rows > 10) { cols = 12; rows = Math.ceil(N / 12); } }
+
+      // Classes de densité pour l'impression
+      if (feuilleEl) {
+        feuilleEl.classList.add('mode-cartes');
+        if (N > 8 && N <= 16)  feuilleEl.classList.add('cartes-dense');
+        if (N > 16)            feuilleEl.classList.add('cartes-tres-dense');
       }
 
-      var textePourCompter = '';
-      blocsOrdonnes.forEach(function(b) { if (b.type === 'texte') textePourCompter += ' ' + b.data; });
-      var nbMots = textePourCompter.trim().split(/\s+/).filter(function(w) { return w.length > 0; }).length;
-      var tempsLecture = Math.max(1, Math.round(nbMots / 14));
-      texte._nbMots = nbMots;
-      texte._tempsLecture = tempsLecture;
+      var totalCellules = cols * rows;
 
-      window._relierPaires = {};
-      var relierCountPourStockage = 0;
-      blocsOrdonnes.forEach(function(b) {
-        if (b.type === 'relier') {
-          var map = {};
-          (b.data.paires || []).forEach(function(p) { map[p.gauche] = p.droite; });
-          window._relierPaires[relierCountPourStockage] = map;
-          relierCountPourStockage++;
-        }
+      var html = '<div class="cartes-grille" style="grid-template-columns:repeat(' + cols + ',1fr);grid-template-rows:repeat(' + rows + ',1fr);">';
+
+      morceaux.forEach(function(phrase, idx) {
+        var contenuRendu = appliquerGrasItalique(phrase);
+        contenuRendu = rendreCitations(contenuRendu);
+        contenuRendu = embellirFormulesReligieuses(contenuRendu);
+        html += '<div class="carte-item">'
+          + '<div class="carte-num">Carte ' + (idx + 1) + ' / ' + N + '</div>'
+          + '<div class="carte-texte"><p>' + contenuRendu + '</p></div>'
+          + '</div>';
       });
 
-      /* --- Construit le HTML de la feuille (style impression) --- */
-      var numeroTexte = extraireNumeroTexte(texte.titre);
-      var titreAffiche = extraireTitreSansNumero(texte.titre);
-
-      var numeroHtml = (numeroTexte !== Infinity)
-        ? '<span class="numero-texte">' + numeroTexte + '</span>'
-        : '';
-
-      var tagsClean = (texte.tags || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      var vocabClean = [];
-      (texte.vocabulaire || []).forEach(function(item) {
-        String(item).split(',').forEach(function(mot) {
-          var m = mot.trim();
-          if (m !== '') vocabClean.push(m);
-        });
-      });
-
-            var html = '<div class="feuille-texte">';
-
-               /* Bandeau titre */
-      var nomSection = (themesData[texte.categorie] && themesData[texte.categorie].theme) ? themesData[texte.categorie].theme.trim() : '';
-      var nomTheme = texte.categorie || '';
-      var ligneRappel = 'Rappel';
-      if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
-      else if (nomTheme) ligneRappel += ' de ' + nomTheme;
-
-      html += '<div class="bandeau-titre"><div class="ligne-titre">';
-      html += '<div class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</div>';
-      html += numeroHtml;
-      html += '<h1>' + echapperHtml(titreAffiche || 'Lecture') + '</h1>';
-      html += '<div class="sous-titre-filets"></div>';
-      html += '<div class="meta-droite">' + echapperHtml(ligneRappel) + '</div>';
-      html += '</div></div>';
-      /* Tags */
-      if (tagsClean.length > 0) {
-        html += '<div class="tags-haut">';
-        tagsClean.forEach(function(t) { html += '<span class="memo-tag">#' + echapperHtml(t) + '</span>'; });
-        html += '</div>';
+      // Complète avec des cellules vides pour garder la grille régulière
+      for (var v = N; v < totalCellules; v++) {
+        html += '<div class="carte-item carte-vide"></div>';
       }
 
-      
-      /* Corps du texte */
-      html += '<div class="texte-zone">';
-      var premierParagraphe = true;
-      blocsOrdonnes.forEach(function(bloc) {
-        if (bloc.type !== 'texte') return;
-        html += '<div class="paragraphe' + (premierParagraphe ? ' lettrine' : '') + '">';
-        premierParagraphe = false;
-
-        var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
-        var bufferTexte = '';
-
-                function flushParagraphe() {
-          if (!bufferTexte.trim()) { bufferTexte = ''; return; }
-          var blocs = decouperEnBlocsTexte(bufferTexte);
-          blocs.forEach(function(bloc) {
-            bloc = embellirFormulesReligieuses(bloc);
-            var contientSource = /\(source:\s*[^)]+\)/i.test(bloc);
-            var rendu = appliquerGrasItalique(rendreSourcesDiscretes(rendreSources(rendreCitations(bloc))));
-            var classe = contientSource ? ' class="p-avec-source"' : '';
-            html += '<p' + classe + '>' + rendu + '</p>';
-          });
-          bufferTexte = '';
-        }
-
-        lignesPara.forEach(function(l) {
-          var trimmed = l.trim();
-          var imgMatch = trimmed.match(/^img:([^:\s]+)(?::([a-zA-Z]+))?(?::([a-zA-Z]+))?$/i);
-          if (imgMatch) {
-            flushParagraphe();
-            var nomImg = imgMatch[1];
-            var opt1 = (imgMatch[2] || '').toLowerCase();
-            var opt2 = (imgMatch[3] || '').toLowerCase();
-            var position = 'centre', taille = 'moyen';
-            [opt1, opt2].forEach(function(o) {
-              if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
-              else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
-            });
-            var url = imagesTheme[nomImg];
-            if (!url) html += '<div class="img-manquante">[image manquante : ' + echapperHtml(nomImg) + ']</div>';
-            else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
-            return;
-          }
-          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
-        });
-        flushParagraphe();
-        html += '</div>';
-      });
       html += '</div>';
-
-      
-      html += '</div>'; // feuille-texte
-
-      /* --- Prépare le HTML des exercices pour la popup (pas affiché dans la page) --- */
-      htmlExercicesPopup = construireExercicesPourFeuille(blocsOrdonnes);
-
       return html;
     }
 
-    function construireBlocARetenir(texte) {
-      var aRetenirClean = (texte.aRetenir || []).map(function(x) { return String(x).trim(); }).filter(function(x) { return x !== ''; });
-      if (aRetenirClean.length === 0) return '';
-      var html = '<div class="feuille-texte" style="margin-top:24px;"><div class="zone-memo">';
-      html += '<div class="titre-memo">À retenir</div><ul class="memo-liste">';
-      aRetenirClean.forEach(function(phrase) { html += '<li>' + echapperHtml(phrase) + '</li>'; });
-      html += '</ul></div></div>';
-      return html;
+    // Bouton d'impression des cartes
+    function imprimerCartes() {
+      if (!document.querySelector('.feuille-texte.mode-cartes')) {
+        alert('Ce texte n\'est pas au format cartes.');
+        return;
+      }
+      document.body.classList.add('impression-cartes-only');
+      window.print();
+      setTimeout(function() {
+        document.body.classList.remove('impression-cartes-only');
+      }, 500);
     }
 
-    function arabiserDans(container) {
-      if (!container) return;
-      var walker = document.createTreeWalker(container, NodeFilter.SHOW_TEXT, null, false);
-      var noeuds = [];
-      var n;
-      while ((n = walker.nextNode())) { if (/[\u0600-\u06FF]/.test(n.nodeValue || '')) noeuds.push(n); }
-      noeuds.forEach(function(texteNode) {
-        var parent = texteNode.parentNode;
-        if (!parent) return;
-        if (parent.classList && parent.classList.contains('arabe')) return;
-        if (parent.classList && parent.classList.contains('copier-mot')) return;
-        var txt = texteNode.nodeValue;
-        var regex = /([\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF\uFB50-\uFDFF\uFE70-\uFEFF]+)/g;
-        var parts = txt.split(regex);
-        var frag = document.createDocumentFragment();
-        parts.forEach(function(part) {
-          if (part === '') return;
-          if (/[\u0600-\u06FF]/.test(part)) {
-            var span = document.createElement('span');
-            span.className = 'arabe';
-            span.setAttribute('lang', 'ar');
-            span.textContent = part;
-            frag.appendChild(span);
-          } else frag.appendChild(document.createTextNode(part));
-        });
-        parent.replaceChild(frag, texteNode);
+    /* ============================================================
+       CHARGEMENT DU TEXTE
+       (Utilise DataManager + construction du HTML)
+       ============================================================ */
+
+    function obtenirParametre(nom) {
+      var params = new URLSearchParams(window.location.search);
+      return params.get(nom);
+    }
+
+    function demarrer() {
+      var id = obtenirParametre('id');
+      if (!id) {
+        document.getElementById('texteContainer').innerHTML =
+          '<div class="vide-texte"><span class="icone">⚠</span><h2>Texte introuvable</h2><p>Aucun identifiant fourni.</p></div>';
+        return;
+      }
+
+      // Charge le texte + les images du thème
+      DataManager.getTexteAsync(id).then(function(texte) {
+        if (!texte) {
+          document.getElementById('texteContainer').innerHTML =
+            '<div class="vide-texte"><span class="icone">⚠</span><h2>Texte introuvable</h2><p>Ce texte n\'existe pas ou n\'est pas publié.</p></div>';
+          return;
+        }
+        texteActuel = texte;
+        chargerImagesThemePuisAfficher(texte);
+      }).catch(function(err) {
+        console.error(err);
+        document.getElementById('texteContainer').innerHTML =
+          '<div class="vide-texte"><span class="icone">⚠</span><h2>Erreur</h2><p>Impossible de charger le texte.</p></div>';
       });
     }
 
-    function afficherFilAriane(texte) {
-      var html = '';
-      html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
-      html += '<a href="/medit/présentation.html">Tous les textes</a>';
-      var themeMeta = themesData[texte.categorie] || {};
-      var section = (themeMeta.theme || '').trim();
-      if (section) html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
-      if (texte.categorie) html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
-      html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
-      var el = document.getElementById('filAriane');
-      if (el) el.innerHTML = html;
-    }
-
-    function construireNavDansTheme(texte) {
-      if (!texte.categorie) return {};
-      var memeTheme = textesData.filter(function(c) { return (c.categorie || '') === (texte.categorie || ''); });
-      memeTheme = trierAlphabetique(memeTheme);
-      var indexActuel = -1;
-      for (var i = 0; i < memeTheme.length; i++) if (String(memeTheme[i].id) === String(texte.id)) { indexActuel = i; break; }
-      return {
-        liste: memeTheme, index: indexActuel,
-        precedent: indexActuel > 0 ? memeTheme[indexActuel - 1] : null,
-        suivant: indexActuel !== -1 && indexActuel < memeTheme.length - 1 ? memeTheme[indexActuel + 1] : null
-      };
-    }
-
-    function construireBlocAutresThemesMemeTheme(texte) {
-      if (!texte.categorie) return '';
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-      if (!themeActuel) return '';
-      var autresThemes = [];
-      for (var titre in themesData) {
-        if (titre === texte.categorie) continue;
-        var meta = themesData[titre];
-        if ((meta.theme || '').trim() === themeActuel) {
-          autresThemes.push({
-            titre: titre, couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '', auteur: meta.auteur || '',
-            date: meta.date || '', niveau: meta.niveau || 1,
-            pourcentage: 0, couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (autresThemes.length === 0) return '';
-      autresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Dans la même section « Rappels de ' + echapperHtml(themeActuel) + ' »</div>';
-      html += '<div class="bloc-bas-sous-titre">Autre(s) thème(s) dans cette même section (' + autresThemes.length + ')</div>';
-      html += '<div class="grille-couvertures">';
-      autresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocThemes(texte) {
-      var themeMeta = themesData[texte.categorie] || {};
-      var themeActuel = (themeMeta.theme || '').trim();
-      var themesAutresThemes = [];
-      for (var titre in themesData) {
-        var meta = themesData[titre];
-        var t = (meta.theme || '').trim() || 'Sans thème';
-        if (t !== themeActuel) {
-          themesAutresThemes.push({
-            titre: titre, couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '', auteur: meta.auteur || '',
-            date: meta.date || '', niveau: meta.niveau || 1,
-            pourcentage: 0, couverture: meta.couverture || ''
-          });
-        }
-      }
-      if (themesAutresThemes.length === 0) return '';
-      themesAutresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
-      var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Rappel des autres sections</div>';
-      html += '<div class="bloc-bas-sous-titre">Autre(s) thème(s) dans d\'autres sections (' + themesAutresThemes.length + ')</div>';
-      html += '<div class="grille-couvertures">';
-      themesAutresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireZoneBasPage(texte) {
-      return construireBlocAutresThemesMemeTheme(texte) + construireBlocThemes(texte);
-    }
-
-    /* ============================================================
-       NAV BAS + BOUTON VÉRIFIER + BLOC ACTIONS
-       ============================================================ */
-    function construireZoneBasTexte(texte) {
-      var nav = construireNavDansTheme(texte);
-      var html = '';
-
-      /* Bouton "Vérifier sa compréhension" */
-      if (htmlExercicesPopup) {
-        html += '<div class="bloc-verifier-comprehension">';
-        html += '<button class="btn-verifier-comprehension" onclick="ouvrirPopupExercices()">Vérifier sa compréhension du texte</button>';
-        html += '</div>';
-      }
-
-      /* Navigation précédent / suivant */
-      html += '<div class="zone-bas-texte"><div class="nav-bas-texte">';
-      if (nav.precedent) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.precedent.id) + '">';
-        html += '<span class="nav-label">← Précédent</span><span class="nav-titre">' + echapperHtml(nav.precedent.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder"><span class="nav-label">← Précédent</span><span class="nav-titre">Début du texte</span></div>';
-      }
-      if (nav.suivant) {
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(nav.suivant.id) + '" class="nav-suivant">';
-        html += '<span class="nav-label">Suivant →</span><span class="nav-titre">' + echapperHtml(nav.suivant.titre) + '</span></a>';
-      } else {
-        html += '<div class="nav-placeholder nav-suivant"><span class="nav-label">Suivant →</span><span class="nav-titre">Fin du texte</span></div>';
-      }
-      html += '</div></div>';
-      return html;
-    }
-
-    function construireBlocActions(texte) {
-  var titreEsc = (texte.titre || '').replace(/'/g, "\\'");
-
-  var html = '<div class="bloc-actions-texte">';
-
-  // Bouton 1 : impression complète (texte + exercices + rappel + note)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'complet\')">'
-    + 'Imprimer le rappel avec des exercices'
-    + '</button>';
-
-  // Bouton 2 : impression des exercices uniquement (avec note + titre du rappel)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'exercices\')">'
-    + 'Imprimer les exercices'
-    + '</button>';
-
-  // Bouton 3 : impression du rappel uniquement (sans exercices, sans note)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'rappel\')">'
-    + 'Imprimer le rappel'
-    + '</button>';
-
-  // Bouton optionnel : version alternative (inchangé)
-  html += '<button class="btn-action-lateral btn-imprimer-alternative" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" '
-    + 'onclick="imprimerVersionParenthese()">'
-    + 'Imprimer la version alternative'
-    + '</button>';
-
-  html += '</div>';
-  return html;
-}
-    function construireZoneLaterale(texte) {
-      var nav = construireNavDansTheme(texte);
-      var themeInfo = themesData[texte.categorie] || {};
-      var html = '';
-      html += construireBlocActions(texte);
-      var niveau = texte.niveau || 0;
-      var tempsLecture = texte._tempsLecture || 1;
-      var dateEcrit = formatDateLongue(texte.date);
-      var dateModif = formatDateModifComplete(texte.dateModif);
-
-      html += '<div class="bloc-section">';
-      html += '<div class="bloc-titre"><span class="icone"></span> Informations</div>';
-      html += '<div class="bloc-meta-texte">';
-      
-      
-      if (dateEcrit) html += '<div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Écrit le</span><span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span></div>';
-      if (dateModif) html += '<div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Modifié le</span><span class="meta-valeur">' + echapperHtml(dateModif) + '</span></div>';
-      html += '</div></div>';
-
-      var vocabClean = texte._vocabClean || [];
-      if (vocabClean.length > 0) {
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">✎</span> Vocabulaire <span class="compteur">' + vocabClean.length + '</span></div>';
-        html += '<div class="bloc-vocabulaire">';
-        vocabClean.forEach(function(mot) { html += '<div class="vocab-mot">' + echapperHtml(mot.replace(/\s*=\s*/g, ' : ')) + '</div>'; });
-        html += '</div></div>';
-      }
-
-      var tagsClean = (texte.tags || []).map(function(t) { return String(t).trim(); }).filter(function(t) { return t !== ''; });
-      if (tagsClean.length > 0) {
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">#</span> Tags (' + tagsClean.length + ')</div>';
-        html += '<div class="bloc-tags">';
-        tagsClean.forEach(function(tag) { html += '<a class="tag-item" href="/medit/tag.html?tag=' + encodeURIComponent(tag) + '">#' + echapperHtml(tag) + '</a>'; });
-        html += '</div></div>';
-      }
-
-            if (texte.categorie) {
-        var couleur = themeInfo.couleur || '#2d6a4f';
-        html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">📖</span> Source de la citation principale</div>';
-
-        /* Lien-hashtag cliquable (#Bukhari) */
-        html += construireCarteCouverture({
-          titre: texte.categorie,
-          couleur: couleur
-        }, {
-          cliquable: true,
-          lien: '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie)
-        });
-
-        /* Texte "Voir les autres rappels là-dessus →" sous le hashtag */
-        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels là-dessus →</a>';
-
-        html += '</div>';
-      }
-
-      if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres rappels de la même source <span class="compteur">' + nav.liste.length + '</span></div>';
-        html += '<div class="liste-textes">';
-        nav.liste.forEach(function(c) {
-          var estActuel = String(c.id) === String(texte.id);
-          if (estActuel) html += '<div class="item-texte actuel"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">●</span></div>';
-          else html += '<a class="item-texte" href="/medit/texte.html?id=' + encodeURIComponent(c.id) + '"><span class="item-titre">' + echapperHtml(c.titre) + '</span><span class="item-marqueur">→</span></a>';
-        });
-        html += '</div></div>';
-      }
-      return html;
-    }
-
-    function construireZoneBasseMobile(texte) { return construireZoneLaterale(texte); }
-
-    /* ============================================================
-       POPUP EXERCICES — ouverture / fermeture
-       ============================================================ */
-    function ouvrirPopupExercices() {
-      var contenu = document.getElementById('popupExercicesContenu');
-      if (!contenu) return;
-      contenu.innerHTML = htmlExercicesPopup || '<p><em>Aucun exercice pour ce texte.</em></p>';
-      /* Réinitialise les états pour que les handlers fonctionnent sur les nouveaux éléments */
-      if (window._relierPaires) {
-        Object.keys(window._relierPaires).forEach(function(relierIdx) { setRelierPaires(parseInt(relierIdx), window._relierPaires[relierIdx]); });
-      }
-      majNoteGlobale();
-      initDragAndDropOrdre();
-      document.getElementById('popupExercicesOverlay').classList.add('visible');
-      document.body.style.overflow = 'hidden';
-    }
-
-    function fermerPopupExercices() {
-      document.getElementById('popupExercicesOverlay').classList.remove('visible');
-      document.body.style.overflow = '';
-    }
-
-    /* ============================================================
-       CHARGEMENT
-       ============================================================ */
-    function chargerTexte() {
-      var params = new URLSearchParams(window.location.search);
-      var texteId = params.get('id');
-      if (!texteId) { afficherErreur('Aucun texte spécifié.'); return; }
-
-      DataManager.charger()
-        .then(function(data) {
-          textesData = data.tousLesTextes || data.textes || [];
-          themesData = {};
-          if (data.themes && Array.isArray(data.themes)) {
-            data.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                theme: l.theme || '', couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '', date: l.date || '',
-                description: l.description || '', auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0, couverture: l.couverture || ''
-              };
-            });
-          }
-          texteActuel = trouverTexte(texteId, textesData);
-
-          if (!texteActuel || !texteActuel.contenu) {
-            return DataManager.getTexteAsync(texteId).then(function(texteComplet) {
-              texteActuel = texteComplet;
-              var dejaPresent = false;
-              for (var i = 0; i < textesData.length; i++) {
-                if (String(textesData[i].id) === String(texteComplet.id)) {
-                  textesData[i] = Object.assign({}, textesData[i], texteComplet);
-                  texteActuel = textesData[i];
-                  dejaPresent = true;
-                  break;
-                }
-              }
-              if (!dejaPresent) textesData.push(texteComplet);
-              return texteActuel;
-            });
-          }
-          return texteActuel;
+    function chargerImagesThemePuisAfficher(texte) {
+      var base = (typeof SCRIPT_URL !== 'undefined') ? SCRIPT_URL : CONFIG.SCRIPT_URL;
+      fetch(base + '?action=getImages&theme=' + encodeURIComponent(texte.categorie || ''))
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+          imagesTheme = (d && d.images) ? d.images : {};
         })
-        .then(function(texte) {
-          if (!texte) { afficherErreur('Texte introuvable.'); return; }
-          texteActuel = texte;
-          if (texte.categorie && typeof chargerImagesTheme === 'function') {
-            chargerImagesTheme(texte.categorie)
-              .then(function(images) { imagesTheme = images || {}; afficherTexte(texte); })
-              .catch(function() { imagesTheme = {}; afficherTexte(texte); });
-          } else afficherTexte(texte);
-        })
-        .catch(function(err) { console.error(err); afficherErreur('Erreur de chargement.'); });
+        .catch(function() { imagesTheme = {}; })
+        .then(function() { afficherTexte(texte); });
     }
 
     function afficherTexte(texte) {
       var container = document.getElementById('texteContainer');
-      var colonneLaterale = document.getElementById('colonneLaterale');
-      var zoneBasseMobile = document.getElementById('zoneBasseMobile');
-      var zoneBasPage = document.getElementById('zoneBasPage');
+      var feuille = document.createElement('div');
+      feuille.className = 'feuille-texte';
 
-      var contenuHtml = construireHtmlTexte(texte, imagesTheme);
-      var blocARetenirHtml = construireBlocARetenir(texte);
-      var zoneBasHtml = construireZoneBasTexte(texte);
-
-      container.innerHTML = contenuHtml + blocARetenirHtml + zoneBasHtml;
-
-      colonneLaterale.innerHTML = construireZoneLaterale(texte);
-      zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
-      zoneBasPage.innerHTML = construireZoneBasPage(texte);
-
-      arabiserDans(container);
-      afficherFilAriane(texte);
-
-      var btnRetour = document.getElementById('btnRetourTexte');
-      if (btnRetour) {
-        if (texte.categorie) {
-          btnRetour.href = '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie);
-          btnRetour.textContent = '← Retour au thème';
-        } else {
-          btnRetour.href = '/medit/index.html';
-          btnRetour.textContent = '← Retour à l\'accueil';
-        }
+      // --- Bandeau titre ---
+      var numTexte = extraireNumeroTexte(texte.titre);
+      var titreAff = extraireTitreSansNumero(texte.titre);
+      var numeroHtml = (numTexte !== Infinity)
+        ? '<span class="numero-texte">' + numTexte + '</span>'
+        : '';
+      var tagsHtml = '';
+      if (texte.tags && texte.tags.length > 0) {
+        tagsHtml = '<div class="tags-haut">';
+        texte.tags.forEach(function(t) { tagsHtml += '<span class="memo-tag">' + echapperHtml(t) + '</span>'; });
+        tagsHtml += '</div>';
+      }
+      var vocabHtml = '';
+      if (texte.vocabulaire && texte.vocabulaire.length > 0) {
+        vocabHtml = '<div class="vocab-haut"><span class="titre-memo">Vocabulaire</span>';
+        texte.vocabulaire.forEach(function(m) { vocabHtml += '<span class="memo-mot">' + echapperHtml(m) + '</span>'; });
+        vocabHtml += '</div>';
       }
 
-      document.title = texte.titre + ' - Qiraat';
+      var bandeauHtml =
+        '<div class="entete-eleve"><div class="ligne-eleve">'
+          + '<span><strong>Élève :</strong> ' + echapperHtml(getNomUtilisateurCourant()) + '</span>'
+          + '<span><strong>Date :</strong> ' + (formatDateLongue(new Date().toISOString()) || '') + '</span>'
+        + '</div></div>'
+        + '<div class="bandeau-titre"><div class="ligne-titre">'
+          + numeroHtml
+          + '<h1>' + echapperHtml(titreAff) + '</h1>'
+          + (texte.categorie ? '<div class="meta-droite">' + echapperHtml(texte.categorie) + '</div>' : '')
+        + '</div></div>'
+        + tagsHtml
+        + vocabHtml
+        + '<hr class="filet">';
 
-      if (window._relierPaires) {
-        Object.keys(window._relierPaires).forEach(function(relierIdx) { setRelierPaires(parseInt(relierIdx), window._relierPaires[relierIdx]); });
-      }
-      majNoteGlobale();
+      // --- Détection mode cartes ---
+      var htmlCartes = detecterEtConstruireCartes(texte.contenu, feuille);
+      var modeCartes = (htmlCartes !== null);
 
-      verifierValidationTexte(texte);
-      verifierVersionParenthese(texte);
-    }
-
-    function afficherErreur(message) {
-      document.getElementById('texteContainer').innerHTML =
-        '<div class="vide-texte">' +
-          '<span class="icone">◈</span>' +
-          '<h2>' + message + '</h2>' +
-          '<p>Vérifiez le lien ou retournez à l\'accueil.</p>' +
-          '<a href="/medit/index.html" style="display:inline-block;margin-top:16px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">← Retour à l\'accueil</a>' +
-        '</div>';
-    }
-
-    function partagerReseau(reseau) {
-      var url = window.location.href;
-      var titre = texteActuel ? texteActuel.titre : (document.title || 'Qiraat');
-      var textePartage = titre + ' — Qiraat';
-      var u = encodeURIComponent(url);
-      var t = encodeURIComponent(textePartage);
-      var lien = '';
-      switch (reseau) {
-        case 'facebook': lien = 'https://www.facebook.com/sharer/sharer.php?u=' + u; break;
-        case 'x':        lien = 'https://twitter.com/intent/tweet?url=' + u + '&text=' + t; break;
-        case 'whatsapp': lien = 'https://wa.me/?text=' + t + '%20' + u; break;
-        case 'telegram': lien = 'https://t.me/share/url?url=' + u + '&text=' + t; break;
-        case 'linkedin': lien = 'https://www.linkedin.com/sharing/share-offsite/?url=' + u; break;
-        case 'email':    lien = 'mailto:?subject=' + t + '&body=' + u; break;
-      }
-      if (lien) window.open(lien, '_blank', 'width=600,height=500,noopener,noreferrer');
-    }
-
-    function partagerNatif() {
-      var url = window.location.href;
-      var titre = texteActuel ? texteActuel.titre : (document.title || 'Qiraat');
-      if (navigator.share) {
-        navigator.share({ title: titre, text: titre + ' — Qiraat', url: url }).catch(function(){});
+      var corpsHtml;
+      if (modeCartes) {
+        corpsHtml = '<div class="texte-zone" id="zoneTexte">' + htmlCartes + '</div>';
+        var btn = document.getElementById('btnImprimerCartes');
+        if (btn) btn.style.display = 'inline-flex';
       } else {
-        if (navigator.clipboard && navigator.clipboard.writeText) {
-          navigator.clipboard.writeText(url).then(function() { alert('Lien copié dans le presse-papiers.'); })
-            .catch(function() { prompt('Copiez ce lien :', url); });
-        } else prompt('Copiez ce lien :', url);
+        // --- Rendu normal : paragraphes + images ---
+        var blocs = decouperEnBlocsTexte(texte.contenu || '');
+        var htmlBlocs = '';
+        blocs.forEach(function(bloc) {
+          var ligneImg = bloc.match(/^\s*img:([^:]+)(?::([^:]+))?(?::([^:]+))?\s*$/i);
+          if (ligneImg) {
+            htmlBlocs += rendreImage(ligneImg[1].trim(), (ligneImg[2] || '').trim(), (ligneImg[3] || '').trim());
+            return;
+          }
+          var contenuRendu = appliquerGrasItalique(bloc);
+          contenuRendu = rendreCitations(contenuRendu);
+          contenuRendu = rendreSources(contenuRendu);
+          contenuRendu = rendreSourcesDiscretes(contenuRendu);
+          contenuRendu = embellirFormulesReligieuses(contenuRendu);
+          // Découpe en paragraphes
+          var paragraphes = contenuRendu.split(/\n{2,}/).filter(function(p) { return p.trim() !== ''; });
+          htmlBlocs += '<div class="paragraphe">';
+          paragraphes.forEach(function(p) { htmlBlocs += '<p>' + p.trim() + '</p>'; });
+          htmlBlocs += '</div>';
+        });
+        corpsHtml = '<div class="texte-zone" id="zoneTexte">' + htmlBlocs + '</div>';
       }
+
+      // --- Zone mémo ---
+      var memoHtml = '';
+      if (!modeCartes && texte.aRetenir && texte.aRetenir.length > 0) {
+        memoHtml = '<div class="zone-memo"><div class="titre-memo">À retenir</div><ul class="memo-liste">';
+        texte.aRetenir.forEach(function(item) {
+          memoHtml += '<li>' + embellirFormulesReligieuses(appliquerGrasItalique(echapperHtml(item))) + '</li>';
+        });
+        memoHtml += '</ul></div>';
+      }
+
+      feuille.innerHTML = bandeauHtml + corpsHtml + memoHtml;
+      container.innerHTML = '';
+      container.appendChild(feuille);
+
+      // Bouton retour
+      var btnRetour = document.getElementById('btnRetourTexte');
+      if (btnRetour && texte.categorie) {
+        btnRetour.href = '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie);
+      }
+
+      // Vérif validation
+      verifierValidationTexte(texte);
     }
 
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', chargerTexte);
-    else chargerTexte();
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', demarrer);
+    } else {
+      demarrer();
+    }
   </script>
-
 </body>
 </html>
