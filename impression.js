@@ -653,8 +653,12 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
-    var nomTheme = texte.categorie || '';
-  
+  // ---- Ligne "Rappel sur un … de …" ----
+  var nomSection = recupererSectionTheme(texte.categorie);
+  var nomTheme = texte.categorie || '';
+  var ligneRappel = 'Rappel';
+  if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
+  else if (nomTheme) ligneRappel += ' de ' + nomTheme;
 
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
