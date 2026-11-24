@@ -84,24 +84,6 @@ function recupererCouvertureTheme(categorie) {
 }
 
 // Retourne le nom de section (colonne A de la feuille Thèmes) pour une catégorie
-function recupererSectionTheme(categorie) {
-  if (!categorie) return '';
-  try {
-    if (typeof DataManager !== 'undefined' && typeof DataManager.getTousLesThemes === 'function') {
-      var themes = DataManager.getTousLesThemes() || [];
-      for (var i = 0; i < themes.length; i++) {
-        if (themes[i].titre === categorie) return (themes[i].theme || '').trim();
-      }
-    }
-  } catch (e) {}
-  try {
-    if (typeof window !== 'undefined' && window.themesData && window.themesData[categorie]) {
-      return (window.themesData[categorie].theme || '').trim();
-    }
-  } catch (e) {}
-  return '';
-}
-
 function extraireNumeroTexte(titre) {
   if (!titre) return Infinity;
   var match = titre.match(/^\s*(\d+)\s+/);
@@ -659,13 +641,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
-  // ---- Ligne "Rappel sur un (ou plusieurs) … de …" ----
-  var nomSection = recupererSectionTheme(texte.categorie);
-  var nomTheme = texte.categorie || '';
-  var ligneRappel = 'Rappel';
-  if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
-  else if (nomTheme) ligneRappel += ' de ' + nomTheme;
-
+ 
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
 
@@ -1235,7 +1211,7 @@ ${noteSur20Html}
       ${numeroHtml}
       <h1>${titreAffiche || 'Lecture'}</h1>
       <div class="sous-titre-filets"></div>
-      <div class="meta-droite">${ligneRappel}</div>
+      <div class="meta-droite">${texte.categorie || ''}</div>
     </div>
   </div>
 </div>
