@@ -2355,35 +2355,33 @@
       return html;
     }
 
-    function construireBlocThemes(texte) {
+        function construireBlocThemes(texte) {
       var themeMeta = themesData[texte.categorie] || {};
       var themeActuel = (themeMeta.theme || '').trim();
-      var themesAutresThemes = [];
+      var themesAutres = [];
       for (var titre in themesData) {
+        if (titre === texte.categorie) continue;
         var meta = themesData[titre];
-        var t = (meta.theme || '').trim() || 'Sans thème';
-        if (t !== themeActuel) {
-          themesAutresThemes.push({
-            titre: titre, couleur: meta.couleur || '#2d6a4f',
-            sousTitre: meta.sousTitre || '', auteur: meta.auteur || '',
-            date: meta.date || '', niveau: meta.niveau || 1,
-            pourcentage: 0, couverture: meta.couverture || ''
-          });
-        }
+        themesAutres.push({
+          titre: titre, couleur: meta.couleur || '#2d6a4f',
+          sousTitre: meta.sousTitre || '', auteur: meta.auteur || '',
+          date: meta.date || '', niveau: meta.niveau || 1,
+          pourcentage: 0, couverture: meta.couverture || ''
+        });
       }
-      if (themesAutresThemes.length === 0) return '';
-      themesAutresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
+      if (themesAutres.length === 0) return '';
+      themesAutres.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
       var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Rappel des autres sections</div>';
-      html += '<div class="bloc-bas-sous-titre">Autre(s) thème(s) dans d\'autres sections (' + themesAutresThemes.length + ')</div>';
+      html += '<div class="bloc-bas-titre">Autres thèmes</div>';
+      html += '<div class="bloc-bas-sous-titre">Découvrir les autres thèmes (' + themesAutres.length + ')</div>';
       html += '<div class="grille-couvertures">';
-      themesAutresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
+      themesAutres.forEach(function(l) { html += construireCarteCouverture(l); });
       html += '</div></div>';
       return html;
     }
 
     function construireZoneBasPage(texte) {
-      return construireBlocAutresThemesMemeTheme(texte) + construireBlocThemes(texte);
+      return construireBlocThemes(texte);
     }
 
     /* ============================================================
