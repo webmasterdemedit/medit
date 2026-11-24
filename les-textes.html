@@ -347,9 +347,7 @@
       container.innerHTML = html;
     }
 
-    function cartePost(t) {
-      var meta = themesData[t.categorie] || {};
-      var couv = meta.couverture || '';
+        function cartePost(t) {
       var validation = infoValidation(t.id);
       var nbExo = compterExercices(t);
       var numero = numeroTitre(t.titre);
@@ -357,16 +355,11 @@
       var extrait = t.description || t.extrait || '';
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
-      var couvHtml = couv
-        ? '<img src="' + escapeHtml(couv) + '" alt="" loading="lazy">'
-        : '<div class="fallback">◆</div>';
-
       var bandeau = validation.valide && validation.date
         ? '<div class="post-validation">Vous avez validé ce rappel le ' + escapeHtml(validation.date) + '</div>'
         : '';
 
       return '<a class="post-blog" href="/medit/texte.html?id=' + encodeURIComponent(t.id) + '">'
-        + '<div class="post-couverture">' + couvHtml + '</div>'
         + '<div class="post-corps">'
         +   '<div class="post-titre">' + (numero !== Infinity ? numero + ' — ' : '') + escapeHtml(titre) + '</div>'
         +   '<div class="post-meta">'
