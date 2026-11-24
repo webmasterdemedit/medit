@@ -7,8 +7,7 @@
 //   mais conservés dans tousLesTextesComplets (pour l'impression)
 // ============================================================
 
-// Clés de cache
-var CLE_CACHE          = 'qiraat_data_v1';
+var CLE_CACHE          = 'qiraat_data_v2';
 var CLE_TIMESTAMP      = 'qiraat_data_ts';
 var CLE_NOM            = 'qiraat_data_nom';
 var CLE_IMAGES         = 'qiraat_images_v2_';
@@ -127,7 +126,6 @@ var DataManager = {
                 data.tousLesTextesComplets = tousComplets;
                 data.tousLesTextes = tousFiltres;
 
-                // textes (par niveau) : on filtre aussi
                 data.textes = (data.textes || []).filter(function(t) {
                     return !estVersionAlternative(t.titre);
                 });
@@ -186,8 +184,10 @@ var DataManager = {
                 historique: []
             };
 
+            var id = getIdUtilisateur();
             self._dernierChargement = data;
-            self._dernierNom = getIdUtilisateur();
+            self._dernierNom = id;
+            self._ecrireCache(id, data);
             return data;
         });
     },
@@ -228,14 +228,14 @@ var DataManager = {
             if (!json) return null;
             var data = JSON.parse(json);
 
-            // Compatibilité : si le cache n'a pas tousLesTextesComplets, on le reconstitue
-            if (!data.tousLesTextesComplets) {
-                var tous = data.tousLesTextes || [];
-                data.tousLesTextesComplets = tous.slice();
-                data.tousLesTextes = tous.filter(function(t) {
-                    return !estVersionAlternative(t.titre);
-                });
-            }
+            // Toujours re-filtrer : garantit que tousLesTextes exclut les "(...)"
+            data.tousLesTextesComplets = data.tousLesTextesComplets || (data.tousLesTextes || []).slice();
+            data.tousLesTextes = (data.tousLesTextesComplets || []).filter(function(t) {
+                return !estVersionAlternative(t.titre);
+            });
+            data.textes = (data.textes || []).filter(function(t) {
+                return !estVersionAlternative(t.titre);
+            });
 
             return data;
         } catch(e) {
@@ -262,7 +262,6 @@ var DataManager = {
         if (cache && cache.textesComplets && cache.textesComplets[texteId]) {
             return cache.textesComplets[texteId];
         }
-        // Si pas en cache, chercher dans les complets (inclut les alternatives)
         if (cache && cache.tousLesTextesComplets) {
             for (var i = 0; i < cache.tousLesTextesComplets.length; i++) {
                 if (String(cache.tousLesTextesComplets[i].id) === String(texteId)) {
@@ -281,12 +280,12 @@ var DataManager = {
         return (this._dernierChargement && this._dernierChargement.textes) || [];
     },
 
-    // Renvoie les textes FILTRÉS (sans les alternatives) — pour l'affichage
+    // Textes FILTRÉS (sans les "(...)") — pour l'affichage
     getTousLesTextes: function() {
         return (this._dernierChargement && this._dernierChargement.tousLesTextes) || [];
     },
 
-    // Renvoie TOUS les textes (avec les alternatives) — pour l'impression
+    // TOUS les textes (avec les "(...)") — pour l'impression
     getTousLesTextesComplets: function() {
         return (this._dernierChargement && this._dernierChargement.tousLesTextesComplets) || [];
     },
@@ -370,7 +369,7 @@ var DataManager = {
     },
 
     // ============================================================
-    // SAUVEGARDES
+    // SAUVEGARDES (héritage — conservées pour compatibilité)
     // ============================================================
     sauvegarderOrdre: function(texteId, titre, ordreDonne, bonnes, total, tempsPasse) {
         var id = getIdUtilisateur();
