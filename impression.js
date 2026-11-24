@@ -654,11 +654,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
   // ---- Ligne "Rappel sur un … de …" ----
-  var nomSection = recupererSectionTheme(texte.categorie);
-  var nomTheme = texte.categorie || '';
-  var ligneRappel = 'Rappel';
-  if (nomSection && nomTheme) ligneRappel += ' sur un ' + nomSection + ' de ' + nomTheme;
-  else if (nomTheme) ligneRappel += ' de ' + nomTheme;
+    var nomTheme = texte.categorie || '';
 
   var couvertureHtml = '';
   if (couvertureTheme) couvertureHtml = '<img src="' + couvertureTheme + '" alt="Couverture" class="couverture-mini">';
@@ -1221,7 +1217,7 @@ ${noteSur20Html}
       ${numeroHtml}
       <h1>${titreAffiche || 'Lecture'}</h1>
       <div class="sous-titre-filets"></div>
-      <div class="meta-droite">${ligneRappel}</div>
+      <div class="meta-droite">${nomTheme}</div>
     </div>
   </div>
 </div>
