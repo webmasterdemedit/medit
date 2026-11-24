@@ -2162,11 +2162,9 @@
             var html = '<div class="feuille-texte">';
 
                /* Bandeau titre */
-      var nomSection = (themesData[texte.categorie] && themesData[texte.categorie].theme) ? themesData[texte.categorie].theme.trim() : '';
+                     /* Bandeau titre */
       var nomTheme = texte.categorie || '';
-      var ligneRappel = '';
-      if (nomSection && nomTheme) ligneRappel += '' + nomSection + '' + nomTheme;
-      else if (nomTheme) ligneRappel += ' de ' + nomTheme;
+      var ligneRappel = nomTheme ? 'Thème : ' + nomTheme : '';
 
       html += '<div class="bandeau-titre"><div class="ligne-titre">';
       html += '<div class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</div>';
@@ -2305,13 +2303,10 @@
       });
     }
 
-    function afficherFilAriane(texte) {
+        function afficherFilAriane(texte) {
       var html = '';
       html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
       html += '<a href="/medit/présentation.html">Tous les textes</a>';
-      var themeMeta = themesData[texte.categorie] || {};
-      var section = (themeMeta.theme || '').trim();
-      if (section) html += '<span class="sep">›</span><a href="/medit/section.html?section=' + encodeURIComponent(section) + '">' + echapperHtml(section) + '</a>';
       if (texte.categorie) html += '<span class="sep">›</span><a href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">' + echapperHtml(texte.categorie) + '</a>';
       html += '<span class="sep">›</span><span class="current">' + echapperHtml(texte.titre) + '</span>';
       var el = document.getElementById('filAriane');
