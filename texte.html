@@ -2460,7 +2460,7 @@
   html += '</div>';
   return html;
 }
-    function construireZoneLaterale(texte) {
+        function construireZoneLaterale(texte) {
       var nav = construireNavDansTheme(texte);
       var themeInfo = themesData[texte.categorie] || {};
       var html = '';
@@ -2473,8 +2473,7 @@
       html += '<div class="bloc-section">';
       html += '<div class="bloc-titre"><span class="icone"></span> Informations</div>';
       html += '<div class="bloc-meta-texte">';
-      
-      
+
       if (dateEcrit) html += '<div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Écrit le</span><span class="meta-valeur">' + echapperHtml(dateEcrit) + '</span></div>';
       if (dateModif) html += '<div class="meta-ligne"><span class="meta-icone"></span><span class="meta-label">Modifié le</span><span class="meta-valeur">' + echapperHtml(dateModif) + '</span></div>';
       html += '</div></div>';
@@ -2495,12 +2494,11 @@
         html += '</div></div>';
       }
 
-            if (texte.categorie) {
+      if (texte.categorie) {
         var couleur = themeInfo.couleur || '#2d6a4f';
         html += '<div class="bloc-section">';
-        html += '  <div class="bloc-titre"><span class="icone">📖</span> Source de la citation principale</div>';
+        html += '  <div class="bloc-titre"><span class="icone">📖</span> Thème</div>';
 
-        /* Lien-hashtag cliquable (#Bukhari) */
         html += construireCarteCouverture({
           titre: texte.categorie,
           couleur: couleur
@@ -2509,14 +2507,13 @@
           lien: '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie)
         });
 
-        /* Texte "Voir les autres rappels là-dessus →" sous le hashtag */
-        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels là-dessus →</a>';
+        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels de ce thème →</a>';
 
         html += '</div>';
       }
 
       if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres rappels de la même source <span class="compteur">' + nav.liste.length + '</span></div>';
+        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres rappels de ce thème <span class="compteur">' + nav.liste.length + '</span></div>';
         html += '<div class="liste-textes">';
         nav.liste.forEach(function(c) {
           var estActuel = String(c.id) === String(texte.id);
