@@ -659,7 +659,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var titreAffiche = extraireTitreSansNumero(texte.titre);
   var numeroHtml = (numeroTexte !== Infinity) ? '<span class="numero-texte">' + numeroTexte + '</span>' : '';
 
-  // ---- Ligne "Rappel sur un … de …" ----
+  // ---- Ligne "Rappel sur un (ou plusieurs) … de …" ----
   var nomSection = recupererSectionTheme(texte.categorie);
   var nomTheme = texte.categorie || '';
   var ligneRappel = 'Rappel';
