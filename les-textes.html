@@ -11,7 +11,7 @@
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
 
-    <style>
+  <style>
     /* ===== PAGE BLOG ===== */
     .page-blog { max-width: 860px; margin: 0 auto; padding: 20px 30px 40px; }
     .page-blog h1 {
@@ -128,7 +128,6 @@
         <label for="triTheme">Thème</label>
         <select id="triTheme" onchange="afficherBlog()"><option value="">Tous</option></select>
       </div>
-      
       <div class="tri-groupe">
         <label for="triAnnee">Année</label>
         <select id="triAnnee" onchange="afficherBlog()"><option value="">Toutes</option></select>
@@ -234,7 +233,6 @@
         niveauEtudiant = data.niveau || 0;
         textesData = data.tousLesTextes || data.textes || [];
 
-        
         toutesLesReponses = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
@@ -253,9 +251,6 @@
         }
         niveauEtudiant = cache.niveau || 0;
         textesData = cache.tousLesTextes || cache.textes || [];
-        (cache.themes || []).forEach(function(l) {
-          themesData[l.titre] = { couleur: l.couleur || '#2d6a4f', couverture: l.couverture || '' };
-        });
         initialiserFiltres();
         afficherBlog();
       });
@@ -264,7 +259,7 @@
     function initialiserFiltres() {
       var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
 
-            var themes = {}, annees = {};
+      var themes = {}, annees = {};
       acc.forEach(function(t) {
         var c = (t.categorie || '').trim();
         if (c) themes[normaliser(c)] = c;
@@ -286,7 +281,6 @@
 
     function reinitialiserTri() {
       document.getElementById('triTheme').value = '';
- 
       document.getElementById('triAnnee').value = '';
       var i = document.getElementById('rechercheTextes'); if (i) i.value = '';
       rechercheActive = '';
@@ -297,12 +291,10 @@
       var loader = document.getElementById('loader'); if (loader) loader.style.display = 'none';
 
       var ft = document.getElementById('triTheme').value;
- 
       var fa = document.getElementById('triAnnee').value;
 
       var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
       if (ft) { var c = normaliser(ft); acc = acc.filter(function(t) { return normaliser(t.categorie) === c; }); }
- 
       if (fa) acc = acc.filter(function(t) { return anneeDe(t.date) === fa; });
       if (rechercheActive) {
         var r = normaliser(rechercheActive);
@@ -335,7 +327,7 @@
       container.innerHTML = html;
     }
 
-        function cartePost(t) {
+    function cartePost(t) {
       var validation = infoValidation(t.id);
       var nbExo = compterExercices(t);
       var numero = numeroTitre(t.titre);
