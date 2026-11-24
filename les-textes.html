@@ -286,7 +286,7 @@
 
     function reinitialiserTri() {
       document.getElementById('triTheme').value = '';
-      document.getElementById('triTag').value = '';
+ 
       document.getElementById('triAnnee').value = '';
       var i = document.getElementById('rechercheTextes'); if (i) i.value = '';
       rechercheActive = '';
@@ -297,12 +297,12 @@
       var loader = document.getElementById('loader'); if (loader) loader.style.display = 'none';
 
       var ft = document.getElementById('triTheme').value;
-      var fg = document.getElementById('triTag').value;
+ 
       var fa = document.getElementById('triAnnee').value;
 
       var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
       if (ft) { var c = normaliser(ft); acc = acc.filter(function(t) { return normaliser(t.categorie) === c; }); }
-      if (fg) { var g = normaliser(fg); acc = acc.filter(function(t) { return (t.tags || []).some(function(x) { return normaliser(x) === g; }); }); }
+ 
       if (fa) acc = acc.filter(function(t) { return anneeDe(t.date) === fa; });
       if (rechercheActive) {
         var r = normaliser(rechercheActive);
