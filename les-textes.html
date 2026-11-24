@@ -128,10 +128,7 @@
         <label for="triTheme">Thème</label>
         <select id="triTheme" onchange="afficherBlog()"><option value="">Tous</option></select>
       </div>
-      <div class="tri-groupe">
-        <label for="triTag">Tag</label>
-        <select id="triTag" onchange="afficherBlog()"><option value="">Tous</option></select>
-      </div>
+      
       <div class="tri-groupe">
         <label for="triAnnee">Année</label>
         <select id="triAnnee" onchange="afficherBlog()"><option value="">Toutes</option></select>
@@ -267,11 +264,10 @@
     function initialiserFiltres() {
       var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
 
-      var themes = {}, tags = {}, annees = {};
+            var themes = {}, annees = {};
       acc.forEach(function(t) {
         var c = (t.categorie || '').trim();
         if (c) themes[normaliser(c)] = c;
-        (t.tags || []).forEach(function(g) { var b = String(g).trim(); if (b) tags[normaliser(b)] = b; });
         var a = anneeDe(t.date); if (a) annees[a] = true;
       });
 
