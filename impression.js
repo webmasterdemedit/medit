@@ -2,6 +2,7 @@
 // IMPRESSION - Qiraat
 // Fichier autonome : génère une page imprimable pour un texte
 // Dépend de : DataManager (data-manager.js)
+// + V21 : support "zoom:" (colonne Z de la feuille Textes)
 // ============================================================
 
 function imprimerTexte(texteId, titre, textesData, mode) {
@@ -397,6 +398,11 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var afficherRappel = (mode === 'complet' || mode === 'rappel');
   var afficherNote = (mode !== 'rappel');
 
+  // === ZOOM === (colonne Z de la feuille Textes)
+  var zoom = parseInt(texte.zoom, 10) || 100;
+  if (zoom < 30) zoom = 30;
+  if (zoom > 200) zoom = 200;
+
   // ordreBlocs peut arriver en tableau OU en chaîne "texte:0,quiz:0,..."
   var ordreBlocs = texte.ordreBlocs || [];
   if (typeof ordreBlocs === 'string') {
@@ -706,6 +712,14 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 body {
   font-family: 'Georgia', 'Iowan Old Style', 'Palatino Linotype', 'Book Antiqua', serif;
   background:#faf7f0; color:#2a241c; font-size:11.5pt; line-height:1.5;
+}
+
+/* === ZOOM GLOBAL (colonne Z de la feuille Textes) ===
+   Appliqué sur .page : respecte les marges @page.
+   Fallback font-size pour Firefox (qui ne supporte pas zoom). */
+.page { zoom: ${zoom}%; }
+@supports not (zoom: 1) {
+  .page { font-size: ${zoom}%; }
 }
 
 .arabe, [lang="ar"] {
