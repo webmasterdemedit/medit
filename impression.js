@@ -1304,6 +1304,11 @@ body { font-size: 12pt; }
   font-family:'EB Garamond',serif; font-style:italic; font-size:8.5pt;
   color:#7a705f; border-top:0.6px solid #1a1712;
 }
+
+/* Arabe un peu plus grand dans les exercices */
+.exo .arabe, .exo [lang="ar"], .memo-item .arabe {
+  font-size: 1.9em !important; line-height: 1.2;
+}
 </style>
 </head>
 <body>
