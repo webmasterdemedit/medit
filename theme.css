@@ -2,7 +2,7 @@
    THEME MODERNE NOIR & BLANC — texte bien visible, cartes arrondies, sans-serif
    ============================================================ */
 
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,700;1,7..72,400&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@500;600;700&display=swap');
 
 @font-face {
   font-family: 'Janna LT Bold';
@@ -1486,78 +1486,447 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
 }
 
 /* ============================================================
-   MODE LISEUSE NOIR & BLANC — style encre électronique
+   ÉDITION PLÉIADE — papier bible ivoire, Garamond, filets fins
    ============================================================ */
-
 :root {
-  --bg:             #f2f2f2;
-  --bg-paper:       #ffffff;
-  --text:           #111111;
-  --text-secondary: #333333;
-  --text-muted:     #6b6b6b;
-  --border:         #dddddd;
-  --border-hover:   #bbbbbb;
-  --font-lecture:   'Literata', Georgia, serif;
+  --bg:             #efe9dc;
+  --bg-hover:       #e8e0cf;
+  --bg-active:      #e1d7c2;
+  --bg-paper:       #faf6ec;
+  --text:           #1a1712;
+  --text-secondary: #3b352b;
+  --text-muted:     #7a705f;
+  --border:         #d9cfba;
+  --border-hover:   #b9ad94;
+  --border-strong:  #1a1712;
+  --accent:         #1a1712;
+  --accent-dark:    #1a1712;
+  --accent-soft:    #f1ebdd;
+  --or:             #9a7b3c;
   --vert-theme:     #2d6a4f;
-  --shadow-sm: none;
-  --shadow-md: none;
-  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --font-livre:     'EB Garamond', Garamond, 'Times New Roman', serif;
+  --font-capitales: 'Cormorant SC', 'EB Garamond', serif;
+  --font-sans:      var(--font-livre);
+  --font-serif:     var(--font-livre);
+  --radius-sm: 0; --radius-md: 0; --radius-lg: 0;
+  --shadow-sm: none; --shadow-md: none; --shadow-lg: 0 10px 30px rgba(26, 23, 18, 0.15);
 }
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg:         #111111;
-    --bg-paper:   #1a1a1a;
-    --text:       #eeeeee;
-    --text-secondary: #cccccc;
-    --text-muted: #999999;
-    --border:     #2e2e2e;
-    --border-hover: #444444;
-    --vert-theme: #52b788;
+    --bg: #17150f; --bg-hover: #221f17; --bg-active: #2b271d; --bg-paper: #1d1a13;
+    --text: #ece4d1; --text-secondary: #cfc5ae; --text-muted: #978c75;
+    --border: #3a3427; --border-hover: #554c3a; --border-strong: #ece4d1;
+    --accent: #ece4d1; --accent-dark: #ece4d1; --accent-soft: #221f17;
+    --or: #c9a85e; --vert-theme: #6fbf95;
   }
 }
 
-.carte-post:hover, .carte-texte:hover, .presentation-card:hover,
-.methode-card:hover, .encart-theme:hover, .carte-couverture:hover,
-.nav-bas-texte a:hover {
-  transform: none !important;
+html, body { font-family: var(--font-livre); font-size: 19px; }
+body * { border-radius: 0 !important; }
+
+/* Tout à plat : pas d'ombres, pas de mouvements */
+*:hover { transform: none !important; }
+.carte-post, .carte-texte, .presentation-card, .methode-card, .encart-theme,
+.carte-couverture, .feuille-texte, .colonne-laterale .bloc-section,
+.zone-basse-mobile .bloc-section, .sidebar-themes, .stats-ligne, .stats-theme,
+.nav-bas-texte a, .nav-bas-texte .nav-placeholder, .tableau-wrapper {
   box-shadow: none !important;
-  border-color: var(--text) !important;
 }
-.feuille-texte { box-shadow: none; border-color: var(--border-hover); }
+
+/* Titres : petites capitales espacées, centrés */
+h1, h2, h3, h4 { font-family: var(--font-livre); font-weight: 500; letter-spacing: 0; }
+.page h1, .page-themes h1, .page-programme h1, .page-presentation h1, .page-theme h1 {
+  font-family: var(--font-capitales);
+  font-weight: 600;
+  font-size: 34px;
+  letter-spacing: 0.12em;
+  text-align: center;
+  margin-bottom: 4px;
+}
+.page .sous-titre-page, .sous-titre-page {
+  text-align: center;
+  font-style: italic;
+  color: var(--text-muted);
+}
+.page h1::after, .page-themes h1::after, .page-theme h1::after {
+  content: "❦";
+  display: block;
+  font-size: 18px;
+  color: var(--or);
+  margin-top: 6px;
+  letter-spacing: 0;
+}
+
+.feuille-texte .titre-exercices,
+.bloc-a-retenir .bloc-a-retenir-titre,
+.bloc-note-globale .note-titre,
+.popup-resultat .popup-titre,
+.popup-resultat .popup-questions-titre,
+.bloc-section .bloc-titre,
+.zone-bas-page .bloc-bas-titre {
+  font-family: var(--font-capitales) !important;
+  font-weight: 600;
+  font-size: 17px !important;
+  letter-spacing: 0.14em !important;
+  text-transform: lowercase !important;
+  color: var(--text) !important;
+  text-align: center !important;
+  border-bottom: 1px solid var(--border-hover) !important;
+  padding-bottom: 8px !important;
+}
+
+/* En-tête et pied : sobres, filet double */
+.site-header {
+  background: var(--bg-paper) !important;
+  backdrop-filter: none;
+  border-bottom: 3px double var(--border-hover) !important;
+}
+.site-header .header-logo-nom {
+  font-family: var(--font-capitales) !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.14em !important;
+  font-size: 24px !important;
+}
+.site-header .header-link {
+  font-family: var(--font-livre);
+  font-size: 17px;
+  font-style: italic;
+  background: transparent !important;
+}
+.site-header .header-link:hover { text-decoration: underline; text-underline-offset: 4px; }
+.header-btn-creer, .header-btn-compte {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--text) !important;
+  font-family: var(--font-capitales) !important;
+  letter-spacing: 0.08em;
+}
+.site-footer {
+  background: var(--bg) !important;
+  border-top: 3px double var(--border-hover) !important;
+}
+.site-footer .footer-devise { font-style: italic !important; font-family: var(--font-livre) !important; }
+
+/* Boutons : encadrés fins, petites capitales */
+.btn-entrer, .btn-submit, .btn-nav, .btn-primary, .btn-fermer, .btn-ajout,
+.btn-retour, .btn-action-lateral, .btn-envoyer-final, .popup-btn-envoyer-questions,
+.popup-resultat .popup-btn-fermer, .bloc-note-globale .btn-revoir,
+.feuille-texte .carte-btn-voir, .feuille-texte .ordre-btn-valider,
+.feuille-texte .copier-btn, .feuille-texte .vf-btn, .feuille-texte .carte-choix button,
+.filtre-cat-btn, .tab-btn, .sous-tab-btn {
+  background: transparent !important;
+  color: var(--text) !important;
+  border: 1px solid var(--text) !important;
+  font-family: var(--font-capitales) !important;
+  font-weight: 600 !important;
+  letter-spacing: 0.08em;
+  box-shadow: none !important;
+}
+.btn-entrer:hover, .btn-submit:hover, .btn-primary:hover, .btn-retour:hover,
+.btn-action-lateral:hover, .btn-envoyer-final:hover:not(:disabled),
+.feuille-texte .vf-btn:hover:not(:disabled), .filtre-cat-btn:hover, .tab-btn:hover {
+  background: var(--text) !important;
+  color: var(--bg-paper) !important;
+}
+.filtre-cat-btn.active, .tab-btn.active, .sous-tab-btn.active,
+.feuille-texte .vf-btn.vf-ok, .feuille-texte .carte-choix button.actif {
+  background: var(--text) !important;
+  color: var(--bg-paper) !important;
+}
+
+/* Badges discrets en italique */
+.badge, .badge-statut, .tag-item, .carte-texte .meta .badge-icone,
+.carte-post .meta .badge, .carte-post .meta .niveau-badge {
+  background: transparent !important;
+  border: none !important;
+  font-style: italic;
+  color: var(--text-muted) !important;
+  padding: 0 6px !important;
+  font-size: 15px;
+}
+
+/* Champs : simple trait */
+input, textarea, select, .barre-recherche input[type="text"] {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px solid var(--text) !important;
+  font-family: var(--font-livre);
+  font-size: 18px;
+}
+.feuille-texte .open-textarea, .popup-resultat .popup-question-textarea {
+  border: 1px solid var(--border-hover) !important;
+  background: var(--bg-paper) !important;
+}
+input:focus, textarea:focus { box-shadow: none !important; border-color: var(--or) !important; }
+.search-bar { border: none !important; border-bottom: 1px solid var(--text) !important; background: transparent; }
+
+/* Listes : comme une table des matières */
+.carte-post, .carte-texte, .encart-theme {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px dotted var(--border-hover) !important;
+  padding: 14px 4px !important;
+  margin-bottom: 0 !important;
+}
+.carte-post:hover, .carte-texte:hover, .encart-theme:hover { background: var(--bg-hover) !important; }
+.carte-texte .titre, .carte-post .titre {
+  font-family: var(--font-livre);
+  font-weight: 500;
+  font-size: 20px;
+}
+.carte-texte .numero-texte, .feuille-texte .bandeau-titre .numero-texte {
+  background: transparent !important;
+  color: var(--or) !important;
+  font-family: var(--font-capitales);
+  font-size: 20px;
+  border: none !important;
+}
+
+.presentation-card, .methode-card {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-hover) !important;
+  text-align: center;
+}
+.methode-card .methode-num { color: var(--or); font-family: var(--font-capitales); }
+
+.stats-ligne, .stats-theme {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-hover) !important;
+  border-bottom: 1px solid var(--border-hover) !important;
+  font-style: italic;
+}
+.stats-ligne .stat-item .nombre, .stats-theme .stat-item .nombre {
+  color: var(--text) !important;
+  font-style: normal;
+  font-weight: 600;
+}
+
+.sidebar-themes { background: transparent; border: none; border-right: 1px solid var(--border-hover); }
+.sidebar-themes .theme-item { font-family: var(--font-livre); font-size: 17px; }
+.sidebar-themes .theme-item.active { background: transparent !important; font-style: italic; }
+
+.colonne-laterale .bloc-section, .zone-basse-mobile .bloc-section {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-hover) !important;
+  padding: 18px 0 !important;
+}
+
+/* ===== LA PAGE DE TEXTE : comme une page de livre ===== */
+.feuille-texte {
+  background: var(--bg-paper);
+  border: 1px solid var(--border) !important;
+  padding: 64px 72px !important;
+  font-family: var(--font-livre);
+}
+.feuille-texte .bandeau-titre { text-align: center; margin-bottom: 36px !important; }
+.feuille-texte .bandeau-titre .ligne-titre {
+  flex-direction: column !important;
+  align-items: center !important;
+  text-align: center !important;
+  gap: 6px !important;
+}
+.feuille-texte .bandeau-titre h1 {
+  font-family: var(--font-capitales) !important;
+  font-weight: 600 !important;
+  font-size: 30px !important;
+  letter-spacing: 0.1em !important;
+  text-align: center;
+}
+.feuille-texte .bandeau-titre::after {
+  content: "";
+  display: block;
+  width: 60px;
+  margin: 18px auto 0;
+  border-top: 1px solid var(--or);
+}
 
 .feuille-texte .paragraphe p,
 .feuille-texte .texte-zone p,
 .carte-impr .paragraphe p {
-  font-family: var(--font-lecture) !important;
-  font-size: 20px;
-  line-height: 1.85;
+  font-family: var(--font-livre) !important;
+  font-size: 21px !important;
+  line-height: 1.7 !important;
+  text-align: justify !important;
+  text-indent: 1.5em !important;
+  hyphens: auto;
+  margin-bottom: 0 !important;
 }
-.feuille-texte .bandeau-titre h1 {
-  font-family: var(--font-lecture) !important;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.feuille-texte .exo-texte,
-.feuille-texte .quiz-rep,
-.bloc-a-retenir .bloc-a-retenir-liste li {
-  font-family: var(--font-lecture);
+.feuille-texte .paragraphe { margin-bottom: 10px !important; }
+.feuille-texte .paragraphe p .source-marge {
+  font-family: var(--font-livre);
+  font-style: italic;
+  font-weight: 400;
+  font-size: 15px;
 }
 
-/* ===== NOMS DE THÈMES EN VERT ===== */
-.carte-couverture .titre-theme,
+/* Lettrine au premier paragraphe */
+.feuille-texte .paragraphe.lettrine > p:first-child { text-indent: 0 !important; }
+.feuille-texte .paragraphe.lettrine > p:first-child::first-letter {
+  float: left;
+  font-family: var(--font-livre);
+  font-size: 3.6em;
+  line-height: 0.85;
+  padding: 6px 8px 0 0;
+  color: var(--or);
+}
+
+/* Exercices : filets, pas de boîtes */
+.feuille-texte .exercices-zone { border-top: none !important; }
+.feuille-texte .exercices-zone::before {
+  content: "❧";
+  display: block;
+  text-align: center;
+  font-size: 22px;
+  color: var(--or);
+  margin-bottom: 18px;
+}
+.feuille-texte .exo {
+  background: transparent !important;
+  border: none !important;
+  border-bottom: 1px dotted var(--border-hover) !important;
+  padding: 16px 0 !important;
+  margin-bottom: 0 !important;
+}
+.feuille-texte .consigne-exo {
+  font-family: var(--font-livre);
+  font-style: italic;
+  text-transform: none;
+  letter-spacing: 0;
+  font-weight: 400;
+  font-size: 17px;
+  color: var(--text-muted);
+}
+.feuille-texte .exo-num-inline {
+  background: transparent !important;
+  color: var(--or) !important;
+  font-family: var(--font-capitales);
+  font-size: 17px !important;
+}
+.feuille-texte .exo-texte { font-family: var(--font-livre); font-size: 19px; font-weight: 400; }
+.feuille-texte .quiz-rep {
+  background: transparent !important;
+  border: none !important;
+  font-family: var(--font-livre);
+  padding: 4px 6px !important;
+  margin-bottom: 2px !important;
+}
+.feuille-texte .quiz-rep.interactive:hover { background: var(--bg-hover) !important; }
+.feuille-texte .quiz-rep.correct { font-weight: 600; color: var(--text) !important; background: transparent !important; }
+.feuille-texte .quiz-rep.incorrect { text-decoration: line-through; color: var(--text-muted) !important; background: transparent !important; }
+.feuille-texte .quiz-case { border: 1px solid var(--text) !important; }
+.feuille-texte .quiz-rep.correct .quiz-case { background: var(--text) !important; }
+.feuille-texte .tt-input {
+  background: transparent !important;
+  border-bottom: 1px solid var(--text) !important;
+  font-family: var(--font-livre);
+  font-size: 19px;
+}
+.feuille-texte .tt-input.tt-ok { font-weight: 600; background: transparent !important; color: var(--text) !important; }
+.feuille-texte .tt-input.tt-ko { text-decoration: line-through; background: transparent !important; color: var(--text-muted) !important; }
+.feuille-texte .ordre-item { background: transparent !important; border: 1px solid var(--border-hover) !important; }
+.feuille-texte .ordre-item .ordre-num { background: transparent !important; color: var(--or) !important; font-family: var(--font-capitales); }
+.feuille-texte .carte-reponse-cachee { background: transparent !important; border-left: 1px solid var(--or) !important; font-style: italic; }
+.feuille-texte .quiz-feedback-exo, .feuille-texte .tt-feedback, .feuille-texte .vf-feedback,
+.feuille-texte .ordre-resultat, .feuille-texte .relier-resultat { font-style: italic; }
+
+/* À retenir : encadré à filet double */
+.bloc-a-retenir {
+  background: transparent !important;
+  border: 3px double var(--border-hover) !important;
+  padding: 24px 32px !important;
+}
+.bloc-a-retenir .bloc-a-retenir-liste li { font-family: var(--font-livre); font-size: 19px; }
+.bloc-a-retenir .bloc-a-retenir-liste li::before { content: "—"; color: var(--or) !important; font-weight: 400; }
+
+.bloc-note-globale { background: transparent !important; border: 1px solid var(--border-hover) !important; }
+.bloc-note-globale .note-totale, .popup-resultat .popup-note-totale {
+  color: var(--text) !important;
+  border-top: 1px solid var(--text) !important;
+  font-family: var(--font-livre);
+  font-weight: 600;
+}
+.modal-content, .popup-resultat { border: 1px solid var(--border-hover) !important; background: var(--bg-paper); }
+
+.nav-bas-texte a, .nav-bas-texte .nav-placeholder {
+  background: transparent !important;
+  border: none !important;
+  border-top: 1px solid var(--border-hover) !important;
+  font-style: italic;
+}
+
+/* Couvertures : reliure cuir façon Pléiade */
+.carte-couverture {
+  background: #1f3b2f !important;
+  border: 1px solid #142a20 !important;
+  color: #e9d9a8 !important;
+}
+.carte-couverture::before, .carte-couverture::after {
+  content: "";
+  position: absolute;
+  left: 10px; right: 10px;
+  border-top: 1px solid rgba(233, 217, 168, 0.55);
+  z-index: 3;
+}
+.carte-couverture::before { top: 10px; }
+.carte-couverture::after { bottom: 10px; }
+.carte-couverture .badge-niveau {
+  background: transparent !important;
+  color: #e9d9a8 !important;
+  font-family: var(--font-capitales);
+  left: 50%; transform: translateX(-50%);
+  top: 18px;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+}
+.carte-couverture .contenu-theme { text-align: center; padding: 44px 18px 22px; }
+.carte-couverture .titre-wrapper { align-items: center; }
+.carte-couverture .auteur-theme,
+.carte-couverture .edition-date,
+.carte-couverture .edition-nom {
+  color: rgba(233, 217, 168, 0.8) !important;
+  font-family: var(--font-capitales);
+}
+.carte-couverture .titre-theme {
+  color: #f1e3b3 !important;
+  font-family: var(--font-capitales) !important;
+  font-weight: 700;
+  font-size: 19px;
+  letter-spacing: 0.06em;
+  text-align: center;
+}
+.carte-couverture .sous-titre-theme {
+  color: rgba(233, 217, 168, 0.85) !important;
+  font-family: var(--font-livre);
+  font-style: italic;
+  font-size: 14px;
+  text-align: center;
+}
+.carte-couverture .edition-info { align-items: center; }
+.carte-couverture .progression-theme { background: rgba(0, 0, 0, 0.3) !important; height: 3px; }
+.carte-couverture .progression-theme .barre { background: #e9d9a8 !important; }
+.carte-couverture .couverture-image { box-shadow: none !important; border: 1px solid rgba(233, 217, 168, 0.6) !important; }
+.carte-couverture:hover { border-color: #e9d9a8 !important; }
+
+/* ===== NOMS DE THÈMES EN VERT (hors couvertures) ===== */
 .description-theme h2,
-.lien-theme-titre,
-.lien-theme,
+.lien-theme, .lien-theme-titre,
 .sidebar-themes .theme-item.active,
 .tableau-programme tbody th.theme-cell,
-.tableau-programme tbody th.theme-cell .theme-nom,
 .bloc-categorie-cell .titre-categorie-cell {
   color: var(--vert-theme) !important;
 }
-.carte-couverture .titre-theme,
-.description-theme h2 { font-family: var(--font-lecture) !important; }
+.description-theme h2 { font-family: var(--font-capitales); letter-spacing: 0.08em; font-weight: 600; }
+.lien-theme { font-family: var(--font-capitales); font-weight: 600; }
+
+.devise, .devise-home { font-style: italic; font-family: var(--font-livre); font-size: 17px; }
+.devise::before { content: "❦"; display: block; color: var(--or); margin-bottom: 8px; font-style: normal; }
 
 @media (max-width: 768px) {
-  .feuille-texte .paragraphe p,
-  .feuille-texte .texte-zone p { font-size: 18px; }
+  .feuille-texte { padding: 32px 22px !important; }
+  .feuille-texte .paragraphe p, .feuille-texte .texte-zone p { font-size: 19px !important; }
+  .feuille-texte .bandeau-titre h1 { font-size: 24px !important; }
+  .page h1, .page-themes h1, .page-theme h1 { font-size: 26px; }
 }
