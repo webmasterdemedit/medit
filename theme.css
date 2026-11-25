@@ -1363,3 +1363,26 @@ input::placeholder, textarea::placeholder { color: var(--text-muted); }
     max-width: 50px !important; max-height: 50px !important;
   }
 }
+
+/* ============================================================
+   COLONNE LATÉRALE DU TEXTE (bouton imprimer) — toujours visible
+   sur ordinateur, et pas cachée sous le menu fixe
+   ============================================================ */
+@media (min-width: 900px) {
+  .page-texte {
+    grid-template-columns: minmax(0, 1fr) 300px !important;
+    align-items: start;
+  }
+  .colonne-principale { grid-column: 1; min-width: 0; }
+  .colonne-laterale {
+    display: block !important;
+    grid-column: 2;
+    position: sticky;
+    top: 96px;
+  }
+  .zone-basse-mobile { display: none !important; }
+}
+@media (max-width: 899px) {
+  .colonne-laterale { display: none !important; }
+  .zone-basse-mobile { display: flex !important; }
+}
