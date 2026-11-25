@@ -7,39 +7,24 @@
   <meta name="theme-color" content="#2d6a4f" />
   <title>Les Thèmes - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
     .page-themes {
-      max-width: 1000px;
+      max-width: 1100px;
       margin: 0 auto;
       padding: 20px 30px 40px;
     }
 
-    .page-themes h1 {
-      font-family: 'Georgia', serif;
-      font-size: 28px;
-      font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
-      letter-spacing: 0.5px;
-    }
-
     .page-themes .sous-titre-page {
-      font-size: 15px;
-      color: var(--text-secondary);
-      margin-bottom: 24px;
-      font-weight: 300;
+      margin-bottom: 28px;
     }
-
-    
 
     .grille-themes {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
+      grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+      gap: 24px;
       justify-items: stretch;
     }
 
@@ -50,15 +35,12 @@
     }
 
     .carte-avec-bas .carte-bas {
-      margin-top: 6px;
-      padding: 8px 10px;
-      border: 1px solid var(--border);
-      border-top: none;
-      background: var(--bg);
+      margin-top: 10px;
+      padding: 0 4px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      font-size: 11px;
+      gap: 8px;
+      font-size: 13px;
       color: var(--text-secondary);
       box-sizing: border-box;
     }
@@ -70,8 +52,11 @@
     }
 
     .carte-avec-bas .carte-bas .compteur-badge {
-      padding: 2px 8px;
+      padding: 3px 10px;
+      background: var(--bg-paper);
       border: 1px solid var(--border);
+      border-radius: 999px;
+      font-weight: 600;
       white-space: nowrap;
     }
 
@@ -82,45 +67,44 @@
     }
 
     .carte-avec-bas .carte-bas .tag {
-      padding: 1px 6px;
-      background: var(--bg-hover);
-      border: 1px solid var(--border);
-      color: var(--text-secondary);
-      font-size: 10px;
+      padding: 2px 8px;
+      background: var(--accent-soft);
+      color: var(--accent-dark);
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .phrase-progression {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 8px;
+      padding: 0 4px;
+      line-height: 1.4;
     }
 
     .vide-themes {
       grid-column: 1 / -1;
       text-align: center;
       padding: 60px 20px;
-      color: var(--text-secondary);
     }
 
     .vide-themes .icone {
       font-size: 32px;
       display: block;
       margin-bottom: 12px;
-      color: var(--text-muted);
     }
 
     .vide-themes h2 {
       font-size: 20px;
-      color: var(--text);
-      font-weight: 500;
       margin-bottom: 4px;
-    }
-
-    .vide-themes p {
-      color: var(--text-secondary);
-      font-size: 14px;
     }
 
     @media (max-width: 700px) {
       .page-themes { padding: 12px 16px 30px; }
-      .page-themes h1 { font-size: 22px; }
       .grille-themes {
-        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-        gap: 12px;
+        grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+        gap: 14px;
       }
     }
   </style>
@@ -138,10 +122,8 @@
 
   <div class="page page-themes">
 
-    <h1>Toutes les Thèmes</h1>
+    <h1>Tous les thèmes</h1>
     <p class="sous-titre-page">Cliquez sur un thème pour commencer l'apprentissage.</p>
-
-    
 
     <div id="contenu">
       <div class="loader" id="loader">
@@ -178,7 +160,6 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
-  <script src="/medit/couverture.js"></script>
 
   <script>
     window.toutesLesReponses = {};
@@ -225,13 +206,9 @@
         .replace(/'/g, '&#39;');
     }
 
-    // ============================================================
-    // Statut validé par rappel (basé sur Tentatives)
-    // ============================================================
     function estTexteValide(texteId) {
       var r = toutesLesReponses[String(texteId)];
       if (!r) return false;
-      // toutesLesReponses peut contenir un objet (compat) ou un tableau
       if (Array.isArray(r)) {
         for (var i = 0; i < r.length; i++) {
           if ((r[i].pourcentage || 0) >= 65) return true;
@@ -243,9 +220,60 @@
       return r.valide === 'valide';
     }
 
-    // ============================================================
-    // Chargement
-    // ============================================================
+    function construireCarteCouverture(t, options) {
+      var cliquable = options.cliquable && !t.verrouille;
+      var niveau = (t.niveauMin === t.niveauMax || !isFinite(t.niveauMax))
+        ? 'Niveau ' + t.niveauMin
+        : 'Niveau ' + t.niveauMin + '–' + t.niveauMax;
+      var interieur = ''
+        + '<span class="badge-niveau">' + escapeHtml(niveau) + '</span>'
+        + '<div class="contenu-theme">'
+        +   (t.couverture ? '<div class="couverture-image"><img src="' + escapeHtml(t.couverture) + '" alt=""></div>' : '')
+        +   '<div class="titre-wrapper">'
+        +     (t.auteur ? '<span class="auteur-theme">' + escapeHtml(t.auteur) + '</span>' : '')
+        +     '<span class="titre-theme">' + escapeHtml(t.nom) + '</span>'
+        +     (t.sousTitre ? '<span class="sous-titre-theme">' + escapeHtml(t.sousTitre) + '</span>' : '')
+        +   '</div>'
+        +   '<div class="edition-info">'
+        +     (t.date ? '<span class="edition-date">' + escapeHtml(t.date) + '</span>' : '')
+        +   '</div>'
+        + '</div>'
+        + '<div class="progression-theme"><div class="barre" style="width:' + t.pourcentage + '%"></div></div>'
+        + (cliquable ? '' : '<span class="cadenas-verrou">🔒</span>');
+      return cliquable
+        ? '<a class="carte-couverture" href="' + escapeHtml(options.lien) + '">' + interieur + '</a>'
+        : '<div class="carte-couverture verrouille">' + interieur + '</div>';
+    }
+
+    function lireThemes(liste) {
+      themesData = {};
+      if (liste && Array.isArray(liste)) {
+        liste.forEach(function(l) {
+          themesData[l.titre] = {
+            theme: l.theme || '',
+            sousTitre: l.sousTitre || '',
+            date: l.date || '',
+            preRequis: l.preRequis || '',
+            auteur: l.auteur || '',
+            niveau: parseInt(l.niveau) || 0,
+            couverture: l.couverture || ''
+          };
+        });
+      }
+    }
+
+    function afficherErreur(message) {
+      var loader = document.getElementById('loader');
+      if (loader) loader.style.display = 'none';
+      document.getElementById('contenu').innerHTML = `
+        <div class="vide-themes">
+          <span class="icone">⚠</span>
+          <h2>Erreur de chargement</h2>
+          <p>${escapeHtml(message || 'Vérifiez votre connexion internet.')}</p>
+        </div>
+      `;
+    }
+
     function chargerThemes() {
       var id = (typeof getIdUtilisateur === 'function')
         ? getIdUtilisateur()
@@ -260,29 +288,13 @@
           .then(function(d) { return (d && d.tentatives) ? d.tentatives : []; })
           .catch(function() { return []; })
       ]).then(function(resultats) {
-        var data = resultats[0];
+        var data = resultats[0] || {};
         var tentatives = resultats[1];
 
         niveauEtudiant = data.niveau || 0;
         textesData = data.tousLesTextes || data.textes || [];
+        lireThemes(data.themes);
 
-        themesData = {};
-        if (data.themes && Array.isArray(data.themes)) {
-          data.themes.forEach(function(l) {
-            themesData[l.titre] = {
-              theme: l.theme || '',
-              couleur: l.couleur || '#2d6a4f',
-              sousTitre: l.sousTitre || '',
-              date: l.date || '',
-              preRequis: l.preRequis || '',
-              auteur: l.auteur || '',
-              niveau: parseInt(l.niveau) || 0,
-              couverture: l.couverture || ''
-            };
-          });
-        }
-
-        // Construit toutesLesReponses à partir des tentatives
         toutesLesReponses = {};
         tentatives.forEach(function(t) {
           var k = String(t.texteId);
@@ -298,195 +310,166 @@
           });
         });
 
-       
         afficherThemes();
       }).catch(function(error) {
         console.error('Erreur chargement:', error);
-        var cache = DataManager.getCacheForce(id);
+        var cache = (DataManager.getCacheForce) ? DataManager.getCacheForce(id) : null;
         if (cache) {
           niveauEtudiant = cache.niveau || 0;
           textesData = cache.textes || cache.tousLesTextes || [];
-          if (cache.themes && Array.isArray(cache.themes)) {
-            themesData = {};
-            cache.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                theme: l.theme || '',
-                couleur: l.couleur || '#2d6a4f',
-                sousTitre: l.sousTitre || '',
-                date: l.date || '',
-                preRequis: l.preRequis || '',
-                auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0,
-                couverture: l.couverture || ''
-              };
-            });
-          }
-          document.getElementById('niveauEtudiant').textContent = niveauEtudiant;
+          lireThemes(cache.themes);
           afficherThemes();
         } else {
-          document.getElementById('loader').style.display = 'none';
-          document.getElementById('contenu').innerHTML = `
-            <div class="vide-themes">
-              <span class="icone">⚠</span>
-              <h2>Erreur de chargement</h2>
-              <p>Vérifiez votre connexion internet.</p>
-            </div>
-          `;
+          afficherErreur(String(error && error.message ? error.message : ''));
         }
       });
     }
 
-    // ============================================================
-    // Affichage
-    // ============================================================
     function afficherThemes() {
       var container = document.getElementById('contenu');
       var loader = document.getElementById('loader');
       if (loader) loader.style.display = 'none';
 
-      var textesParCategorie = {};
-      textesData.forEach(function(ch) {
-        var cat = (ch.categorie || '').trim();
-        if (!cat) return;
-        if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
-        textesParCategorie[cat].push(ch);
-      });
+      try {
+        var textesParCategorie = {};
+        textesData.forEach(function(ch) {
+          var cat = (ch.categorie || '').trim();
+          if (!cat) return;
+          if (!textesParCategorie[cat]) textesParCategorie[cat] = [];
+          textesParCategorie[cat].push(ch);
+        });
 
-      var THEMES_EXCLUS = ['cours'];       var titresThemes = Object.keys(themesData).filter(function(titre) {         return THEMES_EXCLUS.indexOf(titre.trim().toLowerCase()) === -1;       });
-      var totalExercicesGlobal = 0;
+        var THEMES_EXCLUS = ['cours'];
+        var titresThemes = Object.keys(themesData).filter(function(titre) {
+          return THEMES_EXCLUS.indexOf(titre.trim().toLowerCase()) === -1;
+        });
 
-      var themesCalcules = titresThemes.map(function(titre) {
-        var meta = themesData[titre];
-        var textesDuTheme = textesParCategorie[titre] || [];
+        var themesCalcules = titresThemes.map(function(titre) {
+          var meta = themesData[titre];
+          var textesDuTheme = textesParCategorie[titre] || [];
 
-        var niveauMin = meta.niveau || 1;
-        var niveauMax = meta.niveau || 1;
-        if (textesDuTheme.length > 0) {
-          niveauMin = Infinity;
-          niveauMax = -Infinity;
+          var niveauMin = meta.niveau || 1;
+          var niveauMax = meta.niveau || 1;
+          if (textesDuTheme.length > 0) {
+            niveauMin = Infinity;
+            niveauMax = -Infinity;
+            textesDuTheme.forEach(function(ch) {
+              var n = parseInt(ch.niveau) || 1;
+              if (n < niveauMin) niveauMin = n;
+              if (n > niveauMax) niveauMax = n;
+            });
+          }
+
+          var disponible = false;
+          if (textesDuTheme.length === 0) {
+            disponible = true;
+          } else {
+            textesDuTheme.forEach(function(ch) {
+              if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
+            });
+          }
+
+          var validees = 0;
           textesDuTheme.forEach(function(ch) {
-            var n = parseInt(ch.niveau) || 1;
-            if (n < niveauMin) niveauMin = n;
-            if (n > niveauMax) niveauMax = n;
+            if (estTexteValide(ch.id)) validees++;
           });
+          var pourcentage = textesDuTheme.length > 0
+            ? Math.round((validees / textesDuTheme.length) * 100)
+            : 0;
+          var restants = Math.max(0, textesDuTheme.length - validees);
+
+          var nbExercices = 0;
+          var tagsSet = {};
+          textesDuTheme.forEach(function(ch) {
+            nbExercices += compterExercices(ch);
+            (ch.tags || []).forEach(function(tag) {
+              var t = String(tag).trim();
+              if (t) tagsSet[t] = true;
+            });
+          });
+          var tagsListe = Object.keys(tagsSet).sort(function(a, b) {
+            return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+          });
+
+          return {
+            nom: titre,
+            theme: (meta.theme || '').trim(),
+            niveauMin: niveauMin,
+            niveauMax: niveauMax,
+            textes: textesDuTheme.length,
+            exercices: nbExercices,
+            tags: tagsListe,
+            disponible: disponible,
+            verrouille: !disponible,
+            pourcentage: pourcentage,
+            validees: validees,
+            restants: restants,
+            sousTitre: meta.sousTitre || '',
+            date: meta.date || '',
+            auteur: meta.auteur || '',
+            niveau: meta.niveau || 1,
+            couverture: meta.couverture || ''
+          };
+        });
+
+        themesCalcules.sort(function(a, b) {
+          return a.niveauMin - b.niveauMin
+            || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
+        });
+
+        if (themesCalcules.length === 0) {
+          container.innerHTML = `
+            <div class="vide-themes">
+              <span class="icone">◈</span>
+              <h2>Aucun thème disponible</h2>
+              <p>Aucun thème n'est configuré pour le moment.</p>
+            </div>
+          `;
+          return;
         }
 
-        var disponible = false;
-        if (textesDuTheme.length === 0) {
-          disponible = true;
-        } else {
-          textesDuTheme.forEach(function(ch) {
-            if ((parseInt(ch.niveau) || 1) <= niveauEtudiant) disponible = true;
+        var html = '<div class="grille-themes">';
+        themesCalcules.forEach(function(theme) {
+          var carteHtml = construireCarteCouverture(theme, {
+            cliquable: theme.disponible,
+            lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
           });
-        }
 
-        var validees = 0;
-        textesDuTheme.forEach(function(ch) {
-          if (estTexteValide(ch.id)) validees++;
+          var basHtml = ''
+            + '<div class="carte-bas">'
+            +   '<div class="ligne-compteurs">'
+            +     '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
+            +     '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
+            +   '</div>'
+            +   (theme.tags.length > 0
+                  ? '<div class="liste-tags">'
+                    + theme.tags.map(function(t) {
+                        return '<span class="tag">#' + escapeHtml(t) + '</span>';
+                      }).join('')
+                    + '</div>'
+                  : '')
+            + '</div>';
+
+          var phraseProgression = ''
+            + '<div class="phrase-progression">'
+            +   theme.pourcentage + ' % complété — ' + theme.restants + ' texte' + (theme.restants > 1 ? 's' : '') + ' restant' + (theme.restants > 1 ? 's' : '')
+            + '</div>';
+
+          html += '<div class="carte-avec-bas">' + carteHtml + basHtml + phraseProgression + '</div>';
         });
-        var pourcentage = textesDuTheme.length > 0
-          ? Math.round((validees / textesDuTheme.length) * 100)
-          : 0;
-        var restants = textesDuTheme.length - validees;
-        if (restants < 0) restants = 0;
+        html += '</div>';
 
-        var nbExercices = 0;
-        var tagsSet = {};
-        textesDuTheme.forEach(function(ch) {
-          nbExercices += compterExercices(ch);
-          (ch.tags || []).forEach(function(tag) {
-            var t = String(tag).trim();
-            if (t) tagsSet[t] = true;
-          });
-        });
-        var tagsListe = Object.keys(tagsSet).sort(function(a, b) {
-          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
-        });
-        totalExercicesGlobal += nbExercices;
-
-        return {
-          nom: titre,
-          theme: (meta.theme || '').trim(),
-          niveauMin: niveauMin,
-          niveauMax: niveauMax,
-          textes: textesDuTheme.length,
-          exercices: nbExercices,
-          tags: tagsListe,
-          disponible: disponible,
-          verrouille: !disponible,
-          pourcentage: pourcentage,
-          validees: validees,
-          restants: restants,
-          couleur: meta.couleur || '#2d6a4f',
-          sousTitre: meta.sousTitre || '',
-          date: meta.date || '',
-          auteur: meta.auteur || '',
-          niveau: meta.niveau || 1,
-          couverture: meta.couverture || ''
-        };
-      });
-
-      themesCalcules.sort(function(a, b) {
-        return a.niveauMin - b.niveauMin
-          || a.nom.localeCompare(b.nom, 'fr', { sensitivity: 'base' });
-      });
-
-      if (themesCalcules.length === 0) {
-        container.innerHTML = `
-          <div class="vide-themes">
-            <span class="icone">◈</span>
-            <h2>Aucun thème disponible</h2>
-            <p>Aucun thème n'est configuré pour le moment.</p>
-          </div>
-        `;
-        return;
+        container.innerHTML = html;
+      } catch (e) {
+        console.error(e);
+        afficherErreur('Erreur d\'affichage : ' + e.message);
       }
-
-      var html = '<div class="grille-themes">';
-      themesCalcules.forEach(function(theme) {
-        var carteHtml = construireCarteCouverture(theme, {
-          cliquable: theme.disponible,
-          lien: '/medit/thème.html?cat=' + encodeURIComponent(theme.nom)
-        });
-
-        var basHtml = ''
-          + '<div class="carte-bas">'
-          +   '<div class="ligne-compteurs">'
-          +     '<span class="compteur-badge">' + theme.textes + ' texte' + (theme.textes > 1 ? 's' : '') + '</span>'
-          +     '<span class="compteur-badge">' + theme.exercices + ' exercice' + (theme.exercices > 1 ? 's' : '') + '</span>'
-          +   '</div>'
-          +   (theme.tags.length > 0
-                ? '<div class="liste-tags">'
-                  + theme.tags.map(function(t) {
-                      return '<span class="tag">#' + escapeHtml(t) + '</span>';
-                    }).join('')
-                  + '</div>'
-                : '')
-          + '</div>';
-
-        // Phrase de progression en dessous de la carte, sans cadre, en italique
-        var phraseProgression = ''
-          + '<div style="font-style: italic; font-size: 12px; color: var(--text-secondary); margin-top: 6px; text-align: center; line-height: 1.4;">'
-          +   'Vous avez complété ' + theme.pourcentage + ' %'
-          +   ' — il vous reste ' + theme.restants + ' texte' + (theme.restants > 1 ? 's' : '')
-          +   '.'
-          + '</div>';
-
-        html += '<div class="carte-avec-bas">' + carteHtml + basHtml + phraseProgression + '</div>';
-      });
-      html += '</div>';
-
-      container.innerHTML = html;
-    }
-
-    function demarrer() {
-      chargerThemes();
     }
 
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', demarrer);
+      document.addEventListener('DOMContentLoaded', chargerThemes);
     } else {
-      demarrer();
+      chargerThemes();
     }
   </script>
 
