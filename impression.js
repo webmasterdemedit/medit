@@ -670,7 +670,7 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
 <meta charset="UTF-8">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    POLICE POINTILLÉE — KFGQPC Alphabet Dotted
@@ -700,7 +700,7 @@ body {
 
 .arabe, [lang="ar"] {
   font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif !important;
-  font-size: 2.1em; line-height: 1; vertical-align: middle;
+  font-size: 1.5em; line-height: 1.1; vertical-align: middle;
 }
 
 .page { max-width:100%; padding: 0; background:#faf7f0; overflow: visible; }
@@ -1183,6 +1183,127 @@ body {
   display:flex; justify-content:center; align-items:center; gap:16px; }
 .pied-page .pied-centre { font-style:italic; color:#6a5d47; letter-spacing:0.5px; }
 .pied-page .pied-ecrit, .pied-page .imprime-le { font-style:italic; font-size:7.5pt; color:#a89a80; }
+/* ============================================================
+   ÉDITION PLÉIADE — même style que le site
+   ============================================================ */
+body, .page { background:#fffdf8 !important; color:#1a1712; }
+body, .page, .exo-texte, .quiz-rep, .tt-phrase-print, .exo-texte-vf,
+.memo-texte, .relier-ligne-item, .col-mot, .ordre-grille, .entete-eleve, .note-haut {
+  font-family: 'EB Garamond', Garamond, 'Times New Roman', serif !important;
+}
+body { font-size: 12pt; }
+
+.filet { border-top: 0.6px solid #1a1712; border-bottom: 0.6px solid #1a1712; height: 3px; }
+
+.temps-lecture-haut { font-family:'EB Garamond',serif; font-size:10pt; color:#7a705f; }
+.temps-lecture-haut::before { content:""; }
+
+.bandeau-titre .meta-niveau {
+  font-family:'Cormorant SC','EB Garamond',serif; font-style:normal;
+  text-transform:lowercase; letter-spacing:2px; font-size:11pt; color:#7a705f;
+}
+.bandeau-titre h1 {
+  font-family:'Cormorant SC','EB Garamond',serif !important;
+  font-weight:600; font-size:22pt; letter-spacing:3px; text-transform:none; color:#1a1712;
+}
+.bandeau-titre .meta-droite {
+  font-family:'Cormorant SC','EB Garamond',serif; font-style:normal;
+  letter-spacing:1.5px; font-size:11pt; color:#2d6a4f;
+}
+.sous-titre-filets { width:22%; }
+.sous-titre-filets::before, .sous-titre-filets::after { border-top:0.6px solid #9a7b3c; }
+.sous-titre-filets::after { content:""; }
+.sous-titre-filets { position:relative; }
+.sous-titre-filets::before { content:""; }
+
+.numero-texte {
+  background:transparent !important; color:#9a7b3c !important;
+  font-family:'Cormorant SC','EB Garamond',serif; font-size:15pt; padding:0;
+}
+.couverture-mini { box-shadow:none; border:0.5px solid #1a1712; }
+
+.vocab-haut {
+  background:transparent; border:none;
+  border-top:0.6px solid #1a1712; border-bottom:0.6px solid #1a1712;
+  box-shadow:none; padding:8px 4px 10px;
+}
+.vocab-haut .titre-memo {
+  font-family:'Cormorant SC','EB Garamond',serif; font-size:11pt; font-weight:600;
+  text-transform:lowercase; letter-spacing:2px; color:#1a1712;
+  text-align:center; border-bottom:none;
+}
+.vocab-haut .titre-memo::before { content:""; }
+.vocab-haut .vocab-liste { column-rule:0.5px solid #d9cfba; }
+.vocab-haut .vocab-liste li { font-size:10pt; }
+
+.paragraphe p {
+  font-family:'EB Garamond',Garamond,serif !important;
+  font-size:13.5pt; line-height:1.55; text-indent:1.5em; text-align:justify;
+  margin-bottom:0;
+}
+.paragraphe.lettrine p:first-child { text-indent:0; }
+.paragraphe.lettrine p:first-child::first-letter {
+  font-family:'EB Garamond',serif; font-weight:400; font-size:3.5em;
+  line-height:0.82; padding:5px 8px 0 0; color:#9a7b3c;
+}
+.paragraphe p .source-marge, .texte-zone p .source-marge, .source-discrete {
+  font-family:'EB Garamond',serif; font-weight:400; color:#7a705f; border-top:none;
+}
+
+.print-img { box-shadow:none; }
+
+.zone-exercices .titre-questions,
+.zone-memorisation .titre-questions {
+  font-family:'Cormorant SC','EB Garamond',serif; font-weight:600; font-size:15pt;
+  text-transform:lowercase; letter-spacing:3px; color:#1a1712;
+}
+.zone-exercices .titre-questions::before,
+.zone-memorisation .titre-questions::before {
+  content:"❧"; display:block; font-size:14pt; color:#9a7b3c;
+  letter-spacing:0; margin-bottom:2px;
+}
+.zone-exercices .titre-questions-filets,
+.zone-memorisation .titre-questions-filets { width:22%; }
+.zone-exercices .titre-questions-filets::before,
+.zone-exercices .titre-questions-filets::after,
+.zone-memorisation .titre-questions-filets::before,
+.zone-memorisation .titre-questions-filets::after { border-top:0.6px solid #9a7b3c; }
+
+.exo { border-bottom:0.5px dotted #b9ad94; }
+.consigne-exo {
+  font-family:'EB Garamond',serif; font-style:italic; font-weight:400;
+  text-transform:none; letter-spacing:0; font-size:11pt; color:#5a5244;
+}
+.consigne-exo::before { content:""; }
+.exo-num-inline {
+  border:none; color:#9a7b3c; font-family:'Cormorant SC','EB Garamond',serif;
+  font-size:12pt; width:auto; min-width:16px;
+}
+.exo-texte, .quiz-rep, .tt-phrase-print, .exo-texte-vf { font-size:11.5pt; }
+.quiz-case { border:0.7px solid #1a1712; background:transparent; }
+.ordre-lettre { color:#9a7b3c; }
+.open-ligne, .carte-ligne-courte, .note-haut .note-haut-droite .ligne-pointillee { border-bottom-color:#9b8f78; }
+
+.zone-memo {
+  background:transparent; border:2.4px double #b9ad94;
+  padding:12px 20px;
+}
+.zone-memo .titre-memo {
+  font-family:'Cormorant SC','EB Garamond',serif; font-weight:600; font-size:12pt;
+  text-transform:lowercase; letter-spacing:2.5px; color:#1a1712;
+}
+.zone-memo .titre-memo::before, .zone-memo .titre-memo::after { content:""; }
+.zone-memo .memo-liste li { font-size:11.5pt; }
+.zone-memo .memo-liste li::before { content:"—"; color:#9a7b3c; font-size:10pt; top:1px; }
+
+.note-sur-20 { border-radius:0; border:0.8px solid #1a1712; background:transparent; }
+.note-sur-20-label { font-family:'Cormorant SC','EB Garamond',serif; text-transform:lowercase; letter-spacing:1.5px; font-size:8pt; }
+.note-sur-20-total { font-family:'EB Garamond',serif; font-weight:500; }
+
+.pied-page {
+  font-family:'EB Garamond',serif; font-style:italic; font-size:8.5pt;
+  color:#7a705f; border-top:0.6px solid #1a1712;
+}
 </style>
 </head>
 <body>
