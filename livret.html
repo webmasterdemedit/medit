@@ -143,7 +143,8 @@
     .s-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 8mm; }
     .s-partie { font-family: var(--capitales); color: var(--vert); font-size: 15pt; letter-spacing: .12em; margin: 6mm 0 2mm; border-bottom: 0.3mm solid var(--vert); padding-bottom: 1mm; }
     .s-ligne { display: flex; align-items: baseline; gap: 6px; font-size: 13pt; padding: 1.8mm 0; }
-    .s-num { font-family: var(--capitales); color: var(--or); min-width: 10mm; }
+    .s-num { font-family: var(--capitales); color: var(--or); min-width: 24mm; }
+    .numero-chapitre { font-family: var(--capitales) !important; letter-spacing: 2px; font-size: 13pt !important; }
     .s-points { flex: 1; border-bottom: 0.3mm dotted var(--filet); margin: 0 2mm; transform: translateY(-1mm); }
     .s-page { min-width: 8mm; text-align: right; font-variant-numeric: oldstyle-nums; }
     .s-ligne a { color: inherit; text-decoration: none; }
@@ -544,6 +545,9 @@
       var parNiveau = {};
       textes.forEach(function(t) { var n = parseInt(t.niveau, 10) || 1; (parNiveau[n] = parNiveau[n] || []).push(t); });
       var niveaux = Object.keys(parNiveau).map(Number).sort(function(a, b) { return a - b; });
+      // Numérotation continue des chapitres, dans l'ordre du livret
+      var chap = 0;
+      niveaux.forEach(function(n) { parNiveau[n].forEach(function(t) { t._chap = ++chap; }); });
       var texteNiveaux = niveaux.length === 1 ? 'Niveau ' + niveaux[0] : 'Niveaux ' + niveaux[0] + ' à ' + niveaux[niveaux.length - 1];
 
       // ---- 1. Première de couverture ----
@@ -583,8 +587,7 @@
         sommaireHtml += '<div class="s-partie">Niveau ' + n + '</div>';
         parNiveau[n].forEach(function(t, i) {
           t._ancre = 'lecon-' + n + '-' + i;
-          var num = numeroDe(t.titre);
-          sommaireHtml += '<div class="s-ligne"><span class="s-num">' + (num !== Infinity ? num : '') + '</span>'
+          sommaireHtml += '<div class="s-ligne"><span class="s-num">Chapitre ' + t._chap + '</span>'
             + '<a href="#' + t._ancre + '">' + esc(titreSansNumero(t.titre)) + '</a>'
             + '<span class="s-points"></span><span class="s-page" data-ancre="' + t._ancre + '">00</span></div>';
         });
@@ -610,7 +613,8 @@
           faites++;
           statut('Mise en page de la leçon ' + faites + ' / ' + textes.length + '…');
           try {
-            var pageHtml = genererImpression(t, t.contenu || '', images, '', 'complet', { retournerHtml: true });
+            var tChap = Object.assign({}, t, { titre: t._chap + ' ' + titreSansNumero(t.titre) });
+            var pageHtml = genererImpression(tChap, t.contenu || '', images, '', 'complet', { retournerHtml: true });
             if (!pageHtml) continue;
             var morceaux = decouperPage(pageHtml);
             if (!styleAjoute) { document.getElementById('stylesTextes').textContent = morceaux.style; styleAjoute = true; }
@@ -619,6 +623,10 @@
             mesure.className = 'zone-contenu';
             mesure.innerHTML = '<div data-racine style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
             nettoyerLecon(mesure);
+            mesure.querySelectorAll('.bandeau-titre .numero-texte').forEach(function(nb) {
+              nb.textContent = 'Chapitre ' + t._chap;
+              nb.classList.add('numero-chapitre');
+            });
             envelopperArabe(mesure);
 
             // Début de leçon : à la suite, ou page suivante s'il reste moins d'un quart de page
@@ -650,8 +658,7 @@
       // ---- 6. Glossaire ----
       var entrees = {};
       textes.forEach(function(t) {
-        var num = numeroDe(t.titre);
-        var ref = (num !== Infinity) ? String(num) : titreSansNumero(t.titre);
+        var ref = String(t._chap);
         var vocab = t.vocabulaire || [];
         if (typeof vocab === 'string') vocab = vocab.split('\n');
         vocab.forEach(function(item) {
@@ -679,7 +686,7 @@
           if (lettre !== lettrePrec) { items.push('<div class="g-lettre">' + esc(lettre) + '</div>'); lettrePrec = lettre; }
           items.push('<div class="g-entree"><span class="g-mot">' + esc(e.mot) + '</span>'
             + (e.defs.length ? ' : ' + esc(e.defs.join(' ; ')) : '')
-            + ' <span class="g-ref">(leçon' + (e.refs.length > 1 ? 's' : '') + ' ' + esc(e.refs.join(', ')) + ')</span></div>');
+            + ' <span class="g-ref">(chap. ' + esc(e.refs.join(', ')) + ')</span></div>');
         });
         // Glossaire sur 2 colonnes, page par page
         mesure.className = '';
