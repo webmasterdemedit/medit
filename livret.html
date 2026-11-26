@@ -201,6 +201,14 @@
       }
       .page-a4:last-child { break-after: auto; page-break-after: auto; }
     }
+  
+    /* Couverture : titre plus haut et plus grand, # devant les thèmes */
+    .couv-cadre { justify-content: flex-start !important; padding-top: 18mm !important; }
+    .couv-cadre > div:nth-child(2) { margin-top: 16mm; }
+    .couv-cadre .c-bas { margin-top: auto; }
+    .couv-cadre .c-fleuron { margin: 0 0 4mm; }
+    .c-titre { font-size: 46pt !important; line-height: 1.1 !important; }
+    .c-diese { color: var(--or); font-weight: 700; margin-right: 1px; }
   </style>
 </head>
 <body>
@@ -245,6 +253,7 @@
     }
     function titreSansNumero(titre) { return String(titre || '').replace(/^\s*\d+\s+/, '').trim(); }
     function statut(t) { document.getElementById('barreStatut').textContent = t; }
+    function params_titrePerso() { return !!new URLSearchParams(window.location.search).get('titre'); }
     function pause() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
     function envelopperArabe(racine) {
@@ -593,7 +602,11 @@
       // Sous-titre auto : liste des thèmes s'il y en a plusieurs, sinon le sous-titre du thème
       var listeThemes = [];
       textes.forEach(function(t) { if (listeThemes.indexOf(t.categorie) === -1) listeThemes.push(t.categorie); });
-      var sousTitreAuto = listeThemes.length > 1 ? listeThemes.join(', ') : (info.sousTitre || '');
+      var plusieurs = listeThemes.length > 1;
+      var sousTitreAutoHtml = plusieurs
+        ? listeThemes.map(function(x) { return '<span class="c-diese">#</span>' + esc(x); }).join(', ')
+        : esc(info.sousTitre || '');
+      var titreHtml = (!plusieurs && !params_titrePerso() ? '<span class="c-diese">#</span>' : '') + esc(cat);
       var nc = window.NIVEAUX_CHOISIS || [];
       var mentionNiveau = '';
       if (nc.length === 1) mentionNiveau = 'Niveau ' + nc[0];
@@ -612,8 +625,8 @@
         + '<div><div class="c-auteur-haut">' + esc(AUTEUR) + '</div><div class="c-collection">' + esc(COLLECTION) + '</div></div>'
         + '<div>'
         +   '<div class="c-fleuron">❦</div>'
-        +   '<div class="c-titre">' + esc(cat) + '</div>'
-        +   (sousTitreAuto ? '<div class="c-sous-titre">' + esc(sousTitreAuto) + '</div>' : '')
+        +   '<div class="c-titre">' + titreHtml + '</div>'
+        +   (sousTitreAutoHtml ? '<div class="c-sous-titre">' + sousTitreAutoHtml + '</div>' : '')
         +   (info.couverture ? '<img class="c-image" src="' + esc(info.couverture) + '" alt="">' : '<div class="c-filet"></div>')
         +   (mentionNiveau ? '<div class="c-niveaux-mention">' + esc(mentionNiveau) + '</div>' : '')
         +   '<div class="c-niveaux">' + esc(serie) + '</div>'
