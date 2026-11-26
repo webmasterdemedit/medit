@@ -1446,6 +1446,17 @@ body { font-size: 12pt; }
 .exos-2col-flex .quiz-reponses, .exos-2col-flex .open-lignes,
 .exos-2col-flex .carte-ligne-courte, .exos-2col-flex .ordre-grille { margin-left:22px; }
 .exos-2col-flex .carte-ligne-courte { width:80%; }
+
+/* Pointillé : le modèle reste à droite, les copies remplissent la ligne
+   vers la gauche et s'arrêtent dès qu'elle est pleine (sans couper de mot) */
+.exo.exo-point .exo-texte { min-width: 0; overflow: hidden; }
+.copier-ligne-point {
+  flex-wrap: wrap !important;
+  height: 2.95em; min-height: 0 !important;
+  row-gap: 60px; column-gap: 24px;
+  align-content: flex-start; align-items: flex-start !important;
+  overflow: hidden !important;
+}
 </style>
 </head>
 <body>
@@ -1509,8 +1520,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     if (!zoneExercicesOuverte) {
       printHtml += '</div>';
       printHtml += '<div class="zone-exercices">';
-      printHtml += '<div class="titre-questions">' + titreZoneExercices + '</div>';
-      printHtml += '<div class="titre-questions-filets"></div>';
+      // Leçon sans texte : pas de titre « Exercices », ça se devine
+      var aDuTexte = blocsOrdonnes.some(function(b) { return b.type === 'paragraphe'; });
+      if (aDuTexte) {
+        printHtml += '<div class="titre-questions">' + titreZoneExercices + '</div>';
+        printHtml += '<div class="titre-questions-filets"></div>';
+      }
       zoneExercicesOuverte = true;
     }
   }
@@ -1716,7 +1731,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       ouvrirZoneExercices();
       exoNum++;
       var motP = bloc.data.mot;
-      var nbRep = 9;
+      var nbRep = 40; // la ligne s'arrête toute seule quand elle est pleine
       printHtml += '<div class="exo exo-point">';
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
