@@ -649,19 +649,61 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
   var titreZoneExercices = 'Exercices';
   if (titreAffiche && mode !== 'complet') titreZoneExercices = 'Exercices — ' + titreAffiche;
 
-  // ---- En-tête note/appréciation (masqué en mode rappel) ----
+  // ---- En-tête : appréciation sur 2 lignes + cadre de note /20 ----
   var noteHtml = '';
   if (afficherNote) {
     noteHtml = `
-<div class="note-haut">
-  <div class="note-haut-gauche"><strong>Points :</strong> ......... / ${nbTotalQuestions}</div>
-  <div class="note-haut-droite"><strong>Appréciation :</strong> <span class="ligne-pointillee"></span></div>
+<div class="note-haut-bloc">
+  <div class="appreciation-bloc">
+    <div class="appreciation-ligne"><strong>Appréciation :</strong><span class="ligne-pointillee"></span></div>
+    <div class="appreciation-ligne"><span class="ligne-pointillee"></span></div>
+  </div>
+  <div class="note-sur-20"><span class="note-sur-20-label">Note</span><span class="note-sur-20-total">/ 20</span></div>
 </div>`;
   }
-
   var noteSur20Html = '';
-  if (afficherNote) {
-    noteSur20Html = '<div class="note-sur-20"><span class="note-sur-20-label">Note</span><span class="note-sur-20-total">/ 20</span></div>';
+
+  // ---- BARÈME AUTOMATIQUE : total 20 points ----
+  // Relier = 2, tableau de plus d'une ligne = 2, le reste = 1.
+  // Préparation orale = 5 points si présente ; le reste se partage.
+  var poidsParNum = {};
+  var numBareme = 0;
+  var poidsTotal = 0;
+  blocsOrdonnes.forEach(function(b) {
+    if (b.type === 'paragraphe') return;
+    var n = (b.type === 'vf') ? b.data.length : 1;
+    for (var x = 0; x < n; x++) {
+      numBareme++;
+      var w = 1;
+      if (b.type === 'relier') w = 2;
+      if (b.type === 'col' && b.data.cases.length > b.data.nb) w = 2;
+      poidsParNum[numBareme] = w;
+      poidsTotal += w;
+    }
+  });
+  var pointsOral = (memoAffiche.length > 0) ? 5 : 0;
+  var pointsExos = (poidsTotal > 0) ? 20 - pointsOral : 0;
+  if (poidsTotal === 0 && pointsOral > 0) pointsOral = 20;
+  var pointsParNum = {};
+  if (poidsTotal > 0) {
+    var pas = (pointsExos / poidsTotal >= 1) ? 0.5 : 0.25;
+    var unites = Math.round(pointsExos / pas);
+    var restes = [];
+    var distribue = 0;
+    Object.keys(poidsParNum).forEach(function(k) {
+      var brut = poidsParNum[k] * unites / poidsTotal;
+      var base = Math.floor(brut);
+      pointsParNum[k] = base;
+      distribue += base;
+      restes.push({ k: k, r: brut - base });
+    });
+    restes.sort(function(p, q) { return q.r - p.r; });
+    for (var ri = 0; ri < unites - distribue; ri++) pointsParNum[restes[ri % restes.length].k] += 1;
+    Object.keys(pointsParNum).forEach(function(k) { pointsParNum[k] = pointsParNum[k] * pas; });
+  }
+  function formatPoints(v) {
+    var t = String(Math.round(v * 100) / 100).replace('.', ',');
+    return t + (v > 1 ? ' pts' : ' pt');
   }
 
   var printHtml = `<!DOCTYPE html>
@@ -1302,7 +1344,7 @@ body { font-size: 12pt; }
 
 .pied-page {
   font-family:'EB Garamond',serif; font-style:italic; font-size:8.5pt;
-  color:#7a705f; border-top:0.4px solid #d9cfba;
+  color:#7a705f; border-top:0.6px solid #1a1712;
 }
 
 /* Arabe un peu plus grand dans les exercices */
@@ -1345,6 +1387,24 @@ body { font-size: 12pt; }
   text-align: justify;
   hyphens: auto;
 }
+
+/* En-tête : appréciation sur 2 lignes, à la hauteur du cadre de note */
+.note-haut-bloc { display:flex; align-items:stretch; gap:16px; margin:2px 0 8px; }
+.appreciation-bloc { flex:1; height:56px; display:flex; flex-direction:column; justify-content:space-around; font-size:10.5pt; }
+.appreciation-ligne { display:flex; align-items:baseline; gap:6px; }
+.appreciation-ligne .ligne-pointillee { flex:1; border-bottom:0.6px dotted #9b8f78; height:14px; }
+.note-haut-bloc .note-sur-20 { position:relative; top:auto; right:auto; flex-shrink:0; }
+.entete-titre.avec-note { padding-right: 0; }
+
+/* Points par question */
+.exo-ligne .exo-pts, .memo-pts {
+  order: 99; margin-left: auto; padding-left: 8px;
+  font-style: italic; font-size: 9pt; color: #7a705f; white-space: nowrap;
+}
+.memo-consigne .memo-pts { margin-left: 4px; }
+
+/* Préparation orale : lettres espacées */
+.zone-memorisation .titre-questions { letter-spacing: 6px; }
 </style>
 </head>
 <body>
@@ -1744,6 +1804,12 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
   fermer2col();
 
+  // Ajoute les points à côté de chaque question numérotée
+  printHtml = printHtml.replace(/<span class="exo-num-inline">(\d+)<\/span>/g, function(m, n) {
+    if (pointsParNum[n] === undefined) return m;
+    return m + '<span class="exo-pts">' + formatPoints(pointsParNum[n]) + '</span>';
+  });
+
   printHtml += '</div>';
   printHtml += '</div>';
 
@@ -1762,16 +1828,16 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '<div class="zone-memorisation">';
     printHtml += '<div class="titre-questions">Préparation orale</div>';
     printHtml += '<div class="titre-questions-filets"></div>';
-    printHtml += '<div class="memo-consigne">À réciter à l\'enseignant au moment de rendre la copie.</div>';
-    printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant(e)</div>';
+    printHtml += '<div class="memo-consigne">Au moment de rendre la copie, répondez devant l\'enseignant :<span class="memo-pts">(' + formatPoints(pointsOral) + ')</span></div>';
+    printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant</div>';
     memoAffiche.forEach(function(q, i) {
       printHtml += '<div class="memo-item">';
       printHtml += '<span class="exo-num-inline">' + (i + 1) + '</span>';
       printHtml += '<span class="memo-texte">' + q + '</span>';
       printHtml += '<span class="memo-cases">';
       printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Appris</span>';
-      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Paritellement appris</span>';
-      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Non-appris.</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Partiellement appris</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Non appris</span>';
       printHtml += '</span>';
       printHtml += '</div>';
     });
