@@ -1309,6 +1309,29 @@ body { font-size: 12pt; }
 .exo .arabe, .exo [lang="ar"], .memo-item .arabe {
   font-size: 1.9em !important; line-height: 1.2;
 }
+
+/* Tableaux Ncol : peuvent se couper entre deux pages, ligne par ligne */
+.exo.exo-col { break-inside: auto !important; page-break-inside: auto !important; }
+.col-cell { break-inside: avoid; page-break-inside: avoid; }
+
+/* Questions sur 2 colonnes */
+.exos-2col {
+  column-count: 2;
+  column-gap: 24px;
+  column-rule: 0.5px dotted #d6cbb4;
+  margin-bottom: 12px;
+}
+.exos-2col .exo {
+  break-inside: avoid; page-break-inside: avoid;
+  display: inline-block; width: 100%;
+}
+.exos-2col .ordre-cell-texte,
+.exos-2col .ordre-cell-pointille { white-space: normal; }
+.exos-2col .quiz-reponses,
+.exos-2col .open-lignes,
+.exos-2col .carte-ligne-courte,
+.exos-2col .ordre-grille { margin-left: 22px; }
+.exos-2col .carte-ligne-courte { width: 80%; }
 </style>
 </head>
 <body>
@@ -1430,7 +1453,24 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     if (bloc._consigne) printHtml += '<div class="consigne-exo">' + bloc._consigne + '</div>';
   }
 
+  // Questions sur 2 colonnes (sauf écriture, tableaux, relier)
+  var TYPES_2COL = { quiz: 1, vf: 1, tt: 1, qcourt: 1, carte: 1, ordre: 1, open: 1 };
+  var col2Ouverte = false;
+  function ouvrir2col() {
+    if (!col2Ouverte) { printHtml += '<div class="exos-2col">'; col2Ouverte = true; }
+  }
+  function fermer2col() {
+    if (col2Ouverte) { printHtml += '</div>'; col2Ouverte = false; }
+  }
+
   blocsOrdonnes.forEach(function(bloc) {
+
+    if (bloc.type === 'paragraphe') {
+      fermer2col();
+    } else {
+      ouvrirZoneExercices();
+      if (TYPES_2COL[bloc.type]) ouvrir2col(); else fermer2col();
+    }
 
     if (bloc.type === 'qcourt') {
       ouvrirZoneExercices();
@@ -1683,6 +1723,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '</div>';
     }
   });
+
+  fermer2col();
 
   printHtml += '</div>';
   printHtml += '</div>';
