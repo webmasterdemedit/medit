@@ -1430,6 +1430,12 @@ body { font-size: 12pt; }
 .exos-2col .ordre-cell-texte { break-inside:avoid; page-break-inside:avoid; }
 .exos-2col .consigne-exo,
 .exos-2col .exo-ligne { break-after:avoid; page-break-after:avoid; }
+
+/* Deux colonnes : découpage plus fin pour mieux remplir la colonne de gauche */
+.exos-2col, .exos-2col * { orphans: 1; widows: 1; }
+.exos-2col .exo-ligne { break-after: auto !important; page-break-after: auto !important; }
+.exos-2col .exo:last-child { margin-bottom: 0; padding-bottom: 0; }
+.col-cell .col-mot:first-child { margin-right: 4px; }
 </style>
 </head>
 <body>
@@ -1454,7 +1460,7 @@ ${noteSur20Html}
   <div class="ligne-titre">
     ${couvertureHtml}
     <div class="bloc-titre-centre">
-      <div class="meta-niveau">Niveau ${texte.niveau || 0}${texte.categorie ? ' <span class="meta-sep">·</span> <span class="meta-theme">' + texte.categorie + '</span>' : ''}</div>
+      <div class="meta-niveau">${texte.categorie ? '<span class="meta-theme">' + texte.categorie + '</span> <span class="meta-sep">·</span> ' : ''}Niveau ${texte.niveau || 0}</div>
       ${numeroHtml}
       <h1>${titreAffiche || 'Lecture'}</h1>
       <div class="sous-titre-filets"></div>
@@ -1552,6 +1558,20 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
   // Questions sur 2 colonnes (sauf écriture, tableaux, relier)
   var TYPES_2COL = { quiz: 1, vf: 1, tt: 1, qcourt: 1, carte: 1, ordre: 1, open: 1 };
+  // Une question seule entre deux exercices sur une colonne reste sur une colonne
+  (function marquerGroupes2col() {
+    var i = 0;
+    while (i < blocsOrdonnes.length) {
+      if (!TYPES_2COL[blocsOrdonnes[i].type]) { i++; continue; }
+      var j = i, nbQ = 0;
+      while (j < blocsOrdonnes.length && TYPES_2COL[blocsOrdonnes[j].type]) {
+        nbQ += (blocsOrdonnes[j].type === 'vf') ? blocsOrdonnes[j].data.length : 1;
+        j++;
+      }
+      for (var k = i; k < j; k++) blocsOrdonnes[k]._col2 = (nbQ >= 2);
+      i = j;
+    }
+  })();
   var col2Ouverte = false;
   function ouvrir2col() {
     if (!col2Ouverte) { printHtml += '<div class="exos-2col">'; col2Ouverte = true; }
@@ -1566,7 +1586,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       fermer2col();
     } else {
       ouvrirZoneExercices();
-      if (TYPES_2COL[bloc.type]) ouvrir2col(); else fermer2col();
+      if (TYPES_2COL[bloc.type] && bloc._col2) ouvrir2col(); else fermer2col();
     }
 
     if (bloc.type === 'qcourt') {
@@ -1598,7 +1618,11 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
         for (var cj = 0; cj < colD.nb; cj++) {
           var cTxt = colD.cases[ci + cj];
           if (cTxt !== undefined) {
-            printHtml += '<div class="col-cell"><span class="col-trait"></span><span class="col-mot">' + cTxt + '</span></div>';
+            if (/[\u0600-\u06FF]/.test(cTxt)) {
+              printHtml += '<div class="col-cell"><span class="col-trait"></span><span class="col-mot">' + cTxt + '</span></div>';
+            } else {
+              printHtml += '<div class="col-cell"><span class="col-mot">' + cTxt + '</span><span class="col-trait"></span></div>';
+            }
           } else {
             printHtml += '<div class="col-cell col-cell-vide"></div>';
           }
