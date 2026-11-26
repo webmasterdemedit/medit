@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Créer un livret - Qiraat</title>
+  <link rel="stylesheet" href="/medit/structure.css" />
+  <link rel="stylesheet" href="/medit/theme.css" />
+
+  <style>
+    .page-creer { max-width: 900px; margin: 0 auto; padding: 30px 28px 60px; }
+    .page-creer h1 { text-align: center; }
+    .page-creer .sous-titre-page { text-align: center; }
+
+    .bloc-filtre {
+      margin: 28px 0;
+      padding: 22px 24px;
+      border: 1px solid var(--border);
+      background: var(--bg-paper);
+    }
+    .bloc-filtre h2 {
+      font-size: 18px; margin: 0 0 14px;
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .bloc-filtre h2 .actions-mini { font-size: 14px; font-weight: 400; }
+    .bloc-filtre h2 .actions-mini button {
+      background: none; border: none; cursor: pointer; padding: 0 0 0 12px;
+      color: var(--text-muted); text-decoration: underline; font: inherit;
+    }
+
+    .liste-cases {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 8px 20px;
+    }
+    .liste-cases.niveaux { grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); }
+    .case {
+      display: flex; align-items: baseline; gap: 10px; cursor: pointer;
+      padding: 6px 8px; border: 1px solid transparent;
+    }
+    .case:hover { background: var(--bg-hover); }
+    .case input { width: 17px; height: 17px; flex-shrink: 0; cursor: pointer; transform: translateY(2px); }
+    .case .nom { flex: 1; }
+    .case .nb { color: var(--text-muted); font-size: 0.85em; white-space: nowrap; }
+    .case.desactive { opacity: .4; }
+
+    .option-tout {
+      display: flex; align-items: center; gap: 12px; font-size: 1.05em; cursor: pointer;
+    }
+    .option-tout input { width: 19px; height: 19px; }
+
+    .champ-titre { display: flex; flex-direction: column; gap: 6px; }
+    .champ-titre input { width: 100%; box-sizing: border-box; font-size: 17px; }
+    .champ-titre small { color: var(--text-muted); }
+
+    .resume {
+      text-align: center; margin: 30px 0 14px; font-size: 17px; color: var(--text-secondary);
+    }
+    .resume strong { color: var(--text); }
+    .zone-generer { text-align: center; }
+    .btn-generer {
+      display: inline-block; padding: 14px 40px; font-size: 18px; cursor: pointer;
+      background: var(--text); color: var(--bg-paper); border: 1px solid var(--text);
+    }
+    .btn-generer:disabled { opacity: .35; cursor: default; }
+    .btn-generer:hover:not(:disabled) { background: transparent; color: var(--text); }
+
+    .bloc-filtre.grise { opacity: .45; pointer-events: none; }
+  </style>
+
+  <script>
+    var xhr = new XMLHttpRequest();
+    xhr.open('GET', '/medit/header.html', false);
+    xhr.send();
+    if (xhr.status === 200) document.write(xhr.responseText);
+  </script>
+</head>
+<body>
+
+  <div class="page page-creer">
+    <h1>Créer un livret</h1>
+    <p class="sous-titre-page">Choisissez les thèmes et les niveaux, puis générez un livret prêt à imprimer.</p>
+
+    <div id="contenu">
+      <div class="loader"><div class="spinner"></div><p>Chargement des thèmes…</p></div>
+    </div>
+  </div>
+
+  <div id="footer-container"></div>
+  <script>
+    fetch('/medit/footer.html').then(function(r) { return r.text(); })
+      .then(function(d) { document.getElementById('footer-container').innerHTML = d; })
+      .catch(function() {});
+  </script>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+
+  <script>
+    var textes = [];
+    var themes = [];
+
+    function esc(s) {
+      return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    function charger() {
+      DataManager.charger().then(function(data) {
+        data = data || {};
+        textes = (data.tousLesTextes || data.textes || []).filter(function(t) {
+          return !/\([^)]*\)\s*$/.test(t.titre || '');
+        });
+
+        // Thèmes dans l'ordre du site, uniquement ceux qui ont des textes
+        var compte = {};
+        textes.forEach(function(t) { var c = (t.categorie || '').trim(); if (c) compte[c] = (compte[c] || 0) + 1; });
+        themes = [];
+        (data.themes || []).forEach(function(t) { if (compte[t.titre]) themes.push(t.titre); });
+        Object.keys(compte).forEach(function(c) { if (themes.indexOf(c) === -1) themes.push(c); });
+
+        afficher(compte);
+      }).catch(function() {
+        document.getElementById('contenu').innerHTML = '<div class="vide"><h2>Erreur de chargement</h2><p>Vérifiez votre connexion.</p></div>';
+      });
+    }
+
+    function afficher(compte) {
+      var niveaux = [];
+      textes.forEach(function(t) { var n = parseInt(t.niveau, 10) || 1; if (niveaux.indexOf(n) === -1) niveaux.push(n); });
+      niveaux.sort(function(a, b) { return a - b; });
+
+      var html = '';
+
+      html += '<div class="bloc-filtre">'
+        + '<label class="option-tout"><input type="checkbox" id="caseTout" onchange="majResume()"> '
+        + '<span><strong>Livret global</strong> — tous les textes de tous les thèmes</span></label>'
+        + '</div>';
+
+      html += '<div class="bloc-filtre" id="blocThemes"><h2>Thèmes'
+        + '<span class="actions-mini"><button onclick="cocherTout(\'theme\', true)">tout cocher</button>'
+        + '<button onclick="cocherTout(\'theme\', false)">tout décocher</button></span></h2>'
+        + '<div class="liste-cases">';
+      themes.forEach(function(th) {
+        html += '<label class="case" data-theme="' + esc(th) + '"><input type="checkbox" class="c-theme" value="' + esc(th) + '" onchange="majResume()">'
+          + '<span class="nom">' + esc(th) + '</span><span class="nb">' + compte[th] + ' texte' + (compte[th] > 1 ? 's' : '') + '</span></label>';
+      });
+      html += '</div></div>';
+
+      html += '<div class="bloc-filtre" id="blocNiveaux"><h2>Niveaux'
+        + '<span class="actions-mini"><button onclick="cocherTout(\'niveau\', true)">tout cocher</button>'
+        + '<button onclick="cocherTout(\'niveau\', false)">tout décocher</button></span></h2>'
+        + '<div class="liste-cases niveaux">';
+      niveaux.forEach(function(n) {
+        html += '<label class="case"><input type="checkbox" class="c-niveau" value="' + n + '" checked onchange="majResume()">'
+          + '<span class="nom">Niveau ' + n + '</span></label>';
+      });
+      html += '</div></div>';
+
+      html += '<div class="bloc-filtre"><div class="champ-titre">'
+        + '<label for="titreLivret"><strong>Titre du livret</strong> (facultatif)</label>'
+        + '<input type="text" id="titreLivret" placeholder="Ex. : Cahier de l\'élève — Année 1">'
+        + '<small>Laissé vide : le nom du thème s\'il n\'y en a qu\'un, sinon « Livret complet ».</small>'
+        + '</div></div>';
+
+      html += '<div class="resume" id="resume"></div>';
+      html += '<div class="zone-generer"><button class="btn-generer" id="btnGenerer" onclick="generer()">Générer le livret</button></div>';
+
+      document.getElementById('contenu').innerHTML = html;
+      majResume();
+    }
+
+    function cocherTout(type, etat) {
+      document.querySelectorAll('.c-' + type).forEach(function(c) { c.checked = etat; });
+      majResume();
+    }
+
+    function selection() {
+      var tout = document.getElementById('caseTout').checked;
+      var ths = Array.prototype.map.call(document.querySelectorAll('.c-theme:checked'), function(c) { return c.value; });
+      var nvs = Array.prototype.map.call(document.querySelectorAll('.c-niveau:checked'), function(c) { return parseInt(c.value, 10); });
+      var choisis = textes.filter(function(t) {
+        if (!tout && ths.indexOf((t.categorie || '').trim()) === -1) return false;
+        if (nvs.indexOf(parseInt(t.niveau, 10) || 1) === -1) return false;
+        return true;
+      });
+      return { tout: tout, themes: ths, niveaux: nvs, textes: choisis };
+    }
+
+    function majResume() {
+      var sel = selection();
+      document.getElementById('blocThemes').classList.toggle('grise', sel.tout);
+
+      // Grise les niveaux qui n'existent pas dans les thèmes cochés
+      var niveauxDispo = {};
+      textes.forEach(function(t) {
+        if (sel.tout || sel.themes.indexOf((t.categorie || '').trim()) !== -1) niveauxDispo[parseInt(t.niveau, 10) || 1] = true;
+      });
+      document.querySelectorAll('.c-niveau').forEach(function(c) {
+        c.closest('.case').classList.toggle('desactive', !niveauxDispo[parseInt(c.value, 10)]);
+      });
+
+      var n = sel.textes.length;
+      var nbThemes = {};
+      sel.textes.forEach(function(t) { nbThemes[t.categorie] = true; });
+      var nt = Object.keys(nbThemes).length;
+      document.getElementById('resume').innerHTML = n === 0
+        ? 'Aucun texte ne correspond à cette sélection.'
+        : 'Le livret contiendra <strong>' + n + ' texte' + (n > 1 ? 's' : '') + '</strong> issus de <strong>'
+          + nt + ' thème' + (nt > 1 ? 's' : '') + '</strong>.';
+      document.getElementById('btnGenerer').disabled = (n === 0);
+    }
+
+    function generer() {
+      var sel = selection();
+      if (sel.textes.length === 0) return;
+      var p = new URLSearchParams();
+      if (sel.tout) p.set('tout', '1');
+      else p.set('themes', sel.themes.join('|'));
+      var tousNiveaux = document.querySelectorAll('.c-niveau').length;
+      if (sel.niveaux.length && sel.niveaux.length < tousNiveaux) p.set('niveaux', sel.niveaux.join(','));
+      var titre = document.getElementById('titreLivret').value.trim();
+      if (titre) p.set('titre', titre);
+      window.open('/medit/livret.html?' + p.toString(), '_blank');
+    }
+
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', charger);
+    else charger();
+  </script>
+</body>
+</html>
