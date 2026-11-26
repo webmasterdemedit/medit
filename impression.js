@@ -370,7 +370,7 @@ function majPremiereLettre(s) {
 // GÉNÉRATION IMPRESSION
 // mode : 'complet' (défaut) | 'exercices' | 'rappel'
 // ============================================================
-function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode) {
+function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, options) {
   mode = mode || 'complet';
   imagesTheme = imagesTheme || {};
   couvertureTheme = couvertureTheme || '';
@@ -1946,6 +1946,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   </div>
 </body>
 </html>`;
+
+  // Utilisé par livret.html : renvoie la page sans lancer l'impression
+  if (options && options.retournerHtml) return printHtml;
 
   var iframe = document.createElement('iframe');
   iframe.style.position = 'fixed';
