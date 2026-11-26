@@ -120,6 +120,8 @@
     .c-sous-titre { font-style: italic; font-size: 15pt; margin-top: 6mm; color: var(--encre-douce); }
     .c-filet { width: 30mm; border-top: 0.3mm solid var(--or); margin: 8mm auto; }
     .c-image { width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover; border: 0.4mm solid var(--or); margin: 8mm auto; }
+    .c-niveaux-mention { font-family: var(--capitales); font-size: 15pt; letter-spacing: .12em; color: var(--encre); margin-top: 2mm; }
+    .c-sous-titre { max-width: 150mm; margin-left: auto; margin-right: auto; }
     .c-niveaux { font-style: italic; color: var(--gris); font-size: 12pt; margin-top: 3mm; }
     .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; color: var(--gris); }
 
@@ -498,7 +500,10 @@
       var tout = params.get('tout') === '1';
       if (!tout && themesDemandes.length === 0) { livretEl.innerHTML = '<div class="erreur-livret">Aucun thème choisi.</div>'; statut(''); return; }
 
-      var cat = params.get('titre') || (themesDemandes.length === 1 && !tout ? themesDemandes[0] : 'Livret complet');
+      // Titre auto : nom du thème s'il n'y en a qu'un, sinon « Kitab wa hikmah »
+      var cat = params.get('titre') || (themesDemandes.length === 1 && !tout ? themesDemandes[0] : 'Kitab wa hikmah');
+      // Mention de niveau seulement si une partie des niveaux est choisie
+      window.NIVEAUX_CHOISIS = (params.get('niveaux') ? niveauxDemandes.slice().sort(function(a, b) { return a - b; }) : []);
       document.title = 'Livret — ' + cat;
       document.getElementById('barreTitre').textContent = cat;
 
@@ -568,15 +573,31 @@
       pages = [];
       var mesure = document.getElementById('mesure');
 
-      // Date : mois et année du dernier texte publié
-      var derniere = null;
+      // Dates : du plus ancien au plus récent texte
+      var premiere = null, derniere = null;
       textes.forEach(function(t) {
         var d = new Date(t.date);
-        if (!isNaN(d.getTime()) && (!derniere || d > derniere)) derniere = d;
+        if (isNaN(d.getTime())) return;
+        if (!premiere || d < premiere) premiere = d;
+        if (!derniere || d > derniere) derniere = d;
       });
       if (!derniere) derniere = new Date();
+      if (!premiere) premiere = derniere;
+      function dateLongue(d) { return d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' }); }
+      var serie = (premiere.toDateString() === derniere.toDateString())
+        ? 'Série du ' + dateLongue(derniere)
+        : 'Série du ' + dateLongue(premiere) + ' au ' + dateLongue(derniere);
       var moisAnnee = derniere.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
       moisAnnee = moisAnnee.charAt(0).toUpperCase() + moisAnnee.slice(1);
+
+      // Sous-titre auto : liste des thèmes s'il y en a plusieurs, sinon le sous-titre du thème
+      var listeThemes = [];
+      textes.forEach(function(t) { if (listeThemes.indexOf(t.categorie) === -1) listeThemes.push(t.categorie); });
+      var sousTitreAuto = listeThemes.length > 1 ? listeThemes.join(', ') : (info.sousTitre || '');
+      var nc = window.NIVEAUX_CHOISIS || [];
+      var mentionNiveau = '';
+      if (nc.length === 1) mentionNiveau = 'Niveau ' + nc[0];
+      else if (nc.length > 1) mentionNiveau = 'Niveaux ' + nc.slice(0, -1).join(', ') + ' et ' + nc[nc.length - 1];
 
       var parNiveau = {};
       textes.forEach(function(t) { var n = parseInt(t.niveau, 10) || 1; (parNiveau[n] = parNiveau[n] || []).push(t); });
@@ -586,17 +607,18 @@
       niveaux.forEach(function(n) { parNiveau[n].forEach(function(t) { t._chap = ++chap; }); });
       var texteNiveaux = niveaux.length === 1 ? 'Niveau ' + niveaux[0] : 'Niveaux ' + niveaux[0] + ' à ' + niveaux[niveaux.length - 1];
 
-      // ---- 1. Première de couverture ----
+      // ---- 1. Première de couverture (titres générés automatiquement) ----
       pageSimple('couv', '<div class="couv-cadre">'
         + '<div><div class="c-auteur-haut">' + esc(AUTEUR) + '</div><div class="c-collection">' + esc(COLLECTION) + '</div></div>'
         + '<div>'
         +   '<div class="c-fleuron">❦</div>'
         +   '<div class="c-titre">' + esc(cat) + '</div>'
-        +   (info.sousTitre ? '<div class="c-sous-titre">' + esc(info.sousTitre) + '</div>' : '')
+        +   (sousTitreAuto ? '<div class="c-sous-titre">' + esc(sousTitreAuto) + '</div>' : '')
         +   (info.couverture ? '<img class="c-image" src="' + esc(info.couverture) + '" alt="">' : '<div class="c-filet"></div>')
-        +   '<div class="c-niveaux">' + texteNiveaux + '</div>'
+        +   (mentionNiveau ? '<div class="c-niveaux-mention">' + esc(mentionNiveau) + '</div>' : '')
+        +   '<div class="c-niveaux">' + esc(serie) + '</div>'
         + '</div>'
-        + '<div class="c-bas">' + esc(EDITEUR) + ' · ' + esc(moisAnnee) + '</div>'
+        + '<div class="c-bas">' + esc(EDITEUR) + '</div>'
         + '</div>');
 
       // ---- 2. Page blanche avec mentions légales ----
