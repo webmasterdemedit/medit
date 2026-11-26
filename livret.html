@@ -147,6 +147,7 @@
     .s-titre-page { font-family: var(--capitales); font-weight: 600; font-size: 22pt; letter-spacing: .14em; text-align: center; text-transform: lowercase; margin: 4mm 0 2mm; }
     .s-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 8mm; }
     .s-partie { font-family: var(--capitales); color: var(--vert); font-size: 15pt; letter-spacing: .12em; margin: 6mm 0 2mm; border-bottom: 0.3mm solid var(--vert); padding-bottom: 1mm; }
+    .s-theme { font-style: italic; color: var(--or); font-size: 12pt; margin: 3mm 0 1mm; }
     .s-ligne { display: flex; align-items: baseline; gap: 6px; font-size: 13pt; padding: 1.8mm 0; }
     .s-num { font-family: var(--capitales); color: var(--or); min-width: 24mm; }
     .numero-chapitre { font-family: var(--capitales) !important; letter-spacing: 2px; font-size: 13pt !important; }
@@ -489,8 +490,15 @@
     function construireLivret() {
       livretEl = document.getElementById('livret');
       var params = new URLSearchParams(window.location.search);
-      var cat = params.get('cat') || '';
-      if (!cat) { livretEl.innerHTML = '<div class="erreur-livret">Aucun thème indiqué.</div>'; statut(''); return; }
+      // Paramètres : cat=Thème (un seul)  ou  themes=A|B|C  &niveaux=1,2  &tout=1  &titre=...
+      var themesDemandes = [];
+      if (params.get('cat')) themesDemandes = [params.get('cat')];
+      if (params.get('themes')) themesDemandes = params.get('themes').split('|').map(function(x) { return x.trim(); }).filter(Boolean);
+      var niveauxDemandes = (params.get('niveaux') || '').split(',').map(function(x) { return parseInt(x, 10); }).filter(function(x) { return !isNaN(x); });
+      var tout = params.get('tout') === '1';
+      if (!tout && themesDemandes.length === 0) { livretEl.innerHTML = '<div class="erreur-livret">Aucun thème choisi.</div>'; statut(''); return; }
+
+      var cat = params.get('titre') || (themesDemandes.length === 1 && !tout ? themesDemandes[0] : 'Livret complet');
       document.title = 'Livret — ' + cat;
       document.getElementById('barreTitre').textContent = cat;
 
@@ -498,19 +506,36 @@
         data = data || {};
         var tous = data.tousLesTextes || data.textes || [];
         var infoTheme = {};
-        (data.themes || []).forEach(function(t) { if (t.titre === cat) infoTheme = t; });
+        if (themesDemandes.length === 1 && !tout) {
+          (data.themes || []).forEach(function(t) { if (t.titre === themesDemandes[0]) infoTheme = t; });
+        }
+        var ordreThemes = {};
+        (data.themes || []).forEach(function(t, i) { ordreThemes[t.titre] = i; });
 
         var textes = tous.filter(function(t) {
-          return (t.categorie || '').trim() === cat && !/\([^)]*\)\s*$/.test(t.titre || '');
+          var c = (t.categorie || '').trim();
+          if (/\([^)]*\)\s*$/.test(t.titre || '')) return false;
+          if (!tout && themesDemandes.indexOf(c) === -1) return false;
+          if (niveauxDemandes.length && niveauxDemandes.indexOf(parseInt(t.niveau, 10) || 1) === -1) return false;
+          return true;
         });
         textes.sort(function(a, b) {
-          return numeroDe(a.titre) - numeroDe(b.titre)
+          var ta = ordreThemes[a.categorie] !== undefined ? ordreThemes[a.categorie] : 9999;
+          var tb = ordreThemes[b.categorie] !== undefined ? ordreThemes[b.categorie] : 9999;
+          return ta - tb
+            || numeroDe(a.titre) - numeroDe(b.titre)
             || String(a.titre).localeCompare(String(b.titre), 'fr', { sensitivity: 'base' });
         });
-        if (textes.length === 0) { livretEl.innerHTML = '<div class="erreur-livret">Ce thème ne contient aucun texte.</div>'; statut(''); return; }
+        if (textes.length === 0) { livretEl.innerHTML = '<div class="erreur-livret">Aucun texte ne correspond à ces filtres.</div>'; statut(''); return; }
 
-        var promesseImages = (typeof chargerImagesTheme === 'function')
-          ? chargerImagesTheme(cat).catch(function() { return {}; }) : Promise.resolve({});
+        // Images de chaque thème utilisé
+        var themesUtilises = [];
+        textes.forEach(function(t) { if (themesUtilises.indexOf(t.categorie) === -1) themesUtilises.push(t.categorie); });
+        var imagesParTheme = {};
+        var promesseImages = Promise.all(themesUtilises.map(function(th) {
+          if (typeof chargerImagesTheme !== 'function') return Promise.resolve();
+          return chargerImagesTheme(th).then(function(im) { imagesParTheme[th] = im || {}; }).catch(function() {});
+        })).then(function() { return imagesParTheme; });
 
         var complets = [], k = 0;
         function chargerSuivant() {
@@ -596,7 +621,13 @@
       var sommaireHtml = '<div data-racine class="s-racine"><div class="s-titre-page">Sommaire</div><div class="s-fleuron">❧</div>';
       niveaux.forEach(function(n) {
         sommaireHtml += '<div class="s-partie">Niveau ' + n + '</div>';
+        var themePrec = null;
+        var plusieursThemes = textes.some(function(x) { return x.categorie !== textes[0].categorie; });
         parNiveau[n].forEach(function(t, i) {
+          if (plusieursThemes && t.categorie !== themePrec) {
+            sommaireHtml += '<div class="s-theme">' + esc(t.categorie) + '</div>';
+            themePrec = t.categorie;
+          }
           t._ancre = 'lecon-' + n + '-' + i;
           sommaireHtml += '<div class="s-ligne"><span class="s-num">Chapitre ' + t._chap + '</span>'
             + '<a href="#' + t._ancre + '">' + esc(titreSansNumero(t.titre)) + '</a>'
@@ -611,6 +642,7 @@
       await pause();
 
       // ---- 5. Niveaux et leçons ----
+      var plusieursThemesLivret = textes.some(function(x) { return x.categorie !== textes[0].categorie; });
       var styleAjoute = false, faites = 0;
       for (var ni = 0; ni < niveaux.length; ni++) {
         var n = niveaux[ni];
@@ -625,7 +657,7 @@
           statut('Mise en page de la leçon ' + faites + ' / ' + textes.length + '…');
           try {
             var tChap = Object.assign({}, t, { titre: t._chap + ' ' + titreSansNumero(t.titre) });
-            var pageHtml = genererImpression(tChap, t.contenu || '', images, '', 'complet', { retournerHtml: true });
+            var pageHtml = genererImpression(tChap, t.contenu || '', images[t.categorie] || {}, '', 'complet', { retournerHtml: true });
             if (!pageHtml) continue;
             var morceaux = decouperPage(pageHtml);
             if (!styleAjoute) { document.getElementById('stylesTextes').textContent = morceaux.style; styleAjoute = true; }
@@ -639,6 +671,9 @@
               nb.classList.add('numero-chapitre');
             });
             envelopperArabe(mesure);
+
+            // En-tête : le thème de la leçon si le livret en mélange plusieurs
+            r.entete = { gauche: plusieursThemesLivret ? t.categorie : cat, droite: 'Niveau ' + n };
 
             // Début de leçon : à la suite, ou page suivante s'il reste moins d'un quart de page
             var repere = document.createElement('div');
