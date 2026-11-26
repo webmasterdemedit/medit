@@ -1405,6 +1405,31 @@ body { font-size: 12pt; }
 
 /* Préparation orale : lettres espacées */
 .zone-memorisation .titre-questions { letter-spacing: 6px; }
+
+/* Niveau et thème sur la même ligne */
+.bandeau-titre .meta-niveau .meta-theme { color:#2d6a4f; }
+.bandeau-titre .meta-niveau .meta-sep { color:#9a7b3c; margin:0 4px; }
+
+/* Relier : plus serré, mêmes espacements à gauche et à droite */
+.relier-lignes-grid { align-items:flex-start !important; }
+.relier-col-lignes { gap:2px !important; justify-content:flex-start !important; }
+.relier-ligne-item { padding:0 !important; min-height:0 !important; line-height:1.35; }
+
+/* Tableaux : lignes plus serrées */
+.col-cell { min-height:28px !important; padding:2px 10px 2px 8px !important; }
+.col-trait { margin-bottom:4px !important; }
+
+/* Deux colonnes : une longue question peut continuer dans la colonne de droite */
+.exos-2col .exo {
+  display:block !important;
+  break-inside:auto !important; page-break-inside:auto !important;
+}
+.exos-2col .exo-ligne,
+.exos-2col .quiz-rep,
+.exos-2col .open-ligne,
+.exos-2col .ordre-cell-texte { break-inside:avoid; page-break-inside:avoid; }
+.exos-2col .consigne-exo,
+.exos-2col .exo-ligne { break-after:avoid; page-break-after:avoid; }
 </style>
 </head>
 <body>
@@ -1429,11 +1454,10 @@ ${noteSur20Html}
   <div class="ligne-titre">
     ${couvertureHtml}
     <div class="bloc-titre-centre">
-      <div class="meta-niveau">Niveau ${texte.niveau || 0}</div>
+      <div class="meta-niveau">Niveau ${texte.niveau || 0}${texte.categorie ? ' <span class="meta-sep">·</span> <span class="meta-theme">' + texte.categorie + '</span>' : ''}</div>
       ${numeroHtml}
       <h1>${titreAffiche || 'Lecture'}</h1>
       <div class="sous-titre-filets"></div>
-      <div class="meta-droite">${texte.categorie || ''}</div>
     </div>
   </div>
 </div>
@@ -1832,7 +1856,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant</div>';
     memoAffiche.forEach(function(q, i) {
       printHtml += '<div class="memo-item">';
-      printHtml += '<span class="exo-num-inline">' + (i + 1) + '</span>';
+      printHtml += '<span class="exo-num-inline">' + (exoNum + i + 1) + '</span>';
       printHtml += '<span class="memo-texte">' + q + '</span>';
       printHtml += '<span class="memo-cases">';
       printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Appris</span>';
