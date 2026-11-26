@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Livret</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@500;600;700&family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+  <!-- Styles des textes (repris de impression.js) -->
+  <style id="stylesTextes"></style>
+
+  <!-- ============================================================
+       STYLES DU LIVRET
+       ============================================================ -->
+  <style>
+    @font-face {
+      font-family: 'Janna LT Bold';
+      src: url('/medit/fonts/Janna LT Bold.ttf') format('truetype');
+      font-weight: bold;
+    }
+
+    :root {
+      --encre: #1a1712;
+      --encre-douce: #5a5244;
+      --gris: #7a705f;
+      --filet: #b9ad94;
+      --or: #9a7b3c;
+      --vert: #2d6a4f;
+      --papier: #fffdf8;
+      --livre: 'EB Garamond', Garamond, 'Times New Roman', serif;
+      --capitales: 'Cormorant SC', 'EB Garamond', serif;
+    }
+
+    /* ---------- Format d'impression ---------- */
+    @page {
+      size: A4;
+      margin: 1.6cm 1.7cm 1.8cm 1.7cm;
+      @bottom-center {
+        content: counter(page);
+        font-family: 'EB Garamond', serif;
+        font-size: 10pt;
+        color: #7a705f;
+      }
+    }
+    @page couverture {
+      margin: 0;
+      @bottom-center { content: none; }
+    }
+    @page vierge {
+      @bottom-center { content: none; }
+    }
+
+    html, body { background: #e9e4d8; margin: 0; padding: 0; }
+    body { font-family: var(--livre); color: var(--encre); }
+
+    /* ---------- Barre d'outils (écran seulement) ---------- */
+    .barre-livret {
+      position: sticky; top: 0; z-index: 100;
+      display: flex; align-items: center; justify-content: space-between; gap: 16px;
+      padding: 12px 24px;
+      background: var(--papier);
+      border-bottom: 3px double var(--filet);
+      font-family: var(--livre);
+    }
+    .barre-livret .barre-titre {
+      font-family: var(--capitales); font-size: 20px; letter-spacing: .1em;
+    }
+    .barre-livret .barre-statut { font-style: italic; color: var(--gris); font-size: 15px; }
+    .barre-livret button {
+      font-family: var(--capitales); font-size: 16px; letter-spacing: .08em;
+      padding: 9px 22px; background: var(--encre); color: var(--papier);
+      border: 1px solid var(--encre); cursor: pointer;
+    }
+    .barre-livret button:disabled { opacity: .4; cursor: default; }
+    .barre-livret button:hover:not(:disabled) { background: transparent; color: var(--encre); }
+
+    /* ---------- Aperçu à l'écran : feuilles A4 ---------- */
+    .livret { padding: 30px 0 60px; }
+    .feuille {
+      width: 210mm;
+      min-height: 297mm;
+      margin: 0 auto 24px;
+      padding: 1.6cm 1.7cm 1.8cm;
+      background: var(--papier);
+      box-shadow: 0 2px 14px rgba(0,0,0,.12);
+      box-sizing: border-box;
+      position: relative;
+    }
+
+    /* ---------- Couverture ---------- */
+    .couverture {
+      page: couverture;
+      padding: 0 !important;
+      display: flex;
+      background: #1f3b2f !important;
+      color: #e9d9a8;
+    }
+    .couverture-cadre {
+      flex: 1;
+      margin: 14mm;
+      border: 0.6mm solid rgba(233, 217, 168, .7);
+      outline: 0.3mm solid rgba(233, 217, 168, .45);
+      outline-offset: -3mm;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      text-align: center;
+      padding: 26mm 18mm 20mm;
+    }
+    .couverture .c-collection {
+      font-family: var(--capitales); letter-spacing: .3em; font-size: 12pt; opacity: .85;
+    }
+    .couverture .c-fleuron { font-size: 22pt; color: #e9d9a8; margin: 6mm 0; }
+    .couverture .c-titre {
+      font-family: var(--capitales); font-weight: 700;
+      font-size: 34pt; line-height: 1.15; letter-spacing: .06em;
+      color: #f4e6b8;
+    }
+    .couverture .c-sous-titre {
+      font-family: var(--livre); font-style: italic; font-size: 15pt;
+      margin-top: 6mm; color: rgba(233, 217, 168, .9);
+    }
+    .couverture .c-filet { width: 30mm; border-top: 0.3mm solid rgba(233,217,168,.7); margin: 8mm auto; }
+    .couverture .c-image {
+      width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover;
+      border: 0.4mm solid rgba(233,217,168,.7); margin: 8mm auto;
+    }
+    .couverture .c-auteur {
+      font-family: var(--capitales); font-size: 14pt; letter-spacing: .14em;
+    }
+    .couverture .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; opacity: .85; }
+
+    /* ---------- Page de titre ---------- */
+    .page-titre {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      text-align: center;
+    }
+    .page-titre .pt-titre {
+      font-family: var(--capitales); font-weight: 600; font-size: 28pt; letter-spacing: .1em;
+      color: var(--vert);
+    }
+    .page-titre .pt-sous { font-style: italic; font-size: 14pt; color: var(--encre-douce); margin-top: 4mm; }
+    .page-titre .pt-fleuron { color: var(--or); font-size: 18pt; margin: 10mm 0; }
+    .page-titre .pt-infos { font-size: 12pt; color: var(--gris); line-height: 1.8; }
+    .page-titre .pt-infos strong { color: var(--encre); font-weight: 500; }
+    .page-titre .pt-description {
+      max-width: 120mm; margin: 12mm auto 0;
+      font-size: 12.5pt; line-height: 1.6; text-align: justify; hyphens: auto;
+    }
+
+    /* ---------- Sommaire ---------- */
+    .sommaire h2 {
+      font-family: var(--capitales); font-weight: 600; font-size: 22pt;
+      letter-spacing: .14em; text-align: center; text-transform: lowercase;
+      margin: 10mm 0 2mm;
+    }
+    .sommaire .s-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 10mm; }
+    .sommaire ol { list-style: none; margin: 0; padding: 0; }
+    .sommaire li {
+      display: flex; align-items: baseline; gap: 6px;
+      font-size: 13pt; padding: 2.2mm 0;
+    }
+    .sommaire .s-num {
+      font-family: var(--capitales); color: var(--or); min-width: 12mm; font-size: 13pt;
+    }
+    .sommaire .s-titre { flex: 0 1 auto; }
+    .sommaire .s-points { flex: 1; border-bottom: 0.3mm dotted var(--filet); margin: 0 2mm; transform: translateY(-1mm); }
+    .sommaire .s-niveau { font-style: italic; color: var(--gris); font-size: 11pt; white-space: nowrap; }
+    .sommaire a { color: inherit; text-decoration: none; }
+
+    /* ---------- Séparateur avant chaque texte (intercalaire léger) ---------- */
+    .texte-livret { padding-top: 1.2cm; }
+    .texte-livret .page { background: transparent !important; }
+    .texte-livret .entete-eleve { margin-top: 0; }
+
+    /* ---------- Dernière page ---------- */
+    .colophon {
+      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
+      text-align: center; padding-bottom: 3cm;
+    }
+    .colophon .co-fleuron { color: var(--or); font-size: 18pt; margin-bottom: 8mm; }
+    .colophon .co-devise { font-style: italic; font-size: 13pt; max-width: 120mm; line-height: 1.6; }
+    .colophon .co-infos { margin-top: 12mm; font-size: 10pt; color: var(--gris); line-height: 1.7; }
+
+    /* ---------- Chargement ---------- */
+    .chargement { text-align: center; font-style: italic; color: var(--gris); padding: 60px 20px; font-size: 16px; }
+    .erreur-livret { text-align: center; color: #8a2a1a; padding: 60px 20px; }
+
+    /* ---------- Impression ---------- */
+    @media print {
+      html, body { background: #fff !important; }
+      .barre-livret { display: none !important; }
+      .livret { padding: 0; }
+      .feuille {
+        width: auto; min-height: 0; margin: 0; padding: 0;
+        box-shadow: none; background: transparent;
+        break-after: page; page-break-after: always;
+      }
+      .feuille:last-child { break-after: auto; page-break-after: auto; }
+      .couverture {
+        width: 210mm; height: 297mm; min-height: 297mm;
+        -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      }
+      .page-titre, .colophon { min-height: 25cm; }
+      .sommaire-feuille { page: vierge; }
+      .texte-livret { padding-top: 0; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="barre-livret">
+    <div>
+      <div class="barre-titre" id="barreTitre">Livret</div>
+      <div class="barre-statut" id="barreStatut">Préparation du livret…</div>
+    </div>
+    <button id="btnImprimer" onclick="window.print()" disabled>Imprimer le livret</button>
+  </div>
+
+  <div class="livret" id="livret">
+    <div class="chargement">Chargement des textes du thème…</div>
+  </div>
+
+  <script src="/medit/config.js"></script>
+  <script src="/medit/auth.js"></script>
+  <script src="/medit/data-manager.js"></script>
+  <script src="/medit/impression.js"></script>
+
+  <script>
+    // ============================================================
+    // OUTILS
+    // ============================================================
+    function esc(s) {
+      if (s === undefined || s === null) return '';
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+    function numeroDe(titre) {
+      var m = String(titre || '').match(/^\s*(\d+)\s+/);
+      return m ? parseInt(m[1], 10) : Infinity;
+    }
+    function titreSansNumero(titre) {
+      return String(titre || '').replace(/^\s*\d+\s+/, '').trim();
+    }
+    function statut(t) { document.getElementById('barreStatut').textContent = t; }
+
+    // Enveloppe l'arabe dans des <span class="arabe"> (comme impression.js)
+    function envelopperArabe(racine) {
+      var walker = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT, null, false);
+      var noeuds = [], n;
+      while ((n = walker.nextNode())) {
+        if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n);
+      }
+      var exclus = ['arabe', 'copier-mot', 'copier-mot-pointille', 'copier-mot-kfg'];
+      noeuds.forEach(function(noeud) {
+        var parent = noeud.parentNode;
+        if (!parent || !parent.classList) return;
+        for (var i = 0; i < exclus.length; i++) if (parent.classList.contains(exclus[i])) return;
+        var morceaux = noeud.nodeValue.split(/([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)/g);
+        var frag = document.createDocumentFragment();
+        morceaux.forEach(function(p) {
+          if (p === '') return;
+          if (/[؀-ۿ]/.test(p)) {
+            var span = document.createElement('span');
+            span.className = 'arabe';
+            span.setAttribute('lang', 'ar');
+            span.textContent = p;
+            frag.appendChild(span);
+          } else {
+            frag.appendChild(document.createTextNode(p));
+          }
+        });
+        parent.replaceChild(frag, noeud);
+      });
+    }
+
+    // Sépare le <style> et le contenu du <body> d'une page générée par impression.js
+    function decouperPage(html) {
+      var style = '';
+      var m = html.match(/<style>([\s\S]*?)<\/style>/);
+      if (m) style = m[1];
+      // Le zoom de chaque texte est appliqué sur son bloc, pas globalement
+      style = style.replace(/\.page\s*\{\s*zoom:\s*\d+%;\s*\}/g, '');
+      style = style.replace(/@supports not \(zoom: 1\)\s*\{[\s\S]*?\}\s*\}/g, '');
+      // Le @page du livret prime
+      style = style.replace(/@page\s*\{[^}]*\}/g, '');
+      var corps = '';
+      var b = html.match(/<body>([\s\S]*?)<\/body>/);
+      if (b) corps = b[1];
+      return { style: style, corps: corps };
+    }
+
+    // ============================================================
+    // CONSTRUCTION DU LIVRET
+    // ============================================================
+    function construireLivret() {
+      var params = new URLSearchParams(window.location.search);
+      var cat = params.get('cat') || '';
+      if (!cat) {
+        document.getElementById('livret').innerHTML = '<div class="erreur-livret">Aucun thème indiqué.</div>';
+        statut('');
+        return;
+      }
+      document.title = 'Livret — ' + cat;
+      document.getElementById('barreTitre').textContent = cat;
+
+      DataManager.charger().then(function(data) {
+        data = data || {};
+        var tous = data.tousLesTextes || data.textes || [];
+        var themes = data.themes || [];
+        var infoTheme = {};
+        themes.forEach(function(t) { if (t.titre === cat) infoTheme = t; });
+
+        // Textes du thème, sans les versions secondaires "(...)", triés par numéro
+        var textes = tous.filter(function(t) {
+          return (t.categorie || '').trim() === cat && !/\([^)]*\)\s*$/.test(t.titre || '');
+        });
+        textes.sort(function(a, b) {
+          return numeroDe(a.titre) - numeroDe(b.titre)
+            || String(a.titre).localeCompare(String(b.titre), 'fr', { sensitivity: 'base' });
+        });
+
+        if (textes.length === 0) {
+          document.getElementById('livret').innerHTML = '<div class="erreur-livret">Ce thème ne contient aucun texte.</div>';
+          statut('');
+          return;
+        }
+
+        statut('Chargement des images…');
+        var promesseImages = (typeof chargerImagesTheme === 'function')
+          ? chargerImagesTheme(cat).catch(function() { return {}; })
+          : Promise.resolve({});
+
+        promesseImages.then(function(images) {
+          assembler(cat, infoTheme, textes, images || {});
+        });
+      }).catch(function(e) {
+        console.error(e);
+        document.getElementById('livret').innerHTML = '<div class="erreur-livret">Erreur de chargement. Vérifiez votre connexion.</div>';
+        statut('');
+      });
+    }
+
+    function assembler(cat, info, textes, images) {
+      var livret = document.getElementById('livret');
+      var couverture = info.couverture || '';
+      var niveaux = textes.map(function(t) { return parseInt(t.niveau, 10) || 1; });
+      var nMin = Math.min.apply(null, niveaux), nMax = Math.max.apply(null, niveaux);
+      var texteNiveaux = (nMin === nMax) ? 'Niveau ' + nMin : 'Niveaux ' + nMin + ' à ' + nMax;
+      var annee = new Date().getFullYear();
+
+      var html = '';
+
+      // 1. Couverture
+      html += '<section class="feuille couverture"><div class="couverture-cadre">'
+        + '<div class="c-collection">Programme Kitab-wa-hikmat</div>'
+        + '<div>'
+        +   '<div class="c-fleuron">❦</div>'
+        +   '<div class="c-titre">' + esc(cat) + '</div>'
+        +   (info.sousTitre ? '<div class="c-sous-titre">' + esc(info.sousTitre) + '</div>' : '')
+        +   (couverture ? '<img class="c-image" src="' + esc(couverture) + '" alt="">' : '<div class="c-filet"></div>')
+        +   (info.auteur ? '<div class="c-auteur">' + esc(info.auteur) + '</div>' : '')
+        + '</div>'
+        + '<div class="c-bas">Association Va &amp; Vie · ' + annee + '</div>'
+        + '</div></section>';
+
+      // 2. Page de titre
+      html += '<section class="feuille page-titre">'
+        + '<div class="pt-titre">' + esc(cat) + '</div>'
+        + (info.sousTitre ? '<div class="pt-sous">' + esc(info.sousTitre) + '</div>' : '')
+        + '<div class="pt-fleuron">❦</div>'
+        + '<div class="pt-infos">'
+        +   (info.auteur ? '<div><strong>' + esc(info.auteur) + '</strong></div>' : '')
+        +   '<div>' + texteNiveaux + ' · ' + textes.length + ' texte' + (textes.length > 1 ? 's' : '') + '</div>'
+        + '</div>'
+        + (info.description ? '<div class="pt-description">' + esc(info.description) + '</div>' : '')
+        + '</section>';
+
+      // 3. Sommaire
+      html += '<section class="feuille sommaire sommaire-feuille"><h2>Sommaire</h2><div class="s-fleuron">❧</div><ol>';
+      textes.forEach(function(t, i) {
+        var num = numeroDe(t.titre);
+        html += '<li><span class="s-num">' + (num !== Infinity ? num : (i + 1)) + '</span>'
+          + '<a class="s-titre" href="#texte-' + i + '">' + esc(titreSansNumero(t.titre)) + '</a>'
+          + '<span class="s-points"></span>'
+          + '<span class="s-niveau">niv. ' + (t.niveau || 1) + '</span></li>';
+      });
+      html += '</ol></section>';
+
+      livret.innerHTML = html;
+
+      // 4. Les textes, un par un
+      var styleAjoute = false;
+      var i = 0;
+      function suivant() {
+        if (i >= textes.length) { terminer(); return; }
+        var t = textes[i];
+        statut('Mise en page du texte ' + (i + 1) + ' / ' + textes.length + '…');
+        try {
+          var page = genererImpression(t, t.contenu || '', images, couverture, 'complet', { retournerHtml: true });
+          if (page) {
+            var morceaux = decouperPage(page);
+            if (!styleAjoute) {
+              document.getElementById('stylesTextes').textContent = morceaux.style;
+              styleAjoute = true;
+            }
+            var zoom = parseInt(t.zoom, 10) || 100;
+            if (zoom < 30) zoom = 30;
+            if (zoom > 200) zoom = 200;
+            var section = document.createElement('section');
+            section.className = 'feuille texte-livret';
+            section.id = 'texte-' + i;
+            section.innerHTML = '<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
+            livret.appendChild(section);
+            envelopperArabe(section);
+          }
+        } catch (e) {
+          console.error('Texte ignoré :', t.titre, e);
+        }
+        i++;
+        setTimeout(suivant, 0);
+      }
+
+      function terminer() {
+        // 5. Dernière page
+        var fin = document.createElement('section');
+        fin.className = 'feuille colophon';
+        fin.innerHTML = '<div class="co-fleuron">❦</div>'
+          + '<div class="co-devise">« Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ? »<br>— Coran 47:24</div>'
+          + '<div class="co-infos">Association Va &amp; Vie<br>Programme Kitab-wa-hikmat<br>Livret imprimé le '
+          + new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>';
+        livret.appendChild(fin);
+
+        statut('Chargement des polices…');
+        var polices = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+        polices.then(function() {
+          statut('Livret prêt : ' + textes.length + ' texte' + (textes.length > 1 ? 's' : '') + '.');
+          document.getElementById('btnImprimer').disabled = false;
+        });
+      }
+
+      suivant();
+    }
+
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', construireLivret);
+    } else {
+      construireLivret();
+    }
+  </script>
+</body>
+</html>
