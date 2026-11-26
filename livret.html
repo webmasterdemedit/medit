@@ -8,12 +8,13 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@500;600;700&family=Playpen+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-  <!-- Styles des textes (repris de impression.js) -->
+  <!-- Styles des leçons (repris de impression.js) -->
   <style id="stylesTextes"></style>
-  <style id="stylesPages"></style>
 
   <!-- ============================================================
        STYLES DU LIVRET
+       Le livret est découpé en vraies pages A4 par le script :
+       chaque page porte son en-tête et son numéro.
        ============================================================ -->
   <style>
     @font-face {
@@ -29,262 +30,165 @@
       --filet: #b9ad94;
       --or: #9a7b3c;
       --vert: #2d6a4f;
-      --papier: #fffdf8;
+      --vert-pale: #f2f7f4;
+      --papier: #ffffff;
       --livre: 'EB Garamond', Garamond, 'Times New Roman', serif;
       --capitales: 'Cormorant SC', 'EB Garamond', serif;
+
+      /* Format de page */
+      --page-l: 210mm;
+      --page-h: 297mm;
+      --marge-haut: 12mm;
+      --marge-bas: 14mm;
+      --marge-cote: 17mm;
     }
 
-    /* ---------- Format d'impression ---------- */
-    @page {
-      size: A4;
-      margin: 2cm 1.7cm 1.6cm 1.7cm;
-      @top-right {
-        content: counter(page);
-        font-family: 'EB Garamond', serif; font-size: 10pt; color: #7a705f;
-        vertical-align: bottom; padding-bottom: 4mm;
-      }
-    }
-    @page couverture {
-      margin: 0;
-      @top-left { content: none; }
-      @top-right { content: none; }
-    }
-    @page vierge {
-      @top-left { content: none; }
-      @top-right { content: none; }
-    }
+    @page { size: A4; margin: 0; }
 
-    html, body { background: #e9e4d8; margin: 0; padding: 0; }
+    html, body { margin: 0; padding: 0; background: #e6e1d6; }
     body { font-family: var(--livre); color: var(--encre); }
 
     /* ---------- Barre d'outils (écran seulement) ---------- */
     .barre-livret {
       position: sticky; top: 0; z-index: 100;
       display: flex; align-items: center; justify-content: space-between; gap: 16px;
-      padding: 12px 24px;
-      background: var(--papier);
-      border-bottom: 3px double var(--filet);
-      font-family: var(--livre);
+      padding: 12px 24px; background: #fffdf8; border-bottom: 3px double var(--filet);
     }
-    .barre-livret .barre-titre {
-      font-family: var(--capitales); font-size: 20px; letter-spacing: .1em;
-    }
+    .barre-livret .barre-titre { font-family: var(--capitales); font-size: 20px; letter-spacing: .1em; }
     .barre-livret .barre-statut { font-style: italic; color: var(--gris); font-size: 15px; }
     .barre-livret button {
       font-family: var(--capitales); font-size: 16px; letter-spacing: .08em;
-      padding: 9px 22px; background: var(--encre); color: var(--papier);
-      border: 1px solid var(--encre); cursor: pointer;
+      padding: 9px 22px; background: var(--encre); color: #fff; border: 1px solid var(--encre); cursor: pointer;
     }
     .barre-livret button:disabled { opacity: .4; cursor: default; }
-    .barre-livret button:hover:not(:disabled) { background: transparent; color: var(--encre); }
 
-    /* ---------- Aperçu à l'écran : feuilles A4 ---------- */
+    /* ---------- Pages A4 ---------- */
     .livret { padding: 30px 0 60px; }
-    .feuille {
-      width: 210mm;
-      min-height: 297mm;
+    .page-a4 {
+      width: var(--page-l);
+      height: var(--page-h);
       margin: 0 auto 24px;
-      padding: 1.6cm 1.7cm 1.8cm;
+      padding: var(--marge-haut) var(--marge-cote) var(--marge-bas);
+      box-sizing: border-box;
       background: var(--papier);
       box-shadow: 0 2px 14px rgba(0,0,0,.12);
-      box-sizing: border-box;
+      display: flex; flex-direction: column;
+      overflow: hidden;
       position: relative;
     }
+    .page-a4 .zone-contenu { flex: 1; position: relative; overflow: hidden; min-height: 0; }
 
-    /* ---------- Couvertures (1re et 4e) : fond blanc, filets colorés ---------- */
-    .couverture, .quatrieme {
-      page: couverture;
-      padding: 0 !important;
-      display: flex;
-      background: #ffffff !important;
-      color: var(--encre);
-    }
-    .couverture-cadre {
-      flex: 1;
-      margin: 14mm;
-      border: 0.5mm solid var(--vert);
-      outline: 0.3mm solid var(--or);
-      outline-offset: -3mm;
-      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
-      text-align: center;
-      padding: 26mm 18mm 20mm;
-    }
-    .c-collection {
-      font-family: var(--capitales); letter-spacing: .3em; font-size: 12pt; color: var(--gris);
-    }
-    .c-fleuron { font-size: 22pt; color: var(--or); margin: 6mm 0; }
-    .c-titre {
-      font-family: var(--capitales); font-weight: 700;
-      font-size: 34pt; line-height: 1.15; letter-spacing: .06em;
-      color: var(--vert);
-    }
-    .c-sous-titre {
-      font-family: var(--livre); font-style: italic; font-size: 15pt;
-      margin-top: 6mm; color: var(--encre-douce);
-    }
-    .c-filet { width: 30mm; border-top: 0.3mm solid var(--or); margin: 8mm auto; }
-    .c-image {
-      width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover;
-      border: 0.4mm solid var(--or); margin: 8mm auto;
-    }
-    .c-auteur { font-family: var(--capitales); font-size: 14pt; letter-spacing: .14em; }
-    .c-niveaux { font-style: italic; color: var(--gris); font-size: 12pt; margin-top: 3mm; }
-    .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; color: var(--gris); }
-    .q-texte {
-      max-width: 125mm; font-size: 13pt; line-height: 1.65; text-align: justify; hyphens: auto;
-    }
-    .q-devise { font-style: italic; font-size: 13pt; line-height: 1.6; max-width: 120mm; }
-
-    /* ---------- Page « Ce livret appartient à » ---------- */
-    .appartient {
-      display: flex; flex-direction: column; justify-content: center; align-items: center;
-    }
-    .appartient-cadre {
-      width: 140mm; padding: 14mm 16mm;
-      border: 0.4mm solid var(--vert); outline: 0.25mm solid var(--or); outline-offset: -2.5mm;
-    }
-    .appartient h2 {
-      font-family: var(--capitales); font-weight: 600; text-align: center;
-      font-size: 20pt; letter-spacing: .12em; color: var(--vert); margin: 0 0 4mm;
-    }
-    .appartient .a-fleuron { text-align: center; color: var(--or); margin-bottom: 10mm; }
-    .appartient .a-ligne { display: flex; align-items: baseline; gap: 3mm; font-size: 14pt; margin: 9mm 0; }
-    .appartient .a-ligne span:last-child { flex: 1; border-bottom: 0.3mm dotted var(--filet); height: 6mm; }
-
-    /* ---------- Intercalaire de niveau ---------- */
-    .intercalaire {
-      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
-    }
-    .intercalaire .i-filet { width: 60mm; border-top: 0.4mm solid var(--vert); margin: 6mm auto; }
-    .intercalaire .i-titre {
-      font-family: var(--capitales); font-weight: 600; font-size: 40pt; letter-spacing: .14em; color: var(--vert);
-    }
-    .intercalaire .i-sous { font-style: italic; color: var(--gris); font-size: 13pt; }
-    .intercalaire .i-fleuron { color: var(--or); font-size: 18pt; }
-
-    /* ---------- Sommaire par niveau ---------- */
-    .sommaire .s-partie {
-      font-family: var(--capitales); color: var(--vert); font-size: 15pt; letter-spacing: .12em;
-      margin: 7mm 0 2mm; border-bottom: 0.3mm solid var(--vert); padding-bottom: 1mm;
-    }
-
-    /* ---------- Note et appréciation en fin de leçon ---------- */
-    .texte-livret .note-fin { margin-top: 8mm; break-inside: avoid; page-break-inside: avoid; }
-
-    /* ---------- Page de titre ---------- */
-    .page-titre {
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-    }
-    .page-titre .pt-titre {
-      font-family: var(--capitales); font-weight: 600; font-size: 28pt; letter-spacing: .1em;
-      color: var(--vert);
-    }
-    .page-titre .pt-sous { font-style: italic; font-size: 14pt; color: var(--encre-douce); margin-top: 4mm; }
-    .page-titre .pt-fleuron { color: var(--or); font-size: 18pt; margin: 10mm 0; }
-    .page-titre .pt-infos { font-size: 12pt; color: var(--gris); line-height: 1.8; }
-    .page-titre .pt-infos strong { color: var(--encre); font-weight: 500; }
-    .page-titre .pt-description {
-      max-width: 120mm; margin: 12mm auto 0;
-      font-size: 12.5pt; line-height: 1.6; text-align: justify; hyphens: auto;
-    }
-
-    /* ---------- Sommaire ---------- */
-    .sommaire h2 {
-      font-family: var(--capitales); font-weight: 600; font-size: 22pt;
-      letter-spacing: .14em; text-align: center; text-transform: lowercase;
-      margin: 10mm 0 2mm;
-    }
-    .sommaire .s-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 10mm; }
-    .sommaire ol { list-style: none; margin: 0; padding: 0; }
-    .sommaire li {
-      display: flex; align-items: baseline; gap: 6px;
-      font-size: 13pt; padding: 2.2mm 0;
-    }
-    .sommaire .s-num {
-      font-family: var(--capitales); color: var(--or); min-width: 12mm; font-size: 13pt;
-    }
-    .sommaire .s-titre { flex: 0 1 auto; }
-    .sommaire .s-points { flex: 1; border-bottom: 0.3mm dotted var(--filet); margin: 0 2mm; transform: translateY(-1mm); }
-    .sommaire .s-niveau { font-style: italic; color: var(--gris); font-size: 11pt; white-space: nowrap; }
-    .sommaire a { color: inherit; text-decoration: none; }
-
-    /* ---------- Séparateur avant chaque texte (intercalaire léger) ---------- */
-    .texte-livret { padding-top: 1.2cm; }
-    .texte-livret .page { background: transparent !important; }
-    .texte-livret .entete-eleve { margin-top: 0; }
-
-    /* ---------- Dernière page ---------- */
-    .colophon {
-      display: flex; flex-direction: column; align-items: center; justify-content: flex-end;
-      text-align: center; padding-bottom: 3cm;
-    }
-    .colophon .co-fleuron { color: var(--or); font-size: 18pt; margin-bottom: 8mm; }
-    .colophon .co-devise { font-style: italic; font-size: 13pt; max-width: 120mm; line-height: 1.6; }
-    .colophon .co-infos { margin-top: 12mm; font-size: 10pt; color: var(--gris); line-height: 1.7; }
-
-    /* ---------- Chargement ---------- */
-    .chargement { text-align: center; font-style: italic; color: var(--gris); padding: 60px 20px; font-size: 16px; }
-    .erreur-livret { text-align: center; color: #8a2a1a; padding: 60px 20px; }
-
-    /* ---------- Impression ---------- */
-    @media print {
-      html, body { background: #fff !important; }
-      .barre-livret { display: none !important; }
-      .livret { padding: 0; }
-      .feuille {
-        width: auto; min-height: 0; margin: 0; padding: 0;
-        box-shadow: none; background: transparent;
-        break-after: page; page-break-after: always;
-      }
-      .feuille:last-child { break-after: auto; page-break-after: auto; }
-      .couverture, .quatrieme {
-        width: 210mm; height: 296mm; min-height: 0; box-sizing: border-box;
-        -webkit-print-color-adjust: exact; print-color-adjust: exact;
-      }
-      .page-titre, .appartient, .intercalaire { min-height: 25cm; }
-      .appartient, .intercalaire { page: vierge; }
-      .texte-livret { padding-top: 0; }
-    }
-
-    /* ---------- Note sans cadre ---------- */
-    .texte-livret .note-simple {
-      flex-shrink: 0; align-self: flex-end; font-size: 11pt; white-space: nowrap; padding-bottom: 2px;
-    }
-    .texte-livret .note-simple strong { font-weight: 600; }
-
-    /* ---------- Glossaire ---------- */
-    .glossaire h2 {
-      font-family: var(--capitales); font-weight: 600; font-size: 22pt;
-      letter-spacing: .14em; text-align: center; text-transform: lowercase; margin: 6mm 0 2mm;
-    }
-    .glossaire .g-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 8mm; }
-    .glossaire .g-liste { column-count: 2; column-gap: 10mm; column-rule: 0.3mm dotted var(--filet); }
-    .glossaire .g-lettre {
-      font-family: var(--capitales); color: var(--vert); font-size: 15pt;
-      border-bottom: 0.3mm solid var(--vert); margin: 4mm 0 2mm; break-after: avoid;
-    }
-    .glossaire .g-entree {
-      font-size: 11pt; line-height: 1.45; margin-bottom: 2mm; text-align: justify; hyphens: auto;
-      break-inside: avoid; page-break-inside: avoid;
-    }
-    .glossaire .g-mot { font-weight: 600; font-style: italic; }
-    .glossaire .g-ref { color: var(--gris); font-size: 9.5pt; font-style: italic; white-space: nowrap; }
-
-    /* ---------- En-tête courant (répété sur chaque page imprimée) ---------- */
-    .cadre-page { width: 100%; border-collapse: collapse; border: none; }
-    .cadre-page > thead > tr > td, .cadre-page > tbody > tr > td { padding: 0; border: none; vertical-align: top; }
+    /* En-tête courant : thème | n° de page | niveau */
     .entete-courant {
-      display: flex; justify-content: space-between; align-items: baseline;
+      flex-shrink: 0;
+      display: grid; grid-template-columns: 1fr auto 1fr; align-items: baseline;
       font-family: var(--capitales); font-size: 10pt; letter-spacing: 1px;
       color: var(--vert);
       border-bottom: 0.3mm solid var(--vert);
       padding-bottom: 1.5mm; margin-bottom: 6mm;
     }
-    .entete-courant .ec-droite { color: var(--or); }
+    .entete-courant .ec-gauche { text-align: left; }
+    .entete-courant .ec-num { text-align: center; color: var(--encre); font-family: var(--livre); font-size: 11pt; letter-spacing: 0; padding: 0 6mm; }
+    .entete-courant .ec-droite { text-align: right; color: var(--or); }
+
+    /* Zone de mesure (invisible) */
+    #mesure {
+      position: absolute; left: -10000px; top: 0;
+      width: calc(var(--page-l) - 2 * var(--marge-cote));
+      visibility: hidden;
+    }
+
+    /* ---------- 1re de couverture ---------- */
+    .couv { padding: 0 !important; }
+    .couv-cadre {
+      flex: 1; margin: 14mm;
+      border: 0.5mm solid var(--vert); outline: 0.3mm solid var(--or); outline-offset: -3mm;
+      display: flex; flex-direction: column; align-items: center; justify-content: space-between;
+      text-align: center; padding: 22mm 18mm 18mm;
+    }
+    .c-auteur-haut {
+      font-family: var(--capitales); font-weight: 600; font-size: 22pt; letter-spacing: .18em; color: var(--encre);
+    }
+    .c-collection { font-family: var(--capitales); letter-spacing: .3em; font-size: 11pt; color: var(--gris); margin-top: 3mm; }
+    .c-fleuron { font-size: 22pt; color: var(--or); margin: 6mm 0; }
+    .c-titre { font-family: var(--capitales); font-weight: 700; font-size: 34pt; line-height: 1.15; letter-spacing: .06em; color: var(--vert); }
+    .c-sous-titre { font-style: italic; font-size: 15pt; margin-top: 6mm; color: var(--encre-douce); }
+    .c-filet { width: 30mm; border-top: 0.3mm solid var(--or); margin: 8mm auto; }
+    .c-image { width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover; border: 0.4mm solid var(--or); margin: 8mm auto; }
+    .c-niveaux { font-style: italic; color: var(--gris); font-size: 12pt; margin-top: 3mm; }
+    .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; color: var(--gris); }
+
+    /* ---------- Page 2 : mentions légales ---------- */
+    .mentions { justify-content: flex-end; }
+    .mentions .m-bloc { font-size: 9.5pt; line-height: 1.7; color: var(--encre-douce); }
+    .mentions .m-bloc strong { font-weight: 600; color: var(--encre); }
+
+    /* ---------- Ce livret appartient à ---------- */
+    .appartient { justify-content: center; align-items: center; }
+    .appartient-cadre { width: 140mm; padding: 14mm 16mm; border: 0.4mm solid var(--vert); outline: 0.25mm solid var(--or); outline-offset: -2.5mm; }
+    .appartient h2 { font-family: var(--capitales); font-weight: 600; text-align: center; font-size: 20pt; letter-spacing: .12em; color: var(--vert); margin: 0 0 4mm; }
+    .appartient .a-fleuron { text-align: center; color: var(--or); margin-bottom: 10mm; }
+    .appartient .a-ligne { display: flex; align-items: baseline; gap: 3mm; font-size: 14pt; margin: 9mm 0; }
+    .appartient .a-ligne span:last-child { flex: 1; border-bottom: 0.3mm dotted var(--filet); height: 6mm; }
+
+    /* ---------- Intercalaire de niveau ---------- */
+    .intercalaire { justify-content: center; align-items: center; text-align: center; }
+    .intercalaire .i-filet { width: 60mm; border-top: 0.4mm solid var(--vert); margin: 6mm auto; }
+    .intercalaire .i-titre { font-family: var(--capitales); font-weight: 600; font-size: 40pt; letter-spacing: .14em; color: var(--vert); }
+    .intercalaire .i-sous { font-style: italic; color: var(--gris); font-size: 13pt; }
+    .intercalaire .i-fleuron { color: var(--or); font-size: 18pt; }
+
+    /* ---------- Sommaire ---------- */
+    .s-titre-page { font-family: var(--capitales); font-weight: 600; font-size: 22pt; letter-spacing: .14em; text-align: center; text-transform: lowercase; margin: 4mm 0 2mm; }
+    .s-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 8mm; }
+    .s-partie { font-family: var(--capitales); color: var(--vert); font-size: 15pt; letter-spacing: .12em; margin: 6mm 0 2mm; border-bottom: 0.3mm solid var(--vert); padding-bottom: 1mm; }
+    .s-ligne { display: flex; align-items: baseline; gap: 6px; font-size: 13pt; padding: 1.8mm 0; }
+    .s-num { font-family: var(--capitales); color: var(--or); min-width: 10mm; }
+    .s-points { flex: 1; border-bottom: 0.3mm dotted var(--filet); margin: 0 2mm; transform: translateY(-1mm); }
+    .s-page { min-width: 8mm; text-align: right; font-variant-numeric: oldstyle-nums; }
+    .s-ligne a { color: inherit; text-decoration: none; }
+
+    /* ---------- Glossaire ---------- */
+    .g-titre-page { font-family: var(--capitales); font-weight: 600; font-size: 22pt; letter-spacing: .14em; text-align: center; text-transform: lowercase; margin: 4mm 0 2mm; }
+    .g-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 6mm; }
+    .g-rangee { display: flex; gap: 10mm; }
+    .g-rangee .g-col { flex: 1 1 0; min-width: 0; }
+    .g-lettre { font-family: var(--capitales); color: var(--vert); font-size: 15pt; border-bottom: 0.3mm solid var(--vert); margin: 3mm 0 2mm; }
+    .g-entree { font-size: 11pt; line-height: 1.45; margin-bottom: 2mm; text-align: justify; hyphens: auto; }
+    .g-mot { font-weight: 600; font-style: italic; }
+    .g-ref { color: var(--gris); font-size: 9.5pt; font-style: italic; white-space: nowrap; }
+
+    /* ---------- 4e de couverture : vert très pâle, sans cadre ---------- */
+    .quatrieme {
+      background: var(--vert-pale) !important;
+      -webkit-print-color-adjust: exact; print-color-adjust: exact;
+      padding: 30mm 26mm 22mm !important;
+      justify-content: space-between; text-align: center;
+    }
+    .q-texte { font-size: 13pt; line-height: 1.7; text-align: justify; hyphens: auto; }
+    .q-titre { font-family: var(--capitales); font-weight: 600; font-size: 20pt; color: var(--vert); letter-spacing: .08em; margin-bottom: 8mm; }
+    .q-devise { font-style: italic; font-size: 12.5pt; line-height: 1.6; color: var(--encre-douce); }
+    .q-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; color: var(--gris); }
+
+    /* ---------- Leçons ---------- */
+    .zone-contenu, #mesure { background: transparent !important; }
+    .zone-contenu .page { background: transparent !important; padding: 0 !important; }
+    .note-fin { margin-top: 8mm; }
+    .note-simple { flex-shrink: 0; align-self: flex-end; font-size: 11pt; white-space: nowrap; padding-bottom: 2px; }
+    .note-simple strong { font-weight: 600; }
+
+    .chargement { text-align: center; font-style: italic; color: var(--gris); padding: 60px 20px; font-size: 16px; }
+    .erreur-livret { text-align: center; color: #8a2a1a; padding: 60px 20px; }
+
     @media print {
-      .cadre-page > thead { display: table-header-group; }
-      .texte-livret, .sommaire-feuille, .glossaire { break-before: page; page-break-before: always; }
+      html, body { background: #fff !important; }
+      .barre-livret { display: none !important; }
+      .livret { padding: 0; }
+      .page-a4 {
+        margin: 0; box-shadow: none;
+        break-after: page; page-break-after: always;
+      }
+      .page-a4:last-child { break-after: auto; page-break-after: auto; }
     }
   </style>
 </head>
@@ -301,6 +205,7 @@
   <div class="livret" id="livret">
     <div class="chargement">Chargement des textes du thème…</div>
   </div>
+  <div id="mesure"></div>
 
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
@@ -309,29 +214,32 @@
 
   <script>
     // ============================================================
+    // RÉGLAGES
+    // ============================================================
+    var AUTEUR = 'W. KHAN';
+    var COLLECTION = 'Programme Kitab-wa-hikmat';
+    var EDITEUR = 'Association Va & Vie';
+    var DEVISE = '« Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ? »<br>— Coran 47:24';
+
+    // ============================================================
     // OUTILS
     // ============================================================
     function esc(s) {
       if (s === undefined || s === null) return '';
-      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
     function numeroDe(titre) {
       var m = String(titre || '').match(/^\s*(\d+)\s+/);
       return m ? parseInt(m[1], 10) : Infinity;
     }
-    function titreSansNumero(titre) {
-      return String(titre || '').replace(/^\s*\d+\s+/, '').trim();
-    }
+    function titreSansNumero(titre) { return String(titre || '').replace(/^\s*\d+\s+/, '').trim(); }
     function statut(t) { document.getElementById('barreStatut').textContent = t; }
+    function pause() { return new Promise(function(r) { setTimeout(r, 0); }); }
 
-    // Enveloppe l'arabe dans des <span class="arabe"> (comme impression.js)
     function envelopperArabe(racine) {
       var walker = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT, null, false);
       var noeuds = [], n;
-      while ((n = walker.nextNode())) {
-        if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n);
-      }
+      while ((n = walker.nextNode())) if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n);
       var exclus = ['arabe', 'copier-mot', 'copier-mot-pointille', 'copier-mot-kfg'];
       noeuds.forEach(function(noeud) {
         var parent = noeud.parentNode;
@@ -343,56 +251,218 @@
           if (p === '') return;
           if (/[؀-ۿ]/.test(p)) {
             var span = document.createElement('span');
-            span.className = 'arabe';
-            span.setAttribute('lang', 'ar');
-            span.textContent = p;
+            span.className = 'arabe'; span.setAttribute('lang', 'ar'); span.textContent = p;
             frag.appendChild(span);
-          } else {
-            frag.appendChild(document.createTextNode(p));
-          }
+          } else frag.appendChild(document.createTextNode(p));
         });
         parent.replaceChild(frag, noeud);
       });
     }
 
-    // Sépare le <style> et le contenu du <body> d'une page générée par impression.js
     function decouperPage(html) {
       var style = '';
       var m = html.match(/<style>([\s\S]*?)<\/style>/);
       if (m) style = m[1];
-      // Le zoom de chaque texte est appliqué sur son bloc, pas globalement
       style = style.replace(/\.page\s*\{\s*zoom:\s*\d+%;\s*\}/g, '');
       style = style.replace(/@supports not \(zoom: 1\)\s*\{[\s\S]*?\}\s*\}/g, '');
-      // Le @page du livret prime
       style = style.replace(/@page\s*\{[^}]*\}/g, '');
+      style = style.replace(/(^|\})\s*body\s*\{/g, '$1 .zone-contenu {');
       var corps = '';
       var b = html.match(/<body>([\s\S]*?)<\/body>/);
       if (b) corps = b[1];
       return { style: style, corps: corps };
     }
 
+    function nettoyerLecon(racine) {
+      ['.entete-eleve', '.temps-lecture-haut', '.meta-niveau', '.couverture-mini', '.pied-page'].forEach(function(sel) {
+        racine.querySelectorAll(sel).forEach(function(el) { el.remove(); });
+      });
+      racine.querySelectorAll('.note-haut-bloc .note-sur-20').forEach(function(cadre) {
+        var simple = document.createElement('div');
+        simple.className = 'note-simple';
+        simple.innerHTML = '<strong>Note :</strong> ……… / 20';
+        cadre.parentNode.replaceChild(simple, cadre);
+      });
+      var note = racine.querySelector('.note-haut-bloc');
+      var page = racine.querySelector('.page');
+      if (note && page) { note.classList.add('note-fin'); page.appendChild(note); }
+    }
+
     // ============================================================
-    // CONSTRUCTION DU LIVRET
+    // PAGINATION : découpe le contenu en vraies pages A4
     // ============================================================
-    function construireLivret() {
-      var params = new URLSearchParams(window.location.search);
-      var cat = params.get('cat') || '';
-      if (!cat) {
-        document.getElementById('livret').innerHTML = '<div class="erreur-livret">Aucun thème indiqué.</div>';
-        statut('');
+    var livretEl, pages = [];
+
+    function nouvellePage(type, entete) {
+      var p = document.createElement('div');
+      p.className = 'page-a4' + (type ? ' ' + type : '');
+      if (entete) {
+        var e = document.createElement('div');
+        e.className = 'entete-courant';
+        e.innerHTML = '<span class="ec-gauche">' + esc(entete.gauche) + '</span>'
+          + '<span class="ec-num"></span>'
+          + '<span class="ec-droite">' + esc(entete.droite || '') + '</span>';
+        p.appendChild(e);
+        var z = document.createElement('div');
+        z.className = 'zone-contenu';
+        p.appendChild(z);
+        p._zone = z;
+      }
+      livretEl.appendChild(p);
+      pages.push(p);
+      return p;
+    }
+    function pageSimple(type, html) {
+      var p = nouvellePage(type, null);
+      p.innerHTML = html;
+      return p;
+    }
+
+    // Éléments qui peuvent être coupés entre deux pages (on descend dans leurs enfants)
+    var SECABLES = ['page', 'corps-contenu', 'texte-zone', 'zone-exercices', 'paragraphe',
+                    'zone-memorisation', 'exo-col', 'col-table-lignes', 'g-liste'];
+
+    function estSecable(el) {
+      if (!el.classList) return false;
+      for (var i = 0; i < SECABLES.length; i++) if (el.classList.contains(SECABLES[i])) return true;
+      return el.hasAttribute && el.hasAttribute('data-racine');
+    }
+
+    // Liste des blocs insécables, chacun avec la chaîne de ses parents
+    function aplatir(el, chaine, sortie) {
+      if (el.nodeType === 3) {
+        if (el.nodeValue.trim()) sortie.push({ el: el, chaine: chaine });
         return;
       }
+      if (el.nodeType !== 1) return;
+      if (estSecable(el) && el.children.length > 0) {
+        var c2 = chaine.concat([el]);
+        Array.prototype.slice.call(el.childNodes).forEach(function(enf) { aplatir(enf, c2, sortie); });
+      } else {
+        sortie.push({ el: el, chaine: chaine });
+      }
+    }
+
+    // Remplit des pages avec des blocs, en recréant leurs parents sur chaque page
+    function Remplisseur(entete) {
+      this.entete = entete;
+      this.page = null;
+      this.ouverts = [];
+      this.dejaOuverts = new Set();
+    }
+    Remplisseur.prototype.nouvelle = function() {
+      this.page = nouvellePage('', this.entete);
+      this.ouverts = [];
+      this.vide = true;
+    };
+    Remplisseur.prototype.deborde = function() {
+      var z = this.page._zone;
+      return z.scrollHeight > z.clientHeight + 1;
+    };
+    Remplisseur.prototype.parentPour = function(chaine) {
+      var i = 0;
+      while (i < this.ouverts.length && i < chaine.length && this.ouverts[i].src === chaine[i]) i++;
+      this.ouverts.length = i;
+      var parent = i > 0 ? this.ouverts[i - 1].clone : this.page._zone;
+      for (var j = i; j < chaine.length; j++) {
+        var src = chaine[j];
+        var cl = src.cloneNode(false);
+        cl.removeAttribute('id');
+        if (this.dejaOuverts.has(src)) {
+          cl.classList && cl.classList.remove('lettrine');
+          // une suite de section ne répète pas son titre
+        }
+        this.dejaOuverts.add(src);
+        parent.appendChild(cl);
+        this.ouverts.push({ src: src, clone: cl });
+        parent = cl;
+      }
+      return parent;
+    };
+    Remplisseur.prototype.ajouter = function(bloc) {
+      if (!this.page) this.nouvelle();
+      if (bloc.el.classList && bloc.el.classList.contains('exos-2col-flex')) { this.ajouter2col(bloc); return; }
+      var parent = this.parentPour(bloc.chaine);
+      var cl = bloc.el.cloneNode(true);
+      parent.appendChild(cl);
+      if (this.deborde() && !this.vide) {
+        cl.remove();
+        this.nettoyerParentsVides();
+        this.nouvelle();
+        parent = this.parentPour(bloc.chaine);
+        parent.appendChild(cl);
+      }
+      this.vide = false;
+    };
+    Remplisseur.prototype.nettoyerParentsVides = function() {
+      for (var i = this.ouverts.length - 1; i >= 0; i--) {
+        var c = this.ouverts[i].clone;
+        if (c.childNodes.length === 0) { c.remove(); this.ouverts.length = i; }
+        else break;
+      }
+    };
+    // Questions sur 2 colonnes : on remplit la page avec autant de questions que possible
+    Remplisseur.prototype.ajouter2col = function(bloc) {
+      var exos = Array.prototype.slice.call(bloc.el.querySelectorAll(':scope > .col-gauche > .exo, :scope > .col-droite > .exo'));
+      var hauteurs = exos.map(function(e) { return e.getBoundingClientRect().height || 1; });
+      var self = this;
+      function construire(debut, fin) {
+        var total = 0, k;
+        for (k = debut; k < fin; k++) total += hauteurs[k];
+        var cumul = 0, coupe = fin;
+        for (k = debut; k < fin; k++) { cumul += hauteurs[k]; if (cumul >= total / 2) { coupe = k + 1; break; } }
+        if (fin - debut > 1 && coupe >= fin) coupe = fin - 1;
+        var wrap = bloc.el.cloneNode(false);
+        var g = document.createElement('div'); g.className = 'col-gauche';
+        var d = document.createElement('div'); d.className = 'col-droite';
+        for (k = debut; k < fin; k++) (k < coupe ? g : d).appendChild(exos[k].cloneNode(true));
+        wrap.appendChild(g); wrap.appendChild(d);
+        return wrap;
+      }
+      var debut = 0;
+      while (debut < exos.length) {
+        var parent = this.parentPour(bloc.chaine);
+        var fin = exos.length, place = null;
+        while (fin > debut) {
+          var essai = construire(debut, fin);
+          parent.appendChild(essai);
+          if (!this.deborde()) { place = essai; break; }
+          essai.remove();
+          fin--;
+        }
+        if (!place) {
+          if (this.vide) {
+            parent.appendChild(construire(debut, debut + 1));
+            fin = debut + 1;
+          } else {
+            this.nettoyerParentsVides();
+            this.nouvelle();
+            continue;
+          }
+        }
+        this.vide = false;
+        debut = fin;
+        if (debut < exos.length) { this.nettoyerParentsVides(); this.nouvelle(); }
+      }
+    };
+
+    // ============================================================
+    // CHARGEMENT
+    // ============================================================
+    function construireLivret() {
+      livretEl = document.getElementById('livret');
+      var params = new URLSearchParams(window.location.search);
+      var cat = params.get('cat') || '';
+      if (!cat) { livretEl.innerHTML = '<div class="erreur-livret">Aucun thème indiqué.</div>'; statut(''); return; }
       document.title = 'Livret — ' + cat;
       document.getElementById('barreTitre').textContent = cat;
 
       DataManager.charger().then(function(data) {
         data = data || {};
         var tous = data.tousLesTextes || data.textes || [];
-        var themes = data.themes || [];
         var infoTheme = {};
-        themes.forEach(function(t) { if (t.titre === cat) infoTheme = t; });
+        (data.themes || []).forEach(function(t) { if (t.titre === cat) infoTheme = t; });
 
-        // Textes du thème, sans les versions secondaires "(...)", triés par numéro
         var textes = tous.filter(function(t) {
           return (t.categorie || '').trim() === cat && !/\([^)]*\)\s*$/.test(t.titre || '');
         });
@@ -400,266 +470,239 @@
           return numeroDe(a.titre) - numeroDe(b.titre)
             || String(a.titre).localeCompare(String(b.titre), 'fr', { sensitivity: 'base' });
         });
+        if (textes.length === 0) { livretEl.innerHTML = '<div class="erreur-livret">Ce thème ne contient aucun texte.</div>'; statut(''); return; }
 
-        if (textes.length === 0) {
-          document.getElementById('livret').innerHTML = '<div class="erreur-livret">Ce thème ne contient aucun texte.</div>';
-          statut('');
-          return;
-        }
-
-        statut('Chargement des textes complets…');
         var promesseImages = (typeof chargerImagesTheme === 'function')
-          ? chargerImagesTheme(cat).catch(function() { return {}; })
-          : Promise.resolve({});
+          ? chargerImagesTheme(cat).catch(function() { return {}; }) : Promise.resolve({});
 
-        // Charge chaque texte en entier (contenu + exercices)
-        var complets = [];
-        var k = 0;
+        var complets = [], k = 0;
         function chargerSuivant() {
           if (k >= textes.length) {
-            promesseImages.then(function(images) { assembler(cat, infoTheme, complets, images || {}); });
+            promesseImages.then(function(images) {
+              var polices = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
+              polices.then(function() { assembler(cat, infoTheme, complets, images || {}); });
+            });
             return;
           }
           var t = textes[k];
           statut('Chargement du texte ' + (k + 1) + ' / ' + textes.length + '…');
-          DataManager.getTexteAsync(t.id).then(function(full) {
-            complets.push(Object.assign({}, t, full || {}));
-          }).catch(function() {
-            complets.push(t);
-          }).then(function() { k++; chargerSuivant(); });
+          DataManager.getTexteAsync(t.id).then(function(full) { complets.push(Object.assign({}, t, full || {})); })
+            .catch(function() { complets.push(t); })
+            .then(function() { k++; chargerSuivant(); });
         }
         chargerSuivant();
       }).catch(function(e) {
         console.error(e);
-        document.getElementById('livret').innerHTML = '<div class="erreur-livret">Erreur de chargement. Vérifiez votre connexion.</div>';
+        livretEl.innerHTML = '<div class="erreur-livret">Erreur de chargement. Vérifiez votre connexion.</div>';
         statut('');
       });
     }
 
-    // Nettoie une leçon pour en faire une vraie page de livre
-    function nettoyerLecon(section) {
-      ['.entete-eleve', '.temps-lecture-haut', '.meta-niveau', '.couverture-mini', '.pied-page', '.note-sur-20']
-        .forEach(function(sel) {
-          section.querySelectorAll(sel).forEach(function(el) {
-            // le cadre de note est déplacé avec l'appréciation, on ne supprime que les doublons du titre
-            if (sel === '.note-sur-20' && el.closest('.note-haut-bloc')) return;
-            el.remove();
-          });
-        });
-      // Note + appréciation à la fin de la leçon
-      section.querySelectorAll('.note-haut-bloc .note-sur-20').forEach(function(cadre) {
-        var simple = document.createElement('div');
-        simple.className = 'note-simple';
-        simple.innerHTML = '<strong>Note :</strong> ……… / 20';
-        cadre.parentNode.replaceChild(simple, cadre);
-      });
-      var note = section.querySelector('.note-haut-bloc');
-      var page = section.querySelector('.page') || section.firstElementChild;
-      if (note && page) {
-        note.classList.add('note-fin');
-        page.appendChild(note);
-      }
-    }
+    // ============================================================
+    // ASSEMBLAGE
+    // ============================================================
+    async function assembler(cat, info, textes, images) {
+      livretEl.innerHTML = '';
+      pages = [];
+      var mesure = document.getElementById('mesure');
 
-    function assembler(cat, info, textes, images) {
-      var livret = document.getElementById('livret');
-      var couverture = info.couverture || '';
-      var annee = new Date().getFullYear();
-
-      // Regroupement par niveau
-      var parNiveau = {};
+      // Date : mois et année du dernier texte publié
+      var derniere = null;
       textes.forEach(function(t) {
-        var n = parseInt(t.niveau, 10) || 1;
-        (parNiveau[n] = parNiveau[n] || []).push(t);
+        var d = new Date(t.date);
+        if (!isNaN(d.getTime()) && (!derniere || d > derniere)) derniere = d;
       });
+      if (!derniere) derniere = new Date();
+      var moisAnnee = derniere.toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' });
+      moisAnnee = moisAnnee.charAt(0).toUpperCase() + moisAnnee.slice(1);
+
+      var parNiveau = {};
+      textes.forEach(function(t) { var n = parseInt(t.niveau, 10) || 1; (parNiveau[n] = parNiveau[n] || []).push(t); });
       var niveaux = Object.keys(parNiveau).map(Number).sort(function(a, b) { return a - b; });
-      var texteNiveaux = (niveaux.length === 1) ? 'Niveau ' + niveaux[0]
-        : 'Niveaux ' + niveaux[0] + ' à ' + niveaux[niveaux.length - 1];
+      var texteNiveaux = niveaux.length === 1 ? 'Niveau ' + niveaux[0] : 'Niveaux ' + niveaux[0] + ' à ' + niveaux[niveaux.length - 1];
 
-      var html = '';
-
-      // 1. Première de couverture
-      html += '<section class="feuille couverture"><div class="couverture-cadre">'
-        + '<div class="c-collection">Programme Kitab-wa-hikmat</div>'
+      // ---- 1. Première de couverture ----
+      pageSimple('couv', '<div class="couv-cadre">'
+        + '<div><div class="c-auteur-haut">' + esc(AUTEUR) + '</div><div class="c-collection">' + esc(COLLECTION) + '</div></div>'
         + '<div>'
         +   '<div class="c-fleuron">❦</div>'
         +   '<div class="c-titre">' + esc(cat) + '</div>'
         +   (info.sousTitre ? '<div class="c-sous-titre">' + esc(info.sousTitre) + '</div>' : '')
-        +   (couverture ? '<img class="c-image" src="' + esc(couverture) + '" alt="">' : '<div class="c-filet"></div>')
-        +   (info.auteur ? '<div class="c-auteur">' + esc(info.auteur) + '</div>' : '')
+        +   (info.couverture ? '<img class="c-image" src="' + esc(info.couverture) + '" alt="">' : '<div class="c-filet"></div>')
         +   '<div class="c-niveaux">' + texteNiveaux + '</div>'
         + '</div>'
-        + '<div class="c-bas">Association Va &amp; Vie · ' + annee + '</div>'
-        + '</div></section>';
+        + '<div class="c-bas">' + esc(EDITEUR) + ' · ' + esc(moisAnnee) + '</div>'
+        + '</div>');
 
-      // 2. Ce livret appartient à
-      html += '<section class="feuille appartient"><div class="appartient-cadre">'
-        + '<h2>Ce livret appartient à</h2><div class="a-fleuron">❧</div>'
+      // ---- 2. Page blanche avec mentions légales ----
+      pageSimple('mentions', '<div class="m-bloc">'
+        + '<div><strong>' + esc(AUTEUR) + '</strong> — <em>' + esc(cat) + '</em></div>'
+        + '<div>' + esc(COLLECTION) + '</div>'
+        + '<div>© ' + esc(EDITEUR) + ', ' + derniere.getFullYear() + '. Tous droits réservés.</div>'
+        + '<div>ISBN : ………………………………</div>'
+        + '<div>Dépôt légal : ' + esc(moisAnnee) + '</div>'
+        + '<div>Achevé d\'imprimer en ' + esc(moisAnnee.toLowerCase()) + '.</div>'
+        + '<div style="margin-top:3mm">Toute reproduction, même partielle, est interdite sans l\'autorisation de l\'éditeur.</div>'
+        + '</div>');
+
+      // ---- 3. Ce livret appartient à ----
+      pageSimple('appartient', '<div class="appartient-cadre"><h2>Ce livret appartient à</h2><div class="a-fleuron">❧</div>'
         + '<div class="a-ligne"><span>Nom :</span><span></span></div>'
         + '<div class="a-ligne"><span>Prénom :</span><span></span></div>'
         + '<div class="a-ligne"><span>Classe :</span><span></span></div>'
-        + '<div class="a-ligne"><span>Année :</span><span></span></div>'
-        + '</div></section>';
+        + '<div class="a-ligne"><span>Année :</span><span></span></div></div>');
 
-      // 3. Sommaire par niveau
-      var idx = 0;
-      html += '<section class="feuille sommaire sommaire-feuille"><h2>Sommaire</h2><div class="s-fleuron">❧</div>';
+      // ---- 4. Sommaire (numéros de page remplis à la fin) ----
+      var sommaireHtml = '<div data-racine class="s-racine"><div class="s-titre-page">Sommaire</div><div class="s-fleuron">❧</div>';
       niveaux.forEach(function(n) {
-        html += '<div class="s-partie">Niveau ' + n + '</div><ol>';
-        parNiveau[n].forEach(function(t) {
+        sommaireHtml += '<div class="s-partie">Niveau ' + n + '</div>';
+        parNiveau[n].forEach(function(t, i) {
+          t._ancre = 'lecon-' + n + '-' + i;
           var num = numeroDe(t.titre);
-          t._ancre = 'texte-' + (idx++);
-          html += '<li><span class="s-num">' + (num !== Infinity ? num : '') + '</span>'
-            + '<a class="s-titre" href="#' + t._ancre + '">' + esc(titreSansNumero(t.titre)) + '</a>'
-            + '<span class="s-points"></span></li>';
+          sommaireHtml += '<div class="s-ligne"><span class="s-num">' + (num !== Infinity ? num : '') + '</span>'
+            + '<a href="#' + t._ancre + '">' + esc(titreSansNumero(t.titre)) + '</a>'
+            + '<span class="s-points"></span><span class="s-page" data-ancre="' + t._ancre + '">00</span></div>';
         });
-        html += '</ol>';
       });
-      html += '</section>';
+      sommaireHtml += '</div>';
+      mesure.innerHTML = sommaireHtml;
+      var rs = new Remplisseur({ gauche: cat, droite: 'Sommaire' });
+      var blocsS = []; aplatir(mesure.firstElementChild, [], blocsS);
+      blocsS.forEach(function(b) { rs.ajouter(b); });
+      await pause();
 
-      livret.innerHTML = html;
+      // ---- 5. Niveaux et leçons ----
+      var styleAjoute = false, faites = 0;
+      for (var ni = 0; ni < niveaux.length; ni++) {
+        var n = niveaux[ni];
+        pageSimple('intercalaire', '<div class="i-fleuron">❦</div><div class="i-filet"></div>'
+          + '<div class="i-titre">Niveau ' + n + '</div><div class="i-filet"></div>'
+          + '<div class="i-sous">' + parNiveau[n].length + ' leçon' + (parNiveau[n].length > 1 ? 's' : '') + '</div>');
 
-      // En-tête courant répété sur chaque page (via <thead>, fiable à l'impression)
-      function envelopperEntete(contenuHtml, gauche, droite) {
-        return '<table class="cadre-page"><thead><tr><td>'
-          + '<div class="entete-courant"><span class="ec-gauche">' + esc(gauche) + '</span>'
-          + '<span class="ec-droite">' + esc(droite || '') + '</span></div>'
-          + '</td></tr></thead><tbody><tr><td>' + contenuHtml + '</td></tr></tbody></table>';
-      }
-      var somm = livret.querySelector('.sommaire-feuille');
-      if (somm) somm.innerHTML = envelopperEntete(somm.innerHTML, cat, 'Sommaire');
-
-      // 4. Niveaux et leçons
-      var file = [];
-      niveaux.forEach(function(n) {
-        file.push({ intercalaire: n, nb: parNiveau[n].length });
-        parNiveau[n].forEach(function(t) { file.push({ texte: t }); });
-      });
-
-      var styleAjoute = false;
-      var i = 0, faits = 0;
-      function suivant() {
-        if (i >= file.length) { terminer(); return; }
-        var item = file[i];
-        if (item.intercalaire) {
-          var inter = document.createElement('section');
-          inter.className = 'feuille intercalaire';
-          inter.innerHTML = '<div class="i-fleuron">❦</div><div class="i-filet"></div>'
-            + '<div class="i-titre">Niveau ' + item.intercalaire + '</div>'
-            + '<div class="i-filet"></div>'
-            + '<div class="i-sous">' + item.nb + ' leçon' + (item.nb > 1 ? 's' : '') + '</div>';
-          livret.appendChild(inter);
-        } else {
-          var t = item.texte;
-          faits++;
-          statut('Mise en page de la leçon ' + faits + ' / ' + textes.length + '…');
+        for (var li = 0; li < parNiveau[n].length; li++) {
+          var t = parNiveau[n][li];
+          faites++;
+          statut('Mise en page de la leçon ' + faites + ' / ' + textes.length + '…');
           try {
             var pageHtml = genererImpression(t, t.contenu || '', images, '', 'complet', { retournerHtml: true });
-            if (pageHtml) {
-              var morceaux = decouperPage(pageHtml);
-              if (!styleAjoute) {
-                document.getElementById('stylesTextes').textContent = morceaux.style;
-                styleAjoute = true;
-              }
-              var zoom = parseInt(t.zoom, 10) || 100;
-              if (zoom < 30) zoom = 30;
-              if (zoom > 200) zoom = 200;
-              var section = document.createElement('section');
-              section.className = 'feuille texte-livret';
-              section.id = t._ancre;
-              section.innerHTML = envelopperEntete('<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>',
-                cat, 'Niveau ' + (parseInt(t.niveau, 10) || 1));
-              livret.appendChild(section);
-              nettoyerLecon(section);
-              envelopperArabe(section);
-            }
+            if (!pageHtml) continue;
+            var morceaux = decouperPage(pageHtml);
+            if (!styleAjoute) { document.getElementById('stylesTextes').textContent = morceaux.style; styleAjoute = true; }
+            var zoom = Math.max(30, Math.min(200, parseInt(t.zoom, 10) || 100));
+
+            mesure.className = 'zone-contenu';
+            mesure.innerHTML = '<div data-racine style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
+            nettoyerLecon(mesure);
+            envelopperArabe(mesure);
+
+            var avant = pages.length;
+            var r = new Remplisseur({ gauche: cat, droite: 'Niveau ' + n });
+            var blocs = []; aplatir(mesure.firstElementChild, [], blocs);
+            blocs.forEach(function(b) { r.ajouter(b); });
+            if (pages[avant]) pages[avant].id = t._ancre;
           } catch (e) {
             console.error('Leçon ignorée :', t.titre, e);
           }
+          await pause();
         }
-        i++;
-        setTimeout(suivant, 0);
       }
 
-      function terminer() {
-        // 5. Glossaire complet
-        var entrees = {};
-        textes.forEach(function(t) {
-          var num = numeroDe(t.titre);
-          var ref = (num !== Infinity) ? String(num) : titreSansNumero(t.titre);
-          var vocab = t.vocabulaire || [];
-          if (typeof vocab === 'string') vocab = vocab.split('\n');
-          vocab.forEach(function(item) {
-            String(item).split(';').forEach(function(brut) {
-              var m = brut.trim();
-              if (!m) return;
-              var iC = m.indexOf(':'), iE = m.indexOf('='), sep = -1;
-              if (iC !== -1 && iE !== -1) sep = Math.min(iC, iE);
-              else sep = (iC !== -1) ? iC : iE;
-              var mot = (sep !== -1 ? m.substring(0, sep) : m).trim();
-              var def = (sep !== -1 ? m.substring(sep + 1) : '').trim();
-              if (!mot) return;
-              mot = mot.charAt(0).toUpperCase() + mot.slice(1);
-              var cle = mot.toLowerCase();
-              if (!entrees[cle]) entrees[cle] = { mot: mot, defs: [], refs: [] };
-              if (def && entrees[cle].defs.indexOf(def) === -1) entrees[cle].defs.push(def);
-              if (entrees[cle].refs.indexOf(ref) === -1) entrees[cle].refs.push(ref);
-            });
+      // ---- 6. Glossaire ----
+      var entrees = {};
+      textes.forEach(function(t) {
+        var num = numeroDe(t.titre);
+        var ref = (num !== Infinity) ? String(num) : titreSansNumero(t.titre);
+        var vocab = t.vocabulaire || [];
+        if (typeof vocab === 'string') vocab = vocab.split('\n');
+        vocab.forEach(function(item) {
+          String(item).split(';').forEach(function(brut) {
+            var m = brut.trim(); if (!m) return;
+            var iC = m.indexOf(':'), iE = m.indexOf('='), sep = -1;
+            if (iC !== -1 && iE !== -1) sep = Math.min(iC, iE); else sep = (iC !== -1) ? iC : iE;
+            var mot = (sep !== -1 ? m.substring(0, sep) : m).trim();
+            var def = (sep !== -1 ? m.substring(sep + 1) : '').trim();
+            if (!mot) return;
+            mot = mot.charAt(0).toUpperCase() + mot.slice(1);
+            var cle = mot.toLowerCase();
+            if (!entrees[cle]) entrees[cle] = { mot: mot, defs: [], refs: [] };
+            if (def && entrees[cle].defs.indexOf(def) === -1) entrees[cle].defs.push(def);
+            if (entrees[cle].refs.indexOf(ref) === -1) entrees[cle].refs.push(ref);
           });
         });
-        var cles = Object.keys(entrees).sort(function(a, b) {
-          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+      });
+      var cles = Object.keys(entrees).sort(function(a, b) { return a.localeCompare(b, 'fr', { sensitivity: 'base' }); });
+      if (cles.length > 0) {
+        var items = [], lettrePrec = '';
+        cles.forEach(function(c) {
+          var e = entrees[c];
+          var lettre = e.mot.charAt(0).toUpperCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+          if (lettre !== lettrePrec) { items.push('<div class="g-lettre">' + esc(lettre) + '</div>'); lettrePrec = lettre; }
+          items.push('<div class="g-entree"><span class="g-mot">' + esc(e.mot) + '</span>'
+            + (e.defs.length ? ' : ' + esc(e.defs.join(' ; ')) : '')
+            + ' <span class="g-ref">(leçon' + (e.refs.length > 1 ? 's' : '') + ' ' + esc(e.refs.join(', ')) + ')</span></div>');
         });
-        if (cles.length > 0) {
-          var g = '<h2>Glossaire</h2><div class="g-fleuron">❧</div><div class="g-liste">';
-          var lettrePrec = '';
-          cles.forEach(function(c) {
-            var e = entrees[c];
-            var lettre = e.mot.charAt(0).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
-            if (lettre !== lettrePrec) { g += '<div class="g-lettre">' + esc(lettre) + '</div>'; lettrePrec = lettre; }
-            g += '<div class="g-entree"><span class="g-mot">' + esc(e.mot) + '</span>'
-              + (e.defs.length ? ' : ' + esc(e.defs.join(' ; ')) : '')
-              + ' <span class="g-ref">(leçon' + (e.refs.length > 1 ? 's' : '') + ' ' + esc(e.refs.join(', ')) + ')</span></div>';
-          });
-          g += '</div>';
-          var gl = document.createElement('section');
-          gl.className = 'feuille glossaire';
-          gl.innerHTML = envelopperEntete(g, cat, 'Glossaire');
-          livret.appendChild(gl);
-          envelopperArabe(gl);
+        // Glossaire sur 2 colonnes, page par page
+        mesure.className = '';
+        var rg = new Remplisseur({ gauche: cat, droite: 'Glossaire' });
+        rg.nouvelle();
+        rg.page._zone.innerHTML = '<div class="g-titre-page">Glossaire</div><div class="g-fleuron">❧</div>';
+        var idx = 0;
+        while (idx < items.length) {
+          var rangee = document.createElement('div');
+          rangee.className = 'g-rangee';
+          var cg = document.createElement('div'); cg.className = 'g-col';
+          var cd = document.createElement('div'); cd.className = 'g-col';
+          rangee.appendChild(cg); rangee.appendChild(cd);
+          rg.page._zone.appendChild(rangee);
+          // remplit la colonne de gauche puis celle de droite
+          var colonnes = [cg, cd];
+          for (var ci = 0; ci < 2 && idx < items.length; ci++) {
+            while (idx < items.length) {
+              var tmp = document.createElement('div');
+              tmp.innerHTML = items[idx];
+              var el = tmp.firstElementChild;
+              colonnes[ci].appendChild(el);
+              if (rg.deborde()) { el.remove(); break; }
+              idx++;
+            }
+          }
+          envelopperArabe(rangee);
+          if (idx < items.length) rg.nouvelle();
         }
-
-        // 6. Quatrième de couverture
-        var q = document.createElement('section');
-        q.className = 'feuille quatrieme';
-        q.innerHTML = '<div class="couverture-cadre">'
-          + '<div class="c-collection">Programme Kitab-wa-hikmat</div>'
-          + '<div>'
-          +   '<div class="c-titre" style="font-size:22pt">' + esc(cat) + '</div>'
-          +   '<div class="c-filet"></div>'
-          +   (info.description ? '<div class="q-texte">' + esc(info.description) + '</div><div class="c-filet"></div>' : '')
-          +   '<div class="q-devise">« Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ? »<br>— Coran 47:24</div>'
-          + '</div>'
-          + '<div class="c-bas">Association Va &amp; Vie · ' + annee + '</div>'
-          + '</div>';
-        livret.appendChild(q);
-
-        statut('Chargement des polices…');
-        var polices = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
-        polices.then(function() {
-          statut('Livret prêt : ' + textes.length + ' leçon' + (textes.length > 1 ? 's' : '') + '.');
-          document.getElementById('btnImprimer').disabled = false;
-        });
       }
 
-      suivant();
+      // ---- 7. Pages de fin : blanche + 4e de couverture, total multiple de 4 ----
+      var aAjouter = 2;
+      var total = pages.length + aAjouter;
+      var complement = (4 - (total % 4)) % 4;
+      for (var b = 0; b < complement; b++) pageSimple('blanche', '');
+      pageSimple('blanche', '');
+      pageSimple('quatrieme',
+        '<div>'
+        + '<div class="q-titre">' + esc(cat) + '</div>'
+        + (info.description ? '<div class="q-texte">' + esc(info.description) + '</div>' : '')
+        + '</div>'
+        + '<div class="q-devise">' + DEVISE + '</div>'
+        + '<div class="q-bas">' + esc(AUTEUR) + ' · ' + esc(EDITEUR) + '</div>');
+
+      // ---- 8. Numéros de page ----
+      pages.forEach(function(p, i) {
+        var num = p.querySelector('.ec-num');
+        if (num) num.textContent = String(i + 1);
+      });
+      document.querySelectorAll('.s-page').forEach(function(s) {
+        var cible = document.getElementById(s.getAttribute('data-ancre'));
+        var i = pages.indexOf(cible);
+        s.textContent = i >= 0 ? String(i + 1) : '';
+      });
+
+      mesure.innerHTML = '';
+      statut('Livret prêt : ' + textes.length + ' leçon' + (textes.length > 1 ? 's' : '') + ', ' + pages.length + ' pages.');
+      document.getElementById('btnImprimer').disabled = false;
     }
 
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', construireLivret);
-    } else {
-      construireLivret();
-    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', construireLivret);
+    else construireLivret();
   </script>
 </body>
 </html>
