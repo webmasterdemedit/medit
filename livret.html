@@ -89,46 +89,85 @@
       position: relative;
     }
 
-    /* ---------- Couverture ---------- */
-    .couverture {
+    /* ---------- Couvertures (1re et 4e) : fond blanc, filets colorés ---------- */
+    .couverture, .quatrieme {
       page: couverture;
       padding: 0 !important;
       display: flex;
-      background: #1f3b2f !important;
-      color: #e9d9a8;
+      background: #ffffff !important;
+      color: var(--encre);
     }
     .couverture-cadre {
       flex: 1;
       margin: 14mm;
-      border: 0.6mm solid rgba(233, 217, 168, .7);
-      outline: 0.3mm solid rgba(233, 217, 168, .45);
+      border: 0.5mm solid var(--vert);
+      outline: 0.3mm solid var(--or);
       outline-offset: -3mm;
       display: flex; flex-direction: column; align-items: center; justify-content: space-between;
       text-align: center;
       padding: 26mm 18mm 20mm;
     }
-    .couverture .c-collection {
-      font-family: var(--capitales); letter-spacing: .3em; font-size: 12pt; opacity: .85;
+    .c-collection {
+      font-family: var(--capitales); letter-spacing: .3em; font-size: 12pt; color: var(--gris);
     }
-    .couverture .c-fleuron { font-size: 22pt; color: #e9d9a8; margin: 6mm 0; }
-    .couverture .c-titre {
+    .c-fleuron { font-size: 22pt; color: var(--or); margin: 6mm 0; }
+    .c-titre {
       font-family: var(--capitales); font-weight: 700;
       font-size: 34pt; line-height: 1.15; letter-spacing: .06em;
-      color: #f4e6b8;
+      color: var(--vert);
     }
-    .couverture .c-sous-titre {
+    .c-sous-titre {
       font-family: var(--livre); font-style: italic; font-size: 15pt;
-      margin-top: 6mm; color: rgba(233, 217, 168, .9);
+      margin-top: 6mm; color: var(--encre-douce);
     }
-    .couverture .c-filet { width: 30mm; border-top: 0.3mm solid rgba(233,217,168,.7); margin: 8mm auto; }
-    .couverture .c-image {
+    .c-filet { width: 30mm; border-top: 0.3mm solid var(--or); margin: 8mm auto; }
+    .c-image {
       width: 42mm; height: 42mm; border-radius: 50%; object-fit: cover;
-      border: 0.4mm solid rgba(233,217,168,.7); margin: 8mm auto;
+      border: 0.4mm solid var(--or); margin: 8mm auto;
     }
-    .couverture .c-auteur {
-      font-family: var(--capitales); font-size: 14pt; letter-spacing: .14em;
+    .c-auteur { font-family: var(--capitales); font-size: 14pt; letter-spacing: .14em; }
+    .c-niveaux { font-style: italic; color: var(--gris); font-size: 12pt; margin-top: 3mm; }
+    .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; color: var(--gris); }
+    .q-texte {
+      max-width: 125mm; font-size: 13pt; line-height: 1.65; text-align: justify; hyphens: auto;
     }
-    .couverture .c-bas { font-family: var(--capitales); font-size: 11pt; letter-spacing: .2em; opacity: .85; }
+    .q-devise { font-style: italic; font-size: 13pt; line-height: 1.6; max-width: 120mm; }
+
+    /* ---------- Page « Ce livret appartient à » ---------- */
+    .appartient {
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
+    }
+    .appartient-cadre {
+      width: 140mm; padding: 14mm 16mm;
+      border: 0.4mm solid var(--vert); outline: 0.25mm solid var(--or); outline-offset: -2.5mm;
+    }
+    .appartient h2 {
+      font-family: var(--capitales); font-weight: 600; text-align: center;
+      font-size: 20pt; letter-spacing: .12em; color: var(--vert); margin: 0 0 4mm;
+    }
+    .appartient .a-fleuron { text-align: center; color: var(--or); margin-bottom: 10mm; }
+    .appartient .a-ligne { display: flex; align-items: baseline; gap: 3mm; font-size: 14pt; margin: 9mm 0; }
+    .appartient .a-ligne span:last-child { flex: 1; border-bottom: 0.3mm dotted var(--filet); height: 6mm; }
+
+    /* ---------- Intercalaire de niveau ---------- */
+    .intercalaire {
+      display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center;
+    }
+    .intercalaire .i-filet { width: 60mm; border-top: 0.4mm solid var(--vert); margin: 6mm auto; }
+    .intercalaire .i-titre {
+      font-family: var(--capitales); font-weight: 600; font-size: 40pt; letter-spacing: .14em; color: var(--vert);
+    }
+    .intercalaire .i-sous { font-style: italic; color: var(--gris); font-size: 13pt; }
+    .intercalaire .i-fleuron { color: var(--or); font-size: 18pt; }
+
+    /* ---------- Sommaire par niveau ---------- */
+    .sommaire .s-partie {
+      font-family: var(--capitales); color: var(--vert); font-size: 15pt; letter-spacing: .12em;
+      margin: 7mm 0 2mm; border-bottom: 0.3mm solid var(--vert); padding-bottom: 1mm;
+    }
+
+    /* ---------- Note et appréciation en fin de leçon ---------- */
+    .texte-livret .note-fin { margin-top: 8mm; break-inside: avoid; page-break-inside: avoid; }
 
     /* ---------- Page de titre ---------- */
     .page-titre {
@@ -197,11 +236,12 @@
         break-after: page; page-break-after: always;
       }
       .feuille:last-child { break-after: auto; page-break-after: auto; }
-      .couverture {
-        width: 210mm; height: 297mm; min-height: 297mm;
+      .couverture, .quatrieme {
+        width: 210mm; height: 296mm; min-height: 0; box-sizing: border-box;
         -webkit-print-color-adjust: exact; print-color-adjust: exact;
       }
-      .page-titre, .colophon { min-height: 25cm; }
+      .page-titre, .appartient, .intercalaire { min-height: 25cm; }
+      .appartient, .intercalaire { page: vierge; }
       .sommaire-feuille { page: vierge; }
       .texte-livret { padding-top: 0; }
     }
@@ -326,14 +366,28 @@
           return;
         }
 
-        statut('Chargement des images…');
+        statut('Chargement des textes complets…');
         var promesseImages = (typeof chargerImagesTheme === 'function')
           ? chargerImagesTheme(cat).catch(function() { return {}; })
           : Promise.resolve({});
 
-        promesseImages.then(function(images) {
-          assembler(cat, infoTheme, textes, images || {});
-        });
+        // Charge chaque texte en entier (contenu + exercices)
+        var complets = [];
+        var k = 0;
+        function chargerSuivant() {
+          if (k >= textes.length) {
+            promesseImages.then(function(images) { assembler(cat, infoTheme, complets, images || {}); });
+            return;
+          }
+          var t = textes[k];
+          statut('Chargement du texte ' + (k + 1) + ' / ' + textes.length + '…');
+          DataManager.getTexteAsync(t.id).then(function(full) {
+            complets.push(Object.assign({}, t, full || {}));
+          }).catch(function() {
+            complets.push(t);
+          }).then(function() { k++; chargerSuivant(); });
+        }
+        chargerSuivant();
       }).catch(function(e) {
         console.error(e);
         document.getElementById('livret').innerHTML = '<div class="erreur-livret">Erreur de chargement. Vérifiez votre connexion.</div>';
@@ -341,17 +395,43 @@
       });
     }
 
+    // Nettoie une leçon pour en faire une vraie page de livre
+    function nettoyerLecon(section) {
+      ['.entete-eleve', '.temps-lecture-haut', '.meta-niveau', '.couverture-mini', '.pied-page', '.note-sur-20']
+        .forEach(function(sel) {
+          section.querySelectorAll(sel).forEach(function(el) {
+            // le cadre de note est déplacé avec l'appréciation, on ne supprime que les doublons du titre
+            if (sel === '.note-sur-20' && el.closest('.note-haut-bloc')) return;
+            el.remove();
+          });
+        });
+      // Note + appréciation à la fin de la leçon
+      var note = section.querySelector('.note-haut-bloc');
+      var page = section.querySelector('.page') || section.firstElementChild;
+      if (note && page) {
+        note.classList.add('note-fin');
+        page.appendChild(note);
+      }
+    }
+
     function assembler(cat, info, textes, images) {
       var livret = document.getElementById('livret');
       var couverture = info.couverture || '';
-      var niveaux = textes.map(function(t) { return parseInt(t.niveau, 10) || 1; });
-      var nMin = Math.min.apply(null, niveaux), nMax = Math.max.apply(null, niveaux);
-      var texteNiveaux = (nMin === nMax) ? 'Niveau ' + nMin : 'Niveaux ' + nMin + ' à ' + nMax;
       var annee = new Date().getFullYear();
+
+      // Regroupement par niveau
+      var parNiveau = {};
+      textes.forEach(function(t) {
+        var n = parseInt(t.niveau, 10) || 1;
+        (parNiveau[n] = parNiveau[n] || []).push(t);
+      });
+      var niveaux = Object.keys(parNiveau).map(Number).sort(function(a, b) { return a - b; });
+      var texteNiveaux = (niveaux.length === 1) ? 'Niveau ' + niveaux[0]
+        : 'Niveaux ' + niveaux[0] + ' à ' + niveaux[niveaux.length - 1];
 
       var html = '';
 
-      // 1. Couverture
+      // 1. Première de couverture
       html += '<section class="feuille couverture"><div class="couverture-cadre">'
         + '<div class="c-collection">Programme Kitab-wa-hikmat</div>'
         + '<div>'
@@ -360,81 +440,109 @@
         +   (info.sousTitre ? '<div class="c-sous-titre">' + esc(info.sousTitre) + '</div>' : '')
         +   (couverture ? '<img class="c-image" src="' + esc(couverture) + '" alt="">' : '<div class="c-filet"></div>')
         +   (info.auteur ? '<div class="c-auteur">' + esc(info.auteur) + '</div>' : '')
+        +   '<div class="c-niveaux">' + texteNiveaux + '</div>'
         + '</div>'
         + '<div class="c-bas">Association Va &amp; Vie · ' + annee + '</div>'
         + '</div></section>';
 
-      // 2. Page de titre
-      html += '<section class="feuille page-titre">'
-        + '<div class="pt-titre">' + esc(cat) + '</div>'
-        + (info.sousTitre ? '<div class="pt-sous">' + esc(info.sousTitre) + '</div>' : '')
-        + '<div class="pt-fleuron">❦</div>'
-        + '<div class="pt-infos">'
-        +   (info.auteur ? '<div><strong>' + esc(info.auteur) + '</strong></div>' : '')
-        +   '<div>' + texteNiveaux + ' · ' + textes.length + ' texte' + (textes.length > 1 ? 's' : '') + '</div>'
-        + '</div>'
-        + (info.description ? '<div class="pt-description">' + esc(info.description) + '</div>' : '')
-        + '</section>';
+      // 2. Ce livret appartient à
+      html += '<section class="feuille appartient"><div class="appartient-cadre">'
+        + '<h2>Ce livret appartient à</h2><div class="a-fleuron">❧</div>'
+        + '<div class="a-ligne"><span>Nom :</span><span></span></div>'
+        + '<div class="a-ligne"><span>Prénom :</span><span></span></div>'
+        + '<div class="a-ligne"><span>Classe :</span><span></span></div>'
+        + '<div class="a-ligne"><span>Année :</span><span></span></div>'
+        + '</div></section>';
 
-      // 3. Sommaire
-      html += '<section class="feuille sommaire sommaire-feuille"><h2>Sommaire</h2><div class="s-fleuron">❧</div><ol>';
-      textes.forEach(function(t, i) {
-        var num = numeroDe(t.titre);
-        html += '<li><span class="s-num">' + (num !== Infinity ? num : (i + 1)) + '</span>'
-          + '<a class="s-titre" href="#texte-' + i + '">' + esc(titreSansNumero(t.titre)) + '</a>'
-          + '<span class="s-points"></span>'
-          + '<span class="s-niveau">niv. ' + (t.niveau || 1) + '</span></li>';
+      // 3. Sommaire par niveau
+      var idx = 0;
+      html += '<section class="feuille sommaire sommaire-feuille"><h2>Sommaire</h2><div class="s-fleuron">❧</div>';
+      niveaux.forEach(function(n) {
+        html += '<div class="s-partie">Niveau ' + n + '</div><ol>';
+        parNiveau[n].forEach(function(t) {
+          var num = numeroDe(t.titre);
+          t._ancre = 'texte-' + (idx++);
+          html += '<li><span class="s-num">' + (num !== Infinity ? num : '') + '</span>'
+            + '<a class="s-titre" href="#' + t._ancre + '">' + esc(titreSansNumero(t.titre)) + '</a>'
+            + '<span class="s-points"></span></li>';
+        });
+        html += '</ol>';
       });
-      html += '</ol></section>';
+      html += '</section>';
 
       livret.innerHTML = html;
 
-      // 4. Les textes, un par un
+      // 4. Niveaux et leçons
+      var file = [];
+      niveaux.forEach(function(n) {
+        file.push({ intercalaire: n, nb: parNiveau[n].length });
+        parNiveau[n].forEach(function(t) { file.push({ texte: t }); });
+      });
+
       var styleAjoute = false;
-      var i = 0;
+      var i = 0, faits = 0;
       function suivant() {
-        if (i >= textes.length) { terminer(); return; }
-        var t = textes[i];
-        statut('Mise en page du texte ' + (i + 1) + ' / ' + textes.length + '…');
-        try {
-          var page = genererImpression(t, t.contenu || '', images, couverture, 'complet', { retournerHtml: true });
-          if (page) {
-            var morceaux = decouperPage(page);
-            if (!styleAjoute) {
-              document.getElementById('stylesTextes').textContent = morceaux.style;
-              styleAjoute = true;
+        if (i >= file.length) { terminer(); return; }
+        var item = file[i];
+        if (item.intercalaire) {
+          var inter = document.createElement('section');
+          inter.className = 'feuille intercalaire';
+          inter.innerHTML = '<div class="i-fleuron">❦</div><div class="i-filet"></div>'
+            + '<div class="i-titre">Niveau ' + item.intercalaire + '</div>'
+            + '<div class="i-filet"></div>'
+            + '<div class="i-sous">' + item.nb + ' leçon' + (item.nb > 1 ? 's' : '') + '</div>';
+          livret.appendChild(inter);
+        } else {
+          var t = item.texte;
+          faits++;
+          statut('Mise en page de la leçon ' + faits + ' / ' + textes.length + '…');
+          try {
+            var pageHtml = genererImpression(t, t.contenu || '', images, '', 'complet', { retournerHtml: true });
+            if (pageHtml) {
+              var morceaux = decouperPage(pageHtml);
+              if (!styleAjoute) {
+                document.getElementById('stylesTextes').textContent = morceaux.style;
+                styleAjoute = true;
+              }
+              var zoom = parseInt(t.zoom, 10) || 100;
+              if (zoom < 30) zoom = 30;
+              if (zoom > 200) zoom = 200;
+              var section = document.createElement('section');
+              section.className = 'feuille texte-livret';
+              section.id = t._ancre;
+              section.innerHTML = '<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
+              livret.appendChild(section);
+              nettoyerLecon(section);
+              envelopperArabe(section);
             }
-            var zoom = parseInt(t.zoom, 10) || 100;
-            if (zoom < 30) zoom = 30;
-            if (zoom > 200) zoom = 200;
-            var section = document.createElement('section');
-            section.className = 'feuille texte-livret';
-            section.id = 'texte-' + i;
-            section.innerHTML = '<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
-            livret.appendChild(section);
-            envelopperArabe(section);
+          } catch (e) {
+            console.error('Leçon ignorée :', t.titre, e);
           }
-        } catch (e) {
-          console.error('Texte ignoré :', t.titre, e);
         }
         i++;
         setTimeout(suivant, 0);
       }
 
       function terminer() {
-        // 5. Dernière page
-        var fin = document.createElement('section');
-        fin.className = 'feuille colophon';
-        fin.innerHTML = '<div class="co-fleuron">❦</div>'
-          + '<div class="co-devise">« Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ? »<br>— Coran 47:24</div>'
-          + '<div class="co-infos">Association Va &amp; Vie<br>Programme Kitab-wa-hikmat<br>Livret imprimé le '
-          + new Date().toLocaleDateString('fr-FR', { day: '2-digit', month: 'long', year: 'numeric' }) + '</div>';
-        livret.appendChild(fin);
+        // 5. Quatrième de couverture
+        var q = document.createElement('section');
+        q.className = 'feuille quatrieme';
+        q.innerHTML = '<div class="couverture-cadre">'
+          + '<div class="c-collection">Programme Kitab-wa-hikmat</div>'
+          + '<div>'
+          +   '<div class="c-titre" style="font-size:22pt">' + esc(cat) + '</div>'
+          +   '<div class="c-filet"></div>'
+          +   (info.description ? '<div class="q-texte">' + esc(info.description) + '</div><div class="c-filet"></div>' : '')
+          +   '<div class="q-devise">« Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ? »<br>— Coran 47:24</div>'
+          + '</div>'
+          + '<div class="c-bas">Association Va &amp; Vie · ' + annee + '</div>'
+          + '</div>';
+        livret.appendChild(q);
 
         statut('Chargement des polices…');
         var polices = (document.fonts && document.fonts.ready) ? document.fonts.ready : Promise.resolve();
         polices.then(function() {
-          statut('Livret prêt : ' + textes.length + ' texte' + (textes.length > 1 ? 's' : '') + '.');
+          statut('Livret prêt : ' + textes.length + ' leçon' + (textes.length > 1 ? 's' : '') + '.');
           document.getElementById('btnImprimer').disabled = false;
         });
       }
