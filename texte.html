@@ -762,6 +762,33 @@
       .popup-exercices { padding: 22px 18px 20px; }
       .popup-exercices .popup-exercices-titre { font-size: 16px; }
     }
+    /* ============================================================
+       BOUTON IMPRIMER FLOTTANT (petits écrans)
+       ============================================================ */
+    .btn-imprimer-flottant {
+      position: fixed; bottom: 80px; right: 24px;
+      width: 44px; height: 44px; border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg-paper); color: var(--text);
+      font-size: 19px; cursor: pointer; z-index: 9000;
+      display: none; align-items: center; justify-content: center;
+      transition: background .15s, border-color .15s;
+    }
+    .btn-imprimer-flottant:hover { background: var(--bg-hover); border-color: var(--border-hover); }
+    .btn-imprimer-flottant.ouvert { background: var(--bg-active); }
+    .menu-impression {
+      position: fixed; bottom: 134px; right: 24px;
+      width: 290px; max-width: calc(100vw - 48px);
+      background: var(--bg-paper); border: 1px solid var(--border-hover);
+      padding: 14px; z-index: 9001; display: none;
+      box-shadow: 0 10px 30px rgba(0,0,0,.15);
+    }
+    .menu-impression.ouvert { display: block; }
+    .menu-impression .bloc-actions-texte { margin-bottom: 0; }
+    @media (max-width: 899px) {
+      .btn-imprimer-flottant { display: flex; }
+      .zone-basse-mobile .bloc-actions-texte { display: none; }
+    }
   </style>
 </head>
 <body>
@@ -837,6 +864,9 @@
       </div>
     </div>
   </div>
+
+  <button class="btn-imprimer-flottant" id="btnImprimerFlottant" onclick="toggleMenuImpression()" title="Imprimer">🖨</button>
+  <div class="menu-impression" id="menuImpression"></div>
 
   <button class="btn-annotation-flottant" id="btnAnnotationFlottant" onclick="togglePanneauAnnotation()" title="Ajouter une note sur ce texte">✏</button>
 
@@ -1973,6 +2003,32 @@
         imprimerContenuAlternatif(texteActuel, texteAlt.contenu, window._altTexteSuffixe);
       }).catch(function() { alert('Erreur lors du chargement de la version alternative.'); });
     }
+
+    function toggleMenuImpression() {
+      var menu = document.getElementById('menuImpression');
+      var btn = document.getElementById('btnImprimerFlottant');
+      if (!menu.classList.contains('ouvert')) {
+        if (!texteActuel) return;
+        menu.innerHTML = construireBlocActions(texteActuel);
+        var altOrig = document.querySelector('.colonne-laterale .btn-imprimer-alternative, .zone-basse-mobile .btn-imprimer-alternative');
+        var altMenu = menu.querySelector('.btn-imprimer-alternative');
+        if (altOrig && altMenu) altMenu.style.display = altOrig.style.display;
+      }
+      menu.classList.toggle('ouvert');
+      btn.classList.toggle('ouvert');
+    }
+    document.addEventListener('click', function(e) {
+      var menu = document.getElementById('menuImpression');
+      var btn = document.getElementById('btnImprimerFlottant');
+      if (!menu || !menu.classList.contains('ouvert')) return;
+      if (menu.contains(e.target) || btn.contains(e.target)) {
+        if (e.target.closest && e.target.closest('.btn-action-lateral')) {
+          menu.classList.remove('ouvert'); btn.classList.remove('ouvert');
+        }
+        return;
+      }
+      menu.classList.remove('ouvert'); btn.classList.remove('ouvert');
+    });
 
     function togglePanneauAnnotation() {
       var panneau = document.getElementById('panneauAnnotation');
