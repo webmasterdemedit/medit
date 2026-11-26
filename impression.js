@@ -1436,6 +1436,16 @@ body { font-size: 12pt; }
 .exos-2col .exo-ligne { break-after: auto !important; page-break-after: auto !important; }
 .exos-2col .exo:last-child { margin-bottom: 0; padding-bottom: 0; }
 .col-cell .col-mot:first-child { margin-right: 4px; }
+
+/* Deux colonnes remplies de gauche à droite */
+.exos-2col-flex { display:flex; gap:0; margin-bottom:12px; align-items:flex-start; }
+.exos-2col-flex .col-gauche { flex:1 1 0; min-width:0; padding-right:12px; border-right:0.5px dotted #d6cbb4; }
+.exos-2col-flex .col-droite { flex:1 1 0; min-width:0; padding-left:12px; }
+.exos-2col-flex .exo { break-inside:avoid; page-break-inside:avoid; }
+.exos-2col-flex .ordre-cell-texte, .exos-2col-flex .ordre-cell-pointille { white-space:normal; }
+.exos-2col-flex .quiz-reponses, .exos-2col-flex .open-lignes,
+.exos-2col-flex .carte-ligne-courte, .exos-2col-flex .ordre-grille { margin-left:22px; }
+.exos-2col-flex .carte-ligne-courte { width:80%; }
 </style>
 </head>
 <body>
@@ -1573,11 +1583,45 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     }
   })();
   var col2Ouverte = false;
+  // Deux colonnes : la gauche se remplit d'abord, l'espace libre reste à droite
+  var col2Debut = 0;
+  var col2Morceaux = [];
   function ouvrir2col() {
-    if (!col2Ouverte) { printHtml += '<div class="exos-2col">'; col2Ouverte = true; }
+    if (!col2Ouverte) { col2Debut = printHtml.length; col2Morceaux = []; col2Ouverte = true; }
+  }
+  function estimerHauteur(h) {
+    var texte = h.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
+    var lignes = 1.6 + Math.ceil(texte.length / 48);
+    lignes += (h.match(/class="quiz-rep"/g) || []).length * 0.4;
+    lignes += (h.match(/class="open-ligne"/g) || []).length * 1.6;
+    lignes += (h.match(/class="carte-ligne-courte"/g) || []).length * 1;
+    lignes += (h.match(/class="ordre-cell-texte"/g) || []).length * 0.4;
+    if (h.indexOf('consigne-exo') !== -1) lignes += 1;
+    return lignes;
   }
   function fermer2col() {
-    if (col2Ouverte) { printHtml += '</div>'; col2Ouverte = false; }
+    if (!col2Ouverte) return;
+    col2Ouverte = false;
+    var bornes = col2Morceaux.concat([printHtml.length]);
+    var morceaux = [];
+    for (var b = 0; b < bornes.length - 1; b++) {
+      var h = printHtml.substring(bornes[b], bornes[b + 1]);
+      if (h.trim()) morceaux.push(h);
+    }
+    printHtml = printHtml.substring(0, col2Debut);
+    if (morceaux.length < 2) { printHtml += morceaux.join(''); return; }
+    var hauteurs = morceaux.map(estimerHauteur);
+    var total = hauteurs.reduce(function(a, c) { return a + c; }, 0);
+    var cumul = 0, coupe = morceaux.length;
+    for (var m = 0; m < morceaux.length; m++) {
+      cumul += hauteurs[m];
+      if (cumul >= total / 2) { coupe = m + 1; break; }
+    }
+    if (coupe >= morceaux.length) coupe = morceaux.length - 1;
+    printHtml += '<div class="exos-2col-flex">'
+      + '<div class="col-gauche">' + morceaux.slice(0, coupe).join('') + '</div>'
+      + '<div class="col-droite">' + morceaux.slice(coupe).join('') + '</div>'
+      + '</div>';
   }
 
   blocsOrdonnes.forEach(function(bloc) {
@@ -1586,7 +1630,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       fermer2col();
     } else {
       ouvrirZoneExercices();
-      if (TYPES_2COL[bloc.type] && bloc._col2) ouvrir2col(); else fermer2col();
+      if (TYPES_2COL[bloc.type] && bloc._col2) { ouvrir2col(); col2Morceaux.push(printHtml.length); }
+      else fermer2col();
     }
 
     if (bloc.type === 'qcourt') {
