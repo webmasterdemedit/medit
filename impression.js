@@ -1332,6 +1332,19 @@ body { font-size: 12pt; }
 .exos-2col .carte-ligne-courte,
 .exos-2col .ordre-grille { margin-left: 22px; }
 .exos-2col .carte-ligne-courte { width: 80%; }
+
+/* Tableaux : chaque ligne est un bloc séparé qui peut passer à la page suivante */
+.col-table-lignes { display: block; margin: 6px 0 6px 26px; }
+.col-ligne { display: flex; break-inside: avoid; page-break-inside: avoid; }
+.col-ligne .col-cell { flex: 1 1 0; }
+.exo.exo-col .exo-ligne { break-after: avoid; page-break-after: avoid; }
+
+/* Questions justifiées */
+.exo-texte, .tt-phrase-print, .exo-texte-vf, .quiz-rep, .memo-texte,
+.ordre-cell-texte, .relier-ligne-item span {
+  text-align: justify;
+  hyphens: auto;
+}
 </style>
 </head>
 <body>
@@ -1495,13 +1508,18 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<div class="exo-ligne"><span class="exo-num-inline">' + exoNum + '</span>';
       if (colD.consigne) printHtml += '<span class="exo-texte">' + colD.consigne + '</span>';
       printHtml += '</div>';
-      printHtml += '<div class="col-table" style="grid-template-columns:repeat(' + colD.nb + ', minmax(0, 1fr));">';
-      colD.cases.forEach(function(cTxt) {
-        printHtml += '<div class="col-cell"><span class="col-trait"></span><span class="col-mot">' + cTxt + '</span></div>';
-      });
-      var reste = colD.cases.length % colD.nb;
-      if (reste) {
-        for (var fv = 0; fv < colD.nb - reste; fv++) printHtml += '<div class="col-cell col-cell-vide"></div>';
+      printHtml += '<div class="col-table-lignes">';
+      for (var ci = 0; ci < colD.cases.length; ci += colD.nb) {
+        printHtml += '<div class="col-ligne">';
+        for (var cj = 0; cj < colD.nb; cj++) {
+          var cTxt = colD.cases[ci + cj];
+          if (cTxt !== undefined) {
+            printHtml += '<div class="col-cell"><span class="col-trait"></span><span class="col-mot">' + cTxt + '</span></div>';
+          } else {
+            printHtml += '<div class="col-cell col-cell-vide"></div>';
+          }
+        }
+        printHtml += '</div>';
       }
       printHtml += '</div></div>';
       return;
