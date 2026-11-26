@@ -174,6 +174,8 @@
     .zone-contenu, #mesure { background: transparent !important; }
     .zone-contenu .page { background: transparent !important; padding: 0 !important; }
     .note-fin { margin-top: 8mm; }
+    .separateur-lecon { text-align: center; color: var(--or); font-size: 16pt; margin: 9mm 0 7mm; line-height: 1; }
+    .repere-lecon { height: 0; }
     .note-simple { flex-shrink: 0; align-self: flex-end; font-size: 11pt; white-space: nowrap; padding-bottom: 2px; }
     .note-simple strong { font-weight: 600; }
 
@@ -394,6 +396,29 @@
       }
       this.vide = false;
     };
+    // Place restante sur la page courante (en px)
+    Remplisseur.prototype.placeRestante = function() {
+      if (!this.page) return 0;
+      var z = this.page._zone;
+      var bas = 0;
+      Array.prototype.forEach.call(z.children, function(c) {
+        var b = c.offsetTop + c.offsetHeight;
+        if (b > bas) bas = b;
+      });
+      return z.clientHeight - bas;
+    };
+    // Ajoute un élément directement dans la zone (hors chaîne de parents)
+    Remplisseur.prototype.ajouterBrut = function(el) {
+      if (!this.page) this.nouvelle();
+      this.ouverts = [];
+      this.page._zone.appendChild(el);
+      if (this.deborde() && !this.vide) {
+        el.remove();
+        this.nouvelle();
+        this.page._zone.appendChild(el);
+      }
+      this.vide = false;
+    };
     Remplisseur.prototype.nettoyerParentsVides = function() {
       for (var i = this.ouverts.length - 1; i >= 0; i--) {
         var c = this.ouverts[i].clone;
@@ -579,6 +604,7 @@
           + '<div class="i-titre">Niveau ' + n + '</div><div class="i-filet"></div>'
           + '<div class="i-sous">' + parNiveau[n].length + ' leçon' + (parNiveau[n].length > 1 ? 's' : '') + '</div>');
 
+        var r = new Remplisseur({ gauche: cat, droite: 'Niveau ' + n });
         for (var li = 0; li < parNiveau[n].length; li++) {
           var t = parNiveau[n][li];
           faites++;
@@ -595,11 +621,25 @@
             nettoyerLecon(mesure);
             envelopperArabe(mesure);
 
-            var avant = pages.length;
-            var r = new Remplisseur({ gauche: cat, droite: 'Niveau ' + n });
+            // Début de leçon : à la suite, ou page suivante s'il reste moins d'un quart de page
+            var repere = document.createElement('div');
+            repere.id = t._ancre;
+            if (r.page && !r.vide) {
+              var hauteurZone = r.page._zone.clientHeight;
+              if (r.placeRestante() < hauteurZone * 0.25) {
+                r.nouvelle();
+                repere.className = 'repere-lecon';
+              } else {
+                repere.className = 'separateur-lecon';
+                repere.innerHTML = '❦';
+              }
+            } else {
+              repere.className = 'repere-lecon';
+            }
+            r.ajouterBrut(repere);
+
             var blocs = []; aplatir(mesure.firstElementChild, [], blocs);
             blocs.forEach(function(b) { r.ajouter(b); });
-            if (pages[avant]) pages[avant].id = t._ancre;
           } catch (e) {
             console.error('Leçon ignorée :', t.titre, e);
           }
@@ -691,7 +731,8 @@
         if (num) num.textContent = String(i + 1);
       });
       document.querySelectorAll('.s-page').forEach(function(s) {
-        var cible = document.getElementById(s.getAttribute('data-ancre'));
+        var repere = document.getElementById(s.getAttribute('data-ancre'));
+        var cible = repere ? repere.closest('.page-a4') : null;
         var i = pages.indexOf(cible);
         s.textContent = i >= 0 ? String(i + 1) : '';
       });
