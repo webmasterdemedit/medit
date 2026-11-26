@@ -438,6 +438,12 @@
         var cumul = 0, coupe = fin;
         for (k = debut; k < fin; k++) { cumul += hauteurs[k]; if (cumul >= total / 2) { coupe = k + 1; break; } }
         if (fin - debut > 1 && coupe >= fin) coupe = fin - 1;
+        if (fin - debut === 1) {
+          // une seule question restante : pleine largeur, pas de colonne vide
+          var seule = document.createElement('div');
+          seule.appendChild(exos[debut].cloneNode(true));
+          return seule;
+        }
         var wrap = bloc.el.cloneNode(false);
         var g = document.createElement('div'); g.className = 'col-gauche';
         var d = document.createElement('div'); d.className = 'col-droite';
