@@ -270,6 +270,22 @@
     }
     .glossaire .g-mot { font-weight: 600; font-style: italic; }
     .glossaire .g-ref { color: var(--gris); font-size: 9.5pt; font-style: italic; white-space: nowrap; }
+
+    /* ---------- En-tête courant (répété sur chaque page imprimée) ---------- */
+    .cadre-page { width: 100%; border-collapse: collapse; border: none; }
+    .cadre-page > thead > tr > td, .cadre-page > tbody > tr > td { padding: 0; border: none; vertical-align: top; }
+    .entete-courant {
+      display: flex; justify-content: space-between; align-items: baseline;
+      font-family: var(--capitales); font-size: 10pt; letter-spacing: 1px;
+      color: var(--vert);
+      border-bottom: 0.3mm solid var(--vert);
+      padding-bottom: 1.5mm; margin-bottom: 6mm;
+    }
+    .entete-courant .ec-droite { color: var(--or); }
+    @media print {
+      .cadre-page > thead { display: table-header-group; }
+      .texte-livret, .sommaire-feuille, .glossaire { break-before: page; page-break-before: always; }
+    }
   </style>
 </head>
 <body>
@@ -503,16 +519,15 @@
 
       livret.innerHTML = html;
 
-      // En-têtes de page : thème + niveau à gauche, numéro de page à droite
-      function cssTexte(t) { return '"' + String(t).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'; }
-      var stylePages = '@page general { @top-left { content: ' + cssTexte(cat)
-        + '; font-family: "Cormorant SC", serif; font-size: 10pt; letter-spacing: 1px; color: #2d6a4f; vertical-align: bottom; padding-bottom: 4mm; } }\n';
-      niveaux.forEach(function(n) {
-        stylePages += '@page niv' + n + ' { @top-left { content: ' + cssTexte(cat + ' — Niveau ' + n)
-          + '; font-family: "Cormorant SC", serif; font-size: 10pt; letter-spacing: 1px; color: #2d6a4f; vertical-align: bottom; padding-bottom: 4mm; } }\n';
-      });
-      stylePages += '@media print { .sommaire-feuille, .glossaire { page: general; } }\n';
-      document.getElementById('stylesPages').textContent = stylePages;
+      // En-tête courant répété sur chaque page (via <thead>, fiable à l'impression)
+      function envelopperEntete(contenuHtml, gauche, droite) {
+        return '<table class="cadre-page"><thead><tr><td>'
+          + '<div class="entete-courant"><span class="ec-gauche">' + esc(gauche) + '</span>'
+          + '<span class="ec-droite">' + esc(droite || '') + '</span></div>'
+          + '</td></tr></thead><tbody><tr><td>' + contenuHtml + '</td></tr></tbody></table>';
+      }
+      var somm = livret.querySelector('.sommaire-feuille');
+      if (somm) somm.innerHTML = envelopperEntete(somm.innerHTML, cat, 'Sommaire');
 
       // 4. Niveaux et leçons
       var file = [];
@@ -552,8 +567,8 @@
               var section = document.createElement('section');
               section.className = 'feuille texte-livret';
               section.id = t._ancre;
-              section.style.page = 'niv' + (parseInt(t.niveau, 10) || 1);
-              section.innerHTML = '<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
+              section.innerHTML = envelopperEntete('<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>',
+                cat, 'Niveau ' + (parseInt(t.niveau, 10) || 1));
               livret.appendChild(section);
               nettoyerLecon(section);
               envelopperArabe(section);
@@ -609,7 +624,7 @@
           g += '</div>';
           var gl = document.createElement('section');
           gl.className = 'feuille glossaire';
-          gl.innerHTML = g;
+          gl.innerHTML = envelopperEntete(g, cat, 'Glossaire');
           livret.appendChild(gl);
           envelopperArabe(gl);
         }
