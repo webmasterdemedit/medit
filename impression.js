@@ -1457,6 +1457,24 @@ body { font-size: 12pt; }
   align-content: flex-start; align-items: flex-start !important;
   overflow: hidden !important;
 }
+
+/* Pointillé : ligne plus haute pour ne pas couper les lettres basses (أخ, ج, ي…) */
+.copier-ligne-point { height: 4.1em !important; padding-top: 0.15em; box-sizing: border-box; }
+.copier-ligne-point .copier-mot-kfg { line-height: 1.45 !important; }
+
+/* Recopier : le modèle utilise la même police pointillée et la même taille que la copie */
+.copier-texte-arabe {
+  font-family: 'KFGQPC Alphabet Dotted', 'Janna LT Bold', 'Traditional Arabic', serif !important;
+  font-size: 2.2em !important;
+  line-height: 1.3 !important;
+  color: #000 !important;
+  -webkit-text-stroke: 2px #000;
+  text-shadow: 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000, 0 0 1.5px #000;
+}
+.copier-mot-pointille { line-height: 1.3 !important; }
+.copier-ligne-inline { min-height: 56px !important; padding-bottom: 14px !important; }
+
+.copier-fleche-apres, .copier-texte-arabe, .copier-texte-arabe-pointille { background: #fffdf8 !important; }
 </style>
 </head>
 <body>
