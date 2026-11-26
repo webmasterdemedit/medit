@@ -10,6 +10,7 @@
 
   <!-- Styles des textes (repris de impression.js) -->
   <style id="stylesTextes"></style>
+  <style id="stylesPages"></style>
 
   <!-- ============================================================
        STYLES DU LIVRET
@@ -36,20 +37,21 @@
     /* ---------- Format d'impression ---------- */
     @page {
       size: A4;
-      margin: 1.6cm 1.7cm 1.8cm 1.7cm;
-      @bottom-center {
+      margin: 2cm 1.7cm 1.6cm 1.7cm;
+      @top-right {
         content: counter(page);
-        font-family: 'EB Garamond', serif;
-        font-size: 10pt;
-        color: #7a705f;
+        font-family: 'EB Garamond', serif; font-size: 10pt; color: #7a705f;
+        vertical-align: bottom; padding-bottom: 4mm;
       }
     }
     @page couverture {
       margin: 0;
-      @bottom-center { content: none; }
+      @top-left { content: none; }
+      @top-right { content: none; }
     }
     @page vierge {
-      @bottom-center { content: none; }
+      @top-left { content: none; }
+      @top-right { content: none; }
     }
 
     html, body { background: #e9e4d8; margin: 0; padding: 0; }
@@ -242,9 +244,32 @@
       }
       .page-titre, .appartient, .intercalaire { min-height: 25cm; }
       .appartient, .intercalaire { page: vierge; }
-      .sommaire-feuille { page: vierge; }
       .texte-livret { padding-top: 0; }
     }
+
+    /* ---------- Note sans cadre ---------- */
+    .texte-livret .note-simple {
+      flex-shrink: 0; align-self: flex-end; font-size: 11pt; white-space: nowrap; padding-bottom: 2px;
+    }
+    .texte-livret .note-simple strong { font-weight: 600; }
+
+    /* ---------- Glossaire ---------- */
+    .glossaire h2 {
+      font-family: var(--capitales); font-weight: 600; font-size: 22pt;
+      letter-spacing: .14em; text-align: center; text-transform: lowercase; margin: 6mm 0 2mm;
+    }
+    .glossaire .g-fleuron { text-align: center; color: var(--or); font-size: 15pt; margin-bottom: 8mm; }
+    .glossaire .g-liste { column-count: 2; column-gap: 10mm; column-rule: 0.3mm dotted var(--filet); }
+    .glossaire .g-lettre {
+      font-family: var(--capitales); color: var(--vert); font-size: 15pt;
+      border-bottom: 0.3mm solid var(--vert); margin: 4mm 0 2mm; break-after: avoid;
+    }
+    .glossaire .g-entree {
+      font-size: 11pt; line-height: 1.45; margin-bottom: 2mm; text-align: justify; hyphens: auto;
+      break-inside: avoid; page-break-inside: avoid;
+    }
+    .glossaire .g-mot { font-weight: 600; font-style: italic; }
+    .glossaire .g-ref { color: var(--gris); font-size: 9.5pt; font-style: italic; white-space: nowrap; }
   </style>
 </head>
 <body>
@@ -406,6 +431,12 @@
           });
         });
       // Note + appréciation à la fin de la leçon
+      section.querySelectorAll('.note-haut-bloc .note-sur-20').forEach(function(cadre) {
+        var simple = document.createElement('div');
+        simple.className = 'note-simple';
+        simple.innerHTML = '<strong>Note :</strong> ……… / 20';
+        cadre.parentNode.replaceChild(simple, cadre);
+      });
       var note = section.querySelector('.note-haut-bloc');
       var page = section.querySelector('.page') || section.firstElementChild;
       if (note && page) {
@@ -472,6 +503,17 @@
 
       livret.innerHTML = html;
 
+      // En-têtes de page : thème + niveau à gauche, numéro de page à droite
+      function cssTexte(t) { return '"' + String(t).replace(/\\/g, '\\\\').replace(/"/g, '\\"') + '"'; }
+      var stylePages = '@page general { @top-left { content: ' + cssTexte(cat)
+        + '; font-family: "Cormorant SC", serif; font-size: 10pt; letter-spacing: 1px; color: #2d6a4f; vertical-align: bottom; padding-bottom: 4mm; } }\n';
+      niveaux.forEach(function(n) {
+        stylePages += '@page niv' + n + ' { @top-left { content: ' + cssTexte(cat + ' — Niveau ' + n)
+          + '; font-family: "Cormorant SC", serif; font-size: 10pt; letter-spacing: 1px; color: #2d6a4f; vertical-align: bottom; padding-bottom: 4mm; } }\n';
+      });
+      stylePages += '@media print { .sommaire-feuille, .glossaire { page: general; } }\n';
+      document.getElementById('stylesPages').textContent = stylePages;
+
       // 4. Niveaux et leçons
       var file = [];
       niveaux.forEach(function(n) {
@@ -510,6 +552,7 @@
               var section = document.createElement('section');
               section.className = 'feuille texte-livret';
               section.id = t._ancre;
+              section.style.page = 'niv' + (parseInt(t.niveau, 10) || 1);
               section.innerHTML = '<div style="zoom:' + zoom + '%">' + morceaux.corps + '</div>';
               livret.appendChild(section);
               nettoyerLecon(section);
@@ -524,7 +567,54 @@
       }
 
       function terminer() {
-        // 5. Quatrième de couverture
+        // 5. Glossaire complet
+        var entrees = {};
+        textes.forEach(function(t) {
+          var num = numeroDe(t.titre);
+          var ref = (num !== Infinity) ? String(num) : titreSansNumero(t.titre);
+          var vocab = t.vocabulaire || [];
+          if (typeof vocab === 'string') vocab = vocab.split('\n');
+          vocab.forEach(function(item) {
+            String(item).split(';').forEach(function(brut) {
+              var m = brut.trim();
+              if (!m) return;
+              var iC = m.indexOf(':'), iE = m.indexOf('='), sep = -1;
+              if (iC !== -1 && iE !== -1) sep = Math.min(iC, iE);
+              else sep = (iC !== -1) ? iC : iE;
+              var mot = (sep !== -1 ? m.substring(0, sep) : m).trim();
+              var def = (sep !== -1 ? m.substring(sep + 1) : '').trim();
+              if (!mot) return;
+              mot = mot.charAt(0).toUpperCase() + mot.slice(1);
+              var cle = mot.toLowerCase();
+              if (!entrees[cle]) entrees[cle] = { mot: mot, defs: [], refs: [] };
+              if (def && entrees[cle].defs.indexOf(def) === -1) entrees[cle].defs.push(def);
+              if (entrees[cle].refs.indexOf(ref) === -1) entrees[cle].refs.push(ref);
+            });
+          });
+        });
+        var cles = Object.keys(entrees).sort(function(a, b) {
+          return a.localeCompare(b, 'fr', { sensitivity: 'base' });
+        });
+        if (cles.length > 0) {
+          var g = '<h2>Glossaire</h2><div class="g-fleuron">❧</div><div class="g-liste">';
+          var lettrePrec = '';
+          cles.forEach(function(c) {
+            var e = entrees[c];
+            var lettre = e.mot.charAt(0).toUpperCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+            if (lettre !== lettrePrec) { g += '<div class="g-lettre">' + esc(lettre) + '</div>'; lettrePrec = lettre; }
+            g += '<div class="g-entree"><span class="g-mot">' + esc(e.mot) + '</span>'
+              + (e.defs.length ? ' : ' + esc(e.defs.join(' ; ')) : '')
+              + ' <span class="g-ref">(leçon' + (e.refs.length > 1 ? 's' : '') + ' ' + esc(e.refs.join(', ')) + ')</span></div>';
+          });
+          g += '</div>';
+          var gl = document.createElement('section');
+          gl.className = 'feuille glossaire';
+          gl.innerHTML = g;
+          livret.appendChild(gl);
+          envelopperArabe(gl);
+        }
+
+        // 6. Quatrième de couverture
         var q = document.createElement('section');
         q.className = 'feuille quatrieme';
         q.innerHTML = '<div class="couverture-cadre">'
