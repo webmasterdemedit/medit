@@ -649,17 +649,14 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, o
   var titreZoneExercices = 'Exercices';
   if (titreAffiche && mode !== 'complet') titreZoneExercices = 'Exercices — ' + titreAffiche;
 
-  // ---- En-tête : appréciation sur 2 lignes + cadre de note /20 ----
+  // ---- Bas de feuille : commentaire + total des points (pas d'en-tête de note) ----
   var noteHtml = '';
+  var noteBasHtml = '';
   if (afficherNote) {
-    noteHtml = `
-<div class="note-haut-bloc">
-  <div class="appreciation-bloc">
-    <div class="appreciation-ligne"><strong>Appréciation :</strong><span class="ligne-pointillee"></span></div>
-    <div class="appreciation-ligne"><span class="ligne-pointillee"></span></div>
-  </div>
-  <div class="note-sur-20"><span class="note-sur-20-label">Note</span><span class="note-sur-20-total">/ 20</span></div>
-</div>`;
+    noteBasHtml = '<div class="note-bas">'
+      + '<div class="note-bas-commentaire"><strong>Commentaire :</strong><span class="ligne-pointillee"></span></div>'
+      + '<div class="note-bas-total"><strong>Total :</strong> ……… / 20</div>'
+      + '</div>';
   }
   var noteSur20Html = '';
 
@@ -1475,6 +1472,23 @@ body { font-size: 12pt; }
 .copier-ligne-inline { min-height: 56px !important; padding-bottom: 14px !important; }
 
 .copier-fleche-apres, .copier-texte-arabe, .copier-texte-arabe-pointille { background: #fffdf8 !important; }
+
+/* Bas de feuille : commentaire sur une ligne + total */
+.note-bas {
+  display: flex; align-items: baseline; gap: 20px;
+  margin-top: 18px; padding-top: 10px;
+  border-top: 0.5px solid #d9cfba;
+  font-size: 11pt; break-inside: avoid; page-break-inside: avoid;
+}
+.note-bas-commentaire { flex: 1; display: flex; align-items: baseline; gap: 6px; }
+.note-bas-commentaire .ligne-pointillee { flex: 1; border-bottom: 0.6px dotted #9b8f78; height: 14px; }
+.note-bas-total { white-space: nowrap; }
+.note-bas strong { font-weight: 600; }
+
+/* Relier dans une demi-colonne */
+.exos-2col-flex .relier-zone-lignes { margin-left: 22px; }
+.exos-2col-flex .relier-lignes-grid { gap: 24px; }
+.exos-2col-flex .relier-ligne-item { font-size: 10.5pt; }
 </style>
 </head>
 <body>
@@ -1600,7 +1614,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   }
 
   // Questions sur 2 colonnes (sauf écriture, tableaux, relier)
-  var TYPES_2COL = { quiz: 1, vf: 1, tt: 1, qcourt: 1, carte: 1, ordre: 1, open: 1 };
+  var TYPES_2COL = { quiz: 1, vf: 1, tt: 1, qcourt: 1, carte: 1, ordre: 1, open: 1, relier: 1 };
   // Une question seule entre deux exercices sur une colonne reste sur une colonne
   (function marquerGroupes2col() {
     var i = 0;
@@ -1971,6 +1985,8 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   }
 
   var idPost = texte.id || '';
+
+  printHtml += noteBasHtml;
 
   printHtml += `
     <div class="pied-page">
