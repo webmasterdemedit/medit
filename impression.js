@@ -652,7 +652,8 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, o
   // ---- Bas de feuille : commentaire + total des points (pas d'en-tête de note) ----
   var noteHtml = '';
   var noteBasHtml = '';
-  if (afficherNote) {
+  var aDesExercices = blocsOrdonnes.some(function(b) { return b.type !== 'paragraphe'; }) || memoAffiche.length > 0;
+  if (afficherNote && aDesExercices) {
     noteBasHtml = '<div class="note-bas">'
       + '<div class="note-bas-commentaire"><strong>Commentaire :</strong><span class="ligne-pointillee"></span></div>'
       + '<div class="note-bas-total"><strong>Total :</strong> ……… / 20</div>'
@@ -1489,6 +1490,9 @@ body { font-size: 12pt; }
 .exos-2col-flex .relier-zone-lignes { margin-left: 22px; }
 .exos-2col-flex .relier-lignes-grid { gap: 24px; }
 .exos-2col-flex .relier-ligne-item { font-size: 10.5pt; }
+
+/* Vocabulaire sans cadre */
+.vocab-haut { border: none !important; box-shadow: none !important; background: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
 </style>
 </head>
 <body>
