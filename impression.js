@@ -1441,7 +1441,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
       printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
       printHtml += '</div>';
-      printHtml += '<div class="open-lignes"><div class="open-ligne"></div></div>';
+      printHtml += '<div class="carte-ligne-courte"></div>';
       printHtml += '</div>';
       return;
     }
