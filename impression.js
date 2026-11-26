@@ -1760,18 +1760,18 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   // ---- PARTIE MÉMORISATION (toujours à la fin) ----
   if (memoAffiche.length > 0) {
     printHtml += '<div class="zone-memorisation">';
-    printHtml += '<div class="titre-questions">Partie mémorisation</div>';
+    printHtml += '<div class="titre-questions">Préparation orale</div>';
     printHtml += '<div class="titre-questions-filets"></div>';
     printHtml += '<div class="memo-consigne">À réciter à l\'enseignant au moment de rendre la copie.</div>';
-    printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant</div>';
+    printHtml += '<div class="memo-reserve">Case à cocher par l\'enseignant(e)</div>';
     memoAffiche.forEach(function(q, i) {
       printHtml += '<div class="memo-item">';
       printHtml += '<span class="exo-num-inline">' + (i + 1) + '</span>';
       printHtml += '<span class="memo-texte">' + q + '</span>';
       printHtml += '<span class="memo-cases">';
       printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Appris</span>';
-      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Partiellement appris</span>';
-      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Non appris</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Paritellement appris</span>';
+      printHtml += '<span class="memo-choix"><span class="quiz-case"></span>Non-appris.</span>';
       printHtml += '</span>';
       printHtml += '</div>';
     });
