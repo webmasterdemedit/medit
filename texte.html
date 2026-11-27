@@ -898,6 +898,7 @@
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/impression.js"></script>
   <script src="/medit/couverture.js"></script>
+  <script src="/medit/carnet.js"></script>
 
   <script>
     var texteActuel = null;
@@ -2586,6 +2587,9 @@
         html += '</div>';
       }
 
+      /* Carnet de l'auteur (notes du même thème) */
+      html += '<div class="bloc-section"><div class="carnet-lateral"></div></div>';
+
       if (nav.liste && nav.liste.length > 1) {
         html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres rappels de ce thème <span class="compteur">' + nav.liste.length + '</span></div>';
         html += '<div class="liste-textes">';
@@ -2626,6 +2630,33 @@
     /* ============================================================
        CHARGEMENT
        ============================================================ */
+    /* Écrits (notes du carnet) d'un thème */
+    function lireEcritsTheme(l) {
+      var e = l.ecrits;
+      if (!e && Array.isArray(l.infos) && l.infos[0] && (l.infos[0].titre !== undefined || l.infos[0].contenu !== undefined)) e = l.infos;
+      try { e = (typeof e === 'string') ? JSON.parse(e || '[]') : (e || []); } catch (x) { e = []; }
+      return Array.isArray(e) ? e.filter(function(x) { return x && (x.titre || x.contenu); }) : [];
+    }
+
+    /* Volet « Carnet de l'auteur » : notes du même thème */
+    function afficherCarnetLateral(texte) {
+      var zones = document.querySelectorAll('.carnet-lateral');
+      if (!zones.length) return;
+      var ecrits = (themesData[texte.categorie] || {}).ecrits || [];
+      if (!window.Carnet || !ecrits.length) {
+        zones.forEach(function(z) { var b = z.closest('.bloc-section'); if (b) b.style.display = 'none'; });
+        return;
+      }
+      var tous = [];
+      Object.keys(themesData).forEach(function(k) {
+        (themesData[k].ecrits || []).forEach(function(e) { var c = Object.assign({}, e); c._theme = k; tous.push(c); });
+      });
+      var propres = ecrits.map(function(e) { var c = Object.assign({}, e); c._theme = texte.categorie; return c; });
+      zones.forEach(function(z) {
+        Carnet.afficher(z, propres, { theme: texte.categorie, tousLesEcrits: tous });
+      });
+    }
+
     function chargerTexte() {
       var params = new URLSearchParams(window.location.search);
       var texteId = params.get('id');
@@ -2641,7 +2672,8 @@
                 theme: l.theme || '', couleur: l.couleur || '#2d6a4f',
                 sousTitre: l.sousTitre || '', date: l.date || '',
                 description: l.description || '', auteur: l.auteur || '',
-                niveau: parseInt(l.niveau) || 0, couverture: l.couverture || ''
+                niveau: parseInt(l.niveau) || 0, couverture: l.couverture || '',
+                ecrits: lireEcritsTheme(l)
               };
             });
           }
@@ -2692,6 +2724,7 @@
       colonneLaterale.innerHTML = construireZoneLaterale(texte);
       zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
       zoneBasPage.innerHTML = construireZoneBasPage(texte);
+      afficherCarnetLateral(texte);
 
       arabiserDans(container);
       nettoyerCartesVides(container);
