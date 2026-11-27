@@ -173,7 +173,7 @@
 
   <div class="page page-theme">
 
-    <a href="/medit/thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
+    <a href="/medit/les-thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
 
     <div id="enteteTheme">
       <div class="loader">
@@ -351,11 +351,25 @@
         ? chargerImagesTheme(categorieActuelle).catch(function() { return {}; })
         : Promise.resolve({});
 
-      promesseImages.then(function(images) {
+      /* Si les images tardent, on n'attend pas plus de 2,5 s */
+      var delai = new Promise(function(res) { setTimeout(function() { res({}); }, 2500); });
+
+      Promise.race([promesseImages, delai]).then(function(images) {
         images = images || {};
         function lancer(v) {
           var t = parId[v.getAttribute('data-id')];
-          if (t && t.contenu) dessinerVignette(v, t, images, couverture);
+          if (!t) return;
+          if (t.contenu) { dessinerVignette(v, t, images, couverture); return; }
+          /* Le cache ne contient pas toujours le texte complet : on le charge */
+          if (typeof DataManager !== 'undefined' && typeof DataManager.getTexteAsync === 'function') {
+            DataManager.getTexteAsync(t.id).then(function(complet) {
+              if (complet && complet.contenu) {
+                var fusion = Object.assign({}, t, complet);
+                parId[String(t.id)] = fusion;
+                dessinerVignette(v, fusion, images, couverture);
+              }
+            }).catch(function(e) { console.error('Vignette (chargement) :', e); });
+          }
         }
         if ('IntersectionObserver' in window) {
           var obs = new IntersectionObserver(function(entrees) {
@@ -551,7 +565,7 @@
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
             <p>Veuillez sélectionner un thème depuis la page d'accueil.</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
@@ -636,7 +650,7 @@
             <span class="icone">◈</span>
             <h4>Aucun texte</h4>
             <p>Ce thème ne contient pas encore de textes accessibles à votre niveau.</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
