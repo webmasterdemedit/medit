@@ -59,6 +59,7 @@
       }
       corps.push(l);
     });
+    if (!date) date = ecrit.dateCreation || '';
     var texteBrut = corps.join('\n').trim();
     var mots = texteBrut.split(/\s+/).filter(function(w) { return w; }).length;
     if (!chapeau) {
@@ -73,6 +74,28 @@
       corps: texteBrut,
       minutes: Math.max(1, Math.round(mots / 200))
     };
+  }
+
+  /* Date -> nombre triable (JJ/MM/AAAA ou date ISO) */
+  function valeurDate(d) {
+    if (!d) return Infinity;
+    var m = String(d).match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+    if (m) return new Date(+m[3], +m[2] - 1, +m[1]).getTime();
+    var t = new Date(d).getTime();
+    return isNaN(t) ? Infinity : t;
+  }
+
+  function cleEcrit(e) { return e.fichierId || ((e.titre || '') + '|' + String(e.contenu || '').length); }
+
+  /* Numéro de chaque note parmi TOUS les fichiers "x" du site, par date */
+  function numeroter(tous) {
+    var liste = (tous || []).map(function(e) {
+      return { cle: cleEcrit(e), titre: e.titre || '', t: valeurDate(analyser(e).date) };
+    });
+    liste.sort(function(a, b) { return (a.t - b.t) || a.titre.localeCompare(b.titre, 'fr'); });
+    var num = {};
+    liste.forEach(function(x, i) { if (num[x.cle] === undefined) num[x.cle] = i + 1; });
+    return num;
   }
 
   /* Mise en forme du corps de l'article */
@@ -143,6 +166,8 @@
       + '.carnet-article{max-width:620px;margin:0 auto;padding:44px 34px 70px;}'
       + '.carnet-article .a-rubrique{text-align:center;font-family:"Cormorant SC","EB Garamond",serif;letter-spacing:2px;font-size:14px;color:#2d6a4f;}'
       + '.carnet-article .a-rubrique .d{color:#e6b400;}'
+      + '.carnet-article .a-numero{color:#9a7b3c;letter-spacing:2px;}'
+      + '.carnet-article .a-sep{color:#9a7b3c;}'
       + '.carnet-article h1{font-family:"EB Garamond",serif;font-weight:600;font-size:34px;line-height:1.15;text-align:center;margin:10px 0 12px;color:#1a1712;}'
       + '.carnet-article .a-meta{text-align:center;font-style:italic;color:#7a705f;font-size:15px;}'
       + '.carnet-article .a-filet{width:22%;margin:18px auto 22px;border:none;border-top:0.6px solid #9a7b3c;}'
@@ -197,7 +222,11 @@
       + '<div class="carnet-barre"><span class="carnet-barre-titre">' + esc(TITRE_VOLET) + '</span>'
       + '<button class="carnet-fermer" title="Fermer" aria-label="Fermer">×</button></div>'
       + '<article class="carnet-article">'
-      +   (o.theme ? '<div class="a-rubrique"><span class="d">#</span>' + esc(o.theme) + '</div>' : '')
+      +   '<div class="a-rubrique">'
+      +     (a.numero ? '<span class="a-numero">Note n°' + a.numero + '</span>' : '')
+      +     (a.numero && o.theme ? '<span class="a-sep"> · </span>' : '')
+      +     (o.theme ? '<span class="d">#</span>' + esc(o.theme) : '')
+      +   '</div>'
       +   '<h1>' + esc(a.titre) + '</h1>'
       +   (meta.length ? '<div class="a-meta">' + meta.map(esc).join(' · ') + '</div>' : '')
       +   '<hr class="a-filet">'
@@ -244,8 +273,10 @@
     if (!ecrits.length) { conteneur.innerHTML = ''; return false; }
     injecterStyles();
 
+    var numeros = numeroter(options.tousLesEcrits || ecrits);
     articlesCourants = ecrits.map(function(e) {
       var a = analyser(e);
+      a.numero = numeros[cleEcrit(e)] || 0;
       /* le chapeau n'est affiché dans l'article que s'il a été écrit */
       a.chapeauEcrit = /(^|\n)\s*chapeau\s*:/i.test(String(e.contenu || '')) ? a.chapeau : '';
       return a;
