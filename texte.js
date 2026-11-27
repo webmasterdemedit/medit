@@ -1363,6 +1363,26 @@ function construireHtmlTexte(texte, imagesTheme) {
     tagsClean.forEach(function(t) { html += '<span class="memo-tag">#' + echapperHtml(t) + '</span>'; });
     html += '</div>';
   }
+  /* Vocabulaire : même présentation qu'à l'impression (2 colonnes, compact) */
+  var vocabListe = [];
+  (texte.vocabulaire || []).forEach(function(item) {
+    String(item).split(';').forEach(function(m) { m = m.trim(); if (m) vocabListe.push(m); });
+  });
+  if (vocabListe.length > 0) {
+    html += '<div class="vocab-haut"><div class="titre-memo">vocabulaire</div><ul class="vocab-liste">';
+    vocabListe.forEach(function(m) {
+      var iC = m.indexOf(':'), iE = m.indexOf('='), sep = -1;
+      if (iC !== -1 && iE !== -1) sep = Math.min(iC, iE); else sep = (iC !== -1) ? iC : iE;
+      if (sep !== -1) {
+        var mot = m.substring(0, sep).trim(), def = m.substring(sep + 1).trim();
+        mot = mot.charAt(0).toUpperCase() + mot.slice(1);
+        html += '<li><span class="vocab-mot">' + echapperHtml(mot) + '</span> : <span class="vocab-def">' + echapperHtml(def) + '</span></li>';
+      } else {
+        html += '<li><span class="vocab-mot">' + echapperHtml(m.charAt(0).toUpperCase() + m.slice(1)) + '</span></li>';
+      }
+    });
+    html += '</ul></div>';
+  }
 
   /* Corps du texte */
   /* Détection des séparateurs --- => mode CARTES */
