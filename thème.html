@@ -13,8 +13,20 @@
   <style>
 
   /* ---- Nom du thème en #Nom (sans couverture) ---- */
-  .entete-theme.sans-couverture { display: block; }
-  .entete-theme.sans-couverture .description-theme { width: 100%; max-width: none; }
+  /* Plus de grand rectangle : en-tête simple */
+  .entete-theme.sans-couverture,
+  .entete-theme.sans-couverture .description-theme {
+    display: block; width: 100%; max-width: none;
+    background: transparent !important; border: none !important;
+    box-shadow: none !important; padding: 0 !important; border-radius: 0 !important;
+  }
+  .entete-theme.sans-couverture { margin-bottom: 28px; }
+  .ligne-titre-theme { display: flex; align-items: center; gap: 16px; margin-bottom: 12px; }
+  .ligne-titre-theme .titre-theme-hashtag { margin: 0; }
+  .image-theme-cercle {
+    width: 72px; height: 72px; border-radius: 50%; object-fit: cover;
+    flex-shrink: 0; border: 1px solid var(--border);
+  }
   .titre-theme-hashtag {
     font-family: var(--font-serif, 'Georgia', serif);
     font-size: 26px;
@@ -550,7 +562,10 @@
       var enteteHtml = `
         <div class="entete-theme sans-couverture">
           <div class="description-theme">
-            <h2 class="titre-theme-hashtag"><span class="diese">#</span>${echapperHtml(categorieActuelle)}</h2>
+            <div class="ligne-titre-theme">
+              ${themeInfo.couverture ? '<img class="image-theme-cercle" src="' + echapperHtml(themeInfo.couverture) + '" alt="">' : ''}
+              <h2 class="titre-theme-hashtag"><span class="diese">#</span>${echapperHtml(categorieActuelle)}</h2>
+            </div>
             ${infosHtml}
             <div class="texte-desc">
               <p>${description}</p>
