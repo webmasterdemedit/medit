@@ -38,6 +38,24 @@
   .titre-theme-hashtag { color: #2d6a4f !important; }
   .titre-theme-hashtag .diese { color: #e6b400 !important; margin-right: 2px; }
 
+  /* ---- Mise en page : textes + volet « Carnet de l'auteur » ---- */
+  .layout-theme { display: block; }
+  .layout-theme.avec-carnet {
+    display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 40px; align-items: start;
+  }
+  .volet-carnet:empty { display: none; }
+  .layout-theme.avec-carnet .volet-carnet {
+    position: sticky; top: 20px; max-height: calc(100vh - 40px); overflow-y: auto;
+    padding-left: 24px; border-left: 0.5px solid var(--border);
+  }
+  @media (max-width: 1000px) {
+    .layout-theme.avec-carnet { display: flex; flex-direction: column; gap: 10px; }
+    .layout-theme.avec-carnet .volet-carnet {
+      order: -1; position: static; max-height: none; overflow: visible;
+      padding-left: 0; border-left: none; margin-bottom: 20px;
+    }
+  }
+
   /* ---- Cartes de texte vivantes : vignette (image ou aperçu du texte) ---- */
   .carte-texte { gap: 18px; flex-wrap: nowrap !important; align-items: center; transition: background .15s; }
   .carte-texte:hover { background: var(--bg-hover); }
@@ -173,7 +191,7 @@
 
   <div class="page page-theme">
 
-    <a href="/medit/thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
+    <a href="/medit/les-thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
 
     <div id="enteteTheme">
       <div class="loader">
@@ -181,9 +199,12 @@
         <p>Chargement du thème...</p>
       </div>
     </div>
-     <div id="zoneEcrits"></div>
-
-    <div id="contenuTextes"></div>
+    <div class="layout-theme" id="layoutTheme">
+      <div class="colonne-textes">
+        <div id="contenuTextes"></div>
+      </div>
+      <aside class="volet-carnet" id="zoneEcrits"></aside>
+    </div>
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
@@ -215,6 +236,7 @@
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/impression.js"></script>
   <script src="/medit/couverture.js"></script>
+  <script src="/medit/carnet.js"></script>
 
   <script>
     var toutesLesReponses = {};
@@ -565,7 +587,7 @@
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
             <p>Veuillez sélectionner un thème depuis la page d'accueil.</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
@@ -650,7 +672,7 @@
             <span class="icone">◈</span>
             <h4>Aucun texte</h4>
             <p>Ce thème ne contient pas encore de textes accessibles à votre niveau.</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
@@ -816,9 +838,18 @@
 
       var themeInfo = themesData[categorieActuelle] || {};
       var ecrits = themeInfo.ecrits || [];
+      var layout = document.getElementById('layoutTheme');
 
       if (!ecrits.length) {
         zone.innerHTML = '';
+        if (layout) layout.classList.remove('avec-carnet');
+        return;
+      }
+
+      /* Carnet de l'auteur (volet latéral + panneau de lecture) */
+      if (window.Carnet) {
+        var ok = Carnet.afficher(zone, ecrits, { theme: categorieActuelle, auteur: themeInfo.auteur || 'W. Khan' });
+        if (layout) layout.classList.toggle('avec-carnet', !!ok);
         return;
       }
 
