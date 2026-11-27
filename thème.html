@@ -42,29 +42,14 @@
   .carte-texte { gap: 18px; flex-wrap: nowrap !important; align-items: center; transition: background .15s; }
   .carte-texte:hover { background: var(--bg-hover); }
   .vignette-texte {
-    flex: 0 0 92px; width: 92px; height: 122px; overflow: hidden; position: relative;
+    flex: 0 0 104px; width: 104px; height: 147px; overflow: hidden; position: relative;
     background: #fffdf8; border: 1px solid var(--border);
-    box-shadow: 0 1px 4px rgba(60,45,25,.10);
+    box-shadow: 0 1px 5px rgba(60,45,25,.14);
   }
-  .vignette-texte img { width: 100%; height: 100%; object-fit: cover; display: block; }
-  .vignette-apercu {
-    padding: 9px 8px; font-family: 'EB Garamond', Georgia, serif;
-    font-size: 6.2px; line-height: 1.45; color: #3a3226; text-align: justify; hyphens: auto;
-  }
-  .vignette-apercu .v-titre {
-    font-size: 7.5px; font-weight: 700; text-align: center; text-transform: uppercase;
-    letter-spacing: .4px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: .5px solid #c9bda3;
-  }
-  .vignette-apercu .v-lettrine { float: left; font-size: 17px; line-height: .85; padding: 1px 2px 0 0; font-weight: 700; }
-  .vignette-texte::after {
-    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
-    background: linear-gradient(rgba(255,253,248,0), #fffdf8);
-  }
-  .vignette-texte.avec-image::after { display: none; }
   .carte-texte .infos { min-width: 0; }
   @media (max-width: 700px) {
     .carte-texte { flex-direction: row !important; align-items: center !important; }
-    .vignette-texte { flex-basis: 70px; width: 70px; height: 94px; }
+    .vignette-texte { flex-basis: 74px; width: 74px; height: 105px; }
     .carte-texte .statut { display: none; }
   }
 
@@ -300,56 +285,89 @@
       });
     }
 
-    /* Premier paragraphe du texte, nettoyé, pour l'aperçu miniature */
-    function extraireApercu(texte) {
-      var parts = String(texte.contenu || '').split(' | ');
-      var prefixes = /^(q|qs|o|r|l|tt|vf|c|qcm|pnt|m|case|exercice|exo):/i;
-      for (var i = 0; i < parts.length; i++) {
-        var p = parts[i].trim();
-        if (!p || prefixes.test(p)) continue;
-        var lignes = p.split('\n').filter(function(l) {
-          l = l.trim();
-          return l && !/^img:/i.test(l) && !/^-{3,}$/.test(l);
+    /* ============================================================
+       VIGNETTE = vraie miniature de la version imprimable
+       (même rendu que le bouton « Imprimer le rappel avec des exercices »)
+       ============================================================ */
+    var LARGEUR_A4 = 794, HAUTEUR_A4 = 1123;
+
+    function construireVignette(texte) {
+      return '<div class="vignette-texte" data-id="' + echapperHtml(texte.id) + '"></div>';
+    }
+
+    function arabiserDoc(doc) {
+      var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+      var noeuds = [], n;
+      while ((n = walker.nextNode())) { if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n); }
+      noeuds.forEach(function(t) {
+        var parent = t.parentNode;
+        if (!parent || !parent.classList) return;
+        if (parent.classList.contains('arabe') || parent.classList.contains('copier-mot') ||
+            parent.classList.contains('copier-mot-pointille') || parent.classList.contains('copier-mot-kfg')) return;
+        var parts = t.nodeValue.split(/([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)/g);
+        var frag = doc.createDocumentFragment();
+        parts.forEach(function(part) {
+          if (part === '') return;
+          if (/[؀-ۿ]/.test(part)) {
+            var sp = doc.createElement('span');
+            sp.className = 'arabe'; sp.setAttribute('lang', 'ar'); sp.textContent = part;
+            frag.appendChild(sp);
+          } else frag.appendChild(doc.createTextNode(part));
         });
-        var t = lignes.join(' ')
-          .replace(/\[[^\]]*\]/g, '').replace(/\(source:[^)]*\)/gi, '')
-          .replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
-        if (t) return t.substring(0, 420);
-      }
-      return '';
+        parent.replaceChild(frag, t);
+      });
     }
 
-    /* Nom de la première image du texte (ligne img:nom) */
-    function premiereImage(texte) {
-      var m = String(texte.contenu || '').match(/(^|\n)\s*img:([^:\s|]+)/i);
-      return m ? m[2] : '';
+    function dessinerVignette(v, texte, images, couverture) {
+      if (v._fait) return;
+      v._fait = true;
+      var html = '';
+      try {
+        html = genererImpression(texte, texte.contenu || '', images, couverture, 'complet', { retournerHtml: true });
+      } catch (e) { console.error('Vignette :', e); return; }
+      if (!html) return;
+      var echelle = v.clientWidth / LARGEUR_A4;
+      var iframe = document.createElement('iframe');
+      iframe.setAttribute('tabindex', '-1');
+      iframe.setAttribute('aria-hidden', 'true');
+      iframe.style.cssText = 'width:' + LARGEUR_A4 + 'px;height:' + HAUTEUR_A4 + 'px;border:0;'
+        + 'transform:scale(' + echelle + ');transform-origin:0 0;pointer-events:none;background:#fffdf8;';
+      v.appendChild(iframe);
+      var doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(html.replace('</head>', '<style>body{padding:40px 46px !important;overflow:hidden !important;}</style></head>'));
+      doc.close();
+      setTimeout(function() { try { arabiserDoc(doc); } catch (e) {} }, 400);
     }
 
-    function construireVignette(texte, titreAffiche) {
-      var img = premiereImage(texte);
-      var apercu = extraireApercu(texte);
-      var lettre = apercu ? apercu.charAt(0) : '';
-      var reste = apercu ? apercu.substring(1) : '';
-      return '<div class="vignette-texte"' + (img ? ' data-image="' + echapperHtml(img) + '"' : '') + '>'
-        + '<div class="vignette-apercu">'
-        +   '<div class="v-titre">' + echapperHtml(titreAffiche) + '</div>'
-        +   (apercu ? '<span class="v-lettrine">' + echapperHtml(lettre) + '</span>' + echapperHtml(reste) : '')
-        + '</div></div>';
-    }
+    function remplirVignettes(textes) {
+      var vignettes = document.querySelectorAll('.vignette-texte[data-id]');
+      if (!vignettes.length || typeof genererImpression !== 'function') return;
+      var parId = {};
+      textes.forEach(function(t) { parId[String(t.id)] = t; });
+      var couverture = (typeof recupererCouvertureTheme === 'function') ? recupererCouvertureTheme(categorieActuelle) : '';
 
-    /* Remplace l'aperçu par la vraie image quand le texte en a une */
-    function chargerImagesVignettes() {
-      var vignettes = document.querySelectorAll('.vignette-texte[data-image]');
-      if (!vignettes.length || typeof chargerImagesTheme !== 'function') return;
-      chargerImagesTheme(categorieActuelle).then(function(images) {
+      var promesseImages = (typeof chargerImagesTheme === 'function')
+        ? chargerImagesTheme(categorieActuelle).catch(function() { return {}; })
+        : Promise.resolve({});
+
+      promesseImages.then(function(images) {
         images = images || {};
-        vignettes.forEach(function(v) {
-          var url = images[v.getAttribute('data-image')];
-          if (!url) return;
-          v.innerHTML = '<img src="' + url + '" alt="" loading="lazy">';
-          v.classList.add('avec-image');
-        });
-      }).catch(function() {});
+        function lancer(v) {
+          var t = parId[v.getAttribute('data-id')];
+          if (t && t.contenu) dessinerVignette(v, t, images, couverture);
+        }
+        if ('IntersectionObserver' in window) {
+          var obs = new IntersectionObserver(function(entrees) {
+            entrees.forEach(function(e) {
+              if (e.isIntersecting) { obs.unobserve(e.target); lancer(e.target); }
+            });
+          }, { rootMargin: '200px' });
+          vignettes.forEach(function(v) { obs.observe(v); });
+        } else {
+          vignettes.forEach(lancer);
+        }
+      });
     }
 
     function aUnNiveau(n) {
@@ -754,7 +772,7 @@
 
         html += `
           <div class="carte-texte" ${onClickAttr}>
-            ${construireVignette(texte, titreAffiche)}
+            ${construireVignette(texte)}
             <div class="infos">
               <div class="titre">${numeroHtml}${titreAffiche}</div>
               <div class="meta">
@@ -772,7 +790,7 @@
 
       html += '</div>';
       container.innerHTML = html;
-      chargerImagesVignettes();
+      remplirVignettes(textes);
     }
 
     // ============================================================
