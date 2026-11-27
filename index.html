@@ -754,6 +754,8 @@
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/couverture.js"></script>
   <script src="/medit/carnet.js"></script>
+  <script src="/medit/impression.js"></script>
+  <script src="/medit/cartes-textes.js"></script>
   <script src="/medit/ephemeride.js"></script>
 
   <script>
@@ -1060,7 +1062,7 @@
 
       var html = '<div class="liste-sections">';
       sections.forEach(function(s) {
-        html += '<a class="carte-section" href="/medit/thème.html?cat=' + encodeURIComponent(s.nom) + '">'
+        html += '<a class="carte-section" href="/medit/section.html?section=' + encodeURIComponent(s.nom) + '">'
           + '<div class="section-marqueur">' + echapperHtml(s.nom.charAt(0).toUpperCase()) + '</div>'
           + '<div class="section-corps">'
           +   '<div class="section-titre">' + echapperHtml(s.nom) + '</div>'
@@ -1120,25 +1122,12 @@
         return db - da;
       }).slice(0, 5);
       if (recents.length === 0) { container.innerHTML = vide('Aucun texte publié pour le moment.'); return; }
-
       var html = '';
       recents.forEach(function(texte) {
-        var numero = extraireNumeroTexte(texte.titre);
-        var titreAffiche = extraireTitreSansNumero(texte.titre);
-        var meta = '';
-        if (texte.categorie) meta += '<span class="meta-theme"><span class="d">#</span>' + echapperHtml(texte.categorie) + '</span>';
-        if (aUnNiveau(texte.niveau)) meta += '<span>niveau ' + texte.niveau + '</span>';
-        if (texte.mots) meta += '<span>' + texte.mots + ' mots</span>';
-        if (estTexteValide(texte.id)) meta += '<span>validé ✓</span>';
-        html += '<a href="/medit/texte.html?id=' + encodeURIComponent(texte.id) + '" class="accueil-texte-card">'
-          + '<div class="accueil-texte-num">' + (numero !== Infinity ? numero : '❧') + '</div>'
-          + '<div class="accueil-texte-corps">'
-          +   '<div class="accueil-texte-titre">' + echapperHtml(titreAffiche) + '</div>'
-          +   '<div class="accueil-texte-meta">' + meta + '</div>'
-          + '</div>'
-          + '</a>';
+        html += CartesTextes.carte(texte, { valide: estTexteValide(texte.id) });
       });
       container.innerHTML = html;
+      CartesTextes.remplirVignettes(recents, container);
     }
 
     function afficherTagsAccueil(textes) {
