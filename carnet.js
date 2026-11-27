@@ -129,10 +129,10 @@
       +   'display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;}'
       + '.carnet-lire{display:inline-block;margin-top:6px;font-size:13px;color:#2d6a4f;letter-spacing:.4px;}'
       /* Panneau de lecture */
-      + '.carnet-voile{position:fixed;inset:0;z-index:10000;background:rgba(20,16,10,.28);opacity:0;pointer-events:none;transition:opacity .25s;}'
+      + '.carnet-voile{position:fixed;inset:0;z-index:10000;background:rgba(20,16,10,.28);opacity:0;pointer-events:none;transition:opacity .15s;}'
       + '.carnet-voile.ouvert{opacity:1;pointer-events:auto;}'
       + '.carnet-panneau{position:fixed;top:0;right:0;bottom:0;z-index:10001;width:min(760px,100vw);background:#fffdf8;color:#1a1712;'
-      +   'box-shadow:-6px 0 30px rgba(40,30,15,.18);transform:translateX(100%);transition:transform .32s ease;overflow-y:auto;'
+      +   'box-shadow:-6px 0 30px rgba(40,30,15,.18);transform:translateX(100%);transition:transform .18s ease-out;overflow-y:auto;'
       +   'font-family:"EB Garamond",Garamond,serif;}'
       + '.carnet-panneau.ouvert{transform:translateX(0);}'
       + '.carnet-barre{position:sticky;top:0;display:flex;justify-content:space-between;align-items:center;padding:12px 22px;'
@@ -189,9 +189,8 @@
     var a = articlesCourants[i];
     if (!a) return;
     var o = optionsCourantes;
-    var meta = [o.auteur || AUTEUR_DEFAUT];
+    var meta = [];
     if (a.date) meta.push(formaterDate(a.date));
-    meta.push(a.minutes + ' min de lecture');
 
     var prec = articlesCourants[i - 1], suiv = articlesCourants[i + 1];
     var html = ''
@@ -200,7 +199,7 @@
       + '<article class="carnet-article">'
       +   (o.theme ? '<div class="a-rubrique"><span class="d">#</span>' + esc(o.theme) + '</div>' : '')
       +   '<h1>' + esc(a.titre) + '</h1>'
-      +   '<div class="a-meta">' + meta.map(esc).join(' · ') + '</div>'
+      +   (meta.length ? '<div class="a-meta">' + meta.map(esc).join(' · ') + '</div>' : '')
       +   '<hr class="a-filet">'
       +   (a.chapeauEcrit ? '<p class="a-chapeau">' + enrichir(a.chapeauEcrit) + '</p>' : '')
       +   '<div class="a-corps">' + corpsHtml(a.corps) + '</div>'
@@ -226,9 +225,15 @@
 
   function fermer() {
     if (!panneau) return;
+    /* Fermeture immédiate, sans animation */
+    panneau.style.transition = 'none';
+    voile.style.transition = 'none';
     panneau.classList.remove('ouvert');
     voile.classList.remove('ouvert');
     document.body.style.overflow = '';
+    void panneau.offsetWidth;
+    panneau.style.transition = '';
+    voile.style.transition = '';
   }
 
   /* ---------------- VOLET ---------------- */
@@ -251,14 +256,11 @@
     var html = '<div class="carnet-volet">'
       + '<div class="carnet-entete"><span class="carnet-orn">❧</span>'
       +   '<div class="carnet-titre">' + esc(TITRE_VOLET) + '</div>'
-      +   '<div class="carnet-sous">par ' + esc(options.auteur || AUTEUR_DEFAUT) + ' · ' + n + ' article' + (n > 1 ? 's' : '') + '</div>'
+      +   '<div class="carnet-sous">' + n + ' note' + (n > 1 ? 's' : '') + '</div>'
       + '</div><ul class="carnet-liste">';
     articlesCourants.forEach(function(a, i) {
-      var meta = [];
-      if (a.date) meta.push(formaterDate(a.date));
-      meta.push(a.minutes + ' min');
       html += '<li class="carnet-item" data-i="' + i + '" tabindex="0">'
-        + '<div class="carnet-meta">' + meta.map(esc).join(' · ') + '</div>'
+        + (a.date ? '<div class="carnet-meta">' + esc(formaterDate(a.date)) + '</div>' : '')
         + '<h4 class="carnet-item-titre">' + esc(a.titre) + '</h4>'
         + (a.chapeau ? '<div class="carnet-chapeau">' + esc(a.chapeau) + '</div>' : '')
         + '<span class="carnet-lire">Lire →</span>'
