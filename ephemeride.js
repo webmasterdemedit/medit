@@ -161,13 +161,39 @@
     dessiner(zone, SECOURS);   /* affichage immédiat, puis citation du jour */
 
     if (typeof DataManager === 'undefined' || typeof DataManager.charger !== 'function') return;
+
+    // Les citations sont gardées 24 h pour ne pas recharger tous les textes à chaque page
+    var CLE = 'ephemeride_citations_v2';
+    try {
+      var cache = JSON.parse(localStorage.getItem(CLE) || 'null');
+      if (cache && cache.liste && cache.liste.length && (Date.now() - cache.date) < 86400000) {
+        dessiner(zone, cache.liste[numeroDuJour(new Date()) % cache.liste.length]);
+        return;
+      }
+    } catch (e) {}
+
     DataManager.charger().then(function(data) {
       var textes = (data && (data.tousLesTextes || data.textes)) || [];
-      var citations = extraireCitations(textes);
-      if (window.console) console.log('📜 Éphéméride : ' + citations.length + ' citation(s) trouvée(s) dans ' + textes.length + ' texte(s)');
-      if (!citations.length) return;
-      var choix = citations[numeroDuJour(new Date()) % citations.length];
-      dessiner(zone, choix);
+      // En mode invité, la liste ne contient pas le contenu : on charge chaque texte
+      var aCharger = textes.filter(function(t) { return !(t.contenu || '').trim(); });
+      var complets = textes.filter(function(t) { return (t.contenu || '').trim(); });
+      var i = 0;
+      function suivant() {
+        if (i >= aCharger.length || typeof DataManager.getTexteAsync !== 'function') return Promise.resolve();
+        var t = aCharger[i++];
+        return DataManager.getTexteAsync(t.id)
+          .then(function(full) { if (full && full.contenu) complets.push(Object.assign({}, t, full)); })
+          .catch(function() {})
+          .then(suivant);
+      }
+      // 4 chargements en parallèle
+      return Promise.all([suivant(), suivant(), suivant(), suivant()]).then(function() {
+        var citations = extraireCitations(complets);
+        if (window.console) console.log('📜 Éphéméride : ' + citations.length + ' citation(s) trouvée(s) dans ' + complets.length + ' texte(s)');
+        if (!citations.length) return;
+        try { localStorage.setItem(CLE, JSON.stringify({ date: Date.now(), liste: citations })); } catch (e) {}
+        dessiner(zone, citations[numeroDuJour(new Date()) % citations.length]);
+      });
     }).catch(function() {});
   }
 
