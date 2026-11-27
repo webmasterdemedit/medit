@@ -341,7 +341,9 @@
 
         var THEMES_EXCLUS = ['cours'];
         var titresThemes = Object.keys(themesData).filter(function(titre) {
-          return THEMES_EXCLUS.indexOf(titre.trim().toLowerCase()) === -1;
+          if (THEMES_EXCLUS.indexOf(titre.trim().toLowerCase()) !== -1) return false;
+          // Un thème sans aucun texte n'est pas affiché
+          return (textesParCategorie[titre] || []).length > 0;
         });
 
         var themesCalcules = titresThemes.map(function(titre) {
