@@ -83,6 +83,22 @@
       line-height: 1.4;
     }
 
+    /* Thème : image ronde + #Nom, sans cadre */
+    .theme-lien {
+      display: flex; align-items: center; gap: 12px;
+      text-decoration: none; color: var(--text);
+      background: transparent; border: none; padding: 4px 0;
+    }
+    .theme-lien:hover .theme-nom { text-decoration: underline; }
+    .theme-lien.verrouille { opacity: .45; pointer-events: none; }
+    .theme-cercle {
+      width: 64px; height: 64px; border-radius: 50%; object-fit: cover;
+      flex-shrink: 0; border: 1px solid var(--border);
+    }
+    .theme-nom { font-weight: 700; font-size: 18px; line-height: 1.25; }
+    .theme-diese { color: #e6b400; margin-right: 2px; }
+    .theme-cadenas { font-size: 14px; opacity: .7; }
+
     .vide-themes {
       grid-column: 1 / -1;
       text-align: center;
@@ -220,29 +236,16 @@
       return r.valide === 'valide';
     }
 
+    // Plus de grand rectangle : image ronde (si elle existe) + #Nom du thème
     function construireCarteCouverture(t, options) {
       var cliquable = options.cliquable && !t.verrouille;
-      var niveau = (t.niveauMin === t.niveauMax || !isFinite(t.niveauMax))
-        ? 'Niveau ' + t.niveauMin
-        : 'Niveau ' + t.niveauMin + '–' + t.niveauMax;
       var interieur = ''
-        + '<span class="badge-niveau">' + escapeHtml(niveau) + '</span>'
-        + '<div class="contenu-theme">'
-        +   (t.couverture ? '<div class="couverture-image"><img src="' + escapeHtml(t.couverture) + '" alt=""></div>' : '')
-        +   '<div class="titre-wrapper">'
-        +     (t.auteur ? '<span class="auteur-theme">' + escapeHtml(t.auteur) + '</span>' : '')
-        +     '<span class="titre-theme">' + escapeHtml(t.nom) + '</span>'
-        +     (t.sousTitre ? '<span class="sous-titre-theme">' + escapeHtml(t.sousTitre) + '</span>' : '')
-        +   '</div>'
-        +   '<div class="edition-info">'
-        +     (t.date ? '<span class="edition-date">' + escapeHtml(t.date) + '</span>' : '')
-        +   '</div>'
-        + '</div>'
-        + '<div class="progression-theme"><div class="barre" style="width:' + t.pourcentage + '%"></div></div>'
-        + (cliquable ? '' : '<span class="cadenas-verrou">🔒</span>');
+        + (t.couverture ? '<img class="theme-cercle" src="' + escapeHtml(t.couverture) + '" alt="">' : '')
+        + '<span class="theme-nom"><span class="theme-diese">#</span>' + escapeHtml(t.nom) + '</span>'
+        + (cliquable ? '' : '<span class="theme-cadenas">🔒︎</span>');
       return cliquable
-        ? '<a class="carte-couverture" href="' + escapeHtml(options.lien) + '">' + interieur + '</a>'
-        : '<div class="carte-couverture verrouille">' + interieur + '</div>';
+        ? '<a class="theme-lien" href="' + escapeHtml(options.lien) + '">' + interieur + '</a>'
+        : '<div class="theme-lien verrouille">' + interieur + '</div>';
     }
 
     function lireThemes(liste) {
