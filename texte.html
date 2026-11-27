@@ -276,9 +276,9 @@
        EXERCICES SUR LA PAGE (même mise en page que l'impression)
        ============================================================ */
     .zone-exercices-feuille { margin: 36px 0 10px; }
-    .iframe-exercices {
-      display: block; width: 100%; min-height: 200px; border: 0.6px solid var(--border-hover);
-      background: #fffdf8; box-shadow: 0 1px 6px rgba(60,45,25,.10);
+    .zone-exercices-feuille .titre-exercices-site {
+      text-align: center; font-family: 'Cormorant SC', 'EB Garamond', serif;
+      font-size: 15pt; font-weight: 600; letter-spacing: 3px; margin: 0 0 14px;
     }
 
     /* ============================================================
@@ -843,7 +843,7 @@
   <div class="popup-exercices-overlay" id="popupExercicesOverlay">
     <div class="popup-exercices" id="popupExercices">
       <div class="popup-exercices-entete">
-        <h2 class="popup-exercices-titre">Faire les exercices en ligne</h2>
+        <h2 class="popup-exercices-titre">Vérifier sa compréhension</h2>
         <button class="popup-exercices-fermer" onclick="fermerPopupExercices()" title="Fermer">×</button>
       </div>
       <div id="popupExercicesContenu"></div>
@@ -2237,7 +2237,7 @@
       var ligneRappel = nomTheme ? 'Thème : ' + nomTheme : '';
 
       html += '<div class="bandeau-titre"><div class="ligne-titre">';
-      html += '<div class="meta-niveau">Niveau ' + (texte.niveau || 0) + '</div>';
+      if (texte.niveau !== '' && texte.niveau !== null && texte.niveau !== undefined) html += '<div class="meta-niveau">Niveau ' + texte.niveau + '</div>';
       html += numeroHtml;
       html += '<h1>' + echapperHtml(titreAffiche || 'Lecture') + '</h1>';
       html += '<div class="sous-titre-filets"></div>';
@@ -2460,7 +2460,7 @@
       var html = '';
 
       /* Exercices affichés sur la page, même mise en page que l'impression */
-      html += '<div class="zone-exercices-feuille" id="zoneExercicesFeuille"></div>';
+      html += '<div class="zone-exercices-feuille"><div class="titre-exercices-site">exercices</div><div id="zoneExercicesFeuille"></div></div>';
 
       /* Bouton "Vérifier sa compréhension" */
       if (htmlExercicesPopup) {
@@ -2756,34 +2756,71 @@
       try {
         html = genererImpression(texte, texte.contenu, imagesTheme || {}, '', 'exercices', { retournerHtml: true });
       } catch (e) { console.error('Exercices :', e); return; }
-      if (!html || html.indexOf('exo-num-inline') === -1) { zone.style.display = 'none'; return; }
+      if (!html || html.indexOf('exo-num-inline') === -1) { zone.parentNode.style.display = 'none'; return; }
+
+      /* Styles de impression.js (même police, même mise en page des exercices) */
+      var mStyle = html.match(/<style>([\s\S]*?)<\/style>/);
+      var css = mStyle ? mStyle[1] : '';
+      css = css.replace(/@font-face\s*\{[\s\S]*?\}/g, '').replace(/@page[^{]*\{[^}]*\}/g, '');
+
+      /* Seulement les exercices : ni en-tête élève, ni note, ni pied de page */
+      var debut = html.indexOf('<div class="zone-exercices">');
+      if (debut === -1) { zone.parentNode.style.display = 'none'; return; }
+      var fin = html.indexOf('<div class="note-bas">', debut);
+      if (fin === -1) fin = html.indexOf('<div class="pied-page">', debut);
+      if (fin === -1) fin = html.length;
+      var corps = html.substring(debut, fin);
+
+      /* Polices dans la page (nécessaires pour le cadre isolé) */
+      if (!document.getElementById('policesExercices')) {
+        var lien = document.createElement('link');
+        lien.id = 'policesExercices';
+        lien.rel = 'stylesheet';
+        lien.href = 'https://fonts.googleapis.com/css2?family=Playpen+Sans+Arabic:wght@400;500;600;700&family=EB+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=Cormorant+SC:wght@500;600;700&display=swap';
+        document.head.appendChild(lien);
+        var ff = document.createElement('style');
+        ff.textContent = "@font-face{font-family:'KFGQPC Alphabet Dotted';src:url('https://raw.githubusercontent.com/webmasterdemedit/medit/main/fonts/kfgqpc-alphabet-dotted-regular.ttf') format('truetype');font-display:swap;}";
+        document.head.appendChild(ff);
+      }
+
+      /* Ajustements pour le site : fond et couleurs du site, pas de points ni de cases enseignant */
+      var cssSite = ''
+        + ':host{display:block;font-family:"EB Garamond",Garamond,serif;font-size:12pt;line-height:1.5;color:var(--text,#1a1712);}'
+        + '.zone-exercices{margin-top:0 !important;}'
+        + '.exo-pts,.memo-pts,.memo-reserve{display:none !important;}'
+        + '.copier-fleche-apres,.copier-texte-arabe,.copier-texte-arabe-pointille{background:transparent !important;}'
+        + '.quiz-case,.relier-point{background:transparent !important;}';
 
       zone.innerHTML = '';
-      var iframe = document.createElement('iframe');
-      iframe.className = 'iframe-exercices';
-      iframe.setAttribute('title', 'Exercices');
-      iframe.setAttribute('scrolling', 'no');
-      zone.appendChild(iframe);
+      var hote = document.createElement('div');
+      zone.appendChild(hote);
+      var racine = hote.attachShadow ? hote.attachShadow({ mode: 'open' }) : hote;
+      racine.innerHTML = '<style>' + css + cssSite + '</style>' + corps;
 
-      var doc = iframe.contentWindow.document;
-      doc.open();
-      doc.write(html);
-      doc.close();
-
-      function ajuster() {
-        try { iframe.style.height = (doc.documentElement.scrollHeight + 10) + 'px'; } catch (e) {}
-      }
-      setTimeout(function() {
-        var style = doc.createElement('style');
-        style.textContent = 'body{padding:28px 32px !important;} .page{zoom:100% !important;}';
-        doc.head.appendChild(style);
-        arabiserDocument(doc);
-        ajuster();
-      }, 300);
-      setTimeout(ajuster, 1200);
-      setTimeout(ajuster, 3000);
-      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(ajuster);
-      window.addEventListener('resize', ajuster);
+      /* Arabe : même traitement que l'impression */
+      var walker = document.createTreeWalker(racine, NodeFilter.SHOW_TEXT, null, false);
+      var noeuds = [], n;
+      while ((n = walker.nextNode())) { if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n); }
+      noeuds.forEach(function(texteNode) {
+        var parent = texteNode.parentNode;
+        if (!parent || !parent.classList) return;
+        if (parent.closest && parent.closest('style')) return;
+        if (parent.classList.contains('arabe') || parent.classList.contains('copier-mot') ||
+            parent.classList.contains('copier-mot-pointille') || parent.classList.contains('copier-mot-kfg')) return;
+        var parts = texteNode.nodeValue.split(/([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)/g);
+        var frag = document.createDocumentFragment();
+        parts.forEach(function(part) {
+          if (part === '') return;
+          if (/[؀-ۿ]/.test(part)) {
+            var span = document.createElement('span');
+            span.className = 'arabe';
+            span.setAttribute('lang', 'ar');
+            span.textContent = part;
+            frag.appendChild(span);
+          } else frag.appendChild(document.createTextNode(part));
+        });
+        parent.replaceChild(frag, texteNode);
+      });
     }
 
     function nettoyerCartesVides(container) {
