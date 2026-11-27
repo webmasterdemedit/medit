@@ -373,6 +373,32 @@ function parserEnoncesPourImpression(val) {
   try { var a = JSON.parse(val); return Array.isArray(a) ? a : []; } catch (e) { return []; }
 }
 
+// Énoncé : 1re ligne en français = description ; chaque ligne en arabe = bloc centré
+function rendreEnonce(texte, formater) {
+  var lignes = String(texte).split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+  var estArabe = function(l) { return /[\u0600-\u06FF]/.test(l) && !/[A-Za-zÀ-ÿ]/.test(l); };
+  var html = '';
+  var i = 0;
+  if (lignes.length > 1 && !estArabe(lignes[0])) {
+    html += '<div class="enonce-description">' + formater(lignes[0]) + '</div>';
+    i = 1;
+  }
+  var bloc = [], blocArabe = null;
+  function vider() {
+    if (!bloc.length) return;
+    html += '<div class="enonce-texte' + (blocArabe ? ' rtl' : '') + '">' + bloc.map(formater).join('<br>') + '</div>';
+    bloc = [];
+  }
+  for (; i < lignes.length; i++) {
+    var a = estArabe(lignes[i]);
+    if (blocArabe !== null && a !== blocArabe) vider();
+    blocArabe = a;
+    bloc.push(lignes[i]);
+  }
+  vider();
+  return html;
+}
+
 function majPremiereLettre(s) {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -1545,6 +1571,9 @@ body { font-size: 12pt; }
 
 /* Image pleine largeur : img:nom:plein */
 .print-img-plein { width: 100% !important; max-width: 100% !important; float: none !important; margin: 12px 0 !important; }
+
+.enonce-description { font-style: italic; font-size: 11.5pt; color: #3b352b; text-align: justify; margin-bottom: 6px; }
+.enonce-texte + .enonce-texte { margin-top: 6px; }
 </style>
 </head>
 <body>
@@ -1742,7 +1771,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     debutsExo.push(exoNum + 1);
     var rtl = (en.texte && !/[A-Za-zÀ-ÿ]/.test(en.texte)) ? ' rtl' : '';
     printHtml += '<div class="enonce-exo"><div class="enonce-titre">Exercice ' + en.num + '</div>';
-    if (en.texte) printHtml += '<div class="enonce-texte' + rtl + '">' + appliquerGrasItalique(embellirFormulesReligieuses(en.texte)).replace(/\n/g, '<br>') + '</div>';
+    if (en.texte) printHtml += rendreEnonce(en.texte, function(t) { return appliquerGrasItalique(embellirFormulesReligieuses(t)); });
     if (en.source) printHtml += '<div class="enonce-source">' + en.source + '</div>';
     printHtml += '</div>';
   }
