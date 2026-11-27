@@ -57,21 +57,36 @@
     return Math.floor(debut.getTime() / 86400000);
   }
 
-  /* ---------- Citations tirées des textes ---------- */
+  /* ---------- Citations tirées des textes ----------
+     Format reconnu dans vos fichiers :
+       ligne arabe
+       "traduction" [source]          (la source peut aussi être sur la ligne suivante)
+       ou  « traduction » (source: ...)
+     Le texte arabe = dernière ligne en arabe juste avant la traduction. */
   function extraireCitations(textes) {
     var liste = [], vus = {};
-    var re = /["“«]\s*([^"“”«»]{25,320}?)\s*["”»][^\[\n]{0,60}\[([^\]]{3,80})\]/g;
+    var re = /["“«]\s*([^"“”«»]{12,500}?)\s*["”»][^\[\(]{0,80}?(?:\[([^\]]{2,100})\]|\(source:\s*([^)]{2,100})\))/g;
     (textes || []).forEach(function(t) {
       var contenu = String(t.contenu || '');
       var m;
       re.lastIndex = 0;
       while ((m = re.exec(contenu)) !== null) {
         var citation = m[1].replace(/\s+/g, ' ').replace(/\*+/g, '').trim();
-        var source = m[2].trim();
+        var source = (m[2] || m[3] || '').trim();
+        if (!citation || !source) continue;
         var cle = citation.toLowerCase();
         if (vus[cle]) continue;
         vus[cle] = true;
-        liste.push({ citation: citation, source: source, texteId: t.id, titre: t.titre || '' });
+        // Texte arabe : dernière ligne contenant de l'arabe juste avant la citation
+        var avant = contenu.substring(Math.max(0, m.index - 600), m.index).split('\n');
+        var arabe = '';
+        for (var k = avant.length - 1; k >= 0 && k >= avant.length - 4; k--) {
+          var l = avant[k].trim();
+          if (!l) continue;
+          if (/[؀-ۿ]/.test(l)) { arabe = l.replace(/\s*\|\s*$/, '').trim(); break; }
+          if (k < avant.length - 1) break;
+        }
+        liste.push({ citation: citation, source: source, arabe: arabe, texteId: t.id, titre: t.titre || '' });
       }
     });
     return liste;
@@ -106,6 +121,12 @@
       + '.ephem-src{display:block;margin-top:8px;font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:2px;color:#9a7b3c;}'
       + '.ephem-lien{display:inline-block;margin-top:6px;font-style:italic;font-size:14px;color:#2d6a4f;text-decoration:none;}'
       + '.ephem-lien:hover{text-decoration:underline;}'
+      + '.ephem-ar{direction:rtl;font-family:"Janna LT Bold","Traditional Arabic","Amiri",serif;font-size:24px;line-height:1.7;color:#1a1712;margin:0 0 8px;}'
+      + '.colonne-laterale .ephem,.zone-basse-mobile .ephem{max-width:100%;margin:0 0 22px;padding:16px 10px 14px;}'
+      + '.colonne-laterale .ephem-greg{font-size:16px;}.colonne-laterale .ephem-hij{font-size:14px;}'
+      + '.colonne-laterale .ephem-dates{flex-direction:column;gap:2px;}.colonne-laterale .ephem-sep{display:none;}'
+      + '.colonne-laterale .ephem-cit{font-size:15.5px;}.colonne-laterale .ephem-ar{font-size:20px;}'
+      + '.colonne-laterale .ephem-src{font-size:12.5px;letter-spacing:1.5px;}.colonne-laterale .ephem-tete{font-size:12px;letter-spacing:3px;}'
       + '@media(max-width:700px){.ephem{padding:18px 12px 16px;margin-top:26px;}.ephem-greg{font-size:19px;}'
       +   '.ephem-hij{font-size:16px;}.ephem-cit{font-size:18px;}}';
     document.head.appendChild(st);
@@ -126,6 +147,7 @@
       +     (hij ? '<span class="ephem-sep">❧</span><span class="ephem-hij">' + esc(hij) + '</span>' : '')
       +   '</div>'
       +   '<hr class="ephem-filet">'
+      +   (choix.arabe ? '<p class="ephem-ar" lang="ar">' + esc(choix.arabe) + '</p>' : '')
       +   '<p class="ephem-cit">' + esc(choix.citation) + '</p>'
       +   '<span class="ephem-src">' + esc(choix.source) + '</span>'
       +   lien
@@ -142,6 +164,7 @@
     DataManager.charger().then(function(data) {
       var textes = (data && (data.tousLesTextes || data.textes)) || [];
       var citations = extraireCitations(textes);
+      if (window.console) console.log('📜 Éphéméride : ' + citations.length + ' citation(s) trouvée(s) dans ' + textes.length + ' texte(s)');
       if (!citations.length) return;
       var choix = citations[numeroDuJour(new Date()) % citations.length];
       dessiner(zone, choix);
