@@ -2151,6 +2151,15 @@
       var enoncesParsed = parserEnonces(texte.enonces);
       var qcsParsed = String(texte.questionCourte || '').split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
 
+      /* Données de correction pour les exercices affichés sur la page */
+      var ttMots = [];
+      ttTexte.split('\n').forEach(function(l) {
+        if (!/^\s*tt:/i.test(l)) return;
+        var re = /\/([^\/]+)\//g, mm;
+        while ((mm = re.exec(l)) !== null) ttMots.push(mm[1].trim());
+      });
+      window._exosData = { quizs: quizsParsed, vfs: vfsParsed, ttMots: ttMots, reliers: reliersParsed, ordres: ordresParsed };
+
       var blocsOrdonnes = [];
       if (ordreBlocs.length > 0) {
         ordreBlocs.forEach(function(item) {
@@ -2462,12 +2471,11 @@
       /* Exercices affichés sur la page, même mise en page que l'impression */
       html += '<div class="zone-exercices-feuille"><div class="titre-exercices-site">exercices</div><div id="zoneExercicesFeuille"></div></div>';
 
-      /* Bouton "Vérifier sa compréhension" */
-      if (htmlExercicesPopup) {
-        html += '<div class="bloc-verifier-comprehension">';
-        html += '<button class="btn-verifier-comprehension" onclick="ouvrirPopupExercices()">Vérifier sa compréhension du texte</button>';
-        html += '</div>';
-      }
+      /* Bouton "Envoyer" (affiché seulement s'il y a des exercices) */
+      html += '<div class="bloc-verifier-comprehension" id="blocEnvoyerExos" style="display:none;">';
+      html += '<button class="btn-verifier-comprehension" id="btnEnvoyerExos" onclick="envoyerExercicesFeuille()">Envoyer</button>';
+      html += '<div id="envoiStatut" style="margin-top:10px;font-style:italic;color:var(--text-muted);min-height:1em;"></div>';
+      html += '</div>';
 
       /* Navigation précédent / suivant */
       html += '<div class="zone-bas-texte"><div class="nav-bas-texte">';
@@ -2571,13 +2579,7 @@
         html += '<div class="bloc-section">';
         html += '  <div class="bloc-titre"><span class="icone">📖</span> Thème</div>';
 
-        html += construireCarteCouverture({
-          titre: texte.categorie,
-          couleur: couleur
-        }, {
-          cliquable: true,
-          lien: '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie)
-        });
+        html += '<div class="bloc-tags"><a class="tag-item" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">#' + echapperHtml(texte.categorie) + '</a></div>';
 
         html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels de ce thème →</a>';
 
@@ -2821,6 +2823,205 @@
         });
         parent.replaceChild(frag, texteNode);
       });
+
+      rendreInteractif(racine);
+      var blocEnvoyer = document.getElementById('blocEnvoyerExos');
+      if (blocEnvoyer) blocEnvoyer.style.display = '';
+    }
+
+    /* ============================================================
+       EXERCICES INTERACTIFS — même apparence, mais on peut cocher,
+       écrire, relier, numéroter
+       ============================================================ */
+    function rendreInteractif(racine) {
+      window._racineExos = racine;
+      var NS = 'http://www.w3.org/2000/svg';
+
+      var st = racine.querySelector('style');
+      if (st) st.textContent += ''
+        + '[contenteditable]{outline:none;cursor:text;}'
+        + '.open-ligne[contenteditable],.carte-ligne-courte[contenteditable]{line-height:24px;font-size:11.5pt;padding:0 4px;white-space:nowrap;overflow:hidden;}'
+        + '.carte-ligne-courte[contenteditable]{line-height:16px;height:auto !important;min-height:16px;}'
+        + '.tt-trou[contenteditable]{min-height:1.2em;vertical-align:baseline;}'
+        + '.saisie-ordre{display:inline-block;min-width:60px;border-bottom:0.6px dotted #6a5d47;font-style:normal;color:#1a1712;text-align:center;}'
+        + '.quiz-rep{cursor:pointer;user-select:none;}'
+        + '.quiz-rep.coche .quiz-case{background:#1a1712 !important;border-color:#1a1712 !important;}'
+        + '.vf-choix{cursor:pointer;user-select:none;}'
+        + '.relier-ligne-item{cursor:pointer;user-select:none;}'
+        + '.relier-ligne-item.relier-sel .relier-point{background:#1a1712 !important;}'
+        + '.relier-svg{position:absolute;left:0;top:0;pointer-events:none;overflow:visible;}';
+
+      /* Lignes et trous à remplir */
+      racine.querySelectorAll('.open-ligne, .carte-ligne-courte, .tt-trou').forEach(function(el) {
+        el.setAttribute('contenteditable', 'true');
+        el.setAttribute('spellcheck', 'false');
+      });
+
+      /* Remettre dans l'ordre : on écrit le numéro */
+      racine.querySelectorAll('.ordre-cell-pointille').forEach(function(el) {
+        el.innerHTML = 'n° <span class="saisie-ordre" contenteditable="true" spellcheck="false"></span>';
+      });
+
+      /* QCM : on coche (une ou plusieurs cases) */
+      racine.querySelectorAll('.quiz-rep').forEach(function(rep) {
+        rep.addEventListener('click', function() { rep.classList.toggle('coche'); });
+      });
+
+      /* Vrai / Faux */
+      racine.querySelectorAll('.vf-cases').forEach(function(c) {
+        c.innerHTML = '<span class="vf-choix" data-c="v"><span class="vf-box">☐</span> V</span>&nbsp;&nbsp;&nbsp;'
+          + '<span class="vf-choix" data-c="f"><span class="vf-box">☐</span> F</span>';
+        var choix = c.querySelectorAll('.vf-choix');
+        choix.forEach(function(ch) {
+          ch.addEventListener('click', function() {
+            choix.forEach(function(o) { o.classList.remove('coche'); o.querySelector('.vf-box').textContent = '☐'; });
+            ch.classList.add('coche');
+            ch.querySelector('.vf-box').textContent = '☒';
+          });
+        });
+      });
+
+      /* Relier : clic à gauche, puis clic à droite → un trait */
+      racine.querySelectorAll('.relier-zone-lignes').forEach(function(zone) {
+        var svg = document.createElementNS(NS, 'svg');
+        svg.setAttribute('class', 'relier-svg');
+        zone.appendChild(svg);
+        zone._liens = {};
+        var sel = null;
+        var gauches = zone.querySelectorAll('.relier-col-lignes.gauche .relier-ligne-item');
+        var droites = zone.querySelectorAll('.relier-col-lignes.droite .relier-ligne-item');
+
+        function centre(el, zr) {
+          var r = el.getBoundingClientRect();
+          return { x: r.left + r.width / 2 - zr.left, y: r.top + r.height / 2 - zr.top };
+        }
+        function dessiner() {
+          var zr = zone.getBoundingClientRect();
+          svg.setAttribute('width', zr.width);
+          svg.setAttribute('height', zr.height);
+          svg.innerHTML = '';
+          Object.keys(zone._liens).forEach(function(g) {
+            var pg = gauches[g].querySelector('.relier-point');
+            var pd = droites[zone._liens[g]].querySelector('.relier-point');
+            if (!pg || !pd) return;
+            var a = centre(pg, zr), b = centre(pd, zr);
+            var l = document.createElementNS(NS, 'line');
+            l.setAttribute('x1', a.x); l.setAttribute('y1', a.y);
+            l.setAttribute('x2', b.x); l.setAttribute('y2', b.y);
+            l.setAttribute('stroke', '#1a1712');
+            l.setAttribute('stroke-width', '1.2');
+            svg.appendChild(l);
+          });
+        }
+        gauches.forEach(function(it, i) {
+          it.addEventListener('click', function() {
+            if (zone._liens[i] !== undefined) { delete zone._liens[i]; dessiner(); }
+            gauches.forEach(function(x) { x.classList.remove('relier-sel'); });
+            it.classList.add('relier-sel');
+            sel = i;
+          });
+        });
+        droites.forEach(function(it, j) {
+          it.addEventListener('click', function() {
+            if (sel === null) return;
+            zone._liens[sel] = j;
+            gauches[sel].classList.remove('relier-sel');
+            sel = null;
+            dessiner();
+          });
+        });
+        window.addEventListener('resize', dessiner);
+      });
+    }
+
+    /* ============================================================
+       ENVOYER : corrige et enregistre les réponses
+       ============================================================ */
+    function envoyerExercicesFeuille() {
+      var r = window._racineExos, d = window._exosData;
+      if (!r || !d) return;
+      if (envoiEffectue) return;
+
+      function norm(x) { return normaliserComparaison(embellirFormulesReligieuses(String(x || ''))); }
+      function lire(el) { return el ? el.textContent.replace(/\s+/g, ' ').trim() : ''; }
+
+      reponsesTexte = { quiz: {}, vf: {}, tt: {}, cartes: {}, relier: {}, ordre: {}, copier: {}, open: {} };
+
+      /* QCM */
+      r.querySelectorAll('.quiz-reponses').forEach(function(bloc, k) {
+        var q = d.quizs[k];
+        if (!q) return;
+        var coches = [];
+        bloc.querySelectorAll('.quiz-rep').forEach(function(rep, ri) { if (rep.classList.contains('coche')) coches.push(ri); });
+        var ok = coches.length > 0 && q.reponses.every(function(rp, ri) { return !!rp.correcte === (coches.indexOf(ri) !== -1); });
+        reponsesTexte.quiz[k] = { choix: coches.length ? coches[0] : -1, correct: ok };
+      });
+
+      /* Vrai / Faux */
+      r.querySelectorAll('.vf-cases').forEach(function(c, k) {
+        var v = d.vfs[k];
+        if (!v) return;
+        var ch = c.querySelector('.vf-choix.coche');
+        var choix = ch ? ch.getAttribute('data-c') : '';
+        reponsesTexte.vf[k] = { choix: choix, correct: choix === v.reponse };
+      });
+
+      /* Textes à trous */
+      r.querySelectorAll('.tt-trou').forEach(function(t, k) {
+        if (d.ttMots[k] === undefined) return;
+        var saisi = lire(t);
+        reponsesTexte.tt[k] = { saisi: saisi, correct: saisi !== '' && norm(saisi) === norm(d.ttMots[k]) };
+      });
+
+      /* Relier */
+      r.querySelectorAll('.relier-zone-lignes').forEach(function(zone, k) {
+        var rl = d.reliers[k];
+        if (!rl) return;
+        var carte = {};
+        rl.paires.forEach(function(p) { carte[norm(p.gauche)] = norm(p.droite); });
+        var gauches = zone.querySelectorAll('.relier-col-lignes.gauche .relier-ligne-item');
+        var droites = zone.querySelectorAll('.relier-col-lignes.droite .relier-ligne-item');
+        var bonnes = 0, liens = zone._liens || {};
+        Object.keys(liens).forEach(function(g) {
+          if (carte[norm(lire(gauches[g]))] === norm(lire(droites[liens[g]]))) bonnes++;
+        });
+        reponsesTexte.relier[k] = { valide: bonnes === gauches.length, bonnes: bonnes, total: gauches.length };
+      });
+
+      /* Remettre dans l'ordre */
+      r.querySelectorAll('.ordre-grille').forEach(function(grille, k) {
+        var o = d.ordres[k];
+        if (!o) return;
+        var elements = o.elements.map(norm);
+        var textes = grille.querySelectorAll('.ordre-cell-texte');
+        var saisies = grille.querySelectorAll('.saisie-ordre');
+        var bonnes = 0;
+        textes.forEach(function(t, i) {
+          var item = norm(lire(t).replace(/^[A-H]\.\s*/, ''));
+          var attendu = elements.indexOf(item) + 1;
+          var donne = parseInt(lire(saisies[i]), 10);
+          if (attendu > 0 && donne === attendu) bonnes++;
+        });
+        reponsesTexte.ordre[k] = { valide: bonnes === textes.length, bonnes: bonnes, total: textes.length };
+      });
+
+      /* Questions à rédiger (réponse enregistrée telle quelle) */
+      var iOpen = 0;
+      r.querySelectorAll('.exo').forEach(function(exo) {
+        var lignes = exo.querySelectorAll('.open-ligne, .carte-ligne-courte');
+        if (!lignes.length) return;
+        var reponse = Array.prototype.map.call(lignes, lire).filter(function(x) { return x !== ''; }).join(' ');
+        var question = lire(exo.querySelector('.exo-texte'));
+        reponsesTexte.open[iOpen] = { texte: question, reponse: reponse, valide: reponse !== '' };
+        iOpen++;
+      });
+
+      var btn = document.getElementById('btnEnvoyerExos');
+      if (btn) { btn.disabled = true; btn.textContent = 'Envoi…'; }
+      envoyerToutesReponses(false).then(function() {
+        if (btn) btn.textContent = '✓ Envoyé';
+      });
+      ouvrirPopupResultat();
     }
 
     function nettoyerCartesVides(container) {
