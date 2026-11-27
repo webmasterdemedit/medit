@@ -6,7 +6,7 @@
   <meta name="theme-color" content="#2d6a4f" />
   <title>Thème - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
-  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=EB+Garamond:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
   <link rel="stylesheet" href="/medit/theme.css" />
 
@@ -36,6 +36,36 @@
     letter-spacing: 0.3px;
   }
   .titre-theme-hashtag .diese { color: var(--text-muted); margin-right: 2px; }
+
+  /* ---- Cartes de texte vivantes : vignette (image ou aperçu du texte) ---- */
+  .carte-texte { gap: 18px; flex-wrap: nowrap !important; align-items: center; transition: background .15s; }
+  .carte-texte:hover { background: var(--bg-hover); }
+  .vignette-texte {
+    flex: 0 0 92px; width: 92px; height: 122px; overflow: hidden; position: relative;
+    background: #fffdf8; border: 1px solid var(--border);
+    box-shadow: 0 1px 4px rgba(60,45,25,.10);
+  }
+  .vignette-texte img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .vignette-apercu {
+    padding: 9px 8px; font-family: 'EB Garamond', Georgia, serif;
+    font-size: 6.2px; line-height: 1.45; color: #3a3226; text-align: justify; hyphens: auto;
+  }
+  .vignette-apercu .v-titre {
+    font-size: 7.5px; font-weight: 700; text-align: center; text-transform: uppercase;
+    letter-spacing: .4px; margin-bottom: 5px; padding-bottom: 3px; border-bottom: .5px solid #c9bda3;
+  }
+  .vignette-apercu .v-lettrine { float: left; font-size: 17px; line-height: .85; padding: 1px 2px 0 0; font-weight: 700; }
+  .vignette-texte::after {
+    content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 26px;
+    background: linear-gradient(rgba(255,253,248,0), #fffdf8);
+  }
+  .vignette-texte.avec-image::after { display: none; }
+  .carte-texte .infos { min-width: 0; }
+  @media (max-width: 700px) {
+    .carte-texte { flex-direction: row !important; align-items: center !important; }
+    .vignette-texte { flex-basis: 70px; width: 70px; height: 94px; }
+    .carte-texte .statut { display: none; }
+  }
 
   /* ---- Écrits du thème (style liseuse, noir & blanc) ---- */
   .ecrits-theme {
@@ -267,6 +297,58 @@
       return String(s == null ? '' : s).replace(/[&<>"']/g, function(c) {
         return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
       });
+    }
+
+    /* Premier paragraphe du texte, nettoyé, pour l'aperçu miniature */
+    function extraireApercu(texte) {
+      var parts = String(texte.contenu || '').split(' | ');
+      var prefixes = /^(q|qs|o|r|l|tt|vf|c|qcm|pnt|m|case|exercice|exo):/i;
+      for (var i = 0; i < parts.length; i++) {
+        var p = parts[i].trim();
+        if (!p || prefixes.test(p)) continue;
+        var lignes = p.split('\n').filter(function(l) {
+          l = l.trim();
+          return l && !/^img:/i.test(l) && !/^-{3,}$/.test(l);
+        });
+        var t = lignes.join(' ')
+          .replace(/\[[^\]]*\]/g, '').replace(/\(source:[^)]*\)/gi, '')
+          .replace(/\*+/g, '').replace(/\s+/g, ' ').trim();
+        if (t) return t.substring(0, 420);
+      }
+      return '';
+    }
+
+    /* Nom de la première image du texte (ligne img:nom) */
+    function premiereImage(texte) {
+      var m = String(texte.contenu || '').match(/(^|\n)\s*img:([^:\s|]+)/i);
+      return m ? m[2] : '';
+    }
+
+    function construireVignette(texte, titreAffiche) {
+      var img = premiereImage(texte);
+      var apercu = extraireApercu(texte);
+      var lettre = apercu ? apercu.charAt(0) : '';
+      var reste = apercu ? apercu.substring(1) : '';
+      return '<div class="vignette-texte"' + (img ? ' data-image="' + echapperHtml(img) + '"' : '') + '>'
+        + '<div class="vignette-apercu">'
+        +   '<div class="v-titre">' + echapperHtml(titreAffiche) + '</div>'
+        +   (apercu ? '<span class="v-lettrine">' + echapperHtml(lettre) + '</span>' + echapperHtml(reste) : '')
+        + '</div></div>';
+    }
+
+    /* Remplace l'aperçu par la vraie image quand le texte en a une */
+    function chargerImagesVignettes() {
+      var vignettes = document.querySelectorAll('.vignette-texte[data-image]');
+      if (!vignettes.length || typeof chargerImagesTheme !== 'function') return;
+      chargerImagesTheme(categorieActuelle).then(function(images) {
+        images = images || {};
+        vignettes.forEach(function(v) {
+          var url = images[v.getAttribute('data-image')];
+          if (!url) return;
+          v.innerHTML = '<img src="' + url + '" alt="" loading="lazy">';
+          v.classList.add('avec-image');
+        });
+      }).catch(function() {});
     }
 
     function aUnNiveau(n) {
@@ -671,6 +753,7 @@
 
         html += `
           <div class="carte-texte" ${onClickAttr}>
+            ${construireVignette(texte, titreAffiche)}
             <div class="infos">
               <div class="titre">${numeroHtml}${titreAffiche}</div>
               <div class="meta">
@@ -688,6 +771,7 @@
 
       html += '</div>';
       container.innerHTML = html;
+      chargerImagesVignettes();
     }
 
     // ============================================================
