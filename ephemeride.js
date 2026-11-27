@@ -92,6 +92,31 @@
     return liste;
   }
 
+  /* ---------- Mots arabes tirés du vocabulaire (lignes « ! mot = définition ») ---------- */
+  function extraireMots(textes) {
+    var liste = [], vus = {};
+    (textes || []).forEach(function(t) {
+      var vocab = t.vocabulaire || [];
+      if (typeof vocab === 'string') vocab = vocab.split('\n');
+      vocab.forEach(function(item) {
+        String(item).split(';').forEach(function(brut) {
+          var m = brut.trim();
+          if (!m) return;
+          var iC = m.indexOf(':'), iE = m.indexOf('='), sep = -1;
+          if (iC !== -1 && iE !== -1) sep = Math.min(iC, iE); else sep = (iC !== -1) ? iC : iE;
+          var mot = (sep !== -1 ? m.substring(0, sep) : m).trim();
+          var def = (sep !== -1 ? m.substring(sep + 1) : '').trim();
+          // Seulement les mots en arabe
+          if (!mot || !/[؀-ۿ]/.test(mot) || /[A-Za-zÀ-ÿ]/.test(mot)) return;
+          if (vus[mot]) return;
+          vus[mot] = true;
+          liste.push({ mot: mot, definition: def, texteId: t.id, titre: t.titre || '' });
+        });
+      });
+    });
+    return liste;
+  }
+
   /* ---------- Styles ---------- */
   function injecterStyles() {
     if (document.getElementById('styleEphemeride')) return;
@@ -121,6 +146,10 @@
       + '.ephem-src{display:block;margin-top:8px;font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:2px;color:#9a7b3c;}'
       + '.ephem-lien{display:inline-block;margin-top:6px;font-style:italic;font-size:14px;color:#2d6a4f;text-decoration:none;}'
       + '.ephem-lien:hover{text-decoration:underline;}'
+      + '.ephem-mot{margin-top:18px;padding-top:14px;border-top:0.6px dotted #b9ad94;}'
+      + '.ephem-mot-tete{font-family:"Cormorant SC","EB Garamond",serif;font-weight:600;font-size:13px;letter-spacing:3px;text-transform:lowercase;color:#7a705f;}'
+      + '.ephem .ephem-mot-ar{direction:rtl;unicode-bidi:isolate;font-family:"Amiri","Traditional Arabic",serif !important;font-weight:400;font-size:40px;line-height:1.6;color:#2d6a4f;margin:2px 0 0;}'
+      + '.ephem-mot-def{font-style:italic;font-size:18px;color:#3a3226;}'
       + '.ephem .ephem-ar{direction:rtl;unicode-bidi:isolate;text-align:center;font-family:"Amiri","Traditional Arabic",serif !important;font-weight:400;font-size:28px;line-height:1.9;color:#1a1712;margin:0 0 10px;}'
       + '.colonne-laterale .ephem,.zone-basse-mobile .ephem{max-width:100%;margin:0 0 22px;padding:16px 10px 14px;}'
       + '.colonne-laterale .ephem-greg{font-size:16px;}.colonne-laterale .ephem-hij{font-size:14px;}'
@@ -133,7 +162,7 @@
   }
 
   /* ---------- Affichage ---------- */
-  function dessiner(zone, choix) {
+  function dessiner(zone, choix, mot) {
     var maintenant = new Date();
     var hij = dateHegirienne(maintenant);
     var lien = (choix.texteId)
@@ -151,6 +180,10 @@
       +   '<p class="ephem-cit">' + esc(choix.citation) + '</p>'
       +   '<span class="ephem-src">' + esc(choix.source) + '</span>'
       +   lien
+      +   (mot ? '<div class="ephem-mot"><div class="ephem-mot-tete">mot arabe du jour</div>'
+              + '<div class="ephem-mot-ar">' + esc(mot.mot) + '</div>'
+              + (mot.definition ? '<div class="ephem-mot-def">' + esc(mot.definition) + '</div>' : '')
+              + '</div>' : '')
       + '</div>';
   }
 
@@ -163,11 +196,13 @@
     if (typeof DataManager === 'undefined' || typeof DataManager.charger !== 'function') return;
 
     // Les citations sont gardées 24 h pour ne pas recharger tous les textes à chaque page
-    var CLE = 'ephemeride_citations_v2';
+    var CLE = 'ephemeride_citations_v3';
     try {
       var cache = JSON.parse(localStorage.getItem(CLE) || 'null');
       if (cache && cache.liste && cache.liste.length && (Date.now() - cache.date) < 86400000) {
-        dessiner(zone, cache.liste[numeroDuJour(new Date()) % cache.liste.length]);
+        var n0 = numeroDuJour(new Date());
+        var mots0 = cache.mots || [];
+        dessiner(zone, cache.liste[n0 % cache.liste.length], mots0.length ? mots0[(n0 * 7) % mots0.length] : null);
         return;
       }
     } catch (e) {}
@@ -189,10 +224,13 @@
       // 4 chargements en parallèle
       return Promise.all([suivant(), suivant(), suivant(), suivant()]).then(function() {
         var citations = extraireCitations(complets);
+        var mots = extraireMots(complets);
+        if (window.console) console.log('🔤 Mots arabes du jour possibles : ' + mots.length);
         if (window.console) console.log('📜 Éphéméride : ' + citations.length + ' citation(s) trouvée(s) dans ' + complets.length + ' texte(s)');
-        if (!citations.length) return;
-        try { localStorage.setItem(CLE, JSON.stringify({ date: Date.now(), liste: citations })); } catch (e) {}
-        dessiner(zone, citations[numeroDuJour(new Date()) % citations.length]);
+        if (!citations.length) citations = [SECOURS];
+        try { localStorage.setItem(CLE, JSON.stringify({ date: Date.now(), liste: citations, mots: mots })); } catch (e) {}
+        var n = numeroDuJour(new Date());
+        dessiner(zone, citations[n % citations.length], mots.length ? mots[(n * 7) % mots.length] : null);
       });
     }).catch(function() {});
   }
