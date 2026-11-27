@@ -849,7 +849,9 @@
       /* Carnet de l'auteur (volet latéral + panneau de lecture) */
       if (window.Carnet) {
         var tousLesEcrits = [];
-        Object.keys(themesData).forEach(function(k) { tousLesEcrits = tousLesEcrits.concat(themesData[k].ecrits || []); });
+        Object.keys(themesData).forEach(function(k) {
+          (themesData[k].ecrits || []).forEach(function(e) { var c = Object.assign({}, e); c._theme = k; tousLesEcrits.push(c); });
+        });
         var ok = Carnet.afficher(zone, ecrits, { theme: categorieActuelle, tousLesEcrits: tousLesEcrits });
         if (layout) layout.classList.toggle('avec-carnet', !!ok);
         return;
