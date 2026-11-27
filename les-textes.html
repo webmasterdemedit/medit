@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="theme-color" content="#2d6a4f" />
-  <title>Derniers textes publiés - Qiraat</title>
+  <title>Derniers rappels publiés - Qiraat</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>◆</text></svg>" />
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet" />
   <link rel="stylesheet" href="/medit/structure.css" />
@@ -53,11 +53,13 @@
     }
     .tri-reset:hover { color: var(--text); border-color: var(--text-secondary); }
 
-    /* ===== LISTE BLOG — sans cadre, sans image, juste du texte ===== */
+    /* ===== LISTE BLOG ===== */
     .liste-blog { display: flex; flex-direction: column; }
 
     .post-blog {
-      display: block;
+      display: flex;
+      align-items: center;
+      gap: 20px;
       padding: 20px 0;
       border-bottom: 1px solid var(--border);
       text-decoration: none;
@@ -68,7 +70,14 @@
     .post-blog:first-child { border-top: 1px solid var(--border); }
     .post-blog:hover { background: var(--bg-hover); }
 
-    .post-blog .post-corps { display: flex; flex-direction: column; gap: 6px; }
+    /* Vignette = vraie miniature de la version imprimable (comme la page thème) */
+    .vignette-texte {
+      flex: 0 0 104px; width: 104px; height: 147px; overflow: hidden; position: relative;
+      background: #fffdf8; border: 1px solid var(--border);
+      box-shadow: 0 1px 5px rgba(60,45,25,.14);
+    }
+
+    .post-blog .post-corps { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 0; }
     .post-blog .post-titre {
       font-family: 'Georgia', serif; font-size: 18px; font-weight: 700;
       color: var(--text); line-height: 1.3;
@@ -99,9 +108,10 @@
     @media (max-width: 700px) {
       .page-blog { padding: 12px 16px 30px; }
       .page-blog h1 { font-size: 22px; }
-      .post-blog { padding: 16px 0; }
+      .post-blog { padding: 16px 0; gap: 14px; }
       .post-blog .post-titre { font-size: 16px; }
       .post-blog .post-extrait { -webkit-line-clamp: 3; }
+      .vignette-texte { flex-basis: 74px; width: 74px; height: 105px; }
     }
   </style>
 
@@ -115,8 +125,8 @@
 <body>
 
   <div class="page page-blog">
-    <h1>Derniers textes publiés</h1>
-    <p class="sous-titre-page">Les textes les plus récents, tous thèmes confondus. Cliquez sur un texte pour le lire.</p>
+    <h1>Derniers rappels publiés</h1>
+    <p class="sous-titre-page">Les rappels les plus récents, tous thèmes confondus. Cliquez sur un rappel pour le lire.</p>
 
     <div class="barre-recherche">
       <input type="text" id="rechercheTextes" placeholder="Rechercher un titre, un thème, un tag, un extrait..." />
@@ -138,7 +148,7 @@
     <div id="contenu">
       <div class="loader" id="loader">
         <div class="spinner"></div>
-        <p>Chargement des textes...</p>
+        <p>Chargement des rappels...</p>
       </div>
     </div>
 
@@ -162,6 +172,7 @@
   <script src="/medit/config.js"></script>
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
+  <script src="/medit/impression.js"></script>
 
   <script>
     var toutesLesReponses = {}, textesData = [], niveauEtudiant = 0, rechercheActive = '';
@@ -170,7 +181,7 @@
       return s == null ? '' : String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
     }
     function normaliser(s) {
-      return String(s || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+      return String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').trim();
     }
     function anneeDe(d) {
       if (!d) return '';
@@ -192,6 +203,7 @@
       var m = (t || '').match(/^\s*(\d+)\s+/); return m ? parseInt(m[1], 10) : Infinity;
     }
     function titreSansNumero(t) { return (t || '').replace(/^\s*\d+\s+/, '').trim(); }
+    function aUnNiveau(n) { return n !== '' && n !== null && n !== undefined; }
 
     function infoValidation(id) {
       var r = toutesLesReponses[String(id)];
@@ -205,10 +217,12 @@
     }
 
     function compterExercices(t) {
-      var types = ['quiz:','open:','ordre:','carte:','relier:','tt:','vf:','copier:'];
+      var types = ['quiz:','qc:','open:','ordre:','carte:','relier:','tt:','vf:','copier:'];
       var ob = t.ordreBlocs || [], n = 0;
+      if (typeof ob === 'string') ob = ob.split(',');
       if (ob.length) {
         ob.forEach(function(o) {
+          o = String(o).trim();
           for (var i = 0; i < types.length; i++) if (o.indexOf(types[i]) === 0) { n++; return; }
         });
       } else {
@@ -256,8 +270,13 @@
       });
     }
 
+    /* Un texte sans niveau est visible par tous */
+    function accessible(t) {
+      return !aUnNiveau(t.niveau) || (parseInt(t.niveau) || 1) <= niveauEtudiant;
+    }
+
     function initialiserFiltres() {
-      var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
+      var acc = textesData.filter(accessible);
 
       var themes = {}, annees = {};
       acc.forEach(function(t) {
@@ -293,7 +312,7 @@
       var ft = document.getElementById('triTheme').value;
       var fa = document.getElementById('triAnnee').value;
 
-      var acc = textesData.filter(function(t) { return (parseInt(t.niveau) || 1) <= niveauEtudiant; });
+      var acc = textesData.filter(accessible);
       if (ft) { var c = normaliser(ft); acc = acc.filter(function(t) { return normaliser(t.categorie) === c; }); }
       if (fa) acc = acc.filter(function(t) { return anneeDe(t.date) === fa; });
       if (rechercheActive) {
@@ -317,7 +336,7 @@
 
       var container = document.getElementById('contenu');
       if (!acc.length) {
-        container.innerHTML = '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun texte disponible</h2></div>';
+        container.innerHTML = '<div class="vide-themes"><span class="icone">◈</span><h2>Aucun rappel disponible</h2></div>';
         return;
       }
 
@@ -325,6 +344,7 @@
       acc.forEach(function(t) { html += cartePost(t); });
       html += '</div>';
       container.innerHTML = html;
+      remplirVignettes(acc);
     }
 
     function cartePost(t) {
@@ -336,14 +356,15 @@
       if (extrait.length > 200) extrait = extrait.substring(0, 200) + '…';
 
       var bandeau = validation.valide && validation.date
-        ? '<div class="post-validation">Vous avez validé ce texte le ' + escapeHtml(validation.date) + '</div>'
+        ? '<div class="post-validation">Vous avez validé ce rappel le ' + escapeHtml(validation.date) + '</div>'
         : '';
 
       return '<a class="post-blog" href="/medit/texte.html?id=' + encodeURIComponent(t.id) + '">'
+        + '<div class="vignette-texte" data-id="' + escapeHtml(t.id) + '"></div>'
         + '<div class="post-corps">'
         +   '<div class="post-titre">' + (numero !== Infinity ? numero + ' — ' : '') + escapeHtml(titre) + '</div>'
         +   '<div class="post-meta">'
-        +     '<span>Niveau ' + (t.niveau || 1) + '</span>'
+        +     (aUnNiveau(t.niveau) ? '<span>Niveau ' + t.niveau + '</span>' : '')
         +     (nbExo ? '<span>' + nbExo + ' exercice' + (nbExo > 1 ? 's' : '') + '</span>' : '')
         +     (t.mots ? '<span>' + t.mots + ' mots</span>' : '')
         +     (t.date ? '<span>' + dateRelative(t.date) + '</span>' : '')
@@ -353,6 +374,100 @@
         +   bandeau
         + '</div>'
         + '</a>';
+    }
+
+    /* ============================================================
+       VIGNETTES : vraie miniature de la version imprimable
+       (identique à la page thème)
+       ============================================================ */
+    var LARGEUR_A4 = 794, HAUTEUR_A4 = 1123;
+    var imagesParTheme = {};
+
+    function imagesDuTheme(cat) {
+      if (!imagesParTheme[cat]) {
+        var p = (typeof chargerImagesTheme === 'function')
+          ? chargerImagesTheme(cat).catch(function() { return {}; })
+          : Promise.resolve({});
+        var delai = new Promise(function(res) { setTimeout(function() { res({}); }, 2500); });
+        imagesParTheme[cat] = Promise.race([p, delai]).then(function(i) { return i || {}; });
+      }
+      return imagesParTheme[cat];
+    }
+
+    function arabiserDoc(doc) {
+      var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+      var noeuds = [], n;
+      while ((n = walker.nextNode())) { if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n); }
+      noeuds.forEach(function(t) {
+        var parent = t.parentNode;
+        if (!parent || !parent.classList) return;
+        if (parent.classList.contains('arabe') || parent.classList.contains('copier-mot') ||
+            parent.classList.contains('copier-mot-pointille') || parent.classList.contains('copier-mot-kfg')) return;
+        var parts = t.nodeValue.split(/([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)/g);
+        var frag = doc.createDocumentFragment();
+        parts.forEach(function(part) {
+          if (part === '') return;
+          if (/[؀-ۿ]/.test(part)) {
+            var sp = doc.createElement('span');
+            sp.className = 'arabe'; sp.setAttribute('lang', 'ar'); sp.textContent = part;
+            frag.appendChild(sp);
+          } else frag.appendChild(doc.createTextNode(part));
+        });
+        parent.replaceChild(frag, t);
+      });
+    }
+
+    function dessinerVignette(v, texte) {
+      if (v._fait) return;
+      v._fait = true;
+      var cat = texte.categorie || '';
+      var couverture = (typeof recupererCouvertureTheme === 'function') ? recupererCouvertureTheme(cat) : '';
+      imagesDuTheme(cat).then(function(images) {
+        var html = '';
+        try {
+          html = genererImpression(texte, texte.contenu || '', images, couverture, 'complet', { retournerHtml: true });
+        } catch (e) { console.error('Vignette :', e); return; }
+        if (!html) return;
+        var echelle = v.clientWidth / LARGEUR_A4;
+        var iframe = document.createElement('iframe');
+        iframe.setAttribute('tabindex', '-1');
+        iframe.setAttribute('aria-hidden', 'true');
+        iframe.style.cssText = 'width:' + LARGEUR_A4 + 'px;height:' + HAUTEUR_A4 + 'px;border:0;'
+          + 'transform:scale(' + echelle + ');transform-origin:0 0;pointer-events:none;background:#fffdf8;';
+        v.appendChild(iframe);
+        var doc = iframe.contentWindow.document;
+        doc.open();
+        doc.write(html.replace('</head>', '<style>body{padding:40px 46px !important;overflow:hidden !important;}</style></head>'));
+        doc.close();
+        setTimeout(function() { try { arabiserDoc(doc); } catch (e) {} }, 400);
+      });
+    }
+
+    function remplirVignettes(textes) {
+      if (typeof genererImpression !== 'function') return;
+      var parId = {};
+      textes.forEach(function(t) { parId[String(t.id)] = t; });
+
+      function lancer(v) {
+        var t = parId[v.getAttribute('data-id')];
+        if (!t) return;
+        if (t.contenu) { dessinerVignette(v, t); return; }
+        if (typeof DataManager !== 'undefined' && typeof DataManager.getTexteAsync === 'function') {
+          DataManager.getTexteAsync(t.id).then(function(complet) {
+            if (complet && complet.contenu) dessinerVignette(v, Object.assign({}, t, complet));
+          }).catch(function() {});
+        }
+      }
+
+      var vignettes = document.querySelectorAll('.vignette-texte[data-id]');
+      if ('IntersectionObserver' in window) {
+        var obs = new IntersectionObserver(function(entrees) {
+          entrees.forEach(function(e) { if (e.isIntersecting) { obs.unobserve(e.target); lancer(e.target); } });
+        }, { rootMargin: '200px' });
+        vignettes.forEach(function(v) { obs.observe(v); });
+      } else {
+        vignettes.forEach(lancer);
+      }
     }
 
     function brancherRecherche() {
