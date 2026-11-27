@@ -98,7 +98,7 @@
     if (!document.getElementById('policesEphemeride')) {
       var l = document.createElement('link');
       l.id = 'policesEphemeride'; l.rel = 'stylesheet';
-      l.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+SC:wght@500;600&display=swap';
+      l.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+SC:wght@500;600&family=Amiri:wght@400;700&display=swap';
       document.head.appendChild(l);
     }
     var st = document.createElement('style');
@@ -121,14 +121,14 @@
       + '.ephem-src{display:block;margin-top:8px;font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:2px;color:#9a7b3c;}'
       + '.ephem-lien{display:inline-block;margin-top:6px;font-style:italic;font-size:14px;color:#2d6a4f;text-decoration:none;}'
       + '.ephem-lien:hover{text-decoration:underline;}'
-      + '.ephem-ar{direction:rtl;font-family:"Janna LT Bold","Traditional Arabic","Amiri",serif;font-size:24px;line-height:1.7;color:#1a1712;margin:0 0 8px;}'
+      + '.ephem .ephem-ar{direction:rtl;unicode-bidi:isolate;text-align:center;font-family:"Amiri","Traditional Arabic",serif !important;font-weight:400;font-size:28px;line-height:1.9;color:#1a1712;margin:0 0 10px;}'
       + '.colonne-laterale .ephem,.zone-basse-mobile .ephem{max-width:100%;margin:0 0 22px;padding:16px 10px 14px;}'
       + '.colonne-laterale .ephem-greg{font-size:16px;}.colonne-laterale .ephem-hij{font-size:14px;}'
       + '.colonne-laterale .ephem-dates{flex-direction:column;gap:2px;}.colonne-laterale .ephem-sep{display:none;}'
-      + '.colonne-laterale .ephem-cit{font-size:15.5px;}.colonne-laterale .ephem-ar{font-size:20px;}'
+      + '.colonne-laterale .ephem-cit{font-size:15.5px;}.colonne-laterale .ephem .ephem-ar{font-size:22px;}'
       + '.colonne-laterale .ephem-src{font-size:12.5px;letter-spacing:1.5px;}.colonne-laterale .ephem-tete{font-size:12px;letter-spacing:3px;}'
       + '@media(max-width:700px){.ephem{padding:18px 12px 16px;margin-top:26px;}.ephem-greg{font-size:19px;}'
-      +   '.ephem-hij{font-size:16px;}.ephem-cit{font-size:18px;}}';
+      +   '.ephem-hij{font-size:16px;}.ephem-cit{font-size:18px;}.ephem .ephem-ar{font-size:23px;}}';
     document.head.appendChild(st);
   }
 
@@ -147,7 +147,7 @@
       +     (hij ? '<span class="ephem-sep">❧</span><span class="ephem-hij">' + esc(hij) + '</span>' : '')
       +   '</div>'
       +   '<hr class="ephem-filet">'
-      +   (choix.arabe ? '<p class="ephem-ar" lang="ar">' + esc(choix.arabe) + '</p>' : '')
+      +   (choix.arabe ? '<p class="ephem-ar">' + esc(choix.arabe) + '</p>' : '')
       +   '<p class="ephem-cit">' + esc(choix.citation) + '</p>'
       +   '<span class="ephem-src">' + esc(choix.source) + '</span>'
       +   lien
