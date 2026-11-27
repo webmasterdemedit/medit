@@ -30,7 +30,11 @@ function imprimerTexte(texteId, titre, textesData, mode) {
   if (!texte) { alert('Texte "' + titre + '" non trouvé.'); return; }
 
   var contenu = texte.contenu || '';
-  if (!contenu) { alert('Ce texte ne contient pas de contenu à imprimer.'); return; }
+  // Un texte peut n'avoir que des questions courtes, des énoncés, etc.
+  var en = texte.enonces;
+  var aEnonces = Array.isArray(en) ? en.length > 0 : (en && String(en).trim() !== '' && String(en).trim() !== '[]');
+  var aAutre = (texte.questionCourte || '').trim() || (texte.point || '').trim() || (texte.colonnes || '').trim() || (texte.memo || '').trim() || aEnonces;
+  if (!contenu.trim() && !aAutre) { alert('Ce texte ne contient pas de contenu à imprimer.'); return; }
 
   var couvertureTheme = recupererCouvertureTheme(texte.categorie);
 
@@ -1724,6 +1728,9 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   var debutsExo = [];
   function afficherEnonce(bloc) {
     var en = bloc._enonce;
+    // Source écrite à la fin de l'énoncé : "... [Tirmidhi, hadith 2391]"
+    var mSrc = (en.texte || '').match(/\s*\[([^\]]+)\]\.?\s*$/);
+    if (mSrc && !en.source) { en.source = mSrc[1].trim(); en.texte = en.texte.replace(mSrc[0], '').trim(); }
     fermer2col();
     ouvrirZoneExercices();
     debutsExo.push(exoNum + 1);
@@ -1753,7 +1760,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       afficherConsigne(bloc);
       printHtml += '<div class="exo-ligne">';
       printHtml += '<span class="exo-num-inline">' + exoNum + '</span>';
-      printHtml += '<span class="exo-texte">' + bloc.data + '</span>';
+      printHtml += '<span class="exo-texte">' + appliquerGrasItalique(bloc.data) + '</span>';
       printHtml += '</div>';
       printHtml += '<div class="carte-ligne-courte"></div>';
       printHtml += '</div>';
