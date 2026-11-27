@@ -914,6 +914,7 @@
   <script src="/medit/impression.js"></script>
   <script src="/medit/couverture.js"></script>
   <script src="/medit/carnet.js"></script>
+  <script src="/medit/ephemeride.js"></script>
 
   <script>
     var texteActuel = null;
@@ -2763,6 +2764,13 @@
       zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
       zoneBasPage.innerHTML = construireZoneBasPage(texte);
       afficherCarnetLateral(texte);
+      // Éphéméride (citation du jour) en haut de la colonne de côté
+      if (window.Ephemeride) {
+        var zEph = document.createElement('div');
+        zEph.id = 'ephemerideLaterale';
+        colonneLaterale.insertBefore(zEph, colonneLaterale.firstChild);
+        Ephemeride.afficher(zEph);
+      }
 
       arabiserDans(container);
       nettoyerCartesVides(container);
