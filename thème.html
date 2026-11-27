@@ -11,7 +11,20 @@
   <link rel="stylesheet" href="/medit/theme.css" />
 
   <style>
-    
+
+  /* ---- Nom du thème en #Nom (sans couverture) ---- */
+  .entete-theme.sans-couverture { display: block; }
+  .entete-theme.sans-couverture .description-theme { width: 100%; max-width: none; }
+  .titre-theme-hashtag {
+    font-family: var(--font-serif, 'Georgia', serif);
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 0 0 12px;
+    letter-spacing: 0.3px;
+  }
+  .titre-theme-hashtag .diese { color: var(--text-muted); margin-right: 2px; }
+
   /* ---- Écrits du thème (style liseuse, noir & blanc) ---- */
   .ecrits-theme {
     margin-top: 0;
@@ -115,115 +128,8 @@
       font-size: 13px;
       padding: 4px 0 10px 24px;
     }
-
-
-
-/* Responsive */
-@media (max-width: 700px) {
-  .ecrits-theme {
-    padding: 18px 16px;
-    margin-top: 28px;
+    .titre-theme-hashtag { font-size: 22px; }
   }
-  .ecrits-theme-titre {
-    font-size: 16px;
-  }
-  .ecrit-item summary {
-    font-size: 14px;
-    padding: 10px 10px 10px 40px;
-  }
-  .ecrit-contenu {
-    font-size: 14px;
-    padding: 4px 10px 14px 40px;
-  }
-
-    /* ---- Écrits du thème (bloc discret, sous la liste des textes) ---- */
-    .ecrits-theme {
-  margin-top: 0;
-  margin-bottom: 32px;   /* espace sous les écrits, avant les textes */
-  padding: 24px 28px;
-  background: var(--bg-hover, #f7f8f6);
-  border: 1px solid var(--border);
-  border-radius: 8px;
-}
-
-    .ecrits-theme-titre {
-      font-family: 'Georgia', serif;
-      font-size: 15px;
-      font-weight: 400;
-      color: var(--text-secondary);
-      margin-bottom: 10px;
-      letter-spacing: 0.3px;
-    }
-
-    .ecrit-item {
-      margin-bottom: 2px;
-      font-size: 13px;
-    }
-
-    .ecrit-item summary {
-      cursor: pointer;
-      list-style: none;
-      padding: 6px 0 6px 22px;
-      position: relative;
-      color: var(--text-secondary);
-      font-weight: 400;
-      border-bottom: 1px solid transparent;
-      transition: color 0.15s;
-    }
-
-    .ecrit-item summary:hover {
-      color: var(--text);
-    }
-
-    .ecrit-item summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .ecrit-item summary::before {
-      content: '+';
-      position: absolute;
-      left: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 16px;
-      text-align: center;
-      font-size: 15px;
-      font-weight: 300;
-      color: var(--text-muted, #999);
-      transition: color 0.15s;
-    }
-
-    .ecrit-item summary:hover::before {
-      color: var(--accent, #2d6a4f);
-    }
-
-    .ecrit-item[open] summary::before {
-      content: '−';
-      color: var(--accent, #2d6a4f);
-    }
-
-    .ecrit-contenu {
-      padding: 4px 0 10px 22px;
-      color: var(--text-secondary);
-      line-height: 1.6;
-      font-size: 13px;
-      white-space: pre-wrap;
-      border-bottom: 1px dashed var(--border);
-      margin-bottom: 2px;
-    }
-  
-    .btn-livret {
-      display: inline-block;
-      margin-top: 18px;
-      padding: 10px 22px;
-      border: 1px solid var(--text);
-      color: var(--text);
-      text-decoration: none;
-      font-family: var(--font-capitales, var(--font-sans));
-      letter-spacing: 0.06em;
-      cursor: pointer;
-    }
-    .btn-livret:hover { background: var(--text); color: var(--bg-paper); }
   </style>
 
   <script>
@@ -239,7 +145,7 @@
 
   <div class="page page-theme">
 
-    <a href="/medit/thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
+    <a href="/medit/les-thèmes.html" class="btn-retour">← Retourner aux thèmes</a>
 
     <div id="enteteTheme">
       <div class="loader">
@@ -250,8 +156,6 @@
      <div id="zoneEcrits"></div>
 
     <div id="contenuTextes"></div>
-
-   
 
     <div class="devise">
       "Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?" — Coran 47:24
@@ -353,6 +257,10 @@
       });
     }
 
+    function aUnNiveau(n) {
+      return n !== '' && n !== null && n !== undefined;
+    }
+
     // Parse sûr du champ écrits (tableau déjà parsé par le GS, ou string)
     function parseEcrits(val) {
       if (!val) return [];
@@ -369,16 +277,10 @@
 
     // ============================================================
     // Récupère les écrits depuis le thème, où qu'ils soient rangés.
-    // Cas gérés :
-    //   1) l.infos est directement un tableau d'écrits [{titre, contenu}]
-    //   2) l.infos[0].ecrits (ancien format)
-    //   3) l.infos.ecrits (objet)
-    //   4) l.ecrits (fallback)
     // ============================================================
     function extraireEcrits(l) {
       if (!l) return [];
 
-      // Cas 1 : infos est un tableau d'écrits directement
       if (Array.isArray(l.infos) && l.infos.length > 0 &&
           l.infos[0] && (l.infos[0].titre !== undefined || l.infos[0].contenu !== undefined)) {
         return l.infos.filter(function(e) {
@@ -386,17 +288,14 @@
         });
       }
 
-      // Cas 2 : infos[0].ecrits
       if (Array.isArray(l.infos) && l.infos[0] && l.infos[0].ecrits) {
         return parseEcrits(l.infos[0].ecrits);
       }
 
-      // Cas 3 : infos.ecrits (objet)
       if (l.infos && !Array.isArray(l.infos) && l.infos.ecrits) {
         return parseEcrits(l.infos.ecrits);
       }
 
-      // Cas 4 : l.ecrits
       return parseEcrits(l.ecrits);
     }
 
@@ -443,8 +342,6 @@
       if (!infos) return '';
 
       if (Array.isArray(infos)) {
-        // Si c'est un tableau d'écrits (éléments avec titre/contenu),
-        // on n'affiche rien ici : les écrits ont leur propre bloc.
         if (infos[0] && (infos[0].titre !== undefined || infos[0].contenu !== undefined)) {
           return '';
         }
@@ -487,11 +384,9 @@
       var sourceInfos = themeInfo.infos;
 
       if (Array.isArray(sourceInfos)) {
-        // Si tableau d'écrits → pas d'infos texte à extraire
         if (sourceInfos[0] && (sourceInfos[0].titre !== undefined || sourceInfos[0].contenu !== undefined)) {
           sourceInfos = {};
         } else {
-          // Ancien format : [{...}] → premier élément
           sourceInfos = sourceInfos[0] || {};
         }
       }
@@ -510,6 +405,26 @@
       return infos;
     }
 
+    function lireThemes(liste) {
+      themesData = {};
+      if (liste && Array.isArray(liste)) {
+        liste.forEach(function(l) {
+          themesData[l.titre] = {
+            couleur:    l.couleur || '#2d6a4f',
+            sousTitre:  l.sousTitre || '',
+            date:       l.date || '',
+            pages:      l.pages || '',
+            description: l.description || '',
+            auteur:     l.auteur || '',
+            niveau:     parseInt(l.niveau) || 0,
+            couverture: l.couverture || '',
+            infos:      l.infos || null,
+            ecrits:     extraireEcrits(l)
+          };
+        });
+      }
+    }
+
     // ============================================================
     // Chargement du thème
     // ============================================================
@@ -523,7 +438,7 @@
             <span class="icone">◈</span>
             <h4>Aucune catégorie spécifiée</h4>
             <p>Veuillez sélectionner un thème depuis la page d'accueil.</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
@@ -548,24 +463,7 @@
 
         niveauEtudiant = data.niveau || 0;
         textesData = data.tousLesTextes || data.textes || [];
-
-        themesData = {};
-        if (data.themes && Array.isArray(data.themes)) {
-          data.themes.forEach(function(l) {
-            themesData[l.titre] = {
-              couleur:    l.couleur || '#2d6a4f',
-              sousTitre:  l.sousTitre || '',
-              date:       l.date || '',
-              pages:      l.pages || '',
-              description: l.description || '',
-              auteur:     l.auteur || '',
-              niveau:     parseInt(l.niveau) || 0,
-              couverture: l.couverture || '',
-              infos:      l.infos || null,
-              ecrits:     extraireEcrits(l)
-            };
-          });
-        }
+        lireThemes(data.themes);
 
         toutesLesReponses = {};
         tentatives.forEach(function(t) {
@@ -589,23 +487,7 @@
         if (cache) {
           niveauEtudiant = cache.niveau || 0;
           textesData = cache.tousLesTextes || cache.textes || [];
-          if (cache.themes && Array.isArray(cache.themes)) {
-            themesData = {};
-            cache.themes.forEach(function(l) {
-              themesData[l.titre] = {
-                couleur:    l.couleur || '#2d6a4f',
-                sousTitre:  l.sousTitre || '',
-                date:       l.date || '',
-                pages:      l.pages || '',
-                description: l.description || '',
-                auteur:     l.auteur || '',
-                niveau:     parseInt(l.niveau) || 0,
-                couverture: l.couverture || '',
-                infos:      l.infos || null,
-                ecrits:     extraireEcrits(l)
-              };
-            });
-          }
+          lireThemes(cache.themes);
           afficherTheme();
         } else {
           document.getElementById('enteteTheme').innerHTML = `
@@ -640,8 +522,8 @@
           <div class="vide-textes" style="margin-top:20px;">
             <span class="icone">◈</span>
             <h4>Aucun texte</h4>
-            <p>Ce thème ne contient pas encore de textes accessibles à votre niveau (${niveauEtudiant}).</p>
-            <a href="/medit/thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
+            <p>Ce thème ne contient pas encore de textes accessibles à votre niveau.</p>
+            <a href="/medit/les-thèmes.html" style="display:inline-block;margin-top:12px;padding:8px 20px;background:transparent;border:1px solid var(--border);text-decoration:none;color:var(--text-secondary);">Retour aux thèmes</a>
           </div>
         `;
         document.getElementById('contenuTextes').innerHTML = '';
@@ -649,7 +531,6 @@
         return;
       }
 
-      var niveauTheme = textesFiltres[0].niveau || 1;
       var totalTextes = textesFiltres.length;
 
       var validees = 0;
@@ -658,37 +539,18 @@
       });
 
       var themeInfo = themesData[categorieActuelle] || {};
-      var couleur = themeInfo.couleur || '#2d6a4f';
-      var sousTitre = themeInfo.sousTitre || '';
-      var dateTheme = themeInfo.date || '';
       var description = themeInfo.description || 'Ce thème explore les thèmes de ' + categorieActuelle + ' à travers ' + totalTextes + ' textes.';
-      var auteur = themeInfo.auteur || '';
-      var couverture = themeInfo.couverture || '';
 
       var pourcentage = totalTextes > 0 ? Math.round((validees / totalTextes) * 100) : 0;
-
-      var carteHtml = construireCarteCouverture({
-        titre: categorieActuelle,
-        couleur: couleur,
-        sousTitre: sousTitre,
-        auteur: auteur,
-        date: dateTheme,
-        niveau: niveauTheme,
-        pourcentage: pourcentage,
-        couverture: couverture
-      }, {
-        actuel: true,
-        cliquable: false
-      });
 
       var infosCompletes = construireInfosCompletes(themeInfo);
       var infosHtml = construireInfosHtml(infosCompletes);
 
+      // Plus de couverture : juste #Nom du thème
       var enteteHtml = `
-        <div class="entete-theme">
-          ${carteHtml}
+        <div class="entete-theme sans-couverture">
           <div class="description-theme">
-            <h2>${categorieActuelle}</h2>
+            <h2 class="titre-theme-hashtag"><span class="diese">#</span>${echapperHtml(categorieActuelle)}</h2>
             ${infosHtml}
             <div class="texte-desc">
               <p>${description}</p>
@@ -698,15 +560,15 @@
               <span class="stat-item">Validés : <span class="nombre">${validees}</span></span>
               <span class="stat-item">Progression : <span class="nombre">${pourcentage}%</span></span>
             </div>
-            <a class="btn-livret" href="/medit/livret.html?cat=${encodeURIComponent(categorieActuelle)}" target="_blank" rel="noopener">Imprimer tout le thème en livret</a>
           </div>
         </div>
       `;
 
       document.getElementById('enteteTheme').innerHTML = enteteHtml;
+      document.title = '#' + categorieActuelle + ' - Qiraat';
 
       afficherEcrits();
-afficherTextes(textesFiltres);
+      afficherTextes(textesFiltres);
     }
 
     function afficherTextes(textes) {
@@ -738,6 +600,7 @@ afficherTextes(textesFiltres);
 
         var TYPES_EXERCICES = [
           { prefix: 'quiz:',   label: 'QCM' },
+          { prefix: 'qc:',     label: 'Question' },
           { prefix: 'open:',   label: 'Ouverte' },
           { prefix: 'ordre:',  label: 'Ordre' },
           { prefix: 'carte:',  label: 'Carte' },
@@ -748,6 +611,7 @@ afficherTextes(textesFiltres);
         ];
 
         var ordreBlocs = texte.ordreBlocs || [];
+        if (typeof ordreBlocs === 'string') ordreBlocs = ordreBlocs.split(',');
         var detailParts = [];
         var nbExercices = 0;
 
@@ -756,7 +620,7 @@ afficherTextes(textesFiltres);
             var type = TYPES_EXERCICES[t];
             var count = 0;
             for (var ob = 0; ob < ordreBlocs.length; ob++) {
-              if (ordreBlocs[ob].indexOf(type.prefix) === 0) count++;
+              if (String(ordreBlocs[ob]).trim().indexOf(type.prefix) === 0) count++;
             }
             if (count > 0) {
               nbExercices++;
@@ -774,6 +638,7 @@ afficherTextes(textesFiltres);
           (detailExercices ? '<span class="badge-icone">' + detailExercices + '</span>' : '');
 
         var motsHtml = mots > 0 ? '<span class="mots">' + mots + ' mots</span>' : '';
+        var niveauHtml = aUnNiveau(texte.niveau) ? '<span class="niveau-badge">Niveau ' + texte.niveau + '</span>' : '';
 
         var valide = estTexteValide(texte.id);
         var dateValid = valide ? dateValidationTexte(texte.id) : '';
@@ -794,7 +659,7 @@ afficherTextes(textesFiltres);
             <div class="infos">
               <div class="titre">${numeroHtml}${titreAffiche}</div>
               <div class="meta">
-                <span class="niveau-badge">Niveau ${texte.niveau}</span>
+                ${niveauHtml}
                 ${exercicesHtml}
                 ${motsHtml}
               </div>
@@ -811,7 +676,7 @@ afficherTextes(textesFiltres);
     }
 
     // ============================================================
-    // Affichage des écrits (fichiers "x ..." du livret)
+    // Affichage des écrits (fichiers "x ..." du thème)
     // ============================================================
     function afficherEcrits() {
       var zone = document.getElementById('zoneEcrits');
