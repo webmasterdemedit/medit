@@ -550,6 +550,18 @@
       </div>
     </section>
 
+    <!-- ===== 5. CARNET DE L'AUTEUR ===== -->
+    <section class="accueil-section">
+      <div class="accueil-section-entete">
+        <h2 class="accueil-section-titre">Carnet de l'auteur</h2>
+        <a href="/medit/carnet.html" class="accueil-btn-ouvrir">Tout le carnet →</a>
+      </div>
+      <p class="accueil-section-sous-titre">Les dernières notes, réflexions et recherches.</p>
+      <div id="accueilCarnet">
+        <div class="accueil-loader"><div class="mini-spinner"></div><div>Chargement…</div></div>
+      </div>
+    </section>
+
     <!-- ===== LA MÉTHODE ===== -->
     <section class="accueil-methode">
       <div class="accueil-methode-entete">
@@ -738,6 +750,7 @@
   <script src="/medit/auth.js"></script>
   <script src="/medit/data-manager.js"></script>
   <script src="/medit/couverture.js"></script>
+  <script src="/medit/carnet.js"></script>
 
   <script>
     // ============================================================
@@ -997,6 +1010,7 @@
         afficherThemesAccueil(themes, textes);
         afficherDerniersTextes(textes);
         afficherTagsAccueil(textes);
+        afficherCarnetAccueil(themes);
       }).catch(function(error) {
         console.error('Erreur chargement accueil:', error);
         ['accueilSections', 'accueilThemes', 'accueilDerniersTextes', 'accueilTags'].forEach(function(id) {
@@ -1148,6 +1162,25 @@
           + '</a>';
       });
       container.innerHTML = html;
+    }
+
+    /* Les 3 dernières notes du carnet (même rendu que la page carnet) */
+    function afficherCarnetAccueil(themes) {
+      var zone = document.getElementById('accueilCarnet');
+      if (!zone) return;
+      if (!window.Carnet) { zone.innerHTML = ''; return; }
+      var tous = [];
+      (themes || []).forEach(function(l) {
+        var liste = [];
+        try { liste = typeof l.ecrits === 'string' ? JSON.parse(l.ecrits || '[]') : (l.ecrits || []); } catch (e) {}
+        (liste || []).forEach(function(e) { var c = Object.assign({}, e); c._theme = l.titre || ''; tous.push(c); });
+      });
+      if (!tous.length) { zone.closest('.accueil-section').style.display = 'none'; return; }
+      Carnet.afficherPage(zone, tous);
+      /* sur l'accueil : pas de filtres, seulement les 3 plus récentes */
+      var f = zone.querySelector('.cp-filtres'); if (f) f.style.display = 'none';
+      zone.querySelectorAll('.cp-annee').forEach(function(a) { a.style.display = 'none'; });
+      zone.querySelectorAll('.cp-note').forEach(function(n, i) { if (i > 2) n.style.display = 'none'; });
     }
 
     // ============================================================
