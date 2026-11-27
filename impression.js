@@ -3,7 +3,6 @@
 // Fichier autonome : génère une page imprimable pour un texte
 // Dépend de : DataManager (data-manager.js)
 // + V21 : support "zoom:" (colonne Z de la feuille Textes)
-// + Énoncés d'exercice (colonne AA) — numérotation par exercice
 // ============================================================
 
 function imprimerTexte(texteId, titre, textesData, mode) {
@@ -362,13 +361,6 @@ function parserQuestionsCourtesPourImpression(txt) {
   return items;
 }
 
-// Énoncés d'exercice : JSON [{texte, source}] (colonne AA)
-function parserEnoncesPourImpression(val) {
-  if (!val) return [];
-  if (Array.isArray(val)) return val;
-  try { var a = JSON.parse(val); return Array.isArray(a) ? a : []; } catch (e) { return []; }
-}
-
 function majPremiereLettre(s) {
   if (!s) return s;
   return s.charAt(0).toUpperCase() + s.slice(1);
@@ -463,7 +455,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, o
   var colsParsed = parserColonnesPourImpression(colTexte);
   var memosParsed = parserMemoPourImpression(memoTexte);
   var qcsParsed = parserQuestionsCourtesPourImpression(qcTexte);
-  var enoncesParsed = parserEnoncesPourImpression(texte.enonces);
 
   var blocsOrdonnes = [];
 
@@ -496,8 +487,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, o
         blocsOrdonnes.push({ type: 'point', data: pointsParsed[idx] });
       } else if (type === 'col' && colsParsed[idx]) {
         blocsOrdonnes.push({ type: 'col', data: colsParsed[idx] });
-      } else if (type === 'exo' && enoncesParsed[idx]) {
-        blocsOrdonnes.push({ type: 'exo', data: { texte: enoncesParsed[idx].texte || '', source: enoncesParsed[idx].source || '' } });
       } else if (type === 'qc' && qcsParsed[idx] !== undefined) {
         blocsOrdonnes.push({ type: 'qcourt', data: qcsParsed[idx] });
       }
@@ -521,17 +510,6 @@ function genererImpression(texte, contenu, imagesTheme, couvertureTheme, mode, o
     qcsParsed.forEach(function(q) { nouveaux.push({ type: 'qcourt', data: q }); });
     blocsOrdonnes = nouveaux;
   }
-
-  // === ÉNONCÉS : rattachés à la première question qui suit (numérotation auto) ===
-  (function() {
-    var res = [], enAttente = null, numExo = 0;
-    blocsOrdonnes.forEach(function(b) {
-      if (b.type === 'exo') { numExo++; enAttente = { num: numExo, texte: b.data.texte, source: b.data.source }; return; }
-      if (enAttente && b.type !== 'paragraphe') { b._enonce = enAttente; enAttente = null; }
-      res.push(b);
-    });
-    blocsOrdonnes = res;
-  })();
 
   // === FILTRAGE SELON LE MODE ===
   blocsOrdonnes = blocsOrdonnes.filter(function(bloc) {
@@ -1516,14 +1494,18 @@ body { font-size: 12pt; }
 /* Vocabulaire sans cadre */
 .vocab-haut { border: none !important; box-shadow: none !important; background: transparent !important; padding-left: 0 !important; padding-right: 0 !important; }
 
-/* Énoncé d'exercice (exercice:) */
-.enonce-exo { margin: 16px 0 10px; break-inside: avoid; page-break-inside: avoid; break-after: avoid; page-break-after: avoid; }
-.enonce-titre { font-family:'Cormorant SC','EB Garamond',serif; font-weight:600; font-size:12.5pt;
-  letter-spacing:2px; color:#1a1712; border-bottom:0.6px solid #9a7b3c; padding-bottom:2px; margin-bottom:8px; }
-.enonce-texte { padding:8px 12px; border-left:2px solid #9a7b3c; font-size:12pt; line-height:1.8; text-align:justify; }
-.enonce-texte.rtl { direction:rtl; text-align:right; border-left:none; border-right:2px solid #9a7b3c; }
-.enonce-texte .arabe { font-size:1.9em; }
-.enonce-source { text-align:right; font-style:italic; font-size:9pt; color:#7a705f; margin-top:3px; }
+/* QCM : réponses côte à côte ; une réponse qui ne tient plus passe à la ligne, entière */
+.quiz-reponses {
+  display: flex; flex-wrap: wrap;
+  column-gap: 22px; row-gap: 3px;
+  align-items: baseline;
+}
+.quiz-reponses .quiz-rep {
+  display: inline-flex !important; align-items: baseline;
+  margin-bottom: 0 !important; padding: 0 !important;
+  text-align: left !important; max-width: 100%;
+}
+.quiz-reponses .quiz-case { flex-shrink: 0; transform: translateY(1px); }
 </style>
 </head>
 <body>
@@ -1623,7 +1605,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
 
     var nbConsecutifs = 0;
     var jGroupe = iGroupe;
-    while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant && (jGroupe === iGroupe || !blocsOrdonnes[jGroupe]._enonce)) {
+    while (jGroupe < blocsOrdonnes.length && typeLogique(blocsOrdonnes[jGroupe].type) === typeCourant) {
       nbConsecutifs += (typeCourant === 'vf') ? blocsOrdonnes[jGroupe].data.length : 1;
       jGroupe++;
     }
@@ -1656,7 +1638,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
     while (i < blocsOrdonnes.length) {
       if (!TYPES_2COL[blocsOrdonnes[i].type]) { i++; continue; }
       var j = i, nbQ = 0;
-      while (j < blocsOrdonnes.length && TYPES_2COL[blocsOrdonnes[j].type] && (j === i || !blocsOrdonnes[j]._enonce)) {
+      while (j < blocsOrdonnes.length && TYPES_2COL[blocsOrdonnes[j].type]) {
         nbQ += (blocsOrdonnes[j].type === 'vf') ? blocsOrdonnes[j].data.length : 1;
         j++;
       }
@@ -1706,23 +1688,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       + '</div>';
   }
 
-  // Énoncés : la numérotation des questions repart à 1 à chaque exercice
-  var debutsExo = [];
-  function afficherEnonce(bloc) {
-    var en = bloc._enonce;
-    fermer2col();
-    ouvrirZoneExercices();
-    debutsExo.push(exoNum + 1);
-    var rtl = (en.texte && !/[A-Za-zÀ-ÿ]/.test(en.texte)) ? ' rtl' : '';
-    printHtml += '<div class="enonce-exo"><div class="enonce-titre">Exercice ' + en.num + '</div>';
-    if (en.texte) printHtml += '<div class="enonce-texte' + rtl + '">' + appliquerGrasItalique(embellirFormulesReligieuses(en.texte)).replace(/\n/g, '<br>') + '</div>';
-    if (en.source) printHtml += '<div class="enonce-source">' + en.source + '</div>';
-    printHtml += '</div>';
-  }
-
   blocsOrdonnes.forEach(function(bloc) {
-
-    if (bloc._enonce) afficherEnonce(bloc);
 
     if (bloc.type === 'paragraphe') {
       fermer2col();
@@ -1998,11 +1964,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
   // Ajoute les points à côté de chaque question numérotée
   printHtml = printHtml.replace(/<span class="exo-num-inline">(\d+)<\/span>/g, function(m, n) {
     if (pointsParNum[n] === undefined) return m;
-    var affiche = parseInt(n, 10);
-    for (var d = debutsExo.length - 1; d >= 0; d--) {
-      if (affiche >= debutsExo[d]) { affiche = affiche - debutsExo[d] + 1; break; }
-    }
-    return '<span class="exo-num-inline">' + affiche + '</span><span class="exo-pts">' + formatPoints(pointsParNum[n]) + '</span>';
+    return m + '<span class="exo-pts">' + formatPoints(pointsParNum[n]) + '</span>';
   });
 
   printHtml += '</div>';
