@@ -178,7 +178,7 @@
       text-indent: 0; white-space: normal; vertical-align: top;
       border-top: 0.5px solid var(--border-hover);
     }
-  
+
     /* ---- Images ---- */
     .feuille-texte .print-img {
       display: block; height: auto; margin: 12px 0;
@@ -220,7 +220,7 @@
       font-size: 8pt; top: 3px;
     }
 
-        /* ============================================================
+    /* ============================================================
        BARRE D'ACTION (partage + nav)
        ============================================================ */
     .barre-action-texte {
@@ -270,6 +270,15 @@
     @media (max-width: 460px) {
       .barre-action-texte { flex-wrap: wrap; }
       .partage-social { flex-basis: 100%; justify-content: flex-end; }
+    }
+
+    /* ============================================================
+       EXERCICES SUR LA PAGE (même mise en page que l'impression)
+       ============================================================ */
+    .zone-exercices-feuille { margin: 36px 0 10px; }
+    .iframe-exercices {
+      display: block; width: 100%; min-height: 200px; border: 0.6px solid var(--border-hover);
+      background: #fffdf8; box-shadow: 0 1px 6px rgba(60,45,25,.10);
     }
 
     /* ============================================================
@@ -354,6 +363,27 @@
       border-bottom: 0.5px dotted var(--border-hover);
     }
     .popup-exercices .exo:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+
+    /* Énoncé d'exercice (exercice:) */
+    .popup-exercices .enonce-exo { margin: 18px 0 10px; }
+    .popup-exercices .enonce-titre {
+      font-family: 'Georgia', serif; font-size: 10.5pt; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 1.5px;
+      border-bottom: 1px solid var(--text); padding-bottom: 3px; margin-bottom: 8px;
+    }
+    .popup-exercices .enonce-texte {
+      padding: 10px 14px; background: var(--bg-hover);
+      border-left: 3px solid var(--text); font-size: 11pt; line-height: 1.7;
+    }
+    .popup-exercices .enonce-texte.rtl {
+      direction: rtl; text-align: right; border-left: none; border-right: 3px solid var(--text);
+      font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif; font-size: 1.6em; line-height: 1.6;
+    }
+    .popup-exercices .enonce-source {
+      text-align: right; font-style: italic; font-size: 9pt;
+      color: var(--text-muted); margin-top: 4px;
+    }
+
     .popup-exercices .consigne-exo {
       font-size: 8.8pt; font-weight: 700; color: var(--text-secondary);
       text-transform: uppercase; letter-spacing: 1.2px;
@@ -762,33 +792,6 @@
       .popup-exercices { padding: 22px 18px 20px; }
       .popup-exercices .popup-exercices-titre { font-size: 16px; }
     }
-    /* ============================================================
-       BOUTON IMPRIMER FLOTTANT (petits écrans)
-       ============================================================ */
-    .btn-imprimer-flottant {
-      position: fixed; bottom: 80px; right: 24px;
-      width: 44px; height: 44px; border-radius: 50%;
-      border: 1px solid var(--border);
-      background: var(--bg-paper); color: var(--text);
-      font-size: 19px; cursor: pointer; z-index: 9000;
-      display: none; align-items: center; justify-content: center;
-      transition: background .15s, border-color .15s;
-    }
-    .btn-imprimer-flottant:hover { background: var(--bg-hover); border-color: var(--border-hover); }
-    .btn-imprimer-flottant.ouvert { background: var(--bg-active); }
-    .menu-impression {
-      position: fixed; bottom: 134px; right: 24px;
-      width: 290px; max-width: calc(100vw - 48px);
-      background: var(--bg-paper); border: 1px solid var(--border-hover);
-      padding: 14px; z-index: 9001; display: none;
-      box-shadow: 0 10px 30px rgba(0,0,0,.15);
-    }
-    .menu-impression.ouvert { display: block; }
-    .menu-impression .bloc-actions-texte { margin-bottom: 0; }
-    @media (max-width: 899px) {
-      .btn-imprimer-flottant { display: flex; }
-      .zone-basse-mobile .bloc-actions-texte { display: none; }
-    }
   </style>
 </head>
 <body>
@@ -864,9 +867,6 @@
       </div>
     </div>
   </div>
-
-  <button class="btn-imprimer-flottant" id="btnImprimerFlottant" onclick="toggleMenuImpression()" title="Imprimer">🖨</button>
-  <div class="menu-impression" id="menuImpression"></div>
 
   <button class="btn-annotation-flottant" id="btnAnnotationFlottant" onclick="togglePanneauAnnotation()" title="Ajouter une note sur ce texte">✏</button>
 
@@ -1204,6 +1204,13 @@
       return blocs;
     }
 
+    /* Énoncés d'exercice : JSON [{texte, source}] (colonne AA) */
+    function parserEnonces(val) {
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      try { var a = JSON.parse(val); return Array.isArray(a) ? a : []; } catch (e) { return []; }
+    }
+
     /* ============================================================
        CONSTRUCTION DES EXERCICES (HTML pour la popup)
        ============================================================ */
@@ -1231,7 +1238,7 @@
         if (typeCourant === 'texte') { iGroupe++; continue; }
         var nbConsecutifs = 1;
         var jGroupe = iGroupe + 1;
-        while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === typeCourant) { nbConsecutifs++; jGroupe++; }
+        while (jGroupe < blocsOrdonnes.length && blocsOrdonnes[jGroupe].type === typeCourant && !blocsOrdonnes[jGroupe]._enonce) { nbConsecutifs++; jGroupe++; }
         if (typeCourant === 'vf') nbConsecutifs = (nbConsecutifs - 1) + blocCourant.data.length;
         var base = consignesBase[typeCourant];
         if (base) {
@@ -1241,7 +1248,18 @@
         iGroupe = jGroupe;
       }
 
+      /* Affiche l'énoncé (si la question en porte un) puis la consigne.
+         Un énoncé remet la numérotation des questions à 1. */
       function afficherConsigne(bloc) {
+        if (bloc._enonce) {
+          var en = bloc._enonce;
+          exoNum = 1;
+          var rtl = (en.texte && !/[A-Za-zÀ-ÿ]/.test(en.texte)) ? ' rtl' : '';
+          html += '<div class="enonce-exo"><div class="enonce-titre">Exercice ' + en.num + '</div>';
+          if (en.texte) html += '<div class="enonce-texte' + rtl + '">' + appliquerGrasItalique(embellirFormulesReligieuses(echapperHtml(en.texte))).replace(/\n/g, '<br>') + '</div>';
+          if (en.source) html += '<div class="enonce-source">' + echapperHtml(en.source) + '</div>';
+          html += '</div>';
+        }
         if (bloc._consigne) html += '<div class="consigne-exo">' + bloc._consigne + '</div>';
       }
 
@@ -1293,7 +1311,7 @@
           questionsOuvertes.push({ texte: bloc.data, reponse: '', idx: openIdx });
           html += '<div class="exo open-exo" data-open-idx="' + openIdx + '">';
           afficherConsigne(bloc);
-          html += '<div class="exo-ligne"><span class="exo-num-inline">' + exoNum + '</span><span class="exo-texte">' + echapperHtml(bloc.data) + '</span></div>';
+          html += '<div class="exo-ligne"><span class="exo-num-inline">' + exoNum + '</span><span class="exo-texte">' + appliquerGrasItalique(echapperHtml(bloc.data)) + '</span></div>';
           html += '<textarea class="open-textarea" id="openInput-' + openIdx + '" placeholder="Écrivez votre réponse ici..." oninput="majReponseOpen(' + openIdx + ', this.value)"></textarea>';
           html += '<div class="open-actions"><button class="open-btn-valider" id="openBtnValider-' + openIdx + '" onclick="validerOpen(' + openIdx + ')">Valider ma réponse</button></div>';
           html += '<div class="open-feedback" id="openFeedback-' + openIdx + '"></div>';
@@ -2004,32 +2022,6 @@
       }).catch(function() { alert('Erreur lors du chargement de la version alternative.'); });
     }
 
-    function toggleMenuImpression() {
-      var menu = document.getElementById('menuImpression');
-      var btn = document.getElementById('btnImprimerFlottant');
-      if (!menu.classList.contains('ouvert')) {
-        if (!texteActuel) return;
-        menu.innerHTML = construireBlocActions(texteActuel);
-        var altOrig = document.querySelector('.colonne-laterale .btn-imprimer-alternative, .zone-basse-mobile .btn-imprimer-alternative');
-        var altMenu = menu.querySelector('.btn-imprimer-alternative');
-        if (altOrig && altMenu) altMenu.style.display = altOrig.style.display;
-      }
-      menu.classList.toggle('ouvert');
-      btn.classList.toggle('ouvert');
-    }
-    document.addEventListener('click', function(e) {
-      var menu = document.getElementById('menuImpression');
-      var btn = document.getElementById('btnImprimerFlottant');
-      if (!menu || !menu.classList.contains('ouvert')) return;
-      if (menu.contains(e.target) || btn.contains(e.target)) {
-        if (e.target.closest && e.target.closest('.btn-action-lateral')) {
-          menu.classList.remove('ouvert'); btn.classList.remove('ouvert');
-        }
-        return;
-      }
-      menu.classList.remove('ouvert'); btn.classList.remove('ouvert');
-    });
-
     function togglePanneauAnnotation() {
       var panneau = document.getElementById('panneauAnnotation');
       var btn = document.getElementById('btnAnnotationFlottant');
@@ -2082,13 +2074,14 @@
        ============================================================ */
 
     function appliquerGrasItalique(texte) {
-  if (!texte || texte.indexOf('*') === -1) return texte;
-  texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
-  texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
-  texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
-  return texte;
-}
-        // ============================================================
+      if (!texte || texte.indexOf('*') === -1) return texte;
+      texte = texte.replace(/\*\*\*([^*]+?)\*\*\*/g, '<strong><em>$1</em></strong>');
+      texte = texte.replace(/\*\*([^*]+?)\*\*/g, '<strong>$1</strong>');
+      texte = texte.replace(/(^|[^*])\*([^*\n]+?)\*(?!\*)/g, '$1<em>$2</em>');
+      return texte;
+    }
+
+    // ============================================================
     // Remplacement des formules religieuses par les symboles arabes
     // - saws / sws       → ﷺ  (U+FDFA)
     // - swt / jjl        → ﷻ  (U+FDFB)
@@ -2101,12 +2094,16 @@
       texte = texte.replace(/\b(ra|rda|radi Allahou anhou|radhi Allahou anhou)\b/gi, 'ؓ');
       return texte;
     }
+
     function construireHtmlTexte(texte, imagesTheme) {
       imagesTheme = imagesTheme || {};
       var contenu = texte.contenu || '';
       if (!contenu) return '<div class="feuille-texte"><p><em>Texte vide.</em></p></div>';
 
       var ordreBlocs = texte.ordreBlocs || [];
+      if (typeof ordreBlocs === 'string') {
+        ordreBlocs = ordreBlocs.split(',').map(function(s) { return s.trim(); }).filter(function(s) { return s !== ''; });
+      }
       var parts = contenu.split(' | ');
 
       var paragraphesArray = [];
@@ -2151,6 +2148,8 @@
       var ttsParsed = ttTexte ? parserTextesTrous(ttTexte) : [];
       var vfsParsed = vfTexte ? parserVraiFaux(vfTexte) : [];
       var copiersParsed = copierTexte ? parserCopier(copierTexte) : [];
+      var enoncesParsed = parserEnonces(texte.enonces);
+      var qcsParsed = String(texte.questionCourte || '').split('\n').map(function(l) { return l.trim(); }).filter(function(l) { return l !== ''; });
 
       var blocsOrdonnes = [];
       if (ordreBlocs.length > 0) {
@@ -2165,13 +2164,16 @@
           else if (type === 'carte' && cartesParsed[idx]) blocsOrdonnes.push({ type: 'carte', data: cartesParsed[idx] });
           else if (type === 'relier' && reliersParsed[idx]) blocsOrdonnes.push({ type: 'relier', data: reliersParsed[idx] });
           else if (type === 'tt' && ttsParsed[idx]) blocsOrdonnes.push({ type: 'tt', data: ttsParsed[idx] });
-          else if (type === 'vf' && vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
+          else if (type === 'vf' && vfsParsed[idx]) blocsOrdonnes.push({ type: 'vf', data: [vfsParsed[idx]] });
           else if (type === 'copier' && copiersParsed[idx]) blocsOrdonnes.push({ type: 'copier', data: copiersParsed[idx] });
+          else if (type === 'exo' && enoncesParsed[idx]) blocsOrdonnes.push({ type: 'exo', data: enoncesParsed[idx] });
+          else if (type === 'qc' && qcsParsed[idx] !== undefined) blocsOrdonnes.push({ type: 'open', data: qcsParsed[idx] });
         });
       } else {
         paragraphesArray.forEach(function(s) { blocsOrdonnes.push({ type: 'texte', data: s }); });
         quizsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'quiz', data: q }); });
         opensParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'open', data: o }); });
+        qcsParsed.forEach(function(q) { blocsOrdonnes.push({ type: 'open', data: q }); });
         ttsParsed.forEach(function(t) { blocsOrdonnes.push({ type: 'tt', data: t }); });
         if (vfsParsed.length > 0) blocsOrdonnes.push({ type: 'vf', data: vfsParsed });
         ordresParsed.forEach(function(o) { blocsOrdonnes.push({ type: 'ordre', data: o }); });
@@ -2179,6 +2181,19 @@
         reliersParsed.forEach(function(r) { blocsOrdonnes.push({ type: 'relier', data: r }); });
         copiersParsed.forEach(function(c) { blocsOrdonnes.push({ type: 'copier', data: c }); });
       }
+
+      /* Énoncés : rattachés à la première question qui suit (numérotation auto) */
+      var blocsAvecEnonces = [], enonceEnAttente = null, numEnonce = 0;
+      blocsOrdonnes.forEach(function(b) {
+        if (b.type === 'exo') {
+          numEnonce++;
+          enonceEnAttente = { num: numEnonce, texte: b.data.texte || '', source: b.data.source || '' };
+          return;
+        }
+        if (enonceEnAttente && b.type !== 'texte') { b._enonce = enonceEnAttente; enonceEnAttente = null; }
+        blocsAvecEnonces.push(b);
+      });
+      blocsOrdonnes = blocsAvecEnonces;
 
       var textePourCompter = '';
       blocsOrdonnes.forEach(function(b) { if (b.type === 'texte') textePourCompter += ' ' + b.data; });
@@ -2215,10 +2230,9 @@
         });
       });
 
-            var html = '<div class="feuille-texte">';
+      var html = '<div class="feuille-texte">';
 
-               /* Bandeau titre */
-                     /* Bandeau titre */
+      /* Bandeau titre */
       var nomTheme = texte.categorie || '';
       var ligneRappel = nomTheme ? 'Thème : ' + nomTheme : '';
 
@@ -2236,9 +2250,8 @@
         html += '</div>';
       }
 
-      
       /* Corps du texte */
-            /* Détection des séparateurs --- => mode CARTES */
+      /* Détection des séparateurs --- => mode CARTES */
       var SEP_CARTE = /\s*-{3,}\s*/;
       var nbSepCartes = 0;
       blocsOrdonnes.forEach(function(b) {
@@ -2262,7 +2275,7 @@
         var lignesPara = bloc.data.split('\n').filter(function(p) { return p.trim() !== ''; });
         var bufferTexte = '';
 
-                function flushParagraphe() {
+        function flushParagraphe() {
           if (!bufferTexte.trim()) { bufferTexte = ''; return; }
           var blocs = decouperEnBlocsTexte(bufferTexte);
           blocs.forEach(function(bloc) {
@@ -2292,7 +2305,7 @@
             else html += '<img src="' + url + '" alt="' + echapperHtml(nomImg) + '" class="print-img print-img-' + position + ' print-img-' + taille + '">';
             return;
           }
-                    bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
+          bufferTexte = bufferTexte ? bufferTexte + '\n' + trimmed : trimmed;
         }
         lignesPara.forEach(function(l) {
           var segs = l.trim().split(SEP_CARTE);
@@ -2311,7 +2324,6 @@
       if (modeCartes) html += '</div></div>';
       html += '</div>';
 
-      
       html += '</div>'; // feuille-texte
 
       /* --- Prépare le HTML des exercices pour la popup (pas affiché dans la page) --- */
@@ -2359,7 +2371,7 @@
       });
     }
 
-        function afficherFilAriane(texte) {
+    function afficherFilAriane(texte) {
       var html = '';
       html += '<a href="/medit/index.html">Accueil</a><span class="sep">›</span>';
       html += '<a href="/medit/rubriques.html">Tous les textes</a>';
@@ -2403,7 +2415,7 @@
       if (autresThemes.length === 0) return '';
       autresThemes.sort(function(a, b) { return a.titre.localeCompare(b.titre, 'fr', { sensitivity: 'base' }); });
       var html = '<div class="bloc-bas">';
-      html += '<div class="bloc-bas-titre">Dans la même section « Textes de ' + echapperHtml(themeActuel) + ' »</div>';
+      html += '<div class="bloc-bas-titre">Dans la même section « Rappels de ' + echapperHtml(themeActuel) + ' »</div>';
       html += '<div class="bloc-bas-sous-titre">Autre(s) thème(s) dans cette même section (' + autresThemes.length + ')</div>';
       html += '<div class="grille-couvertures">';
       autresThemes.forEach(function(l) { html += construireCarteCouverture(l); });
@@ -2411,7 +2423,7 @@
       return html;
     }
 
-        function construireBlocThemes(texte) {
+    function construireBlocThemes(texte) {
       var themeMeta = themesData[texte.categorie] || {};
       var themeActuel = (themeMeta.theme || '').trim();
       var themesAutres = [];
@@ -2447,6 +2459,9 @@
       var nav = construireNavDansTheme(texte);
       var html = '';
 
+      /* Exercices affichés sur la page, même mise en page que l'impression */
+      html += '<div class="zone-exercices-feuille" id="zoneExercicesFeuille"></div>';
+
       /* Bouton "Vérifier sa compréhension" */
       if (htmlExercicesPopup) {
         html += '<div class="bloc-verifier-comprehension">';
@@ -2473,50 +2488,51 @@
     }
 
     function construireBlocActions(texte) {
-  var titreEsc = (texte.titre || '').replace(/'/g, "\\'");
+      var titreEsc = (texte.titre || '').replace(/'/g, "\\'");
 
-  var html = '<div class="bloc-actions-texte">';
+      var html = '<div class="bloc-actions-texte">';
 
-  // Bouton 1 : impression complète (texte + exercices + rappel + note)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'complet\')">'
-    + 'Imprimer le Texte avec des exercices'
-    + '</button>';
+      // Bouton 1 : impression complète (texte + exercices + rappel + note)
+      html += '<button class="btn-action-lateral btn-imprimer" '
+        + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;" '
+        + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'complet\')">'
+        + 'Imprimer le rappel avec des exercices'
+        + '</button>';
 
-  // Bouton 2 : impression des exercices uniquement (avec note + titre du rappel)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'exercices\')">'
-    + 'Imprimer les exercices'
-    + '</button>';
+      // Bouton 2 : impression des exercices uniquement (avec note + titre du rappel)
+      html += '<button class="btn-action-lateral btn-imprimer" '
+        + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+        + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'exercices\')">'
+        + 'Imprimer les exercices'
+        + '</button>';
 
-  // Bouton 3 : impression du Texte uniquement (sans exercices, sans note)
-  html += '<button class="btn-action-lateral btn-imprimer" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
-    + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'rappel\')">'
-    + 'Imprimer le Texte'
-    + '</button>';
+      // Bouton 3 : impression du rappel uniquement (sans exercices, sans note)
+      html += '<button class="btn-action-lateral btn-imprimer" '
+        + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+        + 'onclick="imprimerTexte(\'' + texte.id + '\', \'' + titreEsc + '\', textesData, \'rappel\')">'
+        + 'Imprimer le rappel'
+        + '</button>';
 
-        // Bouton cartes (texte contenant des ---)
-  if (texte._modeCartes) {
-    html += '<button class="btn-action-lateral btn-imprimer" '
-      + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
-      + 'onclick="imprimerCartes()">'
-      + 'Imprimer les cartes'
-      + '</button>';
-  }
-  // Bouton optionnel : version alternative (inchangé)
-  html += '<button class="btn-action-lateral btn-imprimer-alternative" '
-    + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" '
-    + 'onclick="imprimerVersionParenthese()">'
-    + 'Imprimer la version alternative'
-    + '</button>';
+      // Bouton cartes (texte contenant des ---)
+      if (texte._modeCartes) {
+        html += '<button class="btn-action-lateral btn-imprimer" '
+          + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;margin-top:8px;" '
+          + 'onclick="imprimerCartes()">'
+          + 'Imprimer les cartes'
+          + '</button>';
+      }
+      // Bouton optionnel : version alternative (inchangé)
+      html += '<button class="btn-action-lateral btn-imprimer-alternative" '
+        + 'style="border:1px solid var(--border);border-radius:0;box-shadow:none;display:none;margin-top:8px;" '
+        + 'onclick="imprimerVersionParenthese()">'
+        + 'Imprimer la version alternative'
+        + '</button>';
 
-  html += '</div>';
-  return html;
-}
-        function construireZoneLaterale(texte) {
+      html += '</div>';
+      return html;
+    }
+
+    function construireZoneLaterale(texte) {
       var nav = construireNavDansTheme(texte);
       var themeInfo = themesData[texte.categorie] || {};
       var html = '';
@@ -2563,13 +2579,13 @@
           lien: '/medit/thème.html?cat=' + encodeURIComponent(texte.categorie)
         });
 
-        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres Textes de ce thème →</a>';
+        html += '<a class="lien-autres-rappels" href="/medit/thème.html?cat=' + encodeURIComponent(texte.categorie) + '">Voir les autres rappels de ce thème →</a>';
 
         html += '</div>';
       }
 
       if (nav.liste && nav.liste.length > 1) {
-        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres Textes de ce thème <span class="compteur">' + nav.liste.length + '</span></div>';
+        html += '<div class="bloc-section"><div class="bloc-titre"><span class="icone">🕮</span> Autres rappels de ce thème <span class="compteur">' + nav.liste.length + '</span></div>';
         html += '<div class="liste-textes">';
         nav.liste.forEach(function(c) {
           var estActuel = String(c.id) === String(texte.id);
@@ -2675,8 +2691,9 @@
       zoneBasseMobile.innerHTML = construireZoneBasseMobile(texte);
       zoneBasPage.innerHTML = construireZoneBasPage(texte);
 
-            arabiserDans(container);
+      arabiserDans(container);
       nettoyerCartesVides(container);
+      afficherExercicesFeuille(texte);
       afficherFilAriane(texte);
 
       var btnRetour = document.getElementById('btnRetourTexte');
@@ -2700,73 +2717,143 @@
       verifierValidationTexte(texte);
       verifierVersionParenthese(texte);
     }
-function nettoyerCartesVides(container) {
-  container.querySelectorAll('.carte-impr').forEach(function(c) {
-    if (!c.textContent.trim() && !c.querySelector('img')) c.parentNode.removeChild(c);
-  });
-}
 
-function imprimerCartes() {
-  var cartes = Array.prototype.slice.call(document.querySelectorAll('#texteContainer .carte-impr'));
-  if (!cartes.length) { alert('Aucune carte à imprimer.'); return; }
+    /* ============================================================
+       EXERCICES SUR LA PAGE — mise en page identique à impression.js
+       (la feuille d'exercices est générée par impression.js puis
+       affichée dans un cadre sous le texte)
+       ============================================================ */
+    function arabiserDocument(doc) {
+      var walker = doc.createTreeWalker(doc.body, NodeFilter.SHOW_TEXT, null, false);
+      var noeuds = [];
+      var n;
+      while ((n = walker.nextNode())) { if (/[؀-ۿ]/.test(n.nodeValue || '')) noeuds.push(n); }
+      noeuds.forEach(function(texteNode) {
+        var parent = texteNode.parentNode;
+        if (!parent || !parent.classList) return;
+        if (parent.classList.contains('arabe') || parent.classList.contains('copier-mot') ||
+            parent.classList.contains('copier-mot-pointille') || parent.classList.contains('copier-mot-kfg')) return;
+        var parts = texteNode.nodeValue.split(/([؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]+)/g);
+        var frag = doc.createDocumentFragment();
+        parts.forEach(function(part) {
+          if (part === '') return;
+          if (/[؀-ۿ]/.test(part)) {
+            var span = doc.createElement('span');
+            span.className = 'arabe';
+            span.setAttribute('lang', 'ar');
+            span.textContent = part;
+            frag.appendChild(span);
+          } else frag.appendChild(doc.createTextNode(part));
+        });
+        parent.replaceChild(frag, texteNode);
+      });
+    }
 
-  var cases = 2;
-  while (cases < cartes.length) cases *= 2;
-  var cols = cases <= 2 ? 1 : (cases <= 8 ? 2 : 4);
-  var rows = cases / cols;
-  var base = ({ 2: 24, 4: 19, 8: 15, 16: 11 })[cases] || 8;
-  var padding = '4mm'; /* marge intérieure de chaque carte, mets '0' pour aucune */
+    function afficherExercicesFeuille(texte) {
+      var zone = document.getElementById('zoneExercicesFeuille');
+      if (!zone || typeof genererImpression !== 'function' || !texte || !texte.contenu) return;
+      var html = '';
+      try {
+        html = genererImpression(texte, texte.contenu, imagesTheme || {}, '', 'exercices', { retournerHtml: true });
+      } catch (e) { console.error('Exercices :', e); return; }
+      if (!html || html.indexOf('exo-num-inline') === -1) { zone.style.display = 'none'; return; }
 
-  var css = ''
-    + '@page { size: A4 portrait; margin: 0; }'
-    + 'html, body { margin:0; padding:0; background:#fff; color:#000; }'
-    + '.grille { display:grid; width:210mm; height:296mm; margin:0; padding:0;'
-    + ' grid-template-columns:repeat(' + cols + ',1fr); grid-template-rows:repeat(' + rows + ',1fr); }'
-    + '.cell { box-sizing:border-box; overflow:hidden; padding:' + padding + ';'
-    + ' border:0.3mm dashed #888; font-family:Georgia,"Palatino Linotype",serif; line-height:1.35; }'
-    + '.paragraphe { margin:0 0 .6em; }'
-    + '.paragraphe:empty { display:none; }'
-    + '.paragraphe p { font-size:inherit; margin:0 0 .5em; text-align:justify; line-height:inherit; }'
-    + '.paragraphe p em { font-style:italic; }'
-    + '.arabe { font-family:"Amiri","Traditional Arabic","Janna LT Bold",serif; font-size:1.25em; }'
-    + '.source-discrete, .source-marge { font-style:italic; font-size:.8em; display:block; }'
-    + 'img { max-width:100%; max-height:35%; display:block; margin:0 auto; }';
+      zone.innerHTML = '';
+      var iframe = document.createElement('iframe');
+      iframe.className = 'iframe-exercices';
+      iframe.setAttribute('title', 'Exercices');
+      iframe.setAttribute('scrolling', 'no');
+      zone.appendChild(iframe);
 
-  var cellsHtml = '';
-  for (var i = 0; i < cases; i++) {
-    cellsHtml += '<div class="cell">' + (cartes[i] ? cartes[i].innerHTML : '') + '</div>';
-  }
+      var doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write(html);
+      doc.close();
 
-  var ancienne = document.getElementById('iframeImpressionCartes');
-  if (ancienne) ancienne.parentNode.removeChild(ancienne);
-
-  var iframe = document.createElement('iframe');
-  iframe.id = 'iframeImpressionCartes';
-  iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;';
-  document.body.appendChild(iframe);
-
-  var doc = iframe.contentWindow.document;
-  doc.open();
-  doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cartes</title><style>' + css
-    + '</style></head><body><div class="grille">' + cellsHtml + '</div></body></html>');
-  doc.close();
-
-  setTimeout(function() {
-    Array.prototype.forEach.call(doc.querySelectorAll('.cell'), function(cell) {
-      var fs = base;
-      cell.style.fontSize = fs + 'pt';
-      while (cell.scrollHeight > cell.clientHeight + 1 && fs > 4) {
-        fs -= 0.5;
-        cell.style.fontSize = fs + 'pt';
+      function ajuster() {
+        try { iframe.style.height = (doc.documentElement.scrollHeight + 10) + 'px'; } catch (e) {}
       }
-    });
-    iframe.contentWindow.focus();
-    iframe.contentWindow.print();
-    setTimeout(function() {
-      if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
-    }, 60000);
-  }, 350);
-}
+      setTimeout(function() {
+        var style = doc.createElement('style');
+        style.textContent = 'body{padding:28px 32px !important;} .page{zoom:100% !important;}';
+        doc.head.appendChild(style);
+        arabiserDocument(doc);
+        ajuster();
+      }, 300);
+      setTimeout(ajuster, 1200);
+      setTimeout(ajuster, 3000);
+      if (doc.fonts && doc.fonts.ready) doc.fonts.ready.then(ajuster);
+      window.addEventListener('resize', ajuster);
+    }
+
+    function nettoyerCartesVides(container) {
+      container.querySelectorAll('.carte-impr').forEach(function(c) {
+        if (!c.textContent.trim() && !c.querySelector('img')) c.parentNode.removeChild(c);
+      });
+    }
+
+    function imprimerCartes() {
+      var cartes = Array.prototype.slice.call(document.querySelectorAll('#texteContainer .carte-impr'));
+      if (!cartes.length) { alert('Aucune carte à imprimer.'); return; }
+
+      var cases = 2;
+      while (cases < cartes.length) cases *= 2;
+      var cols = cases <= 2 ? 1 : (cases <= 8 ? 2 : 4);
+      var rows = cases / cols;
+      var base = ({ 2: 24, 4: 19, 8: 15, 16: 11 })[cases] || 8;
+      var padding = '4mm'; /* marge intérieure de chaque carte, mets '0' pour aucune */
+
+      var css = ''
+        + '@page { size: A4 portrait; margin: 0; }'
+        + 'html, body { margin:0; padding:0; background:#fff; color:#000; }'
+        + '.grille { display:grid; width:210mm; height:296mm; margin:0; padding:0;'
+        + ' grid-template-columns:repeat(' + cols + ',1fr); grid-template-rows:repeat(' + rows + ',1fr); }'
+        + '.cell { box-sizing:border-box; overflow:hidden; padding:' + padding + ';'
+        + ' border:0.3mm dashed #888; font-family:Georgia,"Palatino Linotype",serif; line-height:1.35; }'
+        + '.paragraphe { margin:0 0 .6em; }'
+        + '.paragraphe:empty { display:none; }'
+        + '.paragraphe p { font-size:inherit; margin:0 0 .5em; text-align:justify; line-height:inherit; }'
+        + '.paragraphe p em { font-style:italic; }'
+        + '.arabe { font-family:"Amiri","Traditional Arabic","Janna LT Bold",serif; font-size:1.25em; }'
+        + '.source-discrete, .source-marge { font-style:italic; font-size:.8em; display:block; }'
+        + 'img { max-width:100%; max-height:35%; display:block; margin:0 auto; }';
+
+      var cellsHtml = '';
+      for (var i = 0; i < cases; i++) {
+        cellsHtml += '<div class="cell">' + (cartes[i] ? cartes[i].innerHTML : '') + '</div>';
+      }
+
+      var ancienne = document.getElementById('iframeImpressionCartes');
+      if (ancienne) ancienne.parentNode.removeChild(ancienne);
+
+      var iframe = document.createElement('iframe');
+      iframe.id = 'iframeImpressionCartes';
+      iframe.style.cssText = 'position:fixed;left:-10000px;top:0;width:210mm;height:297mm;border:0;';
+      document.body.appendChild(iframe);
+
+      var doc = iframe.contentWindow.document;
+      doc.open();
+      doc.write('<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Cartes</title><style>' + css
+        + '</style></head><body><div class="grille">' + cellsHtml + '</div></body></html>');
+      doc.close();
+
+      setTimeout(function() {
+        Array.prototype.forEach.call(doc.querySelectorAll('.cell'), function(cell) {
+          var fs = base;
+          cell.style.fontSize = fs + 'pt';
+          while (cell.scrollHeight > cell.clientHeight + 1 && fs > 4) {
+            fs -= 0.5;
+            cell.style.fontSize = fs + 'pt';
+          }
+        });
+        iframe.contentWindow.focus();
+        iframe.contentWindow.print();
+        setTimeout(function() {
+          if (iframe.parentNode) iframe.parentNode.removeChild(iframe);
+        }, 60000);
+      }, 350);
+    }
+
     function afficherErreur(message) {
       document.getElementById('texteContainer').innerHTML =
         '<div class="vide-texte">' +
