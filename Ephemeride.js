@@ -1,0 +1,155 @@
+// ============================================================
+// ephemeride.js — Éphéméride du jour (style Pléiade)
+//   - date du jour en lettres (calendrier grégorien)
+//   - date hégirienne (calendrier Umm al-Qura)
+//   - une citation du jour (verset ou hadith) tirée de VOS textes :
+//     toute citation entre guillemets suivie d'une source [ ... ]
+//     La citation change chaque jour, et reste la même toute la journée.
+//
+// Utilisation : mettre <div id="ephemeride"></div> dans la page,
+// puis charger data-manager.js et ce fichier.
+// ============================================================
+
+(function() {
+  'use strict';
+
+  var JOURS = ['dimanche', 'lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi'];
+  var MOIS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet',
+              'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+  var MOIS_HEGIRE = ['Muharram', 'Safar', 'Rabîʿ al-awwal', 'Rabîʿ ath-thânî',
+                     'Joumâdâ al-oûlâ', 'Joumâdâ ath-thâniya', 'Rajab', 'Shaʿbân',
+                     'Ramadân', 'Shawwâl', 'Dhoû al-qaʿda', 'Dhoû al-hijja'];
+
+  /* Citation de secours si aucun texte n'a encore de citation sourcée */
+  var SECOURS = {
+    citation: 'Ne méditent-ils donc pas sur le Coran ? Ou bien se trouve-t-il des cadenas sur leurs cœurs ?',
+    source: 'Coran 47:24'
+  };
+
+  function esc(s) {
+    return String(s == null ? '' : s)
+      .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  /* ---------- Dates ---------- */
+  function dateGregorienne(d) {
+    var j = d.getDate();
+    return JOURS[d.getDay()] + ' ' + (j === 1 ? '1er' : j) + ' ' + MOIS[d.getMonth()] + ' ' + d.getFullYear();
+  }
+
+  function dateHegirienne(d) {
+    try {
+      var f = new Intl.DateTimeFormat('en-u-ca-islamic-umalqura-nu-latn', { day: 'numeric', month: 'numeric', year: 'numeric' });
+      var parts = {};
+      f.formatToParts(d).forEach(function(p) { parts[p.type] = p.value; });
+      var jour = parseInt(parts.day, 10), mois = parseInt(parts.month, 10), annee = parseInt(parts.year, 10);
+      if (!jour || !mois || !annee) return '';
+      return (jour === 1 ? '1er' : jour) + ' ' + MOIS_HEGIRE[mois - 1] + ' ' + annee + ' H.';
+    } catch (e) {
+      return '';
+    }
+  }
+
+  /* Numéro du jour : la citation change à minuit */
+  function numeroDuJour(d) {
+    var debut = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+    return Math.floor(debut.getTime() / 86400000);
+  }
+
+  /* ---------- Citations tirées des textes ---------- */
+  function extraireCitations(textes) {
+    var liste = [], vus = {};
+    var re = /["“«]\s*([^"“”«»]{25,320}?)\s*["”»][^\[\n]{0,60}\[([^\]]{3,80})\]/g;
+    (textes || []).forEach(function(t) {
+      var contenu = String(t.contenu || '');
+      var m;
+      re.lastIndex = 0;
+      while ((m = re.exec(contenu)) !== null) {
+        var citation = m[1].replace(/\s+/g, ' ').replace(/\*+/g, '').trim();
+        var source = m[2].trim();
+        var cle = citation.toLowerCase();
+        if (vus[cle]) continue;
+        vus[cle] = true;
+        liste.push({ citation: citation, source: source, texteId: t.id, titre: t.titre || '' });
+      }
+    });
+    return liste;
+  }
+
+  /* ---------- Styles ---------- */
+  function injecterStyles() {
+    if (document.getElementById('styleEphemeride')) return;
+    if (!document.getElementById('policesEphemeride')) {
+      var l = document.createElement('link');
+      l.id = 'policesEphemeride'; l.rel = 'stylesheet';
+      l.href = 'https://fonts.googleapis.com/css2?family=EB+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=Cormorant+SC:wght@500;600&display=swap';
+      document.head.appendChild(l);
+    }
+    var st = document.createElement('style');
+    st.id = 'styleEphemeride';
+    st.textContent = ''
+      + '.ephem{max-width:720px;margin:34px auto 0;padding:22px 30px 20px;text-align:center;'
+      +   'font-family:"EB Garamond",Garamond,serif;border-top:0.6px solid #1a1712;border-bottom:0.6px solid #1a1712;position:relative;}'
+      + '.ephem::before,.ephem::after{content:"";position:absolute;left:0;right:0;border-top:0.6px solid #1a1712;}'
+      + '.ephem::before{top:3px;}.ephem::after{bottom:3px;}'
+      + '.ephem-tete{font-family:"Cormorant SC","EB Garamond",serif;font-weight:600;font-size:14px;letter-spacing:4px;'
+      +   'text-transform:lowercase;color:#7a705f;}'
+      + '.ephem-dates{display:flex;justify-content:center;align-items:baseline;gap:14px;flex-wrap:wrap;margin:6px 0 2px;}'
+      + '.ephem-greg{font-size:22px;font-weight:500;color:var(--text,#1a1712);}'
+      + '.ephem-greg::first-letter{text-transform:uppercase;}'
+      + '.ephem-sep{color:#9a7b3c;font-size:16px;}'
+      + '.ephem-hij{font-style:italic;font-size:19px;color:#2d6a4f;}'
+      + '.ephem-filet{width:60px;margin:14px auto 14px;border:none;border-top:0.6px solid #9a7b3c;}'
+      + '.ephem-cit{font-style:italic;font-size:21px;line-height:1.5;color:#3a3226;margin:0;}'
+      + '.ephem-cit::before{content:"« ";color:#9a7b3c;}.ephem-cit::after{content:" »";color:#9a7b3c;}'
+      + '.ephem-src{display:block;margin-top:8px;font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:2px;color:#9a7b3c;}'
+      + '.ephem-lien{display:inline-block;margin-top:6px;font-style:italic;font-size:14px;color:#2d6a4f;text-decoration:none;}'
+      + '.ephem-lien:hover{text-decoration:underline;}'
+      + '@media(max-width:700px){.ephem{padding:18px 12px 16px;margin-top:26px;}.ephem-greg{font-size:19px;}'
+      +   '.ephem-hij{font-size:16px;}.ephem-cit{font-size:18px;}}';
+    document.head.appendChild(st);
+  }
+
+  /* ---------- Affichage ---------- */
+  function dessiner(zone, choix) {
+    var maintenant = new Date();
+    var hij = dateHegirienne(maintenant);
+    var lien = (choix.texteId)
+      ? '<a class="ephem-lien" href="/medit/texte.html?id=' + encodeURIComponent(choix.texteId) + '">lire le texte →</a>'
+      : '';
+    zone.innerHTML = ''
+      + '<div class="ephem">'
+      +   '<div class="ephem-tete">éphéméride</div>'
+      +   '<div class="ephem-dates">'
+      +     '<span class="ephem-greg">' + esc(dateGregorienne(maintenant)) + '</span>'
+      +     (hij ? '<span class="ephem-sep">❧</span><span class="ephem-hij">' + esc(hij) + '</span>' : '')
+      +   '</div>'
+      +   '<hr class="ephem-filet">'
+      +   '<p class="ephem-cit">' + esc(choix.citation) + '</p>'
+      +   '<span class="ephem-src">' + esc(choix.source) + '</span>'
+      +   lien
+      + '</div>';
+  }
+
+  function afficher(zone) {
+    zone = zone || document.getElementById('ephemeride');
+    if (!zone) return;
+    injecterStyles();
+    dessiner(zone, SECOURS);   /* affichage immédiat, puis citation du jour */
+
+    if (typeof DataManager === 'undefined' || typeof DataManager.charger !== 'function') return;
+    DataManager.charger().then(function(data) {
+      var textes = (data && (data.tousLesTextes || data.textes)) || [];
+      var citations = extraireCitations(textes);
+      if (!citations.length) return;
+      var choix = citations[numeroDuJour(new Date()) % citations.length];
+      dessiner(zone, choix);
+    }).catch(function() {});
+  }
+
+  window.Ephemeride = { afficher: afficher };
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', function() { afficher(); });
+  else afficher();
+})();
