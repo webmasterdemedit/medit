@@ -1542,6 +1542,9 @@ body { font-size: 12pt; }
   text-align: left !important; max-width: 100%;
 }
 .quiz-reponses .quiz-case { flex-shrink: 0; transform: translateY(1px); }
+
+/* Image pleine largeur : img:nom:plein */
+.print-img-plein { width: 100% !important; max-width: 100% !important; float: none !important; margin: 12px 0 !important; }
 </style>
 </head>
 <body>
@@ -1606,7 +1609,10 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
       printHtml += '</div>';
       printHtml += '<div class="zone-exercices">';
       // Leçon sans texte : pas de titre « Exercices », ça se devine
-      var aDuTexte = blocsOrdonnes.some(function(b) { return b.type === 'paragraphe'; });
+      var aDuTexte = blocsOrdonnes.some(function(b) {
+        if (b.type !== 'paragraphe') return false;
+        return String(b.data).split('\n').some(function(l) { return l.trim() && !/^img:/i.test(l.trim()); });
+      });
       if (aDuTexte) {
         printHtml += '<div class="titre-questions">' + titreZoneExercices + '</div>';
         printHtml += '<div class="titre-questions-filets"></div>';
@@ -1882,7 +1888,7 @@ ${vocabClean.length > 0 ? '<div class="vocab-haut"><div class="titre-memo">Vocab
           var position = 'centre', taille = 'moyen';
           [opt1, opt2].forEach(function(o) {
             if (o === 'gauche' || o === 'droite' || o === 'centre') position = o;
-            else if (o === 'petit' || o === 'moyen' || o === 'grand') taille = o;
+            else if (o === 'petit' || o === 'moyen' || o === 'grand' || o === 'plein') taille = o;
           });
           var url = imagesTheme[nomImg];
           if (!url) printHtml += '<div class="img-manquante">[image manquante : ' + nomImg + ']</div>';
