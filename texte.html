@@ -395,6 +395,11 @@
       direction: rtl; text-align: center; text-indent: 0; border: none;
       font-family: 'Janna LT Bold', 'Traditional Arabic', 'Amiri', serif; font-size: 1.6em; line-height: 1.6;
     }
+    .popup-exercices .enonce-description, .enonce-description {
+      font-style: italic; font-size: 12pt; color: var(--text-secondary);
+      text-align: justify; margin-bottom: 6px;
+    }
+    .enonce-texte + .enonce-texte { margin-top: 6px; }
     .popup-exercices .enonce-source {
       text-align: right; font-style: italic; font-size: 10pt;
       color: var(--text-muted); margin-top: 4px;
@@ -1270,7 +1275,7 @@
           if (mSrc && !en.source) { en.source = mSrc[1].trim(); en.texte = en.texte.replace(mSrc[0], '').trim(); }
           var rtl = (en.texte && !/[A-Za-zÀ-ÿ]/.test(en.texte)) ? ' rtl' : '';
           html += '<div class="enonce-exo"><div class="enonce-titre">Exercice ' + en.num + '</div>';
-          if (en.texte) html += '<div class="enonce-texte' + rtl + '">' + appliquerGrasItalique(embellirFormulesReligieuses(echapperHtml(en.texte))).replace(/\n/g, '<br>') + '</div>';
+          if (en.texte) html += rendreEnonceSite(en.texte);
           if (en.source) html += '<div class="enonce-source">' + echapperHtml(en.source) + '</div>';
           html += '</div>';
         }
@@ -2819,6 +2824,28 @@
 
     // Vrai si le texte a quelque chose à afficher, même sans paragraphe
     // (questions courtes q:, énoncés exercice:, pointillés, tableaux, mémorisation)
+    // Énoncé : 1re ligne en français = description ; lignes en arabe = bloc centré
+    function rendreEnonceSite(texte) {
+      var fmt = function(t) { return appliquerGrasItalique(embellirFormulesReligieuses(echapperHtml(t))); };
+      var lignes = String(texte).split('\n').map(function(l) { return l.trim(); }).filter(Boolean);
+      var estArabe = function(l) { return /[\u0600-\u06FF]/.test(l) && !/[A-Za-zÀ-ÿ]/.test(l); };
+      var html = '', i = 0;
+      if (lignes.length > 1 && !estArabe(lignes[0])) { html += '<div class="enonce-description">' + fmt(lignes[0]) + '</div>'; i = 1; }
+      var bloc = [], blocArabe = null;
+      function vider() {
+        if (!bloc.length) return;
+        html += '<div class="enonce-texte' + (blocArabe ? ' rtl' : '') + '">' + bloc.map(fmt).join('<br>') + '</div>';
+        bloc = [];
+      }
+      for (; i < lignes.length; i++) {
+        var a = estArabe(lignes[i]);
+        if (blocArabe !== null && a !== blocArabe) vider();
+        blocArabe = a; bloc.push(lignes[i]);
+      }
+      vider();
+      return html;
+    }
+
     function aDuContenu(t) {
       if (!t) return false;
       if ((t.contenu || '').trim()) return true;
