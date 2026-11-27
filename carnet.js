@@ -167,6 +167,34 @@
       + '.carnet-article .a-rubrique{text-align:center;font-family:"Cormorant SC","EB Garamond",serif;letter-spacing:2px;font-size:14px;color:#2d6a4f;}'
       + '.carnet-article .a-rubrique .d{color:#e6b400;}'
       + '.carnet-article .a-numero{color:#9a7b3c;letter-spacing:2px;}'
+      + '.carnet-article .a-theme{color:#2d6a4f;text-decoration:none;}'
+      + '.carnet-article .a-theme:hover{text-decoration:underline;}'
+      + '.carnet-tout{display:block;text-align:center;margin-top:12px;font-style:italic;font-size:14px;color:#2d6a4f;text-decoration:none;}'
+      + '.carnet-tout:hover{text-decoration:underline;}'
+      /* Page carnet */
+      + '.cp-filtres{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 18px;margin:0 0 30px;}'
+      + '.cp-filtre{background:none;border:none;cursor:pointer;font-family:"EB Garamond",serif;font-size:17px;color:#7a705f;padding:2px 0;border-bottom:0.6px solid transparent;}'
+      + '.cp-filtre .d{color:#e6b400;}'
+      + '.cp-filtre.actif{color:#2d6a4f;border-bottom-color:#9a7b3c;}'
+      + '.cp-filtre:hover{color:#2d6a4f;}'
+      + '.cp-annee{font-family:"Cormorant SC","EB Garamond",serif;font-weight:600;font-size:22px;letter-spacing:3px;color:#9a7b3c;'
+      +   'text-align:center;margin:34px 0 4px;}'
+      + '.cp-annee::after{content:"";display:block;width:60px;margin:6px auto 0;border-top:0.6px solid #9a7b3c;}'
+      + '.cp-note{display:grid;grid-template-columns:130px 1fr;gap:26px;padding:22px 6px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background .15s;}'
+      + '.cp-note:hover{background:var(--bg-hover);}'
+      + '.cp-note:hover .cp-titre{text-decoration:underline;text-decoration-thickness:.5px;text-underline-offset:4px;}'
+      + '.cp-gauche{text-align:right;font-family:"EB Garamond",serif;}'
+      + '.cp-num{display:block;font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:2px;color:#9a7b3c;}'
+      + '.cp-date{display:block;font-style:italic;font-size:14.5px;color:#7a705f;margin-top:2px;}'
+      + '.cp-droite{font-family:"EB Garamond",serif;min-width:0;}'
+      + '.cp-theme{font-family:"Cormorant SC","EB Garamond",serif;font-size:15px;letter-spacing:1.5px;color:#2d6a4f;}'
+      + '.cp-theme .d{color:#e6b400;}'
+      + '.cp-titre{font-weight:600;font-size:25px;line-height:1.2;margin:2px 0 6px;color:var(--text);}'
+      + '.cp-chapeau{font-style:italic;font-size:17px;line-height:1.5;color:var(--text-secondary);}'
+      + '.cp-lire{display:inline-block;margin-top:8px;font-size:14.5px;color:#2d6a4f;}'
+      + '.cp-vide{text-align:center;font-style:italic;color:#7a705f;padding:40px 0;}'
+      + '@media(max-width:700px){.cp-note{grid-template-columns:1fr;gap:4px;}.cp-gauche{text-align:left;}'
+      +   '.cp-gauche .cp-num,.cp-gauche .cp-date{display:inline;margin-right:8px;}.cp-titre{font-size:21px;}}'
       + '.carnet-article .a-sep{color:#9a7b3c;}'
       + '.carnet-article h1{font-family:"EB Garamond",serif;font-weight:600;font-size:34px;line-height:1.15;text-align:center;margin:10px 0 12px;color:#1a1712;}'
       + '.carnet-article .a-meta{text-align:center;font-style:italic;color:#7a705f;font-size:15px;}'
@@ -224,8 +252,8 @@
       + '<article class="carnet-article">'
       +   '<div class="a-rubrique">'
       +     (a.numero ? '<span class="a-numero">Note n°' + a.numero + '</span>' : '')
-      +     (a.numero && o.theme ? '<span class="a-sep"> · </span>' : '')
-      +     (o.theme ? '<span class="d">#</span>' + esc(o.theme) : '')
+      +     (a.numero && (a.theme || o.theme) ? '<span class="a-sep"> · </span>' : '')
+      +     ((a.theme || o.theme) ? '<a class="a-theme" href="/medit/thème.html?cat=' + encodeURIComponent(a.theme || o.theme) + '"><span class="d">#</span>' + esc(a.theme || o.theme) + '</a>' : '')
       +   '</div>'
       +   '<h1>' + esc(a.titre) + '</h1>'
       +   (meta.length ? '<div class="a-meta">' + meta.map(esc).join(' · ') + '</div>' : '')
@@ -277,6 +305,7 @@
     articlesCourants = ecrits.map(function(e) {
       var a = analyser(e);
       a.numero = numeros[cleEcrit(e)] || 0;
+      a.theme = e._theme || '';
       /* le chapeau n'est affiché dans l'article que s'il a été écrit */
       a.chapeauEcrit = /(^|\n)\s*chapeau\s*:/i.test(String(e.contenu || '')) ? a.chapeau : '';
       return a;
@@ -297,7 +326,9 @@
         + '<span class="carnet-lire">Lire →</span>'
         + '</li>';
     });
-    html += '</ul></div>';
+    html += '</ul>'
+      + '<a class="carnet-tout" href="/medit/carnet.html">Tout le carnet →</a>'
+      + '</div>';
     conteneur.innerHTML = html;
 
     conteneur.querySelectorAll('.carnet-item').forEach(function(li) {
@@ -308,5 +339,85 @@
     return true;
   }
 
-  window.Carnet = { afficher: afficher, ouvrir: ouvrir, fermer: fermer };
+  /* ---------------- PAGE CARNET (toutes les notes) ----------------
+     tous : écrits de tous les thèmes, chacun avec e._theme */
+  function afficherPage(conteneur, tous) {
+    if (!conteneur) return;
+    injecterStyles();
+    tous = (tous || []).filter(function(e) { return e && (e.titre || e.contenu); });
+    if (!tous.length) { conteneur.innerHTML = '<p class="cp-vide">Aucune note pour le moment.</p>'; return; }
+
+    var numeros = numeroter(tous);
+    var notes = tous.map(function(e) {
+      var a = analyser(e);
+      a.numero = numeros[cleEcrit(e)] || 0;
+      a.theme = e._theme || '';
+      a.chapeauEcrit = /(^|\n)\s*chapeau\s*:/i.test(String(e.contenu || '')) ? a.chapeau : '';
+      a.t = valeurDate(a.date);
+      return a;
+    });
+    /* Du plus récent au plus ancien */
+    notes.sort(function(x, y) {
+      var tx = x.t === Infinity ? -Infinity : x.t, ty = y.t === Infinity ? -Infinity : y.t;
+      return (ty - tx) || (y.numero - x.numero);
+    });
+    optionsCourantes = {};
+
+    var themes = [];
+    notes.forEach(function(n) { if (n.theme && themes.indexOf(n.theme) === -1) themes.push(n.theme); });
+    themes.sort(function(a, b) { return a.localeCompare(b, 'fr', { sensitivity: 'base' }); });
+
+    var filtre = '';
+    var hFiltres = '<div class="cp-filtres"><button class="cp-filtre actif" data-t="">toutes les notes</button>'
+      + themes.map(function(t) { return '<button class="cp-filtre" data-t="' + esc(t) + '"><span class="d">#</span>' + esc(t) + '</button>'; }).join('')
+      + '</div><div class="cp-liste"></div>';
+    conteneur.innerHTML = hFiltres;
+    var liste = conteneur.querySelector('.cp-liste');
+
+    function rendre() {
+      var visibles = notes.filter(function(n) { return !filtre || n.theme === filtre; });
+      articlesCourants = visibles;
+      if (!visibles.length) { liste.innerHTML = '<p class="cp-vide">Aucune note dans ce thème.</p>'; return; }
+      var html = '', anneeCourante = null;
+      visibles.forEach(function(n, i) {
+        var annee = n.t === Infinity ? 'Sans date' : String(new Date(n.t).getFullYear());
+        if (annee !== anneeCourante) { html += '<div class="cp-annee">' + esc(annee) + '</div>'; anneeCourante = annee; }
+        html += '<div class="cp-note" data-i="' + i + '" tabindex="0">'
+          + '<div class="cp-gauche">'
+          +   (n.numero ? '<span class="cp-num">Note n°' + n.numero + '</span>' : '')
+          +   (n.date ? '<span class="cp-date">' + esc(formaterDate(n.date)) + '</span>' : '')
+          + '</div>'
+          + '<div class="cp-droite">'
+          +   (n.theme ? '<div class="cp-theme"><span class="d">#</span>' + esc(n.theme) + '</div>' : '')
+          +   '<h3 class="cp-titre">' + esc(n.titre) + '</h3>'
+          +   (n.chapeau ? '<div class="cp-chapeau">' + esc(n.chapeau) + '</div>' : '')
+          +   '<span class="cp-lire">Lire la note →</span>'
+          + '</div></div>';
+      });
+      liste.innerHTML = html;
+      liste.querySelectorAll('.cp-note').forEach(function(el) {
+        var i = parseInt(el.getAttribute('data-i'), 10);
+        el.addEventListener('click', function() { ouvrir(i); });
+        el.addEventListener('keydown', function(e) { if (e.key === 'Enter') ouvrir(i); });
+      });
+    }
+
+    conteneur.querySelectorAll('.cp-filtre').forEach(function(b) {
+      b.addEventListener('click', function() {
+        conteneur.querySelectorAll('.cp-filtre').forEach(function(x) { x.classList.remove('actif'); });
+        b.classList.add('actif');
+        filtre = b.getAttribute('data-t');
+        rendre();
+      });
+    });
+
+    /* Lien direct vers un thème : carnet.html?theme=Nom */
+    var demande = new URLSearchParams(window.location.search).get('theme');
+    if (demande) {
+      var bouton = conteneur.querySelector('.cp-filtre[data-t="' + demande.replace(/"/g, '') + '"]');
+      if (bouton) bouton.click(); else rendre();
+    } else rendre();
+  }
+
+  window.Carnet = { afficher: afficher, afficherPage: afficherPage, ouvrir: ouvrir, fermer: fermer };
 })();
