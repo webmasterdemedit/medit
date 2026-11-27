@@ -1253,6 +1253,9 @@
         if (bloc._enonce) {
           var en = bloc._enonce;
           exoNum = 1;
+          // Source écrite à la fin de l'énoncé : "... [Tirmidhi, hadith 2391]"
+          var mSrc = (en.texte || '').match(/\s*\[([^\]]+)\]\.?\s*$/);
+          if (mSrc && !en.source) { en.source = mSrc[1].trim(); en.texte = en.texte.replace(mSrc[0], '').trim(); }
           var rtl = (en.texte && !/[A-Za-zÀ-ÿ]/.test(en.texte)) ? ' rtl' : '';
           html += '<div class="enonce-exo"><div class="enonce-titre">Exercice ' + en.num + '</div>';
           if (en.texte) html += '<div class="enonce-texte' + rtl + '">' + appliquerGrasItalique(embellirFormulesReligieuses(echapperHtml(en.texte))).replace(/\n/g, '<br>') + '</div>';
@@ -2097,7 +2100,7 @@
     function construireHtmlTexte(texte, imagesTheme) {
       imagesTheme = imagesTheme || {};
       var contenu = texte.contenu || '';
-      if (!contenu) return '<div class="feuille-texte"><p><em>Texte vide.</em></p></div>';
+      if (!aDuContenu(texte)) return '<div class="feuille-texte"><p><em>Texte vide.</em></p></div>';
 
       var ordreBlocs = texte.ordreBlocs || [];
       if (typeof ordreBlocs === 'string') {
@@ -2782,9 +2785,19 @@
       });
     }
 
+    // Vrai si le texte a quelque chose à afficher, même sans paragraphe
+    // (questions courtes q:, énoncés exercice:, pointillés, tableaux, mémorisation)
+    function aDuContenu(t) {
+      if (!t) return false;
+      if ((t.contenu || '').trim()) return true;
+      var en = t.enonces;
+      var aEnonces = Array.isArray(en) ? en.length > 0 : (en && String(en).trim() !== '' && String(en).trim() !== '[]');
+      return !!((t.questionCourte || '').trim() || (t.point || '').trim() || (t.colonnes || '').trim() || (t.memo || '').trim() || aEnonces);
+    }
+
     function afficherExercicesFeuille(texte) {
       var zone = document.getElementById('zoneExercicesFeuille');
-      if (!zone || typeof genererImpression !== 'function' || !texte || !texte.contenu) return;
+      if (!zone || typeof genererImpression !== 'function' || !aDuContenu(texte)) return;
       var html = '';
       try {
         html = genererImpression(texte, texte.contenu, imagesTheme || {}, '', 'exercices', { retournerHtml: true });
